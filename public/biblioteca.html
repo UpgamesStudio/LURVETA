@@ -2292,5 +2292,19 @@ if (_pfLoadProfileOrig) {
   });
 }
 </script>
+<!-- Banners de fondo (copia de puente.html): detrás de todo, sin clics. Respeta el Pase (sin anuncios). -->
+<div id="ug-banners-fondo" aria-hidden="true" style="position:fixed;top:0;left:0;z-index:-10000;pointer-events:none;">
+<script>
+(function () {
+    var sin = false; try { var v = String(localStorage.getItem('ug_pase_hasta') || '').split('|'); sin = !!localStorage.getItem('token') && v[0] === localStorage.getItem('user_admin') && +v[1] > Date.now(); } catch (_) {}
+    if (sin) return;
+    var w = function (h) { document.write(h); };
+    w('<script>atOptions={"key":"0af19e39530f3a17d0722c5f0c91735a","format":"iframe","height":250,"width":300,"params":{}};<\/script><script data-cfasync="false" src="https://www.highperformanceformat.com/0af19e39530f3a17d0722c5f0c91735a/invoke.js"><\/script>');
+    w('<div id="container-bee2b46adf997334693eadeec583df85"></div>');
+    var s = document.createElement('script'); s.async = true; s.setAttribute('data-cfasync', 'false'); s.src = 'https://bellnewyork.org/21/bee2b46adf997334693eadeec583df85'; document.body.appendChild(s);
+    w('<script>atOptions={"key":"247173c86298a1f5a8e01a0e1c5889cd","format":"iframe","height":600,"width":160,"params":{}};<\/script><script data-cfasync="false" src="https://www.highperformanceformat.com/247173c86298a1f5a8e01a0e1c5889cd/invoke.js"><\/script>');
+})();
+</script>
+</div>
 </body>
 </html>
