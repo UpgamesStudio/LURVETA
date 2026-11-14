@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Perfil v6 (perfil público y perfil propio) · Liquid Glass ordenado
+   Misma idea que la ficha v6: portada a sangre que se desvanece en un
+   fondo con su brillo, nombre en frase normal, insignias en píldoras de
+   cristal, fila de 4 datos, pestañas segmentadas y tarjetas con título.
+   html[data-tema] delante para ganar a los dos temas (cyber y clásico).
+   ═══════════════════════════════════════════════════════════════════ */
+html[data-tema] { --ff: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif; --ff-disp: 'Manrope', system-ui, -apple-system, sans-serif; }
+:root { --p6-g: #36E08A; --p6-ink: #03170C; --p6-gl: rgba(255,255,255,.06); --p6-gl2: rgba(255,255,255,.1); --p6-bd: rgba(255,255,255,.1); --p6-hi: inset 0 1px 0 rgba(255,255,255,.13); --p6-blur: blur(20px) saturate(1.6); }
+html { -webkit-tap-highlight-color: transparent; }
+html[data-tema] body *:not(svg):not(ion-icon) { text-transform: none !important; }
+html[data-tema] .profile-hero *, html[data-tema] .container *, html[data-tema] .top-bar * { font-family: 'Manrope', system-ui, sans-serif !important; letter-spacing: normal !important; }
+html[data-tema] body { background: #0B0D11 !important; }
+
+/* ── Barra superior: botones de cristal sobre la portada; sólida al bajar ── */
+html[data-tema] .top-bar { background: transparent !important; border-bottom-color: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; position: fixed !important; left: 0; right: 0; transition: background .25s; }
+html[data-tema] .top-bar.scrolled { background: rgba(14,16,20,.74) !important; -webkit-backdrop-filter: var(--p6-blur) !important; backdrop-filter: var(--p6-blur) !important; border-bottom-color: rgba(255,255,255,.06) !important; }
+html[data-tema] .top-bar .top-bar-logo { display: none !important; }
+html[data-tema] .top-bar .tb-title { align-items: center; text-align: center; }
+html[data-tema] .top-bar .tb-btn { background: rgba(12,14,18,.45) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi) !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); clip-path: none !important; border-radius: 50% !important; width: 40px !important; height: 40px !important; }
+
+/* ── Cabecera: portada a sangre que se funde, con su brillo detrás ── */
+html[data-tema] .profile-hero { overflow: visible; isolation: isolate; }
+html[data-tema] .pp-amb {
+  position: absolute; left: 0; right: 0; top: -40px; height: 560px; z-index: -1; pointer-events: none;
+  background-size: cover; background-position: center; filter: blur(50px) saturate(1.8); opacity: .55;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 100%); mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+}
+html[data-tema] .hero-cover {
+  height: 250px !important; aspect-ratio: auto !important; border-radius: 0 !important; margin: 0 !important; clip-path: none !important; box-shadow: none !important; border: 0 !important;
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, rgba(0,0,0,.5) 72%, transparent 100%), linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, #000 45%, rgba(0,0,0,.5) 72%, transparent 100%), linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); mask-composite: intersect;
+}
+html[data-tema] .hero-cover::before, html[data-tema] .hero-cover::after { display: none !important; }
+html[data-tema] .pp-head { margin-top: -74px !important; padding: 0 20px !important; display: block !important; }
+html[data-tema] .hero-avatar-wrap .avatar { width: 104px !important; height: 104px !important; border-radius: 50% !important; clip-path: none !important; border: 3px solid #0B0D11 !important; box-shadow: 0 16px 40px -16px rgba(0,0,0,.9) !important; }
+html[data-tema] .hero-avatar-wrap .avatar img { border-radius: 50% !important; }
+
+/* ── Identidad ── */
+html[data-tema] .hero-info { padding: 12px 20px 0 !important; }
+html[data-tema] .hero-username { font-size: 30px !important; font-weight: 800 !important; letter-spacing: -.03em !important; line-height: 1.1; gap: 8px !important; color: var(--txt) !important; }
+html[data-tema] .hero-username .hero-at { display: none !important; }
+html[data-tema] .pp-handle { font-size: 15px; color: var(--txt2); font-weight: 600; margin-top: 2px; }
+html[data-tema] .pp-handle:empty { display: none; }
+html[data-tema] .hero-meta, html[data-tema] #pp-insignias { display: flex !important; flex-wrap: wrap; gap: 8px !important; margin-top: 12px !important; }
+html[data-tema] #pp-insignias { margin-bottom: -4px !important; }
+html[data-tema] .hero-meta > span, html[data-tema] #pp-insignias > * {
+  height: 30px; padding: 0 12px !important; border-radius: 999px !important; background: var(--p6-gl) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi) !important;
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); font-size: 13px !important; font-weight: 700 !important; color: var(--txt) !important; display: inline-flex !important; align-items: center; gap: 6px; clip-path: none !important;
+}
+html[data-tema] .hero-meta > span[style*="ffcc4d"] { color: #F5C451 !important; border-color: rgba(245,196,81,.3) !important; background: rgba(245,196,81,.08) !important; }
+html[data-tema] .hero-bio { font-size: 15.5px !important; color: var(--txt2) !important; margin-top: 12px !important; line-height: 1.45 !important; }
+
+/* ── Acciones: Seguir verde, el resto de cristal ── */
+html[data-tema] .hero-action-row { padding: 18px 20px 0 !important; gap: 10px !important; }
+html[data-tema] .hero-action-row button { height: 52px !important; border-radius: 16px !important; clip-path: none !important; font-weight: 800 !important; font-size: 16px !important; }
+html[data-tema] .btn-seguir { flex: 1; background: var(--p6-g) !important; color: var(--p6-ink) !important; border: 0 !important; box-shadow: 0 12px 30px -12px rgba(54,224,138,.75), inset 0 1px 0 rgba(255,255,255,.35) !important; }
+html[data-tema] .btn-seguir.btn-siguiendo { background: var(--p6-gl2) !important; color: var(--txt) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi) !important; }
+html[data-tema] .btn-mensaje, html[data-tema] .btn-compartir, html[data-tema] #pp-regalar {
+  flex: none; padding: 0 18px !important; background: var(--p6-gl2) !important; color: var(--txt) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi) !important;
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+html[data-tema] .btn-compartir { width: 52px !important; padding: 0 !important; justify-content: center; }
+html[data-tema] #pp-regalar { color: #F5C451 !important; }
+
+/* ── Fila de 4 datos ── */
+html[data-tema] .pp-stats { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; margin: 18px 20px 0 !important; padding: 14px 0 !important; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); background: none !important; box-shadow: none !important; }
+html[data-tema] .pp-stats .stat-item { text-align: center; border-left: 1px solid rgba(255,255,255,.08); display: flex; flex-direction: column; align-items: center; background: none !important; padding: 0 !important; }
+html[data-tema] .pp-stats .stat-item:first-child { border-left: 0; }
+html[data-tema] .pp-stats .stat-number { font-size: 19px !important; font-weight: 800 !important; color: var(--txt) !important; font-variant-numeric: tabular-nums; }
+html[data-tema] .pp-stats .stat-label { font-size: 12px !important; color: var(--txt3) !important; font-weight: 600 !important; }
+
+/* ── Vitrina compacta: una fila de píldoras ── */
+html[data-tema] .pp-vitrina { margin: 14px 20px 0 !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px; }
+html[data-tema] .pp-vitrina .pp-vitrina-h { display: contents !important; }
+html[data-tema] .pp-vitrina .pp-vitrina-h b { order: 0; height: 30px; padding: 0 12px; border-radius: 999px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; color: #F5C451; background: rgba(245,196,81,.08); border: 1px solid rgba(245,196,81,.3); }
+html[data-tema] .pp-vitrina .pp-vitrina-h small { order: 9; margin-left: auto; font-size: 13px; color: var(--txt3); font-weight: 600; }
+html[data-tema] .pp-vitrina .pp-vitrina-l { display: contents !important; }
+html[data-tema] .pp-vitrina .pp-ins { order: 1; height: 30px; width: auto !important; min-height: 0 !important; padding: 0 12px !important; border-radius: 999px !important; flex-direction: row !important; gap: 6px !important; background: var(--p6-gl) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi) !important; clip-path: none !important; display: inline-flex !important; align-items: center; font-size: 13px !important; }
+html[data-tema] .pp-vitrina .pp-ins > * { font-size: 13px !important; margin: 0 !important; }
+html[data-tema] .pp-vitrina .pp-ins small, html[data-tema] .pp-vitrina .pp-ins i { display: none !important; }
+
+/* ── Pestañas: control segmentado de cristal, fijo al bajar ── */
+html[data-tema] .container { padding: 0 20px !important; max-width: 720px; }
+html[data-tema] .pub-subnav {
+  position: sticky !important; top: 62px !important; z-index: 40; margin: 18px 0 0 !important; padding: 5px !important; gap: 6px; border-radius: 16px !important;
+  background: rgba(20,22,28,.6) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi) !important; -webkit-backdrop-filter: var(--p6-blur) !important; backdrop-filter: var(--p6-blur) !important;
+}
+html[data-tema] .pub-subnav-tab { border: 0 !important; border-radius: 12px !important; padding: 0 10px !important; height: 38px; font-size: 14px !important; font-weight: 700 !important; color: var(--txt2) !important; }
+html[data-tema] .pub-subnav-tab ion-icon { display: none !important; }
+html[data-tema] .pub-subnav-tab.active { background: var(--txt) !important; color: #0A0B0F !important; }
+html[data-tema] .pub-subnav-count { background: none !important; padding: 0 !important; font-size: 12px !important; opacity: .6; color: inherit !important; }
+
+/* ── Secciones y tarjetas ── */
+html[data-tema] .pp-sec { display: flex; align-items: baseline; justify-content: space-between; margin: 22px 0 12px; }
+html[data-tema] .pp-sec[hidden] { display: none; }
+html[data-tema] .pp-sec h3 { font-size: 20px; font-weight: 800; letter-spacing: -.02em !important; color: var(--txt); }
+html[data-tema] .pp-sec small { font-size: 14px; color: var(--txt3); font-weight: 700; }
+html[data-tema] .pp-row { display: grid; grid-auto-flow: column; grid-auto-columns: 140px; gap: 12px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px; padding: 0 20px 4px; scrollbar-width: none; scroll-snap-type: x proximity; }
+html[data-tema] .pp-row::-webkit-scrollbar { display: none; }
+html[data-tema] .pp-row .pp-card { scroll-snap-align: start; }
+html[data-tema] #user-items.items-grid, html[data-tema] #user-videos.items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px 12px !important; padding: 0 !important; }
+@media (min-width: 640px) { html[data-tema] #user-items.items-grid, html[data-tema] #user-videos.items-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+html[data-tema] .pp-card { min-width: 0; }
+html[data-tema] .pp-card .pp-tile { aspect-ratio: 4 / 5 !important; border-radius: 15px !important; overflow: hidden; box-shadow: 0 16px 30px -20px rgba(0,0,0,.9); clip-path: none !important; }
+html[data-tema] .pp-card .pp-tile::after { display: none !important; }
+html[data-tema] .pp-card .pp-tile-meta { display: none !important; }
+html[data-tema] .pp-rk { position: absolute; left: 8px; bottom: 8px; z-index: 2; width: 28px; height: 28px; border-radius: 9px; background: rgba(10,11,15,.62); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid var(--p6-bd); font-weight: 800; font-size: 14px; color: #fff; display: flex; align-items: center; justify-content: center; }
+html[data-tema] .pp-card-t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 14.5px; font-weight: 700; line-height: 1.25; margin-top: 9px; color: var(--txt); }
+html[data-tema] .pp-card-d { font-size: 12.5px; color: var(--txt3); font-weight: 600; margin-top: 3px; }
+html[data-tema] .pp-card:active .pp-tile { transform: scale(.98); transition: transform 120ms cubic-bezier(.23,1,.32,1); }
+
+/* ── Orden y ajustes finales ── */
+html[data-tema] .profile-hero { display: flex !important; flex-direction: column; }
+html[data-tema] .profile-hero > .hero-cover { order: 1; }
+html[data-tema] .profile-hero > .pp-head { order: 2; }
+html[data-tema] .profile-hero > .hero-info { order: 3; }
+html[data-tema] .profile-hero > .hero-action-row { order: 4; }
+html[data-tema] .profile-hero > .pp-stats { order: 5; }
+html[data-tema] .profile-hero > .pp-vitrina { order: 6; }
+html[data-tema] .profile-hero > *:not(.pp-amb):not(.hero-cover):not(.pp-head):not(.hero-info):not(.hero-action-row):not(.pp-stats):not(.pp-vitrina) { order: 7; }
+/* el marco del avatar (comprado o no) abraza solo al avatar */
+html[data-tema] .hero-avatar-wrap { display: inline-block !important; width: fit-content !important; }
+/* nombre · @usuario · una sola línea de insignias (las compradas y Premium/fecha) · bio · redes */
+html[data-tema] .hero-info { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px; }
+html[data-tema] .hero-info > * { flex-basis: 100%; }
+html[data-tema] .hero-info > .hero-username { order: 1; }
+html[data-tema] .hero-info > .pp-handle { order: 2; margin-top: -6px; }
+html[data-tema] .hero-info > #pp-insignias, html[data-tema] .hero-info > .hero-meta { display: contents !important; }
+html[data-tema] #pp-insignias > *, html[data-tema] .hero-meta > span { order: 3; flex-basis: auto !important; margin-top: 4px; }
+html[data-tema] .hero-info > .hero-bio { order: 4; margin-top: 4px !important; }
+html[data-tema] .hero-info > .pp-social { order: 5; }
+html[data-tema] .hero-info > .hero-bio:empty, html[data-tema] .hero-info > .pp-social:empty { display: none; }
+html[data-tema] .pp-vitrina .pp-vitrina-h small { flex-basis: auto; white-space: nowrap; }
+/* control de música: botón redondo de cristal */
+html[data-tema] .ugm .ugm-btn { clip-path: none !important; border-radius: 50% !important; width: 40px !important; height: 40px !important; background: rgba(20,22,28,.6) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi), 0 10px 24px -12px rgba(0,0,0,.9) !important; -webkit-backdrop-filter: var(--p6-blur); backdrop-filter: var(--p6-blur); }

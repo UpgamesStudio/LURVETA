@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="./upgames-estilo.css?v=20261106d">
 <link rel="stylesheet" href="upgames-cyber.css?v=20261112a">
 <link rel="stylesheet" href="upgames-neo.css?v=20261112a">
+<link rel="stylesheet" href="perfil-v6.css?v=20261114a">
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-musica.js?v=20261108a" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -234,6 +235,7 @@ a { text-decoration: none; color: inherit; }
 
     <!-- ── CABECERA ── -->
     <section class="profile-hero">
+        <div class="pp-amb" id="pp-amb" aria-hidden="true"></div>
         <div class="hero-cover" id="hero-cover">
             <a class="hero-cover-edit" id="hero-cover-edit" href="./biblioteca.html?ajustes=portada">
                 <ion-icon name="camera-outline"></ion-icon> Editar portada
@@ -246,11 +248,6 @@ a { text-decoration: none; color: inherit; }
                     <img id="avatar-img" style="display:none;" alt="Foto de perfil">
                 </div>
             </div>
-            <div class="stats pp-stats">
-                <div class="stat-item"><span class="stat-number" id="stat-uploads">—</span><span class="stat-label">Publicaciones</span></div>
-                <div class="stat-item"><span class="stat-number" id="stat-followers">—</span><span class="stat-label">Seguidores</span></div>
-                <div class="stat-item"><span class="stat-number" id="stat-following">—</span><span class="stat-label">Siguiendo</span></div>
-            </div>
         </div>
 
         <div class="hero-info" id="hero-info">
@@ -258,6 +255,7 @@ a { text-decoration: none; color: inherit; }
                 <span class="hero-at">@</span><span id="user-name-display" class="pp-sk">cargando</span>
                 <span id="verificado-badge"></span>
             </div>
+            <div class="pp-handle" id="pp-handle"></div>
             <div class="hero-meta" id="hero-meta"></div>
             <p class="hero-bio" id="user-bio"></p>
             <div class="pp-social" id="pp-social"></div>
@@ -273,6 +271,12 @@ a { text-decoration: none; color: inherit; }
             <button type="button" class="btn-compartir" onclick="compartirPerfil()" aria-label="Compartir perfil">
                 <ion-icon name="share-social-outline"></ion-icon>
             </button>
+        </div>
+        <div class="stats pp-stats">
+            <div class="stat-item"><span class="stat-number" id="stat-uploads">—</span><span class="stat-label">publicaciones</span></div>
+            <div class="stat-item"><span class="stat-number" id="stat-followers">—</span><span class="stat-label">seguidores</span></div>
+            <div class="stat-item"><span class="stat-number" id="stat-following">—</span><span class="stat-label">siguiendo</span></div>
+            <div class="stat-item"><span class="stat-number" id="stat-downloads">—</span><span class="stat-label">descargas</span></div>
         </div>
     </section>
 
@@ -298,6 +302,8 @@ a { text-decoration: none; color: inherit; }
 
         <!-- Panel: Publicaciones (no video) -->
         <div class="pub-panel active" id="pub-panel-publicaciones">
+            <div id="pp-top" class="pp-top"></div>
+            <div class="pp-sec" id="pp-sec-todo" hidden><h3>Todas las publicaciones</h3><small id="pp-sec-n"></small></div>
             <div id="user-items" class="items-grid"></div>
         </div>
 
@@ -376,6 +382,14 @@ a { text-decoration: none; color: inherit; }
             const tj = window._ppTarjeta; if (!tj) return;
             document.querySelectorAll('#user-items .pp-tile, #user-videos .pp-tile').forEach(c => window.UGX?.vestirTarjeta?.(c, tj));
         }
+        // Tarjeta v6: la portada de siempre (.pp-tile, con sus distintivos) y debajo título y descargas
+        function ppCard(item, puesto) {
+            const isVideo = item.category === 'Video', n = isVideo ? (item.vistas || 0) + (item.descargasEfectivas || 0) : (item.descargasEfectivas || 0);
+            const t = String(item.title || '').trim();
+            return `<div class="pp-card">${ppTile(item).replace('</a>', puesto ? `<span class="pp-rk">${puesto}</span></a>` : '</a>')}
+                <a class="pp-card-t" href="./biblioteca.html?id=${encodeURIComponent(item._id)}">${ppEsc(t)}</a>
+                <div class="pp-card-d">${ppFmt(n)} ${isVideo ? 'vistas' : (n === 1 ? 'descarga' : 'descargas')}</div></div>`;
+        }
         function ppTile(item) {
             const isVideo = item.category === 'Video';
             const img = item.image && !/\.(mp4|webm|mov|m4v|avi|3gp|3g2|mkv|ogv|mpe?g|wmv|flv)(\?|$)|\/video\/upload\//i.test(item.image) ? cldOpt(item.image, 'c_fill,g_auto,w_420,h_420,q_auto,f_auto') : '';
@@ -448,13 +462,14 @@ a { text-decoration: none; color: inherit; }
                 // Actualizar UI
                 const nombreEl = document.getElementById('user-name-display');
                 nombreEl.textContent = user.usuario; nombreEl.classList.remove('pp-sk');
+                document.getElementById('pp-handle').textContent = '@' + user.usuario;
                 document.getElementById('tb-nombre').textContent = '@' + user.usuario;
                 document.getElementById('tb-sub').textContent = `${ppFmt(user.publicaciones || 0)} publicaciones`;
                 ppPintarRedes(user.socialLinks);
                 const desde = ppDesde(user.createdAt || user.fecha);
                 document.getElementById('hero-meta').innerHTML = [
                     user.premium ? '<span style="color:#ffcc4d"><ion-icon name="star"></ion-icon>Premium</span>' : '',
-                    desde ? `<span><ion-icon name="calendar-outline"></ion-icon>Se unió en ${ppEsc(desde)}</span>` : '',
+                    desde ? `<span>Desde ${ppEsc(desde)}</span>` : '',
                 ].join('');
                 
                 // Badge de verificación
@@ -481,6 +496,7 @@ a { text-decoration: none; color: inherit; }
                 if (user.banner && /^https:\/\/[^\s"'<>`\\]+$/i.test(user.banner)) {
                     cover.style.backgroundImage = `url("${cldOpt(user.banner, 'c_fill,g_auto,w_1500,h_500,q_auto,f_auto')}")`;
                     cover.classList.add('has-banner');
+                    document.getElementById('pp-amb').style.backgroundImage = `url("${cldOpt(user.banner, 'c_limit,w_480,q_auto,f_auto')}")`;
                 }
                 const esMiPerfil = usuarioActual && usuarioActual.toLowerCase() === String(user.usuario).toLowerCase();
                 document.getElementById('hero-cover-edit').classList.toggle('show', !!esMiPerfil);
@@ -610,8 +626,16 @@ a { text-decoration: none; color: inherit; }
                             <p>Este usuario aún no ha publicado nada.</p>
                         </div>`;
                 } else {
-                    contJuegos.innerHTML = juegos.map(ppTile).join('');
+                    contJuegos.innerHTML = juegos.map(i => ppCard(i)).join('');
                 }
+                // Descargas totales (suma de sus publicaciones) y «Lo más descargado»
+                const totalDl = juegos.reduce((a, i) => a + (i.descargasEfectivas || 0), 0);
+                document.getElementById('stat-downloads').textContent = ppFmt(totalDl);
+                const top = [...juegos].filter(i => i.descargasEfectivas > 0).sort((a, b) => b.descargasEfectivas - a.descargasEfectivas).slice(0, 6);
+                document.getElementById('pp-top').innerHTML = top.length >= 2
+                    ? `<div class="pp-sec"><h3>Lo más descargado</h3></div><div class="pp-row">${top.map((i, k) => ppCard(i, k + 1)).join('')}</div>` : '';
+                const secTodo = document.getElementById('pp-sec-todo'); secTodo.hidden = top.length < 2 || !juegos.length;
+                document.getElementById('pp-sec-n').textContent = juegos.length;
 
                 // ── Renderizar VIDEOS ──
                 const contVideos = document.getElementById('user-videos');
@@ -623,7 +647,7 @@ a { text-decoration: none; color: inherit; }
                             <p>Este usuario aún no ha publicado videos.</p>
                         </div>`;
                 } else {
-                    contVideos.innerHTML = videos.map(ppTile).join('');
+                    contVideos.innerHTML = videos.map(i => ppCard(i)).join('');
                 }
                 ppAplicarTarjetas();
 

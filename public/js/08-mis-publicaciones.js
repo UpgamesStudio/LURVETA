@@ -37,14 +37,18 @@ function pfTileHTML(item, i) {
   const ls        = item.linkStatus || 'online';
   const img       = item.image && !UG_VIDEO_RE.test(item.image) ? cldOpt(item.image, CLD_TILE) : '';
   const n         = isVideo ? vistasVideo(item) : (item.descargasEfectivas || 0);
-  return `<button type="button" class="pf2-tile${img ? '' : ' no-img'}" onclick="pfOpenPostSheet(${i})" aria-label="${ugEsc(item.title || 'Publicación')}">
+  const est = isPending ? ['pend', 'Pendiente'] : ls === 'online' ? ['ok', 'Activo'] : ls === 'caido' ? ['bad', 'Caído'] : ['warn', 'En revisión'];
+  return `<div class="pf-card"><button type="button" class="pf2-tile${img ? '' : ' no-img'}" onclick="pfOpenPostSheet(${i})" aria-label="${ugEsc(item.title || 'Publicación')}">
+      <span class="pf-est pf-est-${est[0]}"><i></i>${est[1]}</span>
       ${img ? `<img src="${ugEsc(img)}" alt="" loading="lazy" onerror="this.remove();this.parentElement.classList.add('no-img')">` : ''}
       <span class="pf2-tile-ph"><ion-icon name="${isVideo ? 'play' : 'game-controller'}"></ion-icon><em>${ugEsc(item.title || '')}</em></span>
       ${isPending ? '<span class="pf2-tile-badge">Pendiente</span>' : ''}
       ${!isPending && ls !== 'online' ? `<span class="pf2-tile-badge ${ls === 'caido' ? 'bad' : 'warn'}">${ls === 'caido' ? 'Link caído' : 'Revisión'}</span>` : ''}
       ${isVideo ? '<span class="pf2-tile-type"><ion-icon name="play"></ion-icon></span>' : ''}
       <span class="pf2-tile-meta"><ion-icon name="${isVideo ? 'eye-outline' : 'cloud-download-outline'}"></ion-icon>${pfFmt ? pfFmt(n) : n}</span>
-    </button>`;
+    </button>
+    <button type="button" class="pf-card-t" onclick="pfOpenPostSheet(${i})">${ugEsc(item.title || '')}</button>
+    <div class="pf-card-d">${pfFmt ? pfFmt(n) : n} ${isVideo ? 'vistas' : (n === 1 ? 'descarga' : 'descargas')}</div></div>`;
 }
 
 async function pfLoadHistorial() {
@@ -65,6 +69,8 @@ async function pfLoadHistorial() {
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     const up = document.getElementById('pf-stat-uploads');
     if (up) up.textContent = _pfMisItems.filter(i => i.status === 'aprobado').length;
+    const dlEl = document.getElementById('pf-stat-downloads');
+    if (dlEl) dlEl.textContent = (typeof pfFmt === 'function' ? pfFmt : String)(_pfMisItems.filter(i => i.category !== 'Video').reduce((a, i) => a + (i.descargasEfectivas || 0), 0));
 
     const idx = it => _pfMisItems.indexOf(it);
     const juegos = _pfMisItems.filter(i => i.category !== 'Video');

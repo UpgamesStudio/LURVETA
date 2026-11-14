@@ -174,3 +174,88 @@ html[data-tema] .ugx-fila-track { min-width: 0 !important; max-width: 100% !impo
 html[data-tema] #output > * { min-width: 0 !important; }
 /* en las filas horizontales, un deslizamiento vertical sigue moviendo la página */
 html[data-tema] .ugx-fila-track { overflow-y: hidden !important; overscroll-behavior-y: auto !important; }
+
+/* ══ Perfil propio (pestaña Perfil) · mismo lenguaje que el perfil público v6 ══ */
+html[data-tema] #profile-view .pf2-hero { position: relative; isolation: isolate; display: flex; flex-direction: column; overflow: visible !important; background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+html[data-tema] #profile-view .pf-amb { position: absolute; left: 0; right: 0; top: -40px; height: 560px; z-index: -1; pointer-events: none; background-size: cover; background-position: center; filter: blur(50px) saturate(1.8); opacity: .55; -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 100%); mask-image: linear-gradient(180deg, #000 30%, transparent 100%); }
+html[data-tema] #profile-view .pf2-cover { order: 1; height: 240px !important; aspect-ratio: auto !important; border-radius: 0 !important; margin: 0 -16px !important; clip-path: none !important; border: 0 !important; box-shadow: none !important;
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, rgba(0,0,0,.5) 72%, transparent 100%), linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(180deg, #000 45%, rgba(0,0,0,.5) 72%, transparent 100%), linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); mask-composite: intersect; }
+html[data-tema] #profile-view .pf2-cover::before, html[data-tema] #profile-view .pf2-cover::after { display: none !important; }
+html[data-tema] #profile-view .pf2-cover-share, html[data-tema] #profile-view .pf2-cover-btn { background: rgba(12,14,18,.45) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); clip-path: none !important; }
+html[data-tema] #profile-view .pf2-head { order: 2; margin-top: -74px !important; padding: 0 !important; display: block !important; position: relative; z-index: 2; }
+html[data-tema] #profile-view .pf2-avatar-wrap { display: inline-block !important; width: fit-content !important; }
+html[data-tema] #profile-view .pf2-avatar { width: 104px !important; height: 104px !important; border-radius: 50% !important; clip-path: none !important; border: 3px solid #0B0D11 !important; box-shadow: 0 16px 40px -16px rgba(0,0,0,.9) !important; }
+html[data-tema] #profile-view .pf2-avatar img { border-radius: 50% !important; }
+html[data-tema] #profile-view .pf2-info { order: 3; padding: 12px 0 0 !important; text-align: left !important; }
+html[data-tema] #profile-view .pf2-name { font-size: 30px !important; font-weight: 800 !important; letter-spacing: -.03em !important; line-height: 1.1; justify-content: flex-start !important; gap: 8px !important; color: var(--txt) !important; }
+html[data-tema] #profile-view .pf-handle { font-size: 15px; color: var(--txt2); font-weight: 600; margin-top: 2px; }
+html[data-tema] #profile-view .pf-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+html[data-tema] #profile-view .pf-pills:empty { display: none; }
+html[data-tema] #profile-view .pf-pill, html[data-tema] #profile-view .pf2-xp:not(:empty) { height: 30px; padding: 0 12px; border-radius: 999px; background: var(--v6-glass); border: 1px solid var(--v6-bd); box-shadow: var(--v6-hi); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); font-size: 13px; font-weight: 700; color: var(--txt); display: inline-flex; align-items: center; }
+html[data-tema] #profile-view .pf-pill.oro { color: #F5C451; border-color: rgba(245,196,81,.3); background: rgba(245,196,81,.08); }
+html[data-tema] #profile-view .pf2-xp:not(:empty) { margin-top: 8px; width: fit-content; }
+html[data-tema] #profile-view .pf2-bio { font-size: 15.5px !important; color: var(--txt2) !important; margin-top: 12px !important; text-align: left !important; }
+/* acciones: «Editar perfil» ancho y el resto como botones de cristal */
+html[data-tema] #profile-view .pf2-actions { order: 4; display: flex !important; gap: 10px !important; margin-top: 18px !important; padding: 0 !important; justify-content: flex-start !important; }
+html[data-tema] #profile-view .pf2-btn { height: 52px !important; border-radius: 16px !important; clip-path: none !important; background: var(--v6-glass-2) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; color: var(--txt) !important; font-weight: 800 !important; font-size: 16px !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+html[data-tema] #profile-view .pf2-actions > .pf2-btn:first-child { flex: 1; }
+html[data-tema] #profile-view .pf2-btn-icon { width: 52px !important; min-width: 52px !important; padding: 0 !important; flex: none !important; }
+html[data-tema] #profile-view .pf2-btn-danger { color: #FF8A8A !important; }
+/* fila de 4 datos */
+html[data-tema] #profile-view .pf2-stats { order: 5; display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; margin: 18px 0 0 !important; padding: 14px 0 !important; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); background: none !important; box-shadow: none !important; }
+html[data-tema] #profile-view .pf2-stat { display: flex !important; flex-direction: column; align-items: center; text-align: center; border: 0 !important; border-left: 1px solid rgba(255,255,255,.08) !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; color: var(--txt) !important; }
+html[data-tema] #profile-view .pf2-stat:first-child { border-left: 0 !important; }
+html[data-tema] #profile-view .pf2-stat b { font-size: 19px !important; font-weight: 800 !important; font-variant-numeric: tabular-nums; }
+html[data-tema] #profile-view .pf2-stat span { font-size: 12px !important; color: var(--txt3) !important; font-weight: 600 !important; }
+/* crear publicación: tarjeta de cristal */
+html[data-tema] #profile-view .pf2-create { order: 6; margin-top: 16px !important; border-radius: 18px !important; background: linear-gradient(160deg, rgba(54,224,138,.12), rgba(255,255,255,.03) 65%) !important; border: 1px solid rgba(54,224,138,.22) !important; box-shadow: var(--v6-hi) !important; clip-path: none !important; }
+html[data-tema] #profile-view .pf2-create-ico { background: var(--v6-g) !important; color: var(--v6-ink) !important; border-radius: 12px !important; clip-path: none !important; }
+/* pestañas Publicaciones / Videos: control segmentado */
+html[data-tema] #profile-view .hist-subnav { margin: 18px 0 14px !important; padding: 5px !important; gap: 6px; border-radius: 16px !important; background: rgba(20,22,28,.6) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); }
+html[data-tema] #profile-view .hist-subnav-tab { flex: 1; border: 0 !important; border-radius: 12px !important; height: 38px; padding: 0 10px !important; font-size: 14px !important; font-weight: 700 !important; color: var(--txt2) !important; background: none !important; justify-content: center; }
+html[data-tema] #profile-view .hist-subnav-tab ion-icon { display: none !important; }
+html[data-tema] #profile-view .hist-subnav-tab.active { background: var(--txt) !important; color: #0A0B0F !important; }
+/* mis publicaciones: 2 columnas, portada vertical con su estado, título y descargas */
+html[data-tema] #profile-view .pf2-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px 12px !important; }
+html[data-tema] #profile-view .pf-card { min-width: 0; }
+html[data-tema] #profile-view .pf-card .pf2-tile { width: 100%; aspect-ratio: 4 / 5 !important; border-radius: 15px !important; overflow: hidden; position: relative; clip-path: none !important; box-shadow: 0 16px 30px -20px rgba(0,0,0,.9); }
+html[data-tema] #profile-view .pf-card .pf2-tile-meta, html[data-tema] #profile-view .pf-card .pf2-tile-badge { display: none !important; }
+html[data-tema] #profile-view .pf-est { position: absolute; right: 8px; top: 8px; z-index: 2; height: 24px; padding: 0 9px; border-radius: 8px; font-size: 11.5px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 5px; background: rgba(10,11,15,.62); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+html[data-tema] #profile-view .pf-est i { width: 7px; height: 7px; border-radius: 50%; background: #36E08A; }
+html[data-tema] #profile-view .pf-est-warn i, html[data-tema] #profile-view .pf-est-pend i { background: #FFCC00; }
+html[data-tema] #profile-view .pf-est-bad i { background: #FF5A5A; }
+html[data-tema] #profile-view .pf-card-t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: left; width: 100%; font-size: 14.5px; font-weight: 700; line-height: 1.25; margin-top: 9px; color: var(--txt); background: none; border: 0; padding: 0; }
+html[data-tema] #profile-view .pf-card-d { font-size: 12.5px; color: var(--txt3); font-weight: 600; margin-top: 3px; }
+
+/* ── Perfil sin sesión ── */
+html[data-tema] #pf-not-logged.pf-guest { position: relative; text-align: center; padding: 40px 24px 120px !important; background: radial-gradient(60% 45% at 50% 18%, rgba(54,224,138,.18), transparent 70%) !important; }
+html[data-tema] .pf-guest .pf-guest-logo { height: 34px; width: auto; margin: 0 auto; display: block; }
+html[data-tema] .pf-guest h3 { font-size: 28px !important; font-weight: 800 !important; letter-spacing: -.035em !important; line-height: 1.1 !important; margin-top: 18px !important; color: var(--txt) !important; }
+html[data-tema] .pf-guest > p { font-size: 16px !important; color: var(--txt2) !important; margin-top: 10px !important; }
+html[data-tema] .pf-guest .pf-guest-ben { text-align: left; margin: 22px 0 20px; display: grid; gap: 10px; }
+html[data-tema] .pf-guest .pf-guest-ben > div { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 18px; background: var(--v6-glass); border: 1px solid var(--v6-bd); box-shadow: var(--v6-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+html[data-tema] .pf-guest .pf-guest-ben > div > span { width: 40px; height: 40px; border-radius: 12px; background: rgba(54,224,138,.12); color: var(--v6-g); display: flex; align-items: center; justify-content: center; flex: none; font-size: 21px; }
+html[data-tema] .pf-guest .pf-guest-ben b { display: block; font-size: 15.5px; font-weight: 800; color: var(--txt); }
+html[data-tema] .pf-guest .pf-guest-ben small { font-size: 13.5px; color: var(--txt2); font-weight: 500; }
+html[data-tema] .pf-guest .btn-login-action { display: flex !important; width: 100%; height: 56px; align-items: center; justify-content: center; border-radius: 16px !important; background: var(--v6-g) !important; color: var(--v6-ink) !important; font-weight: 800 !important; font-size: 16.5px !important; clip-path: none !important; box-shadow: 0 12px 30px -12px rgba(54,224,138,.75), inset 0 1px 0 rgba(255,255,255,.35) !important; border: 0 !important; }
+html[data-tema] .pf-guest .pf-guest-login { display: flex; width: 100%; height: 52px; margin-top: 10px; align-items: center; justify-content: center; border-radius: 16px; background: var(--v6-glass-2); border: 1px solid var(--v6-bd); box-shadow: var(--v6-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); font-weight: 700; font-size: 15px; color: var(--txt); }
+/* perfil propio: márgenes laterales y una sola tipografía */
+html[data-tema] #profile-view #pf-logged { padding: 0 20px; }
+html[data-tema] #profile-view .pf2-cover { margin: 0 -20px !important; }
+html[data-tema] #profile-view *:not(ion-icon):not(svg), html[data-tema] #pf-not-logged * { font-family: 'Manrope', system-ui, sans-serif !important; letter-spacing: normal !important; }
+html[data-tema] #profile-view .pf2-name, html[data-tema] .pf-guest h3 { letter-spacing: -.03em !important; }
+html[data-tema] .pf-guest .pf-guest-ben ion-icon { color: var(--v6-g) !important; }
+html[data-tema] #profile-view [class*="subnav"] { border-bottom: 0 !important; }
+/* pestañas del perfil propio (Publicaciones / Videos / Colecciones): control segmentado de cristal */
+html[data-tema] #profile-view #pf-tabs { display: flex !important; gap: 6px; margin: 18px 0 14px !important; padding: 5px !important; border-radius: 16px !important; border: 1px solid var(--v6-bd) !important; background: rgba(20,22,28,.6) !important; box-shadow: var(--v6-hi) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); }
+html[data-tema] #profile-view #pf-tabs .perfil-tab { flex: 1; height: 38px; padding: 0 8px !important; border: 0 !important; border-radius: 12px !important; background: none !important; color: var(--txt2) !important; font-size: 14px !important; font-weight: 700 !important; justify-content: center; box-shadow: none !important; }
+html[data-tema] #profile-view #pf-tabs .perfil-tab::after, html[data-tema] #profile-view #pf-tabs .perfil-tab::before { display: none !important; }
+html[data-tema] #profile-view #pf-tabs .perfil-tab ion-icon { display: none !important; }
+html[data-tema] #profile-view #pf-tabs .perfil-tab.active { background: var(--txt) !important; color: #0A0B0F !important; }
+html[data-tema] #profile-view .pf2-stat b { color: var(--txt) !important; }
+html[data-tema] #profile-view .pf2-actions > .pf2-btn:first-child { white-space: nowrap; font-size: 15px !important; padding: 0 14px !important; }
+html[data-tema] #profile-view .pf2-btn-icon { width: 48px !important; min-width: 48px !important; }
+html[data-tema] #profile-view #pf-tabs { overflow-x: auto; scrollbar-width: none; }
+html[data-tema] #profile-view #pf-tabs::-webkit-scrollbar { display: none; }
+html[data-tema] #profile-view #pf-tabs .perfil-tab { flex: 1 0 auto; white-space: nowrap; }
