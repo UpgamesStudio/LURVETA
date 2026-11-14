@@ -43,7 +43,7 @@
 
 <!-- css:inicio -->
 <!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css (scripts/unir-css.js) -->
-<link rel="stylesheet" href="upgames-app.css?v=631b33b38f">
+<link rel="stylesheet" href="upgames-app.css?v=05ad9cc000">
 <!-- css:fin -->
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-intro.js?v=20261109a"></script>
@@ -201,14 +201,17 @@
 ══════════════════════════════════ -->
 <div id="profile-view">
   <!-- Not logged state -->
-  <div id="pf-not-logged" class="profile-not-logged" style="display:none">
-    <ion-icon name="person-circle-outline"></ion-icon>
-    <h3>No has iniciado sesión</h3>
-    <p>Accede para gestionar tu perfil,<br>subir contenido y monetizar</p>
-    <a href="../login.html?volver=.%2Fpublic%2Fbiblioteca.html&amp;registro=1" class="btn-login-action">
-      <ion-icon name="person-add-outline"></ion-icon> Crear cuenta gratis
-    </a>
-    <p style="margin-top:10px;font-size:.85rem"><a href="../login.html" style="color:#32D583">Ya tengo cuenta · Iniciar sesión</a></p>
+  <div id="pf-not-logged" class="profile-not-logged pf-guest" style="display:none">
+    <img src="icons/logo-upgames.png" alt="UpGames" class="pf-guest-logo">
+    <h3>Tu espacio de creador te está esperando</h3>
+    <p>Crea tu cuenta gratis y empieza a publicar hoy.</p>
+    <div class="pf-guest-ben">
+      <div><span><ion-icon name="cloud-upload-outline"></ion-icon></span><div><b>Publica gratis</b><small>Juegos, mods y apps, sin pagar nada</small></div></div>
+      <div><span><ion-icon name="cash-outline"></ion-icon></span><div><b>Gana por cada anuncio visto</b><small>US$ 1,50 por cada 1.000 visualizaciones</small></div></div>
+      <div><span><ion-icon name="people-outline"></ion-icon></span><div><b>Una comunidad que te sigue</b><small>Seguidores, reseñas y lives</small></div></div>
+    </div>
+    <a href="../login.html?volver=.%2Fpublic%2Fbiblioteca.html&amp;registro=1" class="btn-login-action">Crear cuenta gratis</a>
+    <a href="../login.html" class="pf-guest-login">Ya tengo cuenta · Iniciar sesión</a>
   </div>
 
   <!-- Logged in content -->
@@ -216,6 +219,7 @@
 
     <!-- ══ CABECERA TIPO RED SOCIAL: portada 3:1 + avatar + stats + acciones ══ -->
     <div class="pf2-hero">
+      <div class="pf-amb" id="pf-amb" aria-hidden="true"></div>
       <div class="pf2-cover" id="pf-cover">
         <button type="button" class="pf2-cover-share" onclick="pfShareProfile()" aria-label="Compartir perfil" title="Compartir perfil"><ion-icon name="share-social-outline"></ion-icon></button>
         <button type="button" class="pf2-cover-btn" onclick="pfOpenSettings('portada')" aria-label="Editar portada">
@@ -231,11 +235,6 @@
           </div>
           <span class="pf2-avatar-edit"><ion-icon name="camera"></ion-icon></span>
         </button>
-        <div class="pf2-stats">
-          <button type="button" class="pf2-stat" onclick="pfShowPosts('publicaciones')"><b id="pf-stat-uploads">0</b><span>Publicaciones</span></button>
-          <div class="pf2-stat"><b id="pf-stat-followers">0</b><span>Seguidores</span></div>
-          <div class="pf2-stat"><b id="pf-stat-following">0</b><span>Siguiendo</span></div>
-        </div>
       </div>
 
       <div class="pf2-info">
@@ -243,6 +242,8 @@
           <span id="pf-username">@usuario</span>
           <span id="pf-badge"></span>
         </div>
+        <div class="pf-handle" id="pf-handle"></div>
+        <div class="pf-pills" id="pf-pills"></div>
         <div class="pf2-xp" id="pf-stat-xp"></div>
         <div class="pf2-bio" id="pf-bio">Sin biografía</div>
         <div class="profile-social-links" id="pf-social-links-row"></div>
@@ -254,6 +255,13 @@
         <button type="button" class="pf2-btn pf2-btn-icon" onclick="window.location.href='./blog.html'" aria-label="Mi blog" title="Mi blog: crea tu sitio web"><ion-icon name="globe-outline"></ion-icon></button>
         <button type="button" class="pf2-btn pf2-btn-icon" id="pf-chat-btn" onclick="window.location.href='./chats.html'" aria-label="Chats"><ion-icon name="chatbubbles-outline"></ion-icon><span class="pf2-chat-n" id="pf-chat-n" hidden></span></button>
         <button type="button" class="pf2-btn pf2-btn-icon pf2-btn-danger" onclick="pfLogout()" aria-label="Cerrar sesión"><ion-icon name="log-out-outline"></ion-icon></button>
+      </div>
+
+      <div class="pf2-stats">
+        <button type="button" class="pf2-stat" onclick="pfShowPosts('publicaciones')"><b id="pf-stat-uploads">0</b><span>publicaciones</span></button>
+        <div class="pf2-stat"><b id="pf-stat-followers">0</b><span>seguidores</span></div>
+        <div class="pf2-stat"><b id="pf-stat-following">0</b><span>siguiendo</span></div>
+        <div class="pf2-stat"><b id="pf-stat-downloads">0</b><span>descargas</span></div>
       </div>
 
       <!-- Publicar: botón desplegable con todo el formulario -->
@@ -1905,7 +1913,7 @@
 <script src="upgames-metricas.js?v=20261108a"></script>
 <script src="upgames-ranking.js?v=20261108c"></script>
 <script src="upgames-ux.js?v=20261114a"></script>
-<script src="script.js?v=22bfe29a83"></script>
+<script src="script.js?v=b6cda78b51"></script>
 <script src="upgames-publicar.js?v=20261108a"></script>
 <script src="upgames-extras.js?v=20261108a"></script>
 <script src="upgames-social.js?v=20261029i"></script>

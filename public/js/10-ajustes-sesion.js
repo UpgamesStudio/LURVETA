@@ -11,6 +11,7 @@ function pfApplyBanner(url) {
   const ok = url && PF_BANNER_RE.test(url);
   const shown = ok ? cldOpt(url, CLD_BANNER) : '';
   if (cover) { cover.style.backgroundImage = ok ? pfCssUrl(shown) : ''; cover.classList.toggle('has-banner', !!ok); }
+  const amb = document.getElementById('pf-amb'); if (amb) amb.style.backgroundImage = ok ? pfCssUrl(cldOpt(url, 'c_limit,w_480,q_auto,f_auto')) : '';
   if (prev)  { prev.style.backgroundImage  = ok ? pfCssUrl(shown) : ''; prev.classList.toggle('has-banner', !!ok); }
   if (rm) rm.style.display = ok ? '' : 'none';
   if (inp && ok) inp.value = url;

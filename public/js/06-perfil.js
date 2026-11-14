@@ -30,7 +30,8 @@ function pfInit(user) {
 // ── Load user data (badge, bio, avatar, stats) ──
 async function pfLoadUserData() {
   if(!pfUser) return;
-  document.getElementById('pf-username').textContent = '@' + pfUser;
+  document.getElementById('pf-username').textContent = pfUser;
+  const hd = document.getElementById('pf-handle'); if (hd) hd.textContent = '@' + pfUser;
 
   try {
     // Solo MI perfil (antes se descargaba la lista de TODOS los usuarios para buscarlo)
@@ -39,6 +40,12 @@ async function pfLoadUserData() {
     const ud  = pd && pd.usuario;
     if(!ud) return;
     pfApplyBanner(ud.banner || '');
+    // Píldoras bajo el nombre (v6): Premium y fecha de alta
+    const pills = document.getElementById('pf-pills');
+    if (pills) {
+      const f = new Date(ud.createdAt || ud.fecha || 0), mes = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'];
+      pills.innerHTML = [ud.premium ? '<span class="pf-pill oro">★ Premium</span>' : '', f.getTime() > 0 ? `<span class="pf-pill">Desde ${mes[f.getMonth()]} ${f.getFullYear()}</span>` : ''].join('');
+    }
 
     const nivel = ud.verificadoNivel || 0;
     if(nivel > 0) {

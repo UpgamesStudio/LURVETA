@@ -2098,7 +2098,8 @@ function pfInit(user) {
 // ── Load user data (badge, bio, avatar, stats) ──
 async function pfLoadUserData() {
   if(!pfUser) return;
-  document.getElementById('pf-username').textContent = '@' + pfUser;
+  document.getElementById('pf-username').textContent = pfUser;
+  const hd = document.getElementById('pf-handle'); if (hd) hd.textContent = '@' + pfUser;
 
   try {
     // Solo MI perfil (antes se descargaba la lista de TODOS los usuarios para buscarlo)
@@ -2107,6 +2108,12 @@ async function pfLoadUserData() {
     const ud  = pd && pd.usuario;
     if(!ud) return;
     pfApplyBanner(ud.banner || '');
+    // Píldoras bajo el nombre (v6): Premium y fecha de alta
+    const pills = document.getElementById('pf-pills');
+    if (pills) {
+      const f = new Date(ud.createdAt || ud.fecha || 0), mes = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'];
+      pills.innerHTML = [ud.premium ? '<span class="pf-pill oro">★ Premium</span>' : '', f.getTime() > 0 ? `<span class="pf-pill">Desde ${mes[f.getMonth()]} ${f.getFullYear()}</span>` : ''].join('');
+    }
 
     const nivel = ud.verificadoNivel || 0;
     if(nivel > 0) {
@@ -3092,14 +3099,18 @@ function pfTileHTML(item, i) {
   const ls        = item.linkStatus || 'online';
   const img       = item.image && !UG_VIDEO_RE.test(item.image) ? cldOpt(item.image, CLD_TILE) : '';
   const n         = isVideo ? vistasVideo(item) : (item.descargasEfectivas || 0);
-  return `<button type="button" class="pf2-tile${img ? '' : ' no-img'}" onclick="pfOpenPostSheet(${i})" aria-label="${ugEsc(item.title || 'Publicación')}">
+  const est = isPending ? ['pend', 'Pendiente'] : ls === 'online' ? ['ok', 'Activo'] : ls === 'caido' ? ['bad', 'Caído'] : ['warn', 'En revisión'];
+  return `<div class="pf-card"><button type="button" class="pf2-tile${img ? '' : ' no-img'}" onclick="pfOpenPostSheet(${i})" aria-label="${ugEsc(item.title || 'Publicación')}">
+      <span class="pf-est pf-est-${est[0]}"><i></i>${est[1]}</span>
       ${img ? `<img src="${ugEsc(img)}" alt="" loading="lazy" onerror="this.remove();this.parentElement.classList.add('no-img')">` : ''}
       <span class="pf2-tile-ph"><ion-icon name="${isVideo ? 'play' : 'game-controller'}"></ion-icon><em>${ugEsc(item.title || '')}</em></span>
       ${isPending ? '<span class="pf2-tile-badge">Pendiente</span>' : ''}
       ${!isPending && ls !== 'online' ? `<span class="pf2-tile-badge ${ls === 'caido' ? 'bad' : 'warn'}">${ls === 'caido' ? 'Link caído' : 'Revisión'}</span>` : ''}
       ${isVideo ? '<span class="pf2-tile-type"><ion-icon name="play"></ion-icon></span>' : ''}
       <span class="pf2-tile-meta"><ion-icon name="${isVideo ? 'eye-outline' : 'cloud-download-outline'}"></ion-icon>${pfFmt ? pfFmt(n) : n}</span>
-    </button>`;
+    </button>
+    <button type="button" class="pf-card-t" onclick="pfOpenPostSheet(${i})">${ugEsc(item.title || '')}</button>
+    <div class="pf-card-d">${pfFmt ? pfFmt(n) : n} ${isVideo ? 'vistas' : (n === 1 ? 'descarga' : 'descargas')}</div></div>`;
 }
 
 async function pfLoadHistorial() {
@@ -3120,6 +3131,8 @@ async function pfLoadHistorial() {
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     const up = document.getElementById('pf-stat-uploads');
     if (up) up.textContent = _pfMisItems.filter(i => i.status === 'aprobado').length;
+    const dlEl = document.getElementById('pf-stat-downloads');
+    if (dlEl) dlEl.textContent = (typeof pfFmt === 'function' ? pfFmt : String)(_pfMisItems.filter(i => i.category !== 'Video').reduce((a, i) => a + (i.descargasEfectivas || 0), 0));
 
     const idx = it => _pfMisItems.indexOf(it);
     const juegos = _pfMisItems.filter(i => i.category !== 'Video');
@@ -4443,6 +4456,7 @@ function pfApplyBanner(url) {
   const ok = url && PF_BANNER_RE.test(url);
   const shown = ok ? cldOpt(url, CLD_BANNER) : '';
   if (cover) { cover.style.backgroundImage = ok ? pfCssUrl(shown) : ''; cover.classList.toggle('has-banner', !!ok); }
+  const amb = document.getElementById('pf-amb'); if (amb) amb.style.backgroundImage = ok ? pfCssUrl(cldOpt(url, 'c_limit,w_480,q_auto,f_auto')) : '';
   if (prev)  { prev.style.backgroundImage  = ok ? pfCssUrl(shown) : ''; prev.classList.toggle('has-banner', !!ok); }
   if (rm) rm.style.display = ok ? '' : 'none';
   if (inp && ok) inp.value = url;
