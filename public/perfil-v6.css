@@ -140,3 +140,7 @@ html[data-tema] .hero-action-row { flex-wrap: wrap !important; }
 html[data-tema] .hero-action-row > button { flex: 1 1 auto !important; min-width: 0 !important; white-space: nowrap; display: inline-flex !important; align-items: center; justify-content: center; gap: 8px; }
 html[data-tema] .hero-action-row > .btn-seguir { flex: 1 1 150px !important; }
 html[data-tema] .hero-action-row > .btn-compartir { flex: 0 0 52px !important; }
+
+/* ── Barra superior: sin la línea de neón del tema y sin el compartir duplicado (queda el de la fila de acciones) ── */
+html[data-tema] .top-bar::after, html[data-tema] .top-bar::before { display: none !important; }
+html[data-tema] .top-bar > button.tb-btn[onclick*="compartirPerfil"] { display: none !important; }
