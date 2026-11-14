@@ -257,6 +257,7 @@ function switchTab(t) {
   if(t==='upload') t='profile';
   if(abrirPublicar) setTimeout(() => pfOpenPublish && pfOpenPublish(true), 150);
   currentTab=t;
+  document.body.dataset.tab = t;   // la cabecera de la app se oculta en Perfil (upgames-v6.css)
   window.dispatchEvent(new CustomEvent('ug:tab', { detail: t }));   // pistas de la guía (upgames-guia.js)
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
   const navBtn = document.querySelector(`.nav-tab[data-tab="${t}"]`);

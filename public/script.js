@@ -1949,6 +1949,7 @@ function switchTab(t) {
   if(t==='upload') t='profile';
   if(abrirPublicar) setTimeout(() => pfOpenPublish && pfOpenPublish(true), 150);
   currentTab=t;
+  document.body.dataset.tab = t;   // la cabecera de la app se oculta en Perfil (upgames-v6.css)
   window.dispatchEvent(new CustomEvent('ug:tab', { detail: t }));   // pistas de la guía (upgames-guia.js)
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
   const navBtn = document.querySelector(`.nav-tab[data-tab="${t}"]`);
@@ -2219,19 +2220,36 @@ function pfShowPosts(sub, el) {
   if (!el) document.getElementById('pf-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// ── Menús de la fila de acciones del perfil (Publicar y Ajustes) ──
+function pfMenu(id, btn) {
+  const m = document.getElementById(id); if (!m) return;
+  const abrir = m.hidden;
+  pfMenuCerrar();
+  if (!abrir) return;
+  m.hidden = false; btn.setAttribute('aria-expanded', 'true');
+  setTimeout(() => document.addEventListener('click', pfMenuFuera), 0);
+}
+function pfMenuCerrar() {
+  document.querySelectorAll('#profile-view .pf-menu').forEach(m => { m.hidden = true; });
+  document.querySelectorAll('#profile-view [aria-haspopup="menu"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  document.removeEventListener('click', pfMenuFuera);
+}
+function pfMenuFuera(e) { if (!e.target.closest('.pf-dd')) pfMenuCerrar(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') pfMenuCerrar(); });
+
 // ── "Crear publicación": botón que despliega todo el formulario ──
 function pfOpenPublish(open) {
   const wrap = document.getElementById('pf-publish-wrap');
   const btn  = document.getElementById('pf-create-btn');
-  if (!wrap || !btn) return;
+  if (!wrap) return;
   const abrir = open === undefined ? wrap.hidden : !!open;
   wrap.hidden = !abrir;
-  btn.setAttribute('aria-expanded', String(abrir));
-  btn.classList.toggle('open', abrir);
+  btn?.setAttribute('aria-expanded', String(abrir));
+  btn?.classList.toggle('open', abrir);
   if (typeof pfpVigilar === 'function') pfpVigilar(abrir);   // vista previa en vivo solo con el formulario abierto
   if (abrir) {
     wrap.classList.remove('pf2-publish-in'); void wrap.offsetWidth; wrap.classList.add('pf2-publish-in');
-    setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    setTimeout(() => (btn && btn.offsetParent ? btn : wrap).scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
   }
 }
 function pfTogglePublish() { pfOpenPublish(); }
