@@ -3712,8 +3712,10 @@ async function pfLoadEconomia() {
       const saldoEl = document.getElementById('pf-saldo-display');
       const prevSaldo = parseFloat(saldoEl.dataset.val || '0');
       const newSaldo = uc.compradas + uc.ganadas;
-      saldoEl.dataset.val = newSaldo;
-      _animateValue(saldoEl, prevSaldo, Math.floor(newSaldo * 100) / 100, newSaldo < 100 ? 2 : 0, '🪙 ', 800);
+      // Siempre el mismo valor truncado (como la cabecera): con 866,73 toFixed(0) mostraba 867 y luego 866 en cada sondeo
+      const alvo = newSaldo < 100 ? Math.floor(newSaldo * 100) / 100 : Math.floor(newSaldo);
+      saldoEl.dataset.val = alvo;
+      _animateValue(saldoEl, prevSaldo, alvo, newSaldo < 100 ? 2 : 0, '🪙 ', 800);
       if (newSaldo >= 100) setTimeout(() => { saldoEl.textContent = '🪙 ' + Math.floor(newSaldo).toLocaleString('es-CO'); }, 850);   // igual que la cabecera (sin redondear hacia arriba)
       const fx = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
       fx('eco-retirables', (uc.ganadas || 0).toLocaleString('es-CO', { maximumFractionDigits: 2 }));
