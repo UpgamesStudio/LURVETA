@@ -303,8 +303,8 @@
     const recom = conPortada.filter(i => !yaEnFilas.has(i._id)).slice(0, 14);   // de más: las de portada rota se descartan
     const recomFinal = recom.length >= 4 ? recom : conPortada.slice(0, 14);
     const secs = [
-      fila(hayTopSemana ? '🔥 Más descargados esta semana' : '🔥 Más descargados', hayTopSemana ? 'Lo que más baja la comunidad estos 7 días' : 'Lo favorito de la comunidad', masDesc, 'ugx-fila--top'),
-      fila('🆕 Nuevos', 'Recién publicados', nuevos),
+      fila(hayTopSemana ? 'Top de la semana' : 'Lo más descargado', hayTopSemana ? 'Lo que más baja la comunidad estos 7 días' : 'Lo favorito de la comunidad', masDesc, 'ugx-fila--top'),
+      fila('Nuevos', 'Recién publicados', nuevos),
       filaCarrusel(recomFinal),   // dos filas por debajo del carrusel principal, para que no compitan
       filaBlogs(),
     ].filter(Boolean);
