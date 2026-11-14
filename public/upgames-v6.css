@@ -170,4 +170,7 @@ html[data-tema] .ugx-fila-track { gap: 12px !important; grid-auto-columns: 148px
 /* la fila nunca ensancha la página: se desplaza por dentro */
 html[data-tema] .ugx-fila { max-width: 100% !important; min-width: 0 !important; }
 html[data-tema] .ugx-fila-track { min-width: 0 !important; max-width: 100% !important; overflow-x: auto !important; overscroll-behavior-x: contain; }
-html[data-tema] { overflow-x: clip; }
+/* los hijos de la cuadrícula del catálogo no empujan el ancho de las columnas (las filas tienen tarjetas de 148 px) */
+html[data-tema] #output > * { min-width: 0 !important; }
+/* en las filas horizontales, un deslizamiento vertical sigue moviendo la página */
+html[data-tema] .ugx-fila-track { overflow-y: hidden !important; overscroll-behavior-y: auto !important; }
