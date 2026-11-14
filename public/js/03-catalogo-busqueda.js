@@ -7,6 +7,20 @@ function fetchTimeout(url, ms=10000, opts={}) {
     .finally(()=>clearTimeout(tid));
 }
 
+// Enlace compartido (?id=…): abre esa publicación; una sola vez, haya o no bajado el catálogo
+let _ugEnlaceAbierto = false;
+function ugAbrirEnlaceCompartido() {
+  const sid = new URLSearchParams(window.location.search).get('id');
+  if(_ugEnlaceAbierto || !sid || !/^[a-f\d]{24}$/i.test(sid)) return;
+  _ugEnlaceAbierto = true;
+  setTimeout(async ()=>{
+    let item = (typeof todosLosItems !== 'undefined' ? todosLosItems : []).find(i=>i._id===sid);
+    // Enlaces de Google o compartidos: la publicación puede no estar en la primera página
+    if(!item) { try { const r = await fetch(`${API_URL}/items/${sid}`); if(r.ok) { const d = await r.json(); item = d && d._id ? d : (d.item || null); } } catch(_) {} }
+    if(item) openDetail(item);
+  }, 600);
+}
+
 async function loadContent() {
   // ── PASO 1: Caché instantáneo — mostrar ANTES de red ──
   const cachedUsers = cacheGet(CACHE_KEY_USERS);
@@ -53,20 +67,12 @@ async function loadContent() {
     window.closePreloader && window.closePreloader();
     if(changed || !cachedItems) render(filteredItems);
 
-    // Deep link
-    const sid = new URLSearchParams(window.location.search).get('id');
-    if(sid && /^[a-f\d]{24}$/i.test(sid)) {
-      setTimeout(async ()=>{
-        let item = todosLosItems.find(i=>i._id===sid);
-        // Enlaces de Google o compartidos: la publicación puede no estar en la primera página
-        if(!item) { try { const r = await fetch(`${API_URL}/items/${sid}`); if(r.ok) { const d = await r.json(); item = d && d._id ? d : (d.item || null); } } catch(_) {} }
-        if(item) openDetail(item);
-      }, 600);
-    }
+    ugAbrirEnlaceCompartido();
 
   } catch(e) {
     console.error(e);
     window.closePreloader && window.closePreloader();
+    ugAbrirEnlaceCompartido();   // el enlace compartido no depende de que el catálogo haya bajado
     // Si no hay caché tampoco, mostrar error
     if(!cachedItems || !cachedItems.length) {
       const out = document.getElementById('output');
