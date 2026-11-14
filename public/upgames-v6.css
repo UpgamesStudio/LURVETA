@@ -1,162 +1,173 @@
 /* ═══════════════════════════════════════════════════════════════════
-   UpGames v6 · Liquid Glass ordenado (rediseño, noviembre 2026)
-   Capa final del paquete (scripts/unir-css.js): no reescribe las hojas
-   anteriores, solo ordena y pule por encima. Para volver atrás basta con
-   quitar este archivo de FUENTES y volver a empaquetar.
-   - Una sola familia (Manrope) en frase normal: nada de títulos en mayúsculas.
-   - Un solo color de acción: el verde de la marca.
-   - Cristal (blur + reflejo superior + borde fino) en cabecera, buscador,
-     filtros, tarjetas, panel de la ficha y barra inferior.
-   - La portada se funde con el fondo (máscaras y tinte --dsh de la ficha).
-   - Arreglos de móvil: zoom permitido, campos a 16 px, sin destello al tocar.
+   UpGames v6 · rediseño (noviembre 2026): orden nuevo + Liquid Glass
+   Capa final del paquete (scripts/unir-css.js). Las piezas de estructura
+   nuevas las crea el JS (ficha: #v6-stats, #v6-nota, #v6-amb, #v6-perfil).
+   Todo va con html[data-tema] delante para ganar a los dos temas (cyber y clásico).
    ═══════════════════════════════════════════════════════════════════ */
 html[data-tema] { --ff: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif; --ff-disp: 'Manrope', system-ui, -apple-system, sans-serif; }
 :root {
   --v6-g: #36E08A; --v6-ink: #03170C;
   --v6-glass: rgba(255,255,255,.055); --v6-glass-2: rgba(255,255,255,.09);
   --v6-bd: rgba(255,255,255,.1); --v6-hi: inset 0 1px 0 rgba(255,255,255,.13);
-  --v6-blur: blur(22px) saturate(1.6);
-  --v6-ease: cubic-bezier(.23,1,.32,1);
+  --v6-blur: blur(22px) saturate(1.6); --v6-ease: cubic-bezier(.23,1,.32,1);
 }
 html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
-html[data-tema] /* iOS hace zoom al enfocar un campo de menos de 16 px */
-#buscador { font-size: 16px !important; }
+/* iOS hace zoom al enfocar un campo de menos de 16 px */
+html[data-tema] #buscador { font-size: 16px !important; }
 @media (pointer: coarse) { html[data-tema] input, html[data-tema] textarea, html[data-tema] select { font-size: 16px !important; } }
-html[data-tema] button, html[data-tema] a, html[data-tema] [role="button"], html[data-tema] .chip, html[data-tema] .nav-tab, html[data-tema] .game-tile { touch-action: manipulation; }
-html[data-tema] button, html[data-tema] .chip, html[data-tema] .nav-tab { -webkit-user-select: none; user-select: none; }
+html[data-tema] button, html[data-tema] .chip, html[data-tema] .nav-tab, html[data-tema] .game-tile { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
 
-html[data-tema] /* ── Tipografía: una sola voz ── */
-#app-header .hdr-logo, html[data-tema] .chip, html[data-tema] .nav-tab span, html[data-tema] .tile-title, html[data-tema] .tile-cat, html[data-tema] .ugx-fila h2, html[data-tema] .section-title, html[data-tema] .hero-title, html[data-tema] .hero-badge, html[data-tema] .hero-cta, html[data-tema] #hdr-entrar, html[data-tema] #detail-sheet .sheet-title, html[data-tema] #detail-sheet .sheet-cat, html[data-tema] #detail-sheet .dst-precio strong, html[data-tema] #detail-sheet .sheet-download, html[data-tema] .ugc-card-t {
-  font-family: var(--ff) !important; text-transform: none !important;
-}
-html[data-tema] .tile-title, html[data-tema] .ugx-fila h2, html[data-tema] .section-title, html[data-tema] .hero-title, html[data-tema] #detail-sheet .sheet-title, html[data-tema] .ugc-card-t { letter-spacing: -.02em !important; }
+/* ── Una sola voz: Manrope, sin MAYÚSCULAS sostenidas ni espaciado ancho ── */
+html[data-tema] body *:not(svg):not(ion-icon) { text-transform: none !important; }
+html[data-tema] #app-header *, html[data-tema] #category-row *, html[data-tema] #hero-carousel *, html[data-tema] .ugx-fila-h *, html[data-tema] .section-header *,
+html[data-tema] .game-tile *, html[data-tema] .ugc *, html[data-tema] #bottom-nav *, html[data-tema] #detail-sheet *:not(.mono) { letter-spacing: normal !important; font-family: 'Manrope', system-ui, sans-serif !important; }
 
-html[data-tema] /* ── Cabecera de cristal con el logo real ── */
-#app-header {
-  background: rgba(10,11,15,.62) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur);
-  border-bottom: 1px solid rgba(255,255,255,.06) !important; box-shadow: none !important;
-}
+/* ── Cabecera de cristal con el logo real ── */
+html[data-tema] #app-header { background: rgba(10,11,15,.62) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); border-bottom: 1px solid rgba(255,255,255,.06) !important; box-shadow: none !important; }
 html[data-tema] #app-header .hdr-logo { width: 104px; height: 33px; flex: none; background: url(icons/logo-upgames.png) left center / contain no-repeat; }
 html[data-tema] #app-header .hdr-logo > span { opacity: 0 !important; font-size: 0 !important; }
-html[data-tema] #hdr-entrar {
-  background: var(--v6-glass-2) !important; color: var(--txt) !important; border: 1px solid var(--v6-bd) !important;
-  box-shadow: var(--v6-hi) !important; border-radius: 999px !important; font-weight: 700 !important; font-size: 15px !important; letter-spacing: 0 !important;
-}
+html[data-tema] #app-header #hdr-entrar { background: var(--v6-glass-2) !important; color: var(--txt) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 999px !important; clip-path: none !important; font-weight: 700 !important; font-size: 15px !important; }
 html[data-tema] #app-header .hdr-orb { border-radius: 50% !important; clip-path: none !important; background: var(--v6-glass-2) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; }
-html[data-tema] #app-header .search-bar {
-  background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important;
-  border-radius: 15px !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur);
-}
+html[data-tema] #app-header .search-bar { background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 15px !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); }
 html[data-tema] #app-header .nxb-btn { border-radius: 11px !important; clip-path: none !important; background: rgba(54,224,138,.14) !important; color: var(--v6-g) !important; box-shadow: none !important; }
 
-html[data-tema] /* ── Filtros: píldoras de cristal, html[data-tema] la activa sólida ── */
-#category-row .chip {
-  background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important;
-  color: var(--txt2) !important; font-weight: 600 !important; font-size: 14.5px !important; letter-spacing: 0 !important; border-radius: 999px !important;
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-}
-html[data-tema] #category-row .chip.active { background: var(--txt) !important; color: #0A0B0F !important; border-color: transparent !important; box-shadow: 0 8px 20px -10px rgba(255,255,255,.45) !important; }
-html[data-tema] #category-row .chip--video { color: var(--txt2) !important; }
+/* ── Filtros: píldoras de cristal, la activa blanca ── */
+html[data-tema] #category-row .chip { background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; color: var(--txt2) !important; font-weight: 600 !important; font-size: 14.5px !important; border-radius: 999px !important; clip-path: none !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+html[data-tema] #category-row .chip.active { background: var(--txt) !important; color: #0A0B0F !important; border-color: transparent !important; }
 
-html[data-tema] /* ── Carrusel principal: título legible y acción verde (la portada sigue fundiéndose con el fondo) ── */
-#hero-carousel .hero-title { font-weight: 800 !important; line-height: 1.06 !important; }
-html[data-tema] #hero-carousel .hero-badge { border-radius: 9px !important; clip-path: none !important; background: rgba(10,11,15,.5) !important; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid var(--v6-bd) !important; color: var(--txt) !important; }
+/* ── Destacado: la portada sigue fundiéndose con el fondo; texto grande y botón verde ── */
+html[data-tema] #hero-carousel .hero-title { font-size: clamp(1.7rem, 8vw, 2.4rem) !important; font-weight: 800 !important; line-height: 1.04 !important; letter-spacing: -.03em !important; }
+html[data-tema] #hero-carousel .hero-badge, html[data-tema] #hero-carousel .hero-chip { border-radius: 9px !important; clip-path: none !important; background: rgba(10,11,15,.5) !important; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid var(--v6-bd) !important; color: var(--txt) !important; font-size: 12.5px !important; font-weight: 700 !important; }
+html[data-tema] #hero-carousel .hero-meta { flex-wrap: wrap; row-gap: 14px; }
 html[data-tema] #hero-carousel .hero-cta {
-  background: var(--v6-g) !important; color: var(--v6-ink) !important; border: 0 !important; border-radius: 14px !important; font-weight: 800 !important; letter-spacing: 0 !important;
-  box-shadow: 0 10px 26px -12px rgba(54,224,138,.8), inset 0 1px 0 rgba(255,255,255,.35) !important;
+  order: 9; flex-basis: 100%; justify-content: center; margin: 4px 0 0 !important; height: 50px; font-size: 16.5px !important; font-weight: 800 !important;
+  background: var(--v6-g) !important; color: var(--v6-ink) !important; border: 0 !important; border-radius: 15px !important; clip-path: none !important;
+  box-shadow: 0 12px 28px -12px rgba(54,224,138,.8), inset 0 1px 0 rgba(255,255,255,.35) !important;
 }
 
-html[data-tema] /* ── Filas y secciones ── */
-.ugx-fila h2, html[data-tema] .section-title { font-weight: 800 !important; font-size: 1.28rem !important; }
-
-html[data-tema] /* ── Tarjetas: cristal y solo lo esencial (título, html[data-tema] autor, html[data-tema] descargas, html[data-tema] valoración) ── */
-.game-tile {
-  background: linear-gradient(165deg, rgba(255,255,255,.07), rgba(255,255,255,.025)) !important; border: 1px solid rgba(255,255,255,.08) !important;
-  box-shadow: var(--v6-hi), 0 18px 40px -26px rgba(0,0,0,.9) !important; border-radius: 20px !important;
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); clip-path: none !important;
+/* ── Filas: título limpio, sin subtítulo; tarjetas sin caja con portada vertical ── */
+html[data-tema] .ugx-fila h2, html[data-tema] .section-title { font-weight: 800 !important; font-size: 1.32rem !important; letter-spacing: -.02em !important; color: var(--txt) !important; }
+html[data-tema] .ugx-fila-h small { display: none !important; }
+html[data-tema] .game-tile {
+  background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  padding: 0 !important; border-radius: 0 !important; clip-path: none !important; overflow: visible !important;
 }
-html[data-tema] .game-tile .thumb-wrap { border-radius: 15px !important; overflow: hidden; clip-path: none !important; }
-html[data-tema] /* la portada se funde con el cristal de la tarjeta en vez de cortarse en seco */
-.game-tile .thumb-wrap img { -webkit-mask-image: linear-gradient(180deg, #000 62%, rgba(0,0,0,.35) 100%); mask-image: linear-gradient(180deg, #000 62%, rgba(0,0,0,.35) 100%); }
-html[data-tema] .game-tile .tile-status, html[data-tema] .game-tile .tile-extras, html[data-tema] .game-tile .tile-fav-quick, html[data-tema] .game-tile .ugs-tj-fx, html[data-tema] .game-tile .tile-cat { display: none !important; }
-html[data-tema] .game-tile .tile-title { font-size: 15.5px !important; font-weight: 700 !important; line-height: 1.25 !important; }
-html[data-tema] .game-tile .tile-meta { color: var(--txt3) !important; }
-html[data-tema] .game-tile .tile-avatar { border-radius: 50% !important; clip-path: none !important; }
-@media (hover: hover) and (pointer: fine) { html[data-tema] .game-tile { transition: transform 200ms var(--v6-ease), box-shadow 200ms var(--v6-ease); } html[data-tema] .game-tile:hover { transform: translateY(-2px); } }
-html[data-tema] .game-tile:active { transform: scale(.98); transition: transform 120ms var(--v6-ease); }
-
-html[data-tema] /* ── Barra inferior de cristal: cinco pestañas iguales ── */
-#bottom-nav {
-  background: rgba(14,16,21,.66) !important; -webkit-backdrop-filter: blur(26px) saturate(1.7); backdrop-filter: blur(26px) saturate(1.7);
-  border: 1px solid rgba(255,255,255,.09) !important; box-shadow: var(--v6-hi), 0 20px 50px -20px rgba(0,0,0,.9) !important;
+html[data-tema] .game-tile::before, html[data-tema] .game-tile::after { display: none !important; }
+html[data-tema] .game-tile .thumb-wrap { aspect-ratio: 4 / 5 !important; height: auto !important; border-radius: 16px !important; overflow: hidden !important; clip-path: none !important; position: relative; margin: 0 !important; box-shadow: 0 16px 34px -22px rgba(0,0,0,.9); }
+html[data-tema] .game-tile .thumb-wrap img { width: 100% !important; height: 100% !important; object-fit: cover !important; -webkit-mask-image: none !important; mask-image: none !important; }
+html[data-tema] .game-tile .tile-info { padding: 10px 2px 0 !important; background: none !important; }
+html[data-tema] .game-tile .tile-status, html[data-tema] .game-tile .tile-extras, html[data-tema] .game-tile .tile-fav-quick, html[data-tema] .game-tile .ugs-tj-fx,
+html[data-tema] .game-tile .tile-cat, html[data-tema] .game-tile .tile-avatar, html[data-tema] .game-tile .tile-downloads { display: none !important; }
+html[data-tema] .game-tile .tile-title { font-size: 15.5px !important; font-weight: 700 !important; line-height: 1.25 !important; letter-spacing: -.01em !important; color: var(--txt) !important; }
+html[data-tema] .game-tile .tile-meta { color: var(--txt3) !important; font-weight: 600 !important; font-size: 13px !important; gap: 6px !important; margin-top: 4px !important; }
+html[data-tema] .game-tile .tile-meta * { color: inherit !important; font-size: 13px !important; }
+html[data-tema] .game-tile:active .thumb-wrap { transform: scale(.98); transition: transform 120ms var(--v6-ease); }
+/* puesto en la fila «Top de la semana» */
+html[data-tema] .ugx-fila--top .ugx-fila-track { counter-reset: v6rk; }
+html[data-tema] .ugx-fila--top .game-tile { counter-increment: v6rk; }
+html[data-tema] .ugx-fila--top .game-tile .thumb-wrap::after {
+  content: counter(v6rk); position: absolute; left: 8px; bottom: 8px; width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: rgba(10,11,15,.62); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid var(--v6-bd); font-weight: 800; font-size: 15px; color: #fff; font-family: 'Manrope', sans-serif;
 }
-html[data-tema] #bottom-nav .nav-tab span { font-size: 11px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
-html[data-tema] #bottom-nav .nav-tab { color: var(--txt3) !important; }
-html[data-tema] #bottom-nav .nav-tab.active { color: var(--txt) !important; background: none !important; }
+
+/* ── Barra inferior de cristal: cinco pestañas iguales, Nexus plano ── */
+html[data-tema] #bottom-nav { background: rgba(14,16,21,.66) !important; -webkit-backdrop-filter: blur(26px) saturate(1.7); backdrop-filter: blur(26px) saturate(1.7); border: 1px solid rgba(255,255,255,.09) !important; box-shadow: var(--v6-hi), 0 20px 50px -20px rgba(0,0,0,.9) !important; }
+html[data-tema] #bottom-nav .nav-tab { color: var(--txt3) !important; background: none !important; }
+html[data-tema] #bottom-nav .nav-tab span { font-size: 11px !important; font-weight: 700 !important; margin-top: 2px !important; position: static !important; }
+html[data-tema] #bottom-nav .nav-tab ion-icon { font-size: 24px !important; }
+html[data-tema] #bottom-nav .nav-tab.active { color: var(--txt) !important; }
 html[data-tema] #bottom-nav .nav-tab.active ion-icon { color: var(--v6-g) !important; }
 html[data-tema] #bottom-nav .nav-dot { display: none !important; }
-html[data-tema] #bottom-nav .ug-nav-pill { border-radius: 16px !important; background: rgba(54,224,138,.12) !important; border: 1px solid rgba(54,224,138,.22) !important; box-shadow: none !important; }
-html[data-tema] /* Nexus deja de sobresalir: misma altura que el resto */
-#bottom-nav .nav-nexus { transform: none !important; margin-top: 0 !important; }
-html[data-tema] #bottom-nav .nav-nexus .nav-nexus-ring { width: 30px !important; height: 30px !important; margin: 0 auto 2px !important; transform: none !important; border-radius: 10px !important; clip-path: none !important; background: rgba(54,224,138,.12) !important; box-shadow: none !important; border: 0 !important; }
-html[data-tema] #bottom-nav .nav-nexus span { margin-top: 0 !important; position: static !important; }
+html[data-tema] #bottom-nav .ug-nav-pill { border-radius: 16px !important; background: rgba(54,224,138,.1) !important; border: 1px solid rgba(54,224,138,.2) !important; box-shadow: none !important; }
+html[data-tema] #bottom-nav .nav-nexus { transform: none !important; margin-top: 0 !important; }
+html[data-tema] #bottom-nav .nav-nexus .nav-nexus-ring { width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; transform: none !important; background: none !important; border: 0 !important; box-shadow: none !important; clip-path: none !important; border-radius: 0 !important; animation: none !important; }
+html[data-tema] #bottom-nav .nav-nexus .nav-nexus-ring::before, html[data-tema] #bottom-nav .nav-nexus .nav-nexus-ring::after { display: none !important; }
+html[data-tema] #bottom-nav .nav-nexus ion-icon { color: var(--v6-g) !important; }
 
-html[data-tema] /* ── Botones flotantes: discretos y de cristal (no se quitan: la música necesita su control) ── */
-#tut-fab, html[data-tema] .ugm .ugm-btn {
-  clip-path: none !important; border-radius: 50% !important; background: rgba(20,22,28,.6) !important; border: 1px solid var(--v6-bd) !important;
-  box-shadow: var(--v6-hi), 0 10px 24px -12px rgba(0,0,0,.9) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur);
+/* ── Botones flotantes: discretos y de cristal (la música necesita su control) ── */
+html[data-tema] #tut-fab, html[data-tema] .ugm .ugm-btn { clip-path: none !important; border-radius: 50% !important; width: 40px !important; height: 40px !important; background: rgba(20,22,28,.6) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi), 0 10px 24px -12px rgba(0,0,0,.9) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); }
+html[data-tema] .obh-teaser { background: rgba(18,20,26,.72) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi), 0 18px 40px -18px rgba(0,0,0,.9) !important; border-radius: 18px !important; clip-path: none !important; }
+html[data-tema] .obh-teaser b { font-family: 'Manrope', system-ui, sans-serif !important; letter-spacing: -.01em !important; font-size: .95rem !important; }
+html[data-tema] .obh-teaser button[data-a="ver"] { background: var(--v6-g) !important; color: var(--v6-ink) !important; border-radius: 11px !important; clip-path: none !important; font-family: 'Manrope', system-ui, sans-serif !important; letter-spacing: 0 !important; font-weight: 800 !important; }
+html[data-tema] #output .ugc [data-ver] { background: var(--v6-g) !important; color: var(--v6-ink) !important; box-shadow: 0 10px 24px -12px rgba(54,224,138,.8), inset 0 1px 0 rgba(255,255,255,.35) !important; font-weight: 800 !important; }
+
+/* ══ Ficha: la portada no va encajada — se funde con un brillo de su propio color ══ */
+html[data-tema] #detail-sheet.ds-tienda { background: hsl(var(--dsh) 38% 7%) !important; }
+html[data-tema] #detail-sheet .v6-amb {
+  position: absolute; left: -15%; right: -15%; top: -60px; height: 560px; z-index: 0; pointer-events: none;
+  background-size: cover; background-position: center; filter: blur(52px) saturate(1.8); opacity: .6;
+  -webkit-mask-image: linear-gradient(180deg, #000 25%, transparent 100%); mask-image: linear-gradient(180deg, #000 25%, transparent 100%);
 }
-html[data-tema] #tut-fab { width: 40px !important; height: 40px !important; }
-html[data-tema] .ugm .ugm-btn { width: 40px !important; height: 40px !important; }
-
-html[data-tema] /* ── Ficha: mismo tinte de portada que se funde con el fondo, html[data-tema] orden nuevo y cristal ── */
-#detail-sheet.ds-tienda .sheet-header { justify-content: flex-start !important; text-align: left !important; margin: 14px 0 6px !important; }
+html[data-tema] #detail-sheet.ds-tienda > *:not(.v6-amb) { position: relative; z-index: 1; }
+html[data-tema] #detail-sheet.ds-tienda > .sheet-close { position: absolute !important; z-index: 6 !important; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-media { margin: 0 !important; border-radius: 0 !important; aspect-ratio: 16 / 11 !important; background: transparent !important; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-media img {
+  -webkit-mask-image: linear-gradient(180deg, #000 52%, rgba(0,0,0,.55) 76%, transparent 100%), linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, #000 52%, rgba(0,0,0,.55) 76%, transparent 100%), linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%); mask-composite: intersect;
+}
+html[data-tema] #detail-sheet.ds-tienda .sheet-media-overlay { background: linear-gradient(180deg, rgba(0,0,0,.35) 0, transparent 28%) !important; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-handle { position: absolute !important; left: 50%; margin: 10px 0 0 -18px !important; z-index: 7 !important; background: rgba(255,255,255,.45) !important; }
+/* el contenido sube sobre la portada desvanecida */
+html[data-tema] #detail-sheet.ds-tienda .sheet-scroll { background: transparent !important; margin-top: -64px !important; padding: 0 20px 40px !important; display: flex !important; flex-direction: column !important; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-scroll > * { order: 20; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-header { order: 1; justify-content: flex-start !important; text-align: left !important; margin: 0 0 12px !important; }
+html[data-tema] #detail-sheet.ds-tienda #ds-author { order: 2; }
+html[data-tema] #detail-sheet.ds-tienda #ds-tienda { order: 3; }
+html[data-tema] #detail-sheet.ds-tienda #ds-status { order: 4; }
+html[data-tema] #detail-sheet.ds-tienda #ds-compat { order: 5; }
+html[data-tema] #detail-sheet.ds-tienda #ds-desc { order: 6; }
 html[data-tema] #detail-sheet.ds-tienda .sheet-cat, html[data-tema] #detail-sheet.ds-tienda .sheet-title { text-align: left !important; }
-html[data-tema] #detail-sheet.ds-tienda .sheet-cat { font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
-html[data-tema] #detail-sheet.ds-tienda .sheet-title { font-weight: 800 !important; font-size: clamp(1.55rem, 7vw, 2rem) !important; }
-html[data-tema] #detail-sheet.ds-tienda .sheet-author { justify-content: flex-start !important; gap: 12px !important; margin: 4px 0 10px !important; }
-html[data-tema] #detail-sheet.ds-tienda .sheet-author .author-avatar { width: 38px !important; height: 38px !important; border-radius: 50% !important; }
-html[data-tema] #detail-sheet.ds-tienda .author-info { text-align: left !important; align-items: flex-start !important; }
-html[data-tema] #detail-sheet.ds-tienda .ugs-ins-autor { justify-content: flex-start !important; }
-html[data-tema] #detail-sheet.ds-tienda #dst-val { text-align: left !important; display: flex !important; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-html[data-tema] #detail-sheet.ds-tienda #dst-val b { font-size: 1rem !important; }
-html[data-tema] /* panel de cristal: precio en una línea y el botón verde de ancho completo */
-#detail-sheet.ds-tienda .dst-panel {
-  background: linear-gradient(165deg, rgba(255,255,255,.08), rgba(255,255,255,.03)) !important; border: 1px solid rgba(255,255,255,.1) !important;
-  box-shadow: var(--v6-hi), 0 24px 50px -30px rgba(0,0,0,.9) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); border-radius: 22px !important;
-}
-html[data-tema] #detail-sheet.ds-tienda .dst-precio strong { font-weight: 800 !important; letter-spacing: -.02em !important; }
-html[data-tema] #detail-sheet.ds-tienda .sheet-download {
-  background: var(--v6-g) !important; color: var(--v6-ink) !important; border: 0 !important; border-radius: 16px !important; font-weight: 800 !important; letter-spacing: 0 !important;
-  box-shadow: 0 12px 30px -12px rgba(54,224,138,.75), inset 0 1px 0 rgba(255,255,255,.35) !important; transition: transform 140ms var(--v6-ease);
-}
-html[data-tema] #detail-sheet.ds-tienda .sheet-download ion-icon { color: var(--v6-ink) !important; }
-html[data-tema] #detail-sheet.ds-tienda .sheet-download:active { transform: scale(.97); }
-html[data-tema] #detail-sheet.ds-tienda .dst-fav { background: var(--v6-glass-2) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 16px !important; }
-html[data-tema] #detail-sheet.ds-tienda .dst-chip { background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 999px !important; }
-html[data-tema] #detail-sheet.ds-tienda .sheet-stats { gap: 8px !important; }
-html[data-tema] #detail-sheet.ds-tienda .stat-box { background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 16px !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
-html[data-tema] #detail-sheet.ds-tienda .ucx { background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 18px !important; }
-
-/* ── Ajustes con más especificidad (compiten con reglas por id del tema cyber) ── */
+html[data-tema] #detail-sheet.ds-tienda .sheet-cat { font-size: 13.5px !important; font-weight: 700 !important; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-title { font-weight: 800 !important; font-size: clamp(1.7rem, 7.6vw, 2.2rem) !important; line-height: 1.06 !important; letter-spacing: -.03em !important; text-shadow: 0 2px 24px rgba(0,0,0,.45); }
+/* autor: avatar, nombre, insignias en una línea y «Ver perfil» a la derecha */
+html[data-tema] #detail-sheet.ds-tienda .sheet-author { justify-content: flex-start !important; align-items: center !important; gap: 12px !important; margin: 0 !important; padding: 0 !important; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-author .author-avatar { width: 40px !important; height: 40px !important; border-radius: 50% !important; flex: none; }
+html[data-tema] #detail-sheet.ds-tienda .author-info { text-align: left !important; align-items: flex-start !important; min-width: 0; }
+html[data-tema] #detail-sheet.ds-tienda .author-name { font-size: 16px !important; font-weight: 700 !important; }
+html[data-tema] #detail-sheet.ds-tienda .author-sub, html[data-tema] #detail-sheet.ds-tienda .author-arrow { display: none !important; }
+html[data-tema] #detail-sheet.ds-tienda .ugs-ins-autor { justify-content: flex-start !important; margin-top: 3px !important; }
+html[data-tema] #detail-sheet.ds-tienda .ugs-ins { background: none !important; border: 0 !important; padding: 0 8px 0 0 !important; font-size: 13px !important; color: var(--txt2) !important; }
+html[data-tema] #detail-sheet .v6-perfil { margin-left: auto; flex: none; height: 36px; padding: 0 16px; border-radius: 999px; background: var(--v6-glass-2); border: 1px solid var(--v6-bd); box-shadow: var(--v6-hi); color: var(--txt); font-weight: 700; font-size: 14px; }
+/* fila de 4 datos */
+html[data-tema] #detail-sheet .v6-stats { display: grid; grid-template-columns: repeat(4, 1fr); margin: 18px 0; padding: 14px 0; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); }
+html[data-tema] #detail-sheet .v6-stats div { text-align: center; border-left: 1px solid rgba(255,255,255,.08); min-width: 0; }
+html[data-tema] #detail-sheet .v6-stats div:first-child { border: 0; }
+html[data-tema] #detail-sheet .v6-stats b { display: block; font-size: 17px; font-weight: 800; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+html[data-tema] #detail-sheet .v6-stats span { font-size: 12px; color: var(--txt3); font-weight: 600; }
+/* lo que la fila de 4 datos ya resume */
+html[data-tema] #detail-sheet.ds-tienda #dst-val, html[data-tema] #detail-sheet.ds-tienda .dst-precio, html[data-tema] #detail-sheet.ds-tienda #dst-chips, html[data-tema] #detail-sheet.ds-tienda .sheet-stats { display: none !important; }
+/* acción: botón verde a lo ancho + corazón de cristal, sin caja alrededor */
+html[data-tema] #detail-sheet.ds-tienda .dst-panel { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html[data-tema] #detail-sheet.ds-tienda .dst-acc { display: flex !important; gap: 10px !important; width: 100%; }
 html[data-tema] #detail-sheet #ds-tienda #ds-download {
-  background: var(--v6-g) !important; color: var(--v6-ink) !important; border: 0 !important; border-radius: 16px !important; font-weight: 800 !important;
-  box-shadow: 0 12px 30px -12px rgba(54,224,138,.75), inset 0 1px 0 rgba(255,255,255,.35) !important; text-transform: none !important; letter-spacing: 0 !important;
+  flex: 1; height: 56px; display: flex !important; align-items: center; justify-content: center; gap: 10px;
+  background: var(--v6-g) !important; color: var(--v6-ink) !important; border: 0 !important; border-radius: 17px !important; font-weight: 800 !important; font-size: 17px !important;
+  box-shadow: 0 14px 32px -12px rgba(54,224,138,.75), inset 0 1px 0 rgba(255,255,255,.35) !important; transition: transform 140ms var(--v6-ease);
 }
 html[data-tema] #detail-sheet #ds-tienda #ds-download::before { display: none !important; }
-html[data-tema] #output .ugc [data-ver] { background: var(--v6-g) !important; color: var(--v6-ink) !important; box-shadow: 0 10px 24px -12px rgba(54,224,138,.8), inset 0 1px 0 rgba(255,255,255,.35) !important; font-weight: 800 !important; }
-html[data-tema] #app-header #hdr-entrar { background: var(--v6-glass-2) !important; color: var(--txt) !important; clip-path: none !important; }
-/* Invitación de bienvenida: deja de ser una franja de neón y pasa a ser un aviso de cristal compacto */
-html[data-tema] .obh-teaser {
-  background: rgba(18,20,26,.72) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); border: 1px solid var(--v6-bd) !important;
-  box-shadow: var(--v6-hi), 0 18px 40px -18px rgba(0,0,0,.9) !important; border-radius: 18px !important; clip-path: none !important;
-}
-html[data-tema] .obh-teaser b { font-family: 'Manrope', system-ui, sans-serif !important; text-transform: none !important; letter-spacing: -.01em !important; font-size: .95rem !important; }
-html[data-tema] .obh-teaser button[data-a="ver"] { background: var(--v6-g) !important; color: var(--v6-ink) !important; border-radius: 11px !important; clip-path: none !important; text-transform: none !important; letter-spacing: 0 !important; font-family: 'Manrope', system-ui, sans-serif !important; font-weight: 800 !important; }
+html[data-tema] #detail-sheet #ds-tienda #ds-download ion-icon { color: var(--v6-ink) !important; }
+html[data-tema] #detail-sheet #ds-tienda #ds-download:active { transform: scale(.97); }
+html[data-tema] #detail-sheet.ds-tienda .dst-fav { width: 56px !important; height: 56px !important; flex: none; border-radius: 17px !important; background: var(--v6-glass-2) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); }
+html[data-tema] #detail-sheet .v6-nota { font-size: 13px; color: var(--txt3); text-align: center; margin: 10px 0 4px; line-height: 1.45; }
+html[data-tema] #detail-sheet .v6-nota:empty { display: none; }
+/* compatibilidad: fila de cristal; descripción con su título */
+html[data-tema] #detail-sheet.ds-tienda #ds-compat { margin-top: 16px; }
+html[data-tema] #detail-sheet.ds-tienda .ucx { background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 18px !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+html[data-tema] #detail-sheet.ds-tienda #ds-desc { font-size: 15.5px !important; line-height: 1.55 !important; color: var(--txt2) !important; }
+html[data-tema] #detail-sheet.ds-tienda #ds-desc::before { content: 'Acerca de'; display: block; font-size: 18px; font-weight: 800; color: var(--txt); margin: 22px 0 6px; letter-spacing: -.01em; }
+html[data-tema] #detail-sheet.ds-tienda #ds-desc::first-letter { text-transform: uppercase; }
 
-/* ── Nada de MAYÚSCULAS sostenidas: el texto se muestra como está escrito, sin el espaciado ancho del tema ── */
-html[data-tema] body *:not(svg):not(ion-icon) { text-transform: none !important; }
-html[data-tema] #detail-sheet button, html[data-tema] #detail-sheet a, html[data-tema] #detail-sheet b, html[data-tema] #detail-sheet small,
-html[data-tema] .ugc, html[data-tema] .ugc *, html[data-tema] .section-header *, html[data-tema] .ugx-fila-h *, html[data-tema] .hero-top *, html[data-tema] #category-row * { letter-spacing: normal !important; }
-html[data-tema] #detail-sheet button, html[data-tema] #detail-sheet b, html[data-tema] .ugc-card *, html[data-tema] .section-header *, html[data-tema] .ugx-fila-h * { font-family: 'Manrope', system-ui, sans-serif !important; }
-html[data-tema] .game-tile .tile-meta, html[data-tema] .game-tile .tile-meta * { font-family: 'Manrope', system-ui, sans-serif !important; font-weight: 600 !important; letter-spacing: 0 !important; }
+/* ── Ajustes de medida ── */
+html[data-tema] #detail-sheet.ds-tienda .sheet-scroll { overflow-x: hidden !important; }
+html[data-tema] #detail-sheet.ds-tienda .sheet-scroll > * { min-width: 0 !important; max-width: 100% !important; }
+html[data-tema] .ugx-fila-track .game-tile { width: 148px !important; min-width: 148px !important; max-width: 148px !important; flex: 0 0 148px !important; }
+html[data-tema] .game-tile .tile-info { display: block !important; height: auto !important; min-height: 0 !important; }
+html[data-tema] .game-tile .tile-meta { display: flex !important; align-items: center; position: static !important; }
+html[data-tema] .game-tile .tile-title { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0 !important; }
+html[data-tema] #detail-sheet.ds-tienda { overflow: clip !important; }
+html[data-tema] #detail-sheet .v6-amb { left: 0 !important; right: 0 !important; }
+html[data-tema] .ugx-fila-track { gap: 12px !important; grid-auto-columns: 148px !important; }
+/* la fila nunca ensancha la página: se desplaza por dentro */
+html[data-tema] .ugx-fila { max-width: 100% !important; min-width: 0 !important; }
+html[data-tema] .ugx-fila-track { min-width: 0 !important; max-width: 100% !important; overflow-x: auto !important; overscroll-behavior-x: contain; }
+html[data-tema] { overflow-x: clip; }

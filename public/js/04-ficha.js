@@ -442,6 +442,7 @@ function fichaTienda(item, ls, isVideoItem) {
     const nuevo = Date.now() - new Date(item.createdAt || 0) < 30 * 864e5;
     val.innerHTML = `<b>${nuevo ? 'Recién llegado' : 'Sin reseñas todavía'}</b><small>${isVideoItem ? '' : dls ? `${nfx(dls)} descarga${dls === 1 ? '' : 's'}` : 'Sé de los primeros en probarlo'}</small>`;
   }
+  fichaV6(item, isVideoItem, sheet, caja, r, dls, nfx);
   // Fila de datos (como las etiquetas de la tienda): estado del enlace, categoría y números reales
   const est = ls === 'online' ? ['ok', 'Enlace activo'] : ls === 'revision' ? ['rev', 'En revisión'] : ['mal', 'Enlace caído'];
   const upd = item.updatedAt || item.createdAt, dias = upd ? Math.floor((Date.now() - new Date(upd)) / 864e5) : null;
@@ -454,6 +455,33 @@ function fichaTienda(item, ls, isVideoItem) {
   ].filter(Boolean);
   document.getElementById('dst-chips').innerHTML = chips.join('');
   sheet.classList.toggle('dst-aviso', ls !== 'online' && !isVideoItem);   // en revisión o caído, el aviso grande sigue visible
+}
+
+// ── Ficha v6: portada que se funde con un brillo de su color, fila de 4 datos,
+//    «Ver perfil» junto al autor y la nota de la página puente bajo el botón ─────
+const UG_CAT_V6 = { Optimizacion: 'Optimización', Ajustes: 'Herramientas' };
+function fichaV6(item, isVideoItem, sheet, caja, r, dls, nfx) {
+  let st = document.getElementById('v6-stats');
+  if (!st) {
+    const panel = caja.querySelector('.dst-panel');
+    st = document.createElement('div'); st.id = 'v6-stats'; st.className = 'v6-stats'; panel.before(st);
+    const nt = document.createElement('div'); nt.id = 'v6-nota'; nt.className = 'v6-nota'; panel.after(nt);
+    const amb = document.createElement('div'); amb.id = 'v6-amb'; amb.className = 'v6-amb'; amb.setAttribute('aria-hidden', 'true');
+    sheet.insertBefore(amb, sheet.firstChild);
+    const vp = document.createElement('button'); vp.type = 'button'; vp.id = 'v6-perfil'; vp.className = 'v6-perfil'; vp.textContent = 'Ver perfil';
+    document.getElementById('ds-author').appendChild(vp);   // el clic sube a #ds-author, que ya abre el perfil
+  }
+  const conRes = r && r.n, cat = item.category || 'General';
+  const celdas = [
+    conRes ? [(+r.promedio || 0).toFixed(1).replace('.', ',') + ' ★', `${nfx(r.n)} reseña${r.n === 1 ? '' : 's'}`] : ['Nuevo', 'sin reseñas'],
+    isVideoItem ? [nfx(item.vistas || 0), 'vistas'] : [nfx(dls), dls === 1 ? 'descarga' : 'descargas'],
+    [UG_CAT_V6[cat] || cat, 'categoría'],
+    isVideoItem ? ['Video', 'gratis'] : ['Gratis', 'sin tarjeta'],
+  ];
+  st.innerHTML = celdas.map(([b, s]) => `<div><b>${escH(String(b))}</b><span>${s}</span></div>`).join('');
+  document.getElementById('v6-nota').textContent = isVideoItem ? '' : 'Pasas por la página puente (30 s). Con Premium, sin esperas.';
+  const img = item.image || '', amb = document.getElementById('v6-amb');
+  amb.style.backgroundImage = img && !/\.(mp4|webm|mov)(\?|$)/i.test(img) ? `url("${typeof cldOpt === 'function' ? cldOpt(img, 'c_limit,w_480,q_auto,f_auto') : img}")` : 'none';
 }
 
 // ── Renderiza la entrada destacada en el detail sheet ─────
