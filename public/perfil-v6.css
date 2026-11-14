@@ -134,3 +134,9 @@ html[data-tema] .hero-info > .hero-bio:empty, html[data-tema] .hero-info > .pp-s
 html[data-tema] .pp-vitrina .pp-vitrina-h small { flex-basis: auto; white-space: nowrap; }
 /* control de música: botón redondo de cristal */
 html[data-tema] .ugm .ugm-btn { clip-path: none !important; border-radius: 50% !important; width: 40px !important; height: 40px !important; background: rgba(20,22,28,.6) !important; border: 1px solid var(--p6-bd) !important; box-shadow: var(--p6-hi), 0 10px 24px -12px rgba(0,0,0,.9) !important; -webkit-backdrop-filter: var(--p6-blur); backdrop-filter: var(--p6-blur); }
+
+/* ── Fila de acciones: nunca se sale de la pantalla (si no cabe, pasa a la línea siguiente) ── */
+html[data-tema] .hero-action-row { flex-wrap: wrap !important; }
+html[data-tema] .hero-action-row > button { flex: 1 1 auto !important; min-width: 0 !important; white-space: nowrap; display: inline-flex !important; align-items: center; justify-content: center; gap: 8px; }
+html[data-tema] .hero-action-row > .btn-seguir { flex: 1 1 150px !important; }
+html[data-tema] .hero-action-row > .btn-compartir { flex: 0 0 52px !important; }

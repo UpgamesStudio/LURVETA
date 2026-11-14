@@ -43,7 +43,7 @@
 
 <!-- css:inicio -->
 <!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css (scripts/unir-css.js) -->
-<link rel="stylesheet" href="upgames-app.css?v=05ad9cc000">
+<link rel="stylesheet" href="upgames-app.css?v=69ab8e464e">
 <!-- css:fin -->
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-intro.js?v=20261109a"></script>
@@ -250,11 +250,24 @@
       </div>
 
       <div class="pf2-actions">
-        <button type="button" class="pf2-btn" onclick="pfOpenSettings()">Editar perfil</button>
-        <button type="button" class="pf2-btn pf2-btn-icon pf2-btn-live" onclick="window.location.href='./live.html?estudio=1'" aria-label="Ir en vivo" title="Ir en vivo"><ion-icon name="radio"></ion-icon></button>
-        <button type="button" class="pf2-btn pf2-btn-icon" onclick="window.location.href='./blog.html'" aria-label="Mi blog" title="Mi blog: crea tu sitio web"><ion-icon name="globe-outline"></ion-icon></button>
+        <!-- Publicar: crear publicación, ir en vivo y mi blog -->
+        <div class="pf-dd">
+          <button type="button" class="pf2-btn pf-btn-publicar" id="pf-btn-publicar" onclick="pfMenu('pf-menu-pub', this)" aria-haspopup="menu" aria-expanded="false"><ion-icon name="add"></ion-icon>Publicar</button>
+          <div class="pf-menu" id="pf-menu-pub" role="menu" hidden>
+            <button type="button" role="menuitem" onclick="pfMenuCerrar();pfOpenPublish(true)"><ion-icon name="cloud-upload-outline"></ion-icon><span><b>Crear publicación</b><small>Juego, mod, app, software o video</small></span></button>
+            <button type="button" role="menuitem" onclick="window.location.href='./live.html?estudio=1'"><ion-icon name="radio"></ion-icon><span><b>Ir en vivo</b><small>Transmite a tu comunidad</small></span></button>
+            <button type="button" role="menuitem" onclick="window.location.href='./blog.html'"><ion-icon name="globe-outline"></ion-icon><span><b>Mi blog</b><small>Crea tu sitio web</small></span></button>
+          </div>
+        </div>
         <button type="button" class="pf2-btn pf2-btn-icon" id="pf-chat-btn" onclick="window.location.href='./chats.html'" aria-label="Chats"><ion-icon name="chatbubbles-outline"></ion-icon><span class="pf2-chat-n" id="pf-chat-n" hidden></span></button>
-        <button type="button" class="pf2-btn pf2-btn-icon pf2-btn-danger" onclick="pfLogout()" aria-label="Cerrar sesión"><ion-icon name="log-out-outline"></ion-icon></button>
+        <!-- Ajustes: editar perfil y cerrar sesión -->
+        <div class="pf-dd">
+          <button type="button" class="pf2-btn pf2-btn-icon" id="pf-btn-ajustes" onclick="pfMenu('pf-menu-aj', this)" aria-haspopup="menu" aria-expanded="false" aria-label="Ajustes"><ion-icon name="settings-outline"></ion-icon></button>
+          <div class="pf-menu pf-menu-der" id="pf-menu-aj" role="menu" hidden>
+            <button type="button" role="menuitem" onclick="pfMenuCerrar();pfOpenSettings()"><ion-icon name="create-outline"></ion-icon><span><b>Editar perfil</b><small>Foto, portada, bio y redes</small></span></button>
+            <button type="button" role="menuitem" class="peligro" onclick="pfMenuCerrar();pfLogout()"><ion-icon name="log-out-outline"></ion-icon><span><b>Cerrar sesión</b></span></button>
+          </div>
+        </div>
       </div>
 
       <div class="pf2-stats">
@@ -1913,7 +1926,7 @@
 <script src="upgames-metricas.js?v=20261108a"></script>
 <script src="upgames-ranking.js?v=20261108c"></script>
 <script src="upgames-ux.js?v=20261114a"></script>
-<script src="script.js?v=b6cda78b51"></script>
+<script src="script.js?v=a6d9fcf61f"></script>
 <script src="upgames-publicar.js?v=20261108a"></script>
 <script src="upgames-extras.js?v=20261108a"></script>
 <script src="upgames-social.js?v=20261029i"></script>
