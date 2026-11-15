@@ -7,6 +7,8 @@
  */
 'use strict';
 
+const Redes = require('../../public/upgames-redes');
+
 const LIMITES = {
     BLOGS_POR_CUENTA: 3,
     BLOGS_PREMIUM: 10,
@@ -25,7 +27,7 @@ const RESERVADOS = new Set(['www', 'admin', 'api', 'app', 'blog', 'blogs', 'upga
     'mail', 'correo', 'ftp', 'cdn', 'static', 'assets', 'nexus', 'live', 'studio', 'racing', 'premium', 'oficial', 'official',
     'root', 'null', 'undefined', 'test', 'dev', 'staging', 'status', 'docs', 'legal', 'terminos', 'privacidad']);
 
-const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio']);
+const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes']);
 const ESTILOS_AVISO = new Set(['info', 'exito', 'alerta', 'peligro']);
 
 /** Texto plano de una línea: sin etiquetas, sin saltos, recortado. */
@@ -130,6 +132,11 @@ function limpiarBloques(entrada) {
             case 'video': { const id = idYouTube(b.id || b.url); if (id) n = { tipo: 'video', id }; break; }
             case 'cita': { const t = parrafos(b.texto, 1200); if (t) n = { tipo: 'cita', texto: t, autor: linea(b.autor, 80) }; break; }
             case 'boton': { const url = urlSegura(b.url), t = linea(b.texto, 60); if (url && t) n = { tipo: 'boton', texto: t, url }; break; }
+            case 'redes': {
+                const items = (Array.isArray(b.items) ? b.items : []).map(i => ({ red: Redes.REDES[i?.red] ? i.red : '', url: Redes.normalizar(i?.red, i?.url), texto: linea(i?.texto, 40) })).filter(i => i.red && i.url).slice(0, Redes.MAX);
+                if (items.length) n = { tipo: 'redes', items, estilo: Redes.ESTILOS.includes(b.estilo) ? b.estilo : 'botones' };
+                break;
+            }
             case 'separador': n = { tipo: 'separador' }; break;
             case 'codigo': { const t = String(b.texto ?? '').replace(/\r\n?/g, '\n').replace(/\u0000/g, '').slice(0, 8000); if (t.trim()) n = { tipo: 'codigo', texto: t }; break; }
             case 'descarga': { const id = String(b.id ?? ''); if (/^[a-f0-9]{24}$/i.test(id)) n = { tipo: 'descarga', id: id.toLowerCase() }; break; }
@@ -143,7 +150,7 @@ function limpiarBloques(entrada) {
 
 /** Todo el texto de una entrada junto, para la moderación y para el resumen. */
 function textoDe(bloques) {
-    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
+    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v]), ...(b.tipo === 'redes' ? b.items.map(i => i.texto) : [])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
 }
 
 /** Enlaces que aparecen en una entrada (botones y enlaces dentro del texto). */
@@ -152,6 +159,7 @@ function enlacesDe(bloques) {
     for (const b of bloques || []) {
         if (b.tipo === 'boton') out.push(b.url);
         if (b.tipo === 'imagen' && b.enlace) out.push(b.enlace);
+        if (b.tipo === 'redes') for (const i of b.items || []) if (/^https:/.test(i.url)) out.push(i.url);
         for (const i of b.items || []) for (const m of String(i.r).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
         if (b.tipo === 'texto' || b.tipo === 'cita' || b.tipo === 'aviso') for (const m of String(b.texto).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
     }

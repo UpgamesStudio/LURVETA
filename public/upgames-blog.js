@@ -68,24 +68,39 @@ const num = n => Number(n || 0).toLocaleString('es');
 async function copiar(texto) { try { await navigator.clipboard.writeText(texto); toast('Enlace copiado'); } catch (_) { prompt('Copia el enlace:', texto); } }
 
 /** Sube una imagen directo a Cloudinary con la firma del servidor (igual que las portadas de UpGames). */
-function elegirImagen() {
+function elegirImagen() { return elegirImagenes(false).then(l => l[0] || null); }
+/** Varias a la vez (galería). Devuelve [] si cierra sin elegir. */
+function elegirImagenes(varias = true) {
   return new Promise(ok => {
     const inp = $('#archivo');
-    inp.value = '';
-    inp.onchange = () => ok(inp.files[0] || null);
+    inp.value = ''; inp.multiple = varias;
+    inp.onchange = () => ok([...inp.files]);
     inp.click();
   });
 }
-async function subirImagen(archivo) {
-  if (!archivo.type.startsWith('image/')) throw new Error('Ese archivo no es una imagen.');
-  if (archivo.size > 12 * 1024 * 1024) throw new Error('La imagen pesa más de 12 MB. Elige una más ligera.');
-  const f = await api('/upload/sign?folder=covers');
+// Mismo subidor que el resto de UpGames (preset público de Cloudinary); la firma del servidor queda de respaldo
+const CLD_NUBE = 'dd4w2plxn', CLD_PRESET = 'upgames_videos';
+async function enviarCloudinary(nube, campos, archivo) {
   const fd = new FormData();
-  fd.append('file', archivo); fd.append('api_key', f.api_key); fd.append('timestamp', f.timestamp); fd.append('signature', f.signature); fd.append('folder', f.folder);
-  const r = await fetch(`https://api.cloudinary.com/v1_1/${f.cloud_name}/image/upload`, { method: 'POST', body: fd }).catch(() => null);
-  const d = r && await r.json().catch(() => null);
-  if (!d?.secure_url) throw new Error('No se pudo subir la imagen. Inténtalo de nuevo.');
-  return d.secure_url;
+  fd.append('file', archivo);
+  for (const [k, v] of Object.entries(campos)) fd.append(k, v);
+  let r;
+  try { r = await fetch(`https://api.cloudinary.com/v1_1/${nube}/image/upload`, { method: 'POST', body: fd }); } catch (_) { throw new Error('Sin conexión. Revisa tu internet e inténtalo de nuevo.'); }
+  const d = await r.json().catch(() => null);
+  if (d?.secure_url) return d.secure_url;
+  throw new Error(d?.error?.message ? `No se pudo subir la imagen: ${d.error.message}` : 'No se pudo subir la imagen. Inténtalo de nuevo.');
+}
+async function subirImagen(archivo) {
+  // Algunas galerías de Android entregan la foto sin tipo (o HEIC): se mira también la extensión
+  const esImagen = archivo.type.startsWith('image/') || (!archivo.type && /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(archivo.name));
+  if (!esImagen) throw new Error('Ese archivo no es una imagen.');
+  if (archivo.size > 20 * 1024 * 1024) throw new Error('La imagen pesa más de 20 MB. Elige una más ligera.');
+  try { return await enviarCloudinary(CLD_NUBE, { upload_preset: CLD_PRESET, folder: 'covers' }, archivo); }
+  catch (e) {
+    if (/conexión/.test(e.message)) throw e;
+    const f = await api('/upload/sign?folder=covers');
+    return enviarCloudinary(f.cloud_name, { api_key: f.api_key, timestamp: f.timestamp, signature: f.signature, folder: f.folder }, archivo);
+  }
 }
 const mini = (url, w) => String(url || '').replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\/(?:w_|c_))/, `$1f_auto,q_auto,w_${w},c_limit/`);
 
@@ -101,7 +116,7 @@ function bienvenida() {
     </section>
     <div class="ventajas">
       <div class="glass">${ico('color-palette-outline')}<b>Temas listos</b><span>Cinco diseños que puedes personalizar con tu color, tu logo y tu portada.</span></div>
-      <div class="glass">${ico('create-outline')}<b>Editor fácil</b><span>Texto, imágenes, galerías, videos, botones y tus publicaciones de UpGames.</span></div>
+      <div class="glass">${ico('create-outline')}<b>Editor fácil</b><span>Texto, imágenes, galerías, videos, botones, redes y contacto (WhatsApp, Instagram…) y tus publicaciones de UpGames.</span></div>
       <div class="glass">${ico('globe-outline')}<b>Tu dominio</b><span>Empieza con una dirección gratis y conecta tu dominio cuando lo tengas.</span></div>
       <div class="glass">${ico('stats-chart-outline')}<b>Estadísticas</b><span>Mira cuántas visitas tienes cada día y qué entradas gustan más.</span></div>
     </div>
@@ -438,7 +453,7 @@ const crecer = ta => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeig
 const idYouTube = s => { s = String(s || '').trim(); if (/^[\w-]{11}$/.test(s)) return s; const m = s.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/); return m ? m[1] : ''; };
 
 const TIPOS = [['texto', 'text', 'Texto'], ['titulo', 'reorder-two', 'Subtítulo'], ['imagen', 'image', 'Imagen'], ['galeria', 'images', 'Galería'], ['video', 'logo-youtube', 'Video'],
-  ['cita', 'chatbox-ellipses', 'Cita'], ['aviso', 'alert-circle', 'Aviso'], ['ficha', 'list', 'Ficha / requisitos'], ['faq', 'help-circle', 'Preguntas'], ['audio', 'musical-notes', 'Spotify'], ['boton', 'radio-button-on', 'Botón'], ['juego', 'game-controller', 'Publicación de UpGames'], ['descarga', 'cloud-download-outline', 'Descarga'], ['codigo', 'code-slash', 'Código'], ['separador', 'remove', 'Separador']];
+  ['cita', 'chatbox-ellipses', 'Cita'], ['aviso', 'alert-circle', 'Aviso'], ['ficha', 'list', 'Ficha / requisitos'], ['faq', 'help-circle', 'Preguntas'], ['audio', 'musical-notes', 'Spotify'], ['boton', 'radio-button-on', 'Botón'], ['redes', 'logo-whatsapp', 'Redes y contacto'],['juego', 'game-controller', 'Publicación de UpGames'], ['descarga', 'cloud-download-outline', 'Descarga'], ['codigo', 'code-slash', 'Código'], ['separador', 'remove', 'Separador']];
 const NOMBRE_TIPO = Object.fromEntries(TIPOS.map(([id, , n]) => [id, n]));
 
 let sucio = false, urlPreviaInicial = '';
@@ -546,7 +561,12 @@ async function editor(tipo, id) {
       const pintar = () => {
         el.innerHTML = barra() + `<div class="rej">${urls.map((u, i) => `<div style="background-image:url('${h(mini(u, 300))}')"><button data-quitar="${i}" aria-label="Quitar">${ico('close')}</button></div>`).join('')}${urls.length < 12 ? `<button class="mas" data-mas aria-label="Añadir imagen">${ico('add')}</button>` : ''}</div>`;
         el.querySelectorAll('[data-quitar]').forEach(x => { x.onclick = () => { urls.splice(+x.dataset.quitar, 1); sucio = true; pintar(); }; });
-        const mas = $('[data-mas]', el); if (mas) mas.onclick = () => subida(mas, u => { urls.push(u); pintar(); });
+        // Varias fotos de una vez: se suben en orden hasta llenar la galería
+        const mas = $('[data-mas]', el); if (mas) mas.onclick = async () => {
+          const fs = (await elegirImagenes()).slice(0, 12 - urls.length); if (!fs.length) return;
+          await ocupado(mas, async () => { for (const f of fs) { urls.push(await subirImagen(f)); sucio = true; } });
+          pintar();
+        };
       };
       pintar();
       el.leer = () => urls.length ? { tipo: 'galeria', urls } : null;
@@ -564,6 +584,36 @@ async function editor(tipo, id) {
       el.innerHTML = barra() + `<div class="centro" style="text-align:center"><span class="muestra" contenteditable="true">${h(b.texto || 'Descargar')}</span></div><input placeholder="https://… a dónde lleva el botón" value="${h(b.url || '')}" inputmode="url">`;
       $('.muestra', el).addEventListener('paste', e => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain').replace(/\n/g, ' ')); });
       el.leer = () => ({ tipo: 'boton', texto: $('.muestra', el).textContent.trim(), url: $('input', el).value.trim() });
+    } else if (b.tipo === 'redes') {
+      // Contacto y redes: cada fila = icono (se elige de la lista) + número, @usuario o enlace + texto opcional
+      const R = window.UGRedes, ESTILO = { botones: ['Botones', 'apps-outline'], iconos: ['Solo iconos', 'ellipse-outline'], flotante: ['Flotante', 'chatbubble-ellipses-outline'] };
+      let estilo = R.ESTILOS.includes(b.estilo) ? b.estilo : 'botones';
+      const filas = (b.items || []).map(i => ({ ...i }));
+      if (!filas.length) filas.push({ red: 'whatsapp', url: '', texto: '' });
+      const leerFilas = () => el.querySelectorAll('.red-fila').forEach((f, i) => { filas[i].url = $('[data-url]', f).value; filas[i].texto = $('[data-texto]', f).value; });
+      const nota = f => { const v = f.url.trim(); return !v ? '' : R.normalizar(f.red, v) ? '' : 'No reconocemos ese dato. Revisa el formato.'; };
+      const pintar = () => {
+        el.innerHTML = barra(Object.entries(ESTILO).map(([k, [n, i]]) => `<button data-estilo="${k}" aria-label="${n}" aria-pressed="${k === estilo}" title="${n}">${ico(i)}</button>`).join(''))
+          + `<p class="red-ayuda">${estilo === 'flotante' ? 'Botón redondo fijo en la esquina de la página (usa el primero de la lista). Ideal para WhatsApp en una landing.' : estilo === 'iconos' ? 'Iconos redondos en fila, sin texto.' : 'Botones con icono y texto.'}</p>`
+          + filas.map((f, i) => { const r = R.REDES[f.red] || R.REDES.web; return `<div class="red-fila${estilo === 'flotante' && i ? ' apagada' : ''}">
+              <button class="red-ico" data-elegir="${i}" style="background:${r.color};color:${r.txt || '#fff'}" aria-label="Cambiar red: ${h(r.nombre)}">${R.svg(f.red)}</button>
+              <div class="red-campos"><input data-url placeholder="${h(r.ayuda)}" value="${h(f.url)}" inputmode="${r.tipo === 'telefono' || r.tipo === 'whatsapp' ? 'tel' : r.tipo === 'email' ? 'email' : 'url'}" autocapitalize="off" spellcheck="false">
+              ${estilo === 'botones' ? `<input data-texto maxlength="40" placeholder="Texto del botón (opcional): ${h(r.nombre)}" value="${h(f.texto || '')}">` : `<input data-texto type="hidden" value="${h(f.texto || '')}">`}
+              <small class="red-nota">${h(nota(f))}</small></div>
+              <button data-fuera="${i}" aria-label="Quitar">${ico('close')}</button></div>`; }).join('')
+          + (filas.length < R.MAX ? `<button class="btn chico" data-otra style="margin-top:8px">${ico('add')} Añadir red o contacto</button>` : '');
+        el.querySelectorAll('[data-estilo]').forEach(x => { x.onclick = () => { leerFilas(); estilo = x.dataset.estilo; sucio = true; pintar(); }; });
+        el.querySelectorAll('[data-fuera]').forEach(x => { x.onclick = () => { leerFilas(); filas.splice(+x.dataset.fuera, 1); if (!filas.length) filas.push({ red: 'whatsapp', url: '', texto: '' }); sucio = true; pintar(); }; });
+        el.querySelectorAll('[data-url]').forEach((x, i) => { x.onblur = () => { leerFilas(); x.closest('.red-fila').querySelector('.red-nota').textContent = nota(filas[i]); }; });
+        el.querySelectorAll('[data-elegir]').forEach(x => { x.onclick = () => { leerFilas(); elegirRed(red => { filas[+x.dataset.elegir].red = red; sucio = true; pintar(); el.querySelectorAll('[data-url]')[+x.dataset.elegir]?.focus(); }); }; });
+        const otra = $('[data-otra]', el); if (otra) otra.onclick = () => { leerFilas(); elegirRed(red => { filas.push({ red, url: '', texto: '' }); sucio = true; pintar(); [...el.querySelectorAll('[data-url]')].pop()?.focus(); }); };
+      };
+      const elegirRed = hecho => {
+        const c = hoja(`<h3>Elige el icono</h3><div class="redes-elegir">${R.lista().map(r => `<button data-red="${r.id}"><i style="background:${r.color};color:${r.txt || '#fff'}">${R.svg(r.id)}</i><span>${h(r.nombre)}</span></button>`).join('')}</div>`);
+        c.onclick = e => { const x = e.target.closest('[data-red]'); if (x) { cerrarHoja(); hecho(x.dataset.red); } };
+      };
+      pintar();
+      el.leer = () => { leerFilas(); const items = filas.filter(f => f.url.trim()).map(f => ({ red: f.red, url: f.url.trim(), texto: (f.texto || '').trim() })); return items.length ? { tipo: 'redes', estilo, items } : null; };
     } else if (b.tipo === 'juego' || b.tipo === 'descarga') {
       el.innerHTML = barra() + `<div class="tarj" hidden></div><input placeholder="Pega el enlace de una publicación de UpGames" value="${b.id ? h(b.id) : ''}">`;
       const inp = $('input', el), tarj = $('.tarj', el);
@@ -686,6 +736,8 @@ async function editor(tipo, id) {
     if (estado !== 'borrador' && !bloques.length) return toast('La entrada está vacía. Escribe algo antes de publicar.', true);
     const malBoton = bloques.find(b => b.tipo === 'boton' && !/^https:\/\/\S+\.\S+/.test(b.url));
     if (malBoton) return toast('El botón necesita un enlace que empiece por https://', true);
+    const malRed = bloques.flatMap(b => b.tipo === 'redes' ? b.items : []).find(i => !window.UGRedes.normalizar(i.red, i.url));
+    if (malRed) return toast(`Revisa el dato de ${window.UGRedes.REDES[malRed.red]?.nombre || 'la red'}: «${malRed.url}» no es válido.`, true);
     const programar = estado !== 'borrador' && meta.programar && new Date(meta.programar) > new Date();
     const cuerpo = { tipo, titulo, bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, estado: programar ? 'programada' : estado, publicadaEn: programar ? meta.programar : undefined };
     await ocupado(boton, async () => {

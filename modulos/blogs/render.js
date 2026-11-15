@@ -9,6 +9,7 @@
 
 const { TEMAS, FUENTES, ESQUINAS, PORTADAS, FONDOS, temaDe, esColor, sobre } = require('./temas');
 const V = require('./validar');
+const Redes = require('../../public/upgames-redes');
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -52,6 +53,13 @@ function bloqueHtml(b, ctx) {
         case 'video': return `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${esc(b.id)}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
         case 'cita': return `<blockquote>${textoHtml(b.texto)}${b.autor ? `<cite>${esc(b.autor)}</cite>` : ''}</blockquote>`;
         case 'boton': return `<p class="centro"><a class="boton" href="${esc(b.url)}" target="_blank" rel="nofollow ugc noopener">${esc(b.texto)}</a></p>`;
+        case 'redes': {
+            // Contacto y redes: botones con su icono, solo iconos o un botón flotante (el primero) para landing pages
+            const a = i => { const r = Redes.REDES[i.red], nombre = i.texto || r.nombre, fuera = /^https:/.test(i.url);
+                return `href="${esc(i.url)}"${fuera ? ' target="_blank" rel="nofollow ugc noopener"' : ''} style="--red:${esc(r.color)};--red-txt:${esc(r.txt || '#fff')}" aria-label="${esc(nombre)}"`; };
+            if (b.estilo === 'flotante') { const i = b.items[0]; return `<a class="red-flota" ${a(i)}>${Redes.svg(i.red)}</a>`; }
+            return `<div class="redes redes-${b.estilo === 'iconos' ? 'iconos' : 'botones'}">${b.items.map(i => `<a class="red" ${a(i)}>${Redes.svg(i.red)}<span>${esc(i.texto || Redes.REDES[i.red].nombre)}</span></a>`).join('')}</div>`;
+        }
         case 'separador': return '<hr>';
         case 'codigo': return `<pre><code>${esc(b.texto)}</code></pre>`;
         case 'descarga': {
@@ -145,6 +153,13 @@ hr{border:0;height:1px;background:var(--borde);margin:2em 0}
 pre{background:var(--bg2);border:1px solid var(--borde);border-radius:12px;padding:14px 16px;overflow-x:auto;font-size:.88rem;line-height:1.55}
 code{font-family:ui-monospace,'Share Tech Mono',Menlo,monospace;background:var(--tarjeta);border:1px solid var(--borde);border-radius:6px;padding:1px 6px;font-size:.9em}pre code{background:none;border:0;padding:0}
 .centro{text-align:center}
+.redes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:1.4em 0}
+.red{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:10px 20px;border-radius:99px;background:var(--red);color:var(--red-txt);font-weight:800;line-height:1.2;border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 26px -14px var(--red)}
+.red:hover{text-decoration:none;filter:brightness(1.1)}.red svg{width:22px;height:22px;fill:currentColor;flex:none}
+.redes-iconos .red{width:52px;height:52px;padding:0;justify-content:center;border-radius:50%}
+.redes-iconos .red span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.red-flota{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:20;width:60px;height:60px;border-radius:50%;background:var(--red);color:var(--red-txt);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px -8px rgba(0,0,0,.55)}
+.red-flota svg{width:32px;height:32px;fill:currentColor}.red-flota:hover{filter:brightness(1.1)}
 .boton{display:inline-block;background:var(--acento);color:var(--sobre-acento);font-weight:800;padding:12px 26px;border-radius:99px;box-shadow:0 10px 30px -12px var(--acento)}.boton:hover{text-decoration:none;filter:brightness(1.08)}
 .juego{display:flex;gap:14px;align-items:center;background:var(--tarjeta);border:1px solid var(--borde);border-radius:var(--radio);padding:12px;color:var(--txt)}
 .juego:hover{border-color:var(--acento);text-decoration:none}.juego img{width:96px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0}
