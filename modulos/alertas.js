@@ -76,11 +76,21 @@ async function registrar({ origen = 'servidor', mensaje, stack = '', pagina = ''
     } catch (_) {}
 }
 
+// Errores ya corregidos: sus registros viejos se quitan al arrancar (si vuelven a ocurrir, se registran de nuevo)
+const RESUELTOS = [
+    /^Error: CORS: Origen no permitido/,   // ahora responde 403 y no cuenta como error (index.js)
+    /^\[blogs\] [a-z]+: Cannot read properties of undefined \(reading '(find|create|updateOne|deleteOne)'\)/,   // BlogMensaje no estaba disponible en rutas/blogs.js
+];
+function limpiarResueltos() {
+    col().deleteMany({ mensaje: { $in: RESUELTOS } }).then(r => { if (r.deletedCount) log.info?.(`[alertas] ${r.deletedCount} registro(s) de errores ya corregidos retirados`); }).catch(() => {});
+}
+
 /** Engancha logger.error y los errores del proceso. */
 function instalar(logger, { sendEmail } = {}) {
     if (instalado) return; instalado = true;
     enviarCorreo = sendEmail; log = logger;
     col().createIndex({ ultima: 1 }, { expireAfterSeconds: 30 * 86400 }).catch(() => {});
+    if (mongoose.connection.readyState === 1) limpiarResueltos(); else mongoose.connection.once('connected', limpiarResueltos);
     const orig = logger.error.bind(logger);
     logger.error = (m, ...resto) => {
         const r = orig(m, ...resto);
@@ -94,4 +104,4 @@ async function recientes(limite = 50) {
     return col().find({}).project({ recientes: 0 }).sort({ ultima: -1 }).limit(Math.min(200, limite)).toArray();
 }
 
-module.exports = { instalar, registrar, recientes, firma };
+module.exports = { instalar, registrar, recientes, firma, RESUELTOS };

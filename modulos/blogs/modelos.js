@@ -12,7 +12,7 @@
 'use strict';
 
 module.exports = function modelos(mongoose) {
-    if (mongoose.models.Blog) return { Blog: mongoose.models.Blog, Entrada: mongoose.models.Entrada, BlogVista: mongoose.models.BlogVista, BlogReporte: mongoose.models.BlogReporte };
+    if (mongoose.models.Blog) return { BlogMensaje: mongoose.models.BlogMensaje, Blog: mongoose.models.Blog, Entrada: mongoose.models.Entrada, BlogVista: mongoose.models.BlogVista, BlogReporte: mongoose.models.BlogReporte };
 
     const BlogSchema = new mongoose.Schema({
         usuario:     { type: String, required: true, index: true },

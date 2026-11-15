@@ -258,7 +258,8 @@ app.use(cors({
         if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed + '/'))) {
             callback(null, true);
         } else {
-            callback(new Error(`CORS: Origen no permitido → ${origin}`));
+            // Se sigue rechazando (la petición ni se procesa), pero no es un fallo del servidor: ver el manejador de errores
+            callback(Object.assign(new Error(`CORS: Origen no permitido → ${origin}`), { cors: true, origen: origin }));
         }
     },
     credentials: true,
@@ -1356,7 +1357,17 @@ app.use((req, res) => {
     res.status(404).json({ error: "Endpoint no encontrado" });
 });
 
+const corsAvisado = new Map();   // origen → ms del último aviso (un origen insistente no llena el registro)
 app.use((err, req, res, next) => {
+    if (err?.cors) {
+        // Origen no permitido: un programa ajeno consultando la API. No es un error del servidor (no alerta ni cuenta como error)
+        if (Date.now() - (corsAvisado.get(err.origen) || 0) > 10 * 60e3) {
+            if (corsAvisado.size > 200) corsAvisado.clear();
+            corsAvisado.set(err.origen, Date.now());
+            logger.warn(`[cors] origen no permitido: ${String(err.origen).slice(0, 120)} (se avisa una vez cada 10 min por origen)`);
+        }
+        return res.status(403).json({ error: 'Origen no permitido' });
+    }
     logger.error(`Error: ${err?.message || "unknown"}`);
     res.status(500).json({ error: "Error interno del servidor" });
 });
