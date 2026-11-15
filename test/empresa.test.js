@@ -49,8 +49,8 @@ test('costos recurrentes: cuentan desde su mes y hasta que se detienen', () => {
 });
 
 test('validar costo', () => {
-    const ok = E.validarCosto({ mes: '2026-10', categoria: 'servidor', concepto: '  Railway   Pro ', usd: '20.456', recurrente: true }, '2026-11');
-    assert.deepStrictEqual(ok.costo, { mes: '2026-10', categoria: 'servidor', concepto: 'Railway Pro', usd: 20.46, recurrente: true, hastaMes: null });
+    const ok = E.validarCosto({ mes: '2026-10', categoria: 'servidor', concepto: '  Railway   Pro ', usd: '20.4567', recurrente: true }, '2026-11');
+    assert.deepStrictEqual(ok.costo, { tipo: 'costo', mes: '2026-10', categoria: 'servidor', concepto: 'Railway Pro', usd: 20.46, recurrente: true, hastaMes: null });
     assert.ok(E.validarCosto({ mes: '2026-12', categoria: 'servidor', concepto: 'x', usd: 1 }, '2026-11').error);   // mes futuro
     assert.ok(E.validarCosto({ categoria: 'casino', concepto: 'x', usd: 1 }, '2026-11').error);
     assert.ok(E.validarCosto({ categoria: 'ia', concepto: ' ', usd: 1 }, '2026-11').error);
@@ -121,6 +121,53 @@ test('CSV del estado de resultados', () => {
     assert.ok(csv.includes('Ventas con dinero;0;9,5'));
     assert.ok(csv.includes('Servidor (Railway);0;-5'));
     assert.ok(csv.includes(`'=HYPERLINK`));                      // fórmulas neutralizadas
+});
+
+test('números escritos como en Colombia', () => {
+    const c = [['12,50', 12.5], ['12.50', 12.5], ['1.234,56', 1234.56], ['1,234.56', 1234.56], ['$ 20', 20], ['1,500', 1500], ['0,3', 0.3],
+        ['1.234.567', 1234567], [7, 7], ['-5,5', -5.5], ['1.500', 1500], ['2.75', 2.75], ['0.300', 0.3], ['0,300', 0.3], ['12.5', 12.5]];
+    for (const [t, v] of c) assert.strictEqual(E.numeroES(t), v, t);
+    for (const t of ['', 'abc', '12a', null]) assert.ok(Number.isNaN(E.numeroES(t)), String(t));
+    assert.strictEqual(E.validarCosto({ categoria: 'ia', concepto: 'x', usd: '12,50' }, '2026-11').costo.usd, 12.5);
+    assert.strictEqual(E.validarConfig({ cpmBrutoUsd: '2,75', cajaUsd: '1.500,40' }).cfg.cajaUsd, 1500.4);
+});
+
+test('ingresos escritos a mano: la publicidad real reemplaza la estimada', () => {
+    const ing = E.validarCosto({ tipo: 'ingreso', categoria: 'publicidad', concepto: 'AdSense octubre', usd: '30' }, '2026-11');
+    assert.strictEqual(ing.costo.tipo, 'ingreso');
+    assert.ok(E.validarCosto({ tipo: 'ingreso', categoria: 'servidor', concepto: 'x', usd: 1 }, '2026-11').error);   // categoría de costo
+    const base = { anuncios: { vistos: 10000, creadoresUsd: 0 }, cfg };
+    assert.strictEqual(E.calcularPyG(base).ingresos.publicidadUsd, 40);   // estimada: 10.000 × 4 / 1.000
+    const p = E.calcularPyG({ ...base, costos: [{ tipo: 'ingreso', categoria: 'publicidad', usd: 30 }, { tipo: 'ingreso', categoria: 'patrocinio', usd: 5 }, { categoria: 'servidor', usd: 7 }] });
+    assert.strictEqual(p.ingresos.publicidadReal, true); assert.strictEqual(p.ingresos.publicidadUsd, 30); assert.strictEqual(p.ingresos.publicidadEstimadaUsd, 40);
+    assert.strictEqual(p.ingresos.otrosUsd, 5); assert.strictEqual(p.ingresos.total, 35);
+    assert.deepStrictEqual(p.costos.manuales, { servidor: 7 }); assert.strictEqual(p.ganancia, 28);
+});
+
+test('diagnóstico: estado de cada chequeo', () => {
+    assert.strictEqual(E.estadoChequeo({ ok: true, ms: 100 }), 'ok');
+    assert.strictEqual(E.estadoChequeo({ ok: true, ms: 5000 }), 'lento');
+    assert.strictEqual(E.estadoChequeo({ ok: false, ms: 10 }), 'falla');
+    assert.strictEqual(E.estadoChequeo({ ok: true, configurado: false }), 'sin_configurar');
+    const a = E.generarAlertas({ diagnostico: { resultados: [{ nombre: 'PayPal', estado: 'falla', critico: true, detalle: 'token' }, { nombre: 'Correo', estado: 'falla', critico: false, detalle: 'x' }] },
+        monitor: { disponibilidad24h: 97.5, ahora: { peticiones: 100, erroresPct: 5, p95: 4000 } }, respaldo: { fecha: new Date() }, cfg: E.configCompleta({ cpmBrutoUsd: 1, cajaUsd: 1 }), costosMesN: 1 });
+    assert.ok(a.find(x => /PayPal/.test(x.texto)).nivel === 'alta');
+    assert.ok(a.find(x => /Correo/.test(x.texto)).nivel === 'media');
+    assert.ok(a.some(x => /97,5 %/.test(x.texto))); assert.ok(a.some(x => /están fallando/.test(x.texto))); assert.ok(a.some(x => /lenta/.test(x.texto)));
+});
+
+test('monitor: peticiones por minuto, p95 y disponibilidad', () => {
+    const M = require('../modulos/monitor');
+    M._minutos.clear();
+    for (let i = 1; i <= 100; i++) M.anotar(i === 100 ? 503 : i === 99 ? 404 : 200, i);
+    const r = M.resumen(15);
+    assert.strictEqual(r.peticiones, 100); assert.strictEqual(r.e5, 1); assert.strictEqual(r.e4, 1);
+    assert.strictEqual(r.erroresPct, 1); assert.strictEqual(r.p95, 96); assert.strictEqual(r.msProm, 51);
+    const ahora = Date.UTC(2026, 10, 15, 12);
+    const fotos = Array.from({ length: 288 }, (_, i) => ({ t: new Date(ahora - (288 - i) * 300e3 + 1000), dbOk: i % 48 !== 0 }));
+    assert.strictEqual(M.disponibilidad(fotos, ahora), 97.9);   // 6 fotos sin base de datos de 288
+    assert.strictEqual(M.disponibilidad(fotos.slice(0, 144), ahora), 49);   // 141 buenas de 288: 12 h sin fotos = caído
+    assert.strictEqual(M.disponibilidad([], ahora), null);
 });
 
 console.log(`  ${n} pruebas OK`);

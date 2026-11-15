@@ -367,11 +367,13 @@ let blogsPorHost = null;
 app.use((req, res, next) => blogsPorHost ? blogsPorHost(req, res, next) : next());
 
 // ========== LOGGING DE REQUESTS ==========
+const monitor = require('./modulos/monitor');
 app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
         const duration = Date.now() - start;
         const msg = `[${req.method}] ${req.path} - ${res.statusCode} (${duration}ms)`;
+        monitor.anotar(res.statusCode, duration);   // panel → Empresa → Operación (modulos/monitor.js)
         if (res.statusCode >= 400) logger.warn(msg);
         else logger.info(msg);
     });
@@ -1324,7 +1326,7 @@ require('./rutas/grupos').registrar(app, { verificarToken, Usuario, Notificacion
 // Panel admin → Economía (UpCoins, ventas, Premium, NEXUS, destacadas)
 require('./rutas/adminEconomia').registrar(app, { verificarAdmin, Usuario, Juego, LiveTx: live.LiveTx, Pago, Notificacion, logger, olvidarPerfil: live.olvidarPerfil });
 // Panel admin → Empresa (solo el dueño): estado de resultados, costos, caja, operación, crecimiento y respaldo
-require('./rutas/empresa').registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx: live.LiveTx, logger });
+require('./rutas/empresa').registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx: live.LiveTx, logger, correo, mercadoPago, getPayPalAccessToken, cloudinary, puerto: config.PORT });
 // Estado del correo y envío de prueba (panel admin → Sistema)
 app.get('/admin/sistema/email', verificarAdmin, async (req, res) => res.json({ success: true, ...(await correo.verificar()), ...correo.estado() }));
 app.post('/admin/sistema/email-prueba', verificarAdmin, async (req, res) => {

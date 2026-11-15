@@ -48,6 +48,29 @@ const CATEGORIAS = {
     otros: 'Otros',
 };
 
+// Ingresos que el dueño escribe a mano. «publicidad» = lo que la red pagó de verdad: reemplaza la estimación del mes
+const CATEGORIAS_INGRESO = {
+    publicidad: 'Publicidad (pago real de la red)',
+    patrocinio: 'Patrocinios y colaboraciones',
+    servicios: 'Servicios y ventas fuera de la app',
+    otros_ingresos: 'Otros ingresos',
+};
+
+/**
+ * Número escrito como lo escribe una persona: «12,50», «1.234,56», «1,234.56», «$ 20» o 20.
+ * → número, o NaN si no se entiende.
+ */
+function numeroES(v) {
+    if (typeof v === 'number') return v;
+    let t = String(v ?? '').replace(/[\s$US]/gi, '').trim();
+    if (!t || !/^-?[\d.,]+$/.test(t)) return NaN;
+    const coma = t.lastIndexOf(','), punto = t.lastIndexOf('.');
+    if (coma >= 0 && punto >= 0) t = coma > punto ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');   // el último separador es el decimal
+    else if (coma >= 0) t = /^-?[1-9]\d{0,2}(,\d{3})+$/.test(t) ? t.replace(/,/g, '') : t.replace(',', '.');           // 1,500 = mil quinientos; 12,5 = doce y medio
+    else if (/^-?[1-9]\d{0,2}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');                                     // 1.500 y 1.234.567 = miles (como en Colombia)
+    return Number(t);
+}
+
 const METAS = {
     ingresosUsd: 'Ingresos (USD)', gananciaUsd: 'Ganancia (USD)', cuentasNuevas: 'Cuentas nuevas',
     visitantes: 'Visitantes del mes', premiumActivos: 'Premium activos',
@@ -81,7 +104,7 @@ function configCompleta(guardada) {
 function validarConfig(body, actual = CONFIG_DEF) {
     const b = body || {}, cfg = configCompleta(actual);
     const numero = (v, min, max, nombre) => {
-        const n = Number(v);
+        const n = numeroES(v);
         if (v === '' || v === null || !Number.isFinite(n) || n < min || n > max) throw new Error(`${nombre}: escribe un número entre ${min} y ${max}`);
         return n;
     };
@@ -103,17 +126,18 @@ function validarConfig(body, actual = CONFIG_DEF) {
     return { cfg };
 }
 
-/** Valida un costo nuevo. → { costo } o { error } */
+/** Valida un movimiento nuevo o editado (costo o ingreso manual). → { costo } o { error } */
 function validarCosto(body, mesActual = mesCol()) {
     const b = body || {};
     const mes = String(b.mes || mesActual);
     if (!MES_RE.test(mes) || mes > mesActual) return { error: 'Mes no válido' };
-    if (!CATEGORIAS[b.categoria]) return { error: 'Elige una categoría' };
+    const tipo = b.tipo === 'ingreso' ? 'ingreso' : 'costo';
+    if (!(tipo === 'ingreso' ? CATEGORIAS_INGRESO : CATEGORIAS)[b.categoria]) return { error: 'Elige una categoría' };
     const concepto = String(b.concepto || '').replace(/\s+/g, ' ').trim().slice(0, 80);
-    if (!concepto) return { error: 'Escribe el concepto (por ejemplo «Railway plan Pro»)' };
-    const usd = Number(b.usd);
-    if (!Number.isFinite(usd) || usd <= 0 || usd > 1e6) return { error: 'El monto debe ser mayor que 0 (en USD)' };
-    return { costo: { mes, categoria: b.categoria, concepto, usd: r2(usd), recurrente: b.recurrente === true || b.recurrente === 'true', hastaMes: null } };
+    if (!concepto) return { error: tipo === 'ingreso' ? 'Escribe el concepto (por ejemplo «Pago de AdSense de octubre»)' : 'Escribe el concepto (por ejemplo «Railway plan Pro»)' };
+    const usd = numeroES(b.usd);
+    if (!Number.isFinite(usd) || usd <= 0 || usd > 1e6) return { error: 'El monto debe ser un número mayor que 0 (en USD, por ejemplo 12,50)' };
+    return { costo: { tipo, mes, categoria: b.categoria, concepto, usd: r2(usd), recurrente: b.recurrente === true || b.recurrente === 'true', hastaMes: null } };
 }
 
 /** Los costos que cuentan en un mes: los de ese mes y los recurrentes vigentes. */
@@ -138,11 +162,18 @@ function calcularPyG({ ventas = [], anuncios = {}, blogs = {}, costos = [], cfg 
         creadoresVentas += f.creador || 0;   // también los regalos con UpCoins: esos UC se vendieron antes con dinero
     }
     ing.anunciosVistos = (anuncios.vistos || 0) + (blogs.vistos || 0);
-    ing.publicidadUsd = ing.anunciosVistos / 1000 * (cfg.cpmBrutoUsd || 0);
-    ing.total = ing.ventasUsd + ing.publicidadUsd;
+    ing.publicidadEstimadaUsd = ing.anunciosVistos / 1000 * (cfg.cpmBrutoUsd || 0);
+    // ingresos escritos a mano: la publicidad real (si la hay) reemplaza la estimación
+    const ingManuales = {};
+    for (const c of costos) if (c.tipo === 'ingreso') ingManuales[c.categoria] = (ingManuales[c.categoria] || 0) + (c.usd || 0);
+    ing.publicidadReal = ingManuales.publicidad !== undefined;
+    ing.publicidadUsd = ing.publicidadReal ? ingManuales.publicidad : ing.publicidadEstimadaUsd;
+    ing.otrosUsd = Object.entries(ingManuales).filter(([k]) => k !== 'publicidad').reduce((a, [, v]) => a + v, 0);
+    ing.manuales = Object.fromEntries(Object.entries(ingManuales).map(([k, v]) => [k, r2(v)]));
+    ing.total = ing.ventasUsd + ing.publicidadUsd + ing.otrosUsd;
 
     const manuales = {};
-    for (const c of costos) manuales[c.categoria] = (manuales[c.categoria] || 0) + (c.usd || 0);
+    for (const c of costos) if (c.tipo !== 'ingreso') manuales[c.categoria] = (manuales[c.categoria] || 0) + (c.usd || 0);
     const cos = {
         creadoresVentasUsd: creadoresVentas,
         creadoresPublicidadUsd: anuncios.creadoresUsd || 0,
@@ -238,7 +269,12 @@ function generarAlertas(d) {
     const ult = d.respaldo?.fecha ? new Date(d.respaldo.fecha) : null;
     if (!ult) add('media', 'Sistema', 'Nunca se ha descargado un respaldo de la base de datos', 'emp');
     else if (Date.now() - ult > 30 * 864e5) add('media', 'Sistema', `El último respaldo tiene ${Math.floor((Date.now() - ult) / 864e5)} días`, 'emp');
-    if (!d.cfg?.cpmBrutoUsd) add('info', 'Configuración', 'Falta el CPM que te paga la red publicitaria: los ingresos por publicidad salen en 0', 'emp');
+    for (const c of d.diagnostico?.resultados || []) if (c.estado === 'falla') add(c.critico ? 'alta' : 'media', 'Plataforma', `${c.nombre} no funciona: ${c.detalle}`, 'emp');
+    const mon = d.monitor;
+    if (mon?.disponibilidad24h !== null && mon?.disponibilidad24h !== undefined && mon.disponibilidad24h < 99) add('media', 'Plataforma', `Disponibilidad de las últimas 24 h: ${decTxt(mon.disponibilidad24h)} % (caídas o reinicios)`, 'emp');
+    if (mon?.ahora?.peticiones >= 50 && mon.ahora.erroresPct >= 2) add('alta', 'Plataforma', `${decTxt(mon.ahora.erroresPct)} % de las peticiones están fallando (errores del servidor, últimos 15 min)`, 'emp');
+    if (mon?.ahora?.p95 >= 3000) add('media', 'Plataforma', `La API va lenta: el 5 % más lento tarda ${decTxt(Math.round(mon.ahora.p95 / 100) / 10)} s`, 'emp');
+    if (!d.cfg?.cpmBrutoUsd && !d.pyg?.ingresos?.publicidadReal) add('info', 'Configuración', 'Falta el CPM que te paga la red publicitaria: los ingresos por publicidad salen en 0', 'emp');
     if (!d.costosMesN) add('info', 'Configuración', 'No hay costos registrados este mes: la ganancia sale más alta que la real', 'emp');
     if (d.cfg && (d.cfg.cajaUsd === null || d.cfg.cajaUsd === undefined)) add('info', 'Configuración', 'Escribe la caja disponible para calcular cuántos meses alcanza', 'emp');
     const orden = { alta: 0, media: 1, info: 2 };
@@ -259,7 +295,8 @@ function aCSV(t) {
     L.push(fila('Concepto', ...h.map(m => m.nombre)));
     const lin = (n, f) => L.push(fila(n, ...h.map(m => f(m.pyg))));
     lin('Ventas con dinero', p => p.ingresos.ventasUsd);
-    lin('Publicidad (estimada)', p => p.ingresos.publicidadUsd);
+    lin('Publicidad (real o estimada)', p => p.ingresos.publicidadUsd);
+    lin('Otros ingresos', p => p.ingresos.otrosUsd || 0);
     lin('INGRESOS', p => p.ingresos.total);
     lin('Creadores · ventas y regalos', p => -p.costos.creadoresVentasUsd);
     lin('Creadores · publicidad', p => -p.costos.creadoresPublicidadUsd);
@@ -270,12 +307,21 @@ function aCSV(t) {
     lin('COSTOS TOTALES', p => -p.costos.total);
     lin('GANANCIA', p => p.ganancia);
     lin('Margen %', p => p.margenPct);
-    L.push('', fila('COSTOS REGISTRADOS · ' + t.nombre.toUpperCase()), fila('Categoría', 'Concepto', 'USD', 'Recurrente'));
-    for (const c of t.costos) L.push(fila(CATEGORIAS[c.categoria] || c.categoria, c.concepto, c.usd, c.recurrente ? 'sí' : 'no'));
+    L.push('', fila('MOVIMIENTOS REGISTRADOS · ' + t.nombre.toUpperCase()), fila('Tipo', 'Categoría', 'Concepto', 'USD', 'Recurrente'));
+    for (const c of t.costos) L.push(fila(c.tipo === 'ingreso' ? 'Ingreso' : 'Costo', (c.tipo === 'ingreso' ? CATEGORIAS_INGRESO : CATEGORIAS)[c.categoria] || c.categoria, c.concepto, c.usd, c.recurrente ? 'sí' : 'no'));
     return '﻿' + L.join('\r\n') + '\r\n';
 }
 
-function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger }) {
+/** Estado de un chequeo según su resultado y su latencia. */
+function estadoChequeo({ ok, configurado = true, ms = 0, lentoMs = 2500 }) {
+    if (!configurado) return 'sin_configurar';
+    if (!ok) return 'falla';
+    return ms >= lentoMs ? 'lento' : 'ok';
+}
+
+function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger, correo, mercadoPago, getPayPalAccessToken, cloudinary, puerto, sitioUrl = 'https://upgames.games/' }) {
+    const monitor = require('../modulos/monitor');
+    const nexusLLM = require('../modulos/nexus/llm');
     const db = () => mongoose.connection;
     const colCostos = () => db().collection('empresa_costos');
     const colCfg = () => db().collection('empresa_config');
@@ -369,7 +415,18 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger }
                     mes: { $sum: { $cond: [{ $and: [{ $gte: ['$referidoEn', desde] }, { $lt: ['$referidoEn', hasta] }] }, 1, 0] } } } }]),
             salud(),
         ]);
-        const cfgDoc = await colCfg().findOne({ _id: 'respaldo' }).catch(() => null);
+        const [cfgDoc, diagDoc, fotos24] = await Promise.all([
+            colCfg().findOne({ _id: 'respaldo' }).catch(() => null),
+            colCfg().findOne({ _id: 'diagnostico' }).catch(() => null),
+            monitor.fotos(new Date(ahora - 864e5)).catch(() => []),
+        ]);
+        const monitorDatos = {
+            ahora: monitor.resumen(15, ahora),
+            disponibilidad24h: monitor.disponibilidad(fotos24, ahora),
+            peticiones24h: fotos24.reduce((a, f) => a + (f.peticiones || 0), 0),
+            errores5xx24h: fotos24.reduce((a, f) => a + (f.e5 || 0), 0),
+            fotos: fotos24.map(f => ({ t: f.t, peticiones: f.peticiones, e5: f.e5, p95: f.p95, heapMB: f.heapMB, lagMs: f.lagMs, dbOk: f.dbOk, dbMs: f.dbMs })),
+        };
 
         const c = circ[0] || {}, pp = pagosPend[0];
         const deudaCreadores = r2((c.ganado || 0) + (c.retenido || 0));
@@ -384,7 +441,7 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger }
             visitantes: visitantesMes, premiumActivos }, avanceMes);
         const fr = Object.fromEntries((fraude || []).map(f => [f._id, f.n]));
         const pagos = { n: pp?.n || 0, usd: r2(pp?.usd), masAntiguoDias: pp?.primera ? Math.floor((ahora - new Date(pp.primera)) / 864e5) : 0 };
-        const costosMes = costosDelMes(costosTodos, mes).map(x => ({ id: String(x._id), mes: x.mes, categoria: x.categoria, concepto: x.concepto, usd: x.usd,
+        const costosMes = costosDelMes(costosTodos, mes).map(x => ({ id: String(x._id), tipo: x.tipo === 'ingreso' ? 'ingreso' : 'costo', mes: x.mes, categoria: x.categoria, concepto: x.concepto, usd: x.usd,
             recurrente: !!x.recurrente, desde: x.mes, hastaMes: x.hastaMes || null }));
         const promedio3 = (() => {
             const ult = historia.slice(enCurso ? -4 : -3, enCurso ? -1 : undefined).map(h => h.pyg);
@@ -395,7 +452,7 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger }
 
         const t = {
             mes, nombre: nombreMes(mes), enCurso, avanceMes: Math.round(avanceMes * 1000) / 1000, diasMes: dias.length,
-            generado: ahora, cfg, categorias: CATEGORIAS, nombresMetas: METAS,
+            generado: ahora, cfg, categorias: CATEGORIAS, categoriasIngreso: CATEGORIAS_INGRESO, nombresMetas: METAS,
             pyg: actual.pyg, pygAnterior: anterior.pyg, anterior: anterior.nombre,
             historia: historia.map(h => ({ mes: h.mes, nombre: h.nombre, pyg: h.pyg, retirosPagados: h.retirosPagados })),
             proyeccion: { finMes: enCurso ? proyectarFinMes(actual.pyg, avanceMes) : null, promedio3 },
@@ -415,11 +472,14 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger }
                 pagos,
                 respaldo: cfgDoc ? { fecha: cfgDoc.fecha, por: cfgDoc.por, mb: cfgDoc.mb, colecciones: cfgDoc.colecciones, documentos: cfgDoc.documentos } : null,
                 retencionDatos: RETENCION,
+                monitor: monitorDatos,
+                diagnostico: diagDoc ? { fecha: diagDoc.fecha, resultados: diagDoc.resultados || [] } : null,
             },
             costos: costosMes, metas,
         };
         t.alertas = generarAlertas({ pagos, incidentesAbiertos: incidentes, fraude: fr, erroresNuevos24h: erroresNuevos, runwayMeses: runway,
-            pyg: actual.pyg, enCurso, contracargos: actual.contracargos, metas, enRevision, respaldo: t.operacion.respaldo, cfg, costosMesN: costosMes.length });
+            pyg: actual.pyg, enCurso, contracargos: actual.contracargos, metas, enRevision, respaldo: t.operacion.respaldo, cfg, costosMesN: costosMes.filter(x => x.tipo !== 'ingreso').length,
+            diagnostico: t.operacion.diagnostico, monitor: t.operacion.monitor });
         return t;
     }
 
@@ -516,7 +576,84 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger }
         } finally { respaldoEnCurso = false; }
     });
 
-    return { tablero };
+    // ── Diagnóstico real: prueba cada pieza de la plataforma ──
+    const conTiempo = (p, ms = 8000) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(`no respondió en ${ms / 1000} s`)), ms).unref?.())]);
+    async function chequeo(nombre, critico, fn, { lentoMs, configurado = true } = {}) {
+        const t0 = Date.now();
+        if (!configurado) return { nombre, critico, estado: 'sin_configurar', ms: null, detalle: 'No está configurado' };
+        try {
+            const r = await conTiempo(Promise.resolve().then(fn));
+            const ok = r?.ok !== false, ms = Date.now() - t0;
+            return { nombre, critico, estado: estadoChequeo({ ok, ms, lentoMs }), ms, detalle: String(r?.detalle || (ok ? '' : 'Falla')).slice(0, 200) };
+        } catch (e) { return { nombre, critico, estado: 'falla', ms: Date.now() - t0, detalle: String(e.message || e).slice(0, 200) }; }
+    }
+    const pedir = async (url, opt = {}) => { const r = await fetch(url, { ...opt, signal: AbortSignal.timeout(8000) }); return r; };
+    const env = process.env;
+    async function diagnosticar() {
+        const local = `http://127.0.0.1:${puerto}`;
+        const resultados = await Promise.all([
+            chequeo('Base de datos', true, async () => { await db().db.admin().ping(); return { detalle: 'MongoDB responde' }; }, { lentoMs: 500 }),
+            chequeo('API (salud)', true, async () => { const r = await pedir(`${local}/salud`); return { ok: r.ok, detalle: `HTTP ${r.status}` }; }, { lentoMs: 1500 }),
+            chequeo('Catálogo público', true, async () => { const r = await pedir(`${local}/items?limit=1`); return { ok: r.ok, detalle: `HTTP ${r.status}` }; }, { lentoMs: 2500 }),
+            chequeo('Sitio web', true, async () => { const r = await pedir(sitioUrl, { redirect: 'follow' }); return { ok: r.ok, detalle: `${new URL(sitioUrl).host} · HTTP ${r.status}` }; }, { lentoMs: 3000 }),
+            chequeo('Correo', false, async () => { const e = await correo.verificar(); return { ok: !!e.ok, detalle: e.ok ? `Proveedor: ${e.proveedor}` : e.detalle }; }, { configurado: !!correo }),
+            chequeo('PayPal', true, async () => { await getPayPalAccessToken(); return { detalle: `Credenciales válidas (${env.PAYPAL_MODE === 'live' ? 'producción' : 'pruebas'})` }; },
+                { configurado: !!(getPayPalAccessToken && env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET), lentoMs: 4000 }),
+            chequeo('Mercado Pago', true, async () => { const r = await pedir('https://api.mercadopago.com/users/me', { headers: { Authorization: `Bearer ${String(env.MERCADOPAGO_ACCESS_TOKEN || env.MP_ACCESS_TOKEN).trim()}` } }); return { ok: r.ok, detalle: r.ok ? 'Token válido' : `Rechazó el token (HTTP ${r.status})` }; },
+                { configurado: !!(env.MERCADOPAGO_ACCESS_TOKEN || env.MP_ACCESS_TOKEN), lentoMs: 4000 }),
+            chequeo('Nexus IA', false, async () => { const p = await nexusLLM.ping(); return { ok: !!p.ok, detalle: p.ok ? 'El modelo responde' : (p.error || 'No responde') }; }, { configurado: !!env.GROQ_API_KEY, lentoMs: 4000 }),
+            chequeo('Imágenes (Cloudinary)', false, async () => { await cloudinary.api.ping(); return { detalle: 'Responde' }; },
+                { configurado: !!(cloudinary && (env.CLOUDINARY_URL || env.CLOUDINARY_API_KEY)), lentoMs: 4000 }),
+            chequeo('Avisos de errores', false, async () => ({ detalle: env.SENTRY_DSN ? 'Correo + Sentry' : 'Por correo (Sentry opcional)' })),
+        ]);
+        const doc = { _id: 'diagnostico', fecha: new Date(), resultados };
+        // avisar (correo de alertas) solo cuando algo pasa de funcionar a fallar
+        const antes = await colCfg().findOne({ _id: 'diagnostico' }).catch(() => null);
+        for (const r of resultados) {
+            const prev = antes?.resultados?.find(x => x.nombre === r.nombre);
+            if (r.estado === 'falla' && prev && prev.estado !== 'falla') logger.error(`[diagnóstico] ${r.nombre} dejó de funcionar: ${r.detalle}`);
+        }
+        await colCfg().updateOne({ _id: 'diagnostico' }, { $set: doc }, { upsert: true }).catch(() => {});
+        return doc;
+    }
+
+    app.post('/admin/empresa/diagnostico', verificarAdmin, async (req, res) => {
+        try { ok(res, { diagnostico: await diagnosticar() }); }
+        catch (e) { logger.error(`[empresa] diagnóstico: ${e.message}`); err(res, 500, 'No se pudo ejecutar el diagnóstico'); }
+    });
+
+    // Editar un movimiento. Un recurrente que empezó antes de este mes se parte: el viejo termina el mes
+    // anterior y desde este mes cuenta el nuevo valor (los meses pasados no cambian).
+    app.put('/admin/empresa/costos/:id', verificarAdmin, async (req, res) => {
+        try {
+            if (!mongoose.isValidObjectId(req.params.id)) return err(res, 400, 'ID no válido');
+            const _id = new mongoose.Types.ObjectId(req.params.id);
+            const c = await colCostos().findOne({ _id });
+            if (!c) return err(res, 404, 'Ese movimiento ya no existe');
+            const mesVista = String(req.body?.mes || c.mes);
+            if (!MES_RE.test(mesVista)) return err(res, 400, 'Mes no válido');
+            const partir = c.recurrente && c.mes < mesVista;
+            const r = validarCosto({ ...req.body, tipo: c.tipo, mes: partir ? mesVista : c.mes });
+            if (r.error) return err(res, 400, r.error);
+            if (partir) {
+                await colCostos().updateOne({ _id }, { $set: { hastaMes: mesAnterior(mesVista) } });
+                const nuevo = { ...r.costo, hastaMes: c.hastaMes || null, fecha: new Date(), por: req.admin?.usuario || '', reemplazaA: _id };
+                const ins = await colCostos().insertOne(nuevo);
+                return ok(res, { accion: 'partido', id: String(ins.insertedId) });
+            }
+            await colCostos().updateOne({ _id }, { $set: { categoria: r.costo.categoria, concepto: r.costo.concepto, usd: r.costo.usd, recurrente: r.costo.recurrente, editado: new Date(), por: req.admin?.usuario || '' } });
+            ok(res, { accion: 'editado' });
+        } catch (e) { logger.error(`[empresa] editar: ${e.message}`); err(res, 500, 'No se pudo guardar el cambio'); }
+    });
+
+    // Monitoreo: fotos cada 5 min y diagnóstico automático cada 30 min (solo con la base conectada)
+    if (!registrar._arrancado) {
+        registrar._arrancado = true;
+        const arrancar = () => { monitor.iniciar(logger); setTimeout(() => diagnosticar().catch(() => {}), 60e3).unref?.(); setInterval(() => diagnosticar().catch(() => {}), 30 * 60e3).unref?.(); };
+        if (db().readyState === 1) arrancar(); else db().once('connected', arrancar);
+    }
+
+    return { tablero, diagnosticar };
 }
 
-module.exports = { registrar, calcularPyG, costosDelMes, validarCosto, validarConfig, configCompleta, indicadores, progresoMetas, mesesDeCaja, proyectarFinMes, generarAlertas, aCSV, CATEGORIAS, METAS };
+module.exports = { registrar, numeroES, estadoChequeo, CATEGORIAS_INGRESO, calcularPyG, costosDelMes, validarCosto, validarConfig, configCompleta, indicadores, progresoMetas, mesesDeCaja, proyectarFinMes, generarAlertas, aCSV, CATEGORIAS, METAS };

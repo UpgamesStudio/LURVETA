@@ -35,8 +35,8 @@ La empresa completa en una pantalla. Código: `rutas/empresa.js` · pruebas: `te
 | Pestaña | Qué muestra |
 |---|---|
 | Resumen | Ingresos, costos, ganancia y margen contra el mes anterior; caja y meses que alcanza; cuentas activas, nuevas y Premium; deuda con creadores; **alertas** por urgencia; **metas** del mes; gráfico de 6 meses |
-| Finanzas | Estado de resultados de 6 meses, costos del mes (los escribe el dueño), balance de hoy, proyección al cierre y ventas por producto |
-| Operación | Servidor y base de datos, errores de las últimas 24 h, seguridad y fraude, trabajo pendiente, **respaldo** y cuánto se guarda cada dato |
+| Finanzas | Estado de resultados de 6 meses; **costos e ingresos reales** del mes (se agregan, editan ✏️ y quitan); balance de hoy; proyección al cierre; ventas por producto |
+| Operación | **Diagnóstico** real de cada servicio, **monitoreo en vivo** (disponibilidad, errores, tiempos de respuesta), servidor, errores, seguridad y fraude, trabajo pendiente, **respaldo** y cuánto se guarda cada dato |
 | Crecimiento | ARPU, ARPPU, conversión a pago, % Premium, churn de Premium, CAC, LTV, LTV ÷ CAC, usuarios y referidos |
 | Metas y parámetros | CPM que paga la red publicitaria, comisión de la pasarela, caja disponible y metas mensuales |
 
@@ -50,11 +50,19 @@ Todo es **devengado**: lo generado en el mes, aunque se cobre o pague después.
 - **Publicidad:** anuncios vistos (`stats_items` + `blogvistas`) × el CPM que la red le paga a UpGames. Si el CPM no está escrito, sale en 0.
 - **Creadores:** su parte de las ventas y regalos (`creadorUsd`), el CPM que se les abona (`stats_items.g`) y lo de los blogs (`blogvistas.g` + `gd`).
 - **Comisiones de pasarela:** estimadas, % + fijo por venta.
+- **Montos:** se escriben como en Colombia: `12,50`, `1.500` (mil quinientos) o `1.234,56`. También vale `1,234.56`.
+- **Ingresos escritos a mano:** misma colección, `tipo: 'ingreso'`. Si el mes tiene un ingreso de «Publicidad (pago real de la red)», ese valor reemplaza la estimación por CPM.
+- **Editar un movimiento:** cambia el valor en su mes. Si es un recurrente que empezó antes, se parte: el anterior termina el mes previo y el nuevo valor cuenta desde el mes que estás viendo.
 - **Costos fijos:** colección `empresa_costos`. «Cada mes» repite un costo hasta que se quita. Quitarlo en un mes posterior lo detiene desde ese mes y conserva el historial.
 - **Churn de Premium:** Premium que vencieron en el mes sin renovar ÷ (esos + los activos). Es aproximado.
 - **CAC:** costos de la categoría «Marketing y publicidad» ÷ cuentas nuevas.
 - **LTV:** ARPPU × margen de contribución × vida media (1 ÷ churn, con tope de 24 meses).
 - **Meses de caja:** caja ÷ pérdida media de los últimos 3 meses cerrados. Si no hay pérdidas, no se agota.
+
+### Diagnóstico y monitoreo
+
+- **Diagnóstico** (`POST /admin/empresa/diagnostico`, y solo cada 30 minutos): prueba de verdad la base de datos, la API (`/salud` y el catálogo), el sitio web, el correo, PayPal (pide un token), Mercado Pago (`/users/me`), Nexus IA y Cloudinary. Cada uno queda en *Funciona*, *Lento*, *Falla* o *Sin configurar*. Cuando un servicio pasa de funcionar a fallar se registra un error, y eso dispara el correo de alertas (`modulos/alertas.js`). El último resultado se guarda en `empresa_config` (`_id: 'diagnostico'`).
+- **Monitoreo** (`modulos/monitor.js`): cada petición se anota en memoria (cantidad, errores 4xx/5xx y tiempo). Cada 5 minutos se guarda una foto en `empresa_monitor` (30 días) con peticiones, errores, p95, memoria, retraso del event loop y si la base respondió. La **disponibilidad** es fotos con base de datos OK ÷ fotos esperadas: los huecos son caídas o reinicios.
 
 ### Respaldo
 
@@ -74,8 +82,10 @@ mongoimport --uri "$MONGODB_URI" --collection usuarios --jsonArray --file usuari
 ```
 GET    /admin/empresa?mes=AAAA-MM[&formato=csv]
 PUT    /admin/empresa/config
-POST   /admin/empresa/costos            { mes, categoria, concepto, usd, recurrente }
+POST   /admin/empresa/costos            { tipo: costo|ingreso, mes, categoria, concepto, usd, recurrente }
+PUT    /admin/empresa/costos/:id         { mes, categoria, concepto, usd, recurrente }   (editar)
 DELETE /admin/empresa/costos/:id?mes=AAAA-MM
+POST   /admin/empresa/diagnostico
 POST   /admin/empresa/respaldo
 ```
 

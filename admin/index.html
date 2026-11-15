@@ -614,9 +614,19 @@ a{color:var(--g2)}
 .emp-pyg tr.tot td{font-weight:800;border-top:1px solid var(--line)}
 .emp-pyg .sel{background:rgba(57,255,136,.06)}
 .emp-neg{color:var(--bad)}.emp-pos{color:var(--ok)}
-.emp-form{display:grid;grid-template-columns:1.3fr 2fr 1fr auto auto;gap:8px;align-items:end}
+.emp-form{display:grid;grid-template-columns:auto 1.3fr 2fr 1fr auto auto;gap:8px;align-items:end}
+.emp-seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;height:44px}
+.emp-seg button{padding:0 14px;background:transparent;color:var(--tx2);font-weight:700;font-size:.8rem;border:0;cursor:pointer}
+.emp-seg button.on{background:rgba(57,255,136,.14);color:var(--ok)}.emp-seg button.on.in{background:rgba(92,225,255,.14);color:var(--info)}
+.emp-diag{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.emp-ck{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:.82rem}
+.emp-ck i{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:none}
+.emp-ck b{display:block}.emp-ck small{color:var(--tx3);display:block;line-height:1.3;word-break:break-word}
+.emp-mini{display:flex;align-items:flex-end;gap:1px;height:56px;border-bottom:1px solid var(--line)}
+.emp-mini span{flex:1;background:var(--info);opacity:.75;border-radius:2px 2px 0 0;min-height:1px}
+.emp-mini span.mal{background:var(--bad);opacity:1}
 .emp-cfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px}
-@media(max-width:760px){.emp-form{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.emp-pyg .viejo{display:none}.emp-pyg td:first-child{white-space:normal;min-width:130px}.emp-form{grid-template-columns:1fr 1fr}.emp-form .emp-full{grid-column:1/-1}.emp-form .btn{width:100%;justify-content:center}}
 .emp-dl{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:.82rem;margin:0}.emp-dl dt{color:var(--tx2)}.emp-dl dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 .emp-bars{display:flex;align-items:flex-end;gap:10px;height:140px;border-bottom:1px solid var(--line)}
 .emp-bars>div{flex:1;display:flex;gap:3px;align-items:flex-end;height:100%}
@@ -2138,6 +2148,17 @@ function rEcon() {
 
 // ─────────── Empresa (solo el dueño · rutas/empresa.js) ───────────
 let empAt = 0, empTab = 'res', empCargando = false, empPend = false;
+let empTipo = 'costo', empEdit = null;   // formulario de movimientos: tipo elegido y el que se está editando
+// Monto escrito como lo escribe una persona: 12,50 · 1.234,56 · 1,234.56 (el servidor lo vuelve a validar)
+function empNum(v) {
+  let t = String(v ?? '').replace(/[\s$]/g, ''); if (!t) return NaN;
+  const c = t.lastIndexOf(','), p = t.lastIndexOf('.');
+  if (c >= 0 && p >= 0) t = c > p ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');
+  else if (c >= 0) t = /^-?[1-9]\d{0,2}(,\d{3})+$/.test(t) ? t.replace(/,/g, '') : t.replace(',', '.');
+  else if (/^-?[1-9]\d{0,2}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');   // 1.500 = mil quinientos
+  return Number(t);
+}
+const empNumIn = v => sinDato(v) ? '' : String(v).replace('.', ',');
 chips('empTab', f => { empTab = f; rEmp(); });
 const empMesHoy = () => new Date(Date.now() - 5 * 3600e3).toISOString().slice(0, 7);   // hora de Colombia
 function empMesesInit() {
@@ -2185,7 +2206,7 @@ const EMP_NIVEL = { alta: ['t-bad', 'Urgente'], media: ['t-warn', 'Atención'], 
 // Una alerta de la propia sección Empresa abre la pestaña que la resuelve
 function empIr(a) {
   if (a.ir !== 'emp') return go(a.ir);
-  empTab = { Configuración: 'cfg', Metas: 'cfg', Sistema: 'ope' }[a.area] || 'fin';
+  empTab = { Configuración: 'cfg', Metas: 'cfg', Sistema: 'ope', Plataforma: 'ope' }[a.area] || 'fin';
   $('empTab').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.f === empTab)); rEmp();
 }
 
@@ -2219,7 +2240,8 @@ function empFin() {
   const E = EMP, H = E.historia, B = E.balance;
   const filas = [
     ['Ventas con dinero', p => p.ingresos.ventasUsd, '', 'Premium, UpCoins, NEXUS, destacados… pagados con tarjeta o PayPal'],
-    ['Publicidad (estimada)', p => p.ingresos.publicidadUsd, '', `Anuncios vistos × CPM de la red (${usd(E.cfg.cpmBrutoUsd)} por 1.000)`],
+    ['Publicidad', p => p.ingresos.publicidadUsd, '', `Real si escribiste el pago de la red en el mes; si no, estimada: anuncios vistos × ${usd(E.cfg.cpmBrutoUsd)} por 1.000`],
+    ['Otros ingresos', p => p.ingresos.otrosUsd || 0, '', 'Patrocinios, servicios y otros que escribiste'],
     ['Ingresos', p => p.ingresos.total, 'tot'],
     ['Creadores · ventas y regalos', p => -p.costos.creadoresVentasUsd, '', 'Su parte de regalos, Super Chat, apoyos, accesos y fondo Premium'],
     ['Creadores · publicidad', p => -p.costos.creadoresPublicidadUsd, '', 'CPM que se les abona por los anuncios de sus publicaciones'],
@@ -2232,16 +2254,25 @@ function empFin() {
     ['Margen', p => p.margenPct, 'pct'],
   ];
   const ultimo = H.length - 1;
-  const pyg = `<div style="overflow:auto"><table class="tbl emp-pyg"><tr><th>Concepto</th>${H.map((h, i) => `<th class="num${i === ultimo ? ' sel' : ''}">${esc(h.nombre.replace(' de ', ' '))}</th>`).join('')}</tr>${filas.map(([n, f, cls, h]) => `<tr class="${cls === 'tot' ? 'tot' : ''}"><td>${esc(n)}${h ? `<div class="emp-hint">${esc(h)}</div>` : ''}</td>${H.map((x, i) => { const v = f(x.pyg); return `<td class="num${i === ultimo ? ' sel' : ''}">${cls === 'pct' ? pctTxt(v) : cls === 'tot' ? empSigno(v) : usd(v)}</td>`; }).join('')}</tr>`).join('')}</table></div>`;
-  const cats = Object.entries(E.categorias).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join('');
+  const pyg = `<div style="overflow:auto"><table class="tbl emp-pyg"><tr><th>Concepto</th>${H.map((h, i) => `<th class="num${i === ultimo ? ' sel' : ''}${i < ultimo - 1 ? ' viejo' : ''}">${esc(h.nombre.replace(' de ', ' '))}</th>`).join('')}</tr>${filas.map(([n, f, cls, h]) => `<tr class="${cls === 'tot' ? 'tot' : ''}"><td>${esc(n)}${h ? `<div class="emp-hint">${esc(h)}</div>` : ''}</td>${H.map((x, i) => { const v = f(x.pyg); return `<td class="num${i === ultimo ? ' sel' : ''}${i < ultimo - 1 ? ' viejo' : ''}">${cls === 'pct' ? pctTxt(v) : cls === 'tot' ? empSigno(v) : usd(v)}</td>`; }).join('')}</tr>`).join('')}</table></div>`;
+  const ed = empEdit && E.costos.find(c => c.id === empEdit); if (!ed) empEdit = null; else empTipo = ed.tipo;
+  const catsDe = t => Object.entries(t === 'ingreso' ? E.categoriasIngreso : E.categorias).map(([k, n]) => `<option value="${k}"${ed?.categoria === k ? ' selected' : ''}>${esc(n)}</option>`).join('');
   const form = `<div class="emp-form">
-      <div class="fg"><label class="lbl" for="ecCat2">Categoría</label><select class="in" id="ecCat2">${cats}</select></div>
-      <div class="fg"><label class="lbl" for="ecCon">Concepto</label><input class="in" id="ecCon" maxlength="80" placeholder="Ej.: Railway plan Pro" autocomplete="off"></div>
-      <div class="fg"><label class="lbl" for="ecUsd">Monto (USD)</label><input class="in" id="ecUsd" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00"></div>
-      <label class="row small muted" style="gap:6px;cursor:pointer;padding-bottom:10px"><input type="checkbox" id="ecRec" style="accent-color:#32D583"> Cada mes</label>
-      <button class="btn pri" style="margin-bottom:2px" onclick="empAddCosto()"><ion-icon name="add-outline"></ion-icon> Agregar</button></div>`;
-  const lista = E.costos.length ? `<table class="tbl" style="margin-top:12px"><tr><th>Categoría</th><th>Concepto</th><th class="num">USD</th><th></th></tr>${E.costos.map(c => `<tr><td class="small">${esc(E.categorias[c.categoria] || c.categoria)}</td><td>${esc(c.concepto)}${c.recurrente ? ` <span class="tag t-ok" title="Se repite cada mes desde ${esc(c.desde)}">cada mes</span>` : ''}</td><td class="num">${usd(c.usd)}</td><td class="num"><button class="btn sm ghost" onclick="empDelCosto('${esc(c.id)}')" aria-label="Quitar ${esc(c.concepto)}"><ion-icon name="trash-outline"></ion-icon></button></td></tr>`).join('')}<tr class="tot"><td colspan="2"><b>Total costos fijos del mes</b></td><td class="num">${usd(E.pyg.costos.manualesUsd)}</td><td></td></tr></table>`
-    : '<div class="empty" style="padding:16px">Aún no hay costos en este mes. Empieza por los que pagas siempre: servidor, base de datos, correo, IA y dominio (marca «Cada mes»).</div>';
+      <div class="fg"><label class="lbl">Tipo</label><div class="emp-seg" role="group" aria-label="Tipo de movimiento"><button type="button" class="${empTipo === 'costo' ? 'on' : ''}" onclick="empSetTipo('costo')"${ed ? ' disabled' : ''}>Costo</button><button type="button" class="${empTipo === 'ingreso' ? 'on in' : ''}" onclick="empSetTipo('ingreso')"${ed ? ' disabled' : ''}>Ingreso</button></div></div>
+      <div class="fg"><label class="lbl" for="ecCat2">Categoría</label><select class="in" id="ecCat2">${catsDe(empTipo)}</select></div>
+      <div class="fg emp-full"><label class="lbl" for="ecCon">Concepto</label><input class="in" id="ecCon" maxlength="80" value="${esc(ed?.concepto || '')}" placeholder="${empTipo === 'ingreso' ? 'Ej.: Pago de AdSense de octubre' : 'Ej.: Railway plan Pro'}" autocomplete="off"></div>
+      <div class="fg"><label class="lbl" for="ecUsd">Monto (USD)</label><input class="in" id="ecUsd" type="text" inputmode="decimal" value="${ed ? empNumIn(ed.usd) : ''}" placeholder="12,50" autocomplete="off" onkeydown="if(event.key==='Enter')empGuardarMov()"></div>
+      <label class="row small muted" style="gap:6px;cursor:pointer;padding-bottom:10px"><input type="checkbox" id="ecRec" style="accent-color:#32D583"${ed?.recurrente ? ' checked' : ''}> Cada mes</label>
+      <div class="row emp-full" style="gap:6px"><button class="btn pri" style="margin-bottom:2px" onclick="empGuardarMov()"><ion-icon name="${ed ? 'save-outline' : 'add-outline'}"></ion-icon> ${ed ? 'Guardar cambios' : 'Agregar'}</button>${ed ? '<button class="btn ghost" style="margin-bottom:2px" onclick="empEditar(null)">Cancelar</button>' : ''}</div></div>
+      ${ed ? `<p class="emp-hint" style="margin-top:6px">✏️ Editando «${esc(ed.concepto)}».${ed.recurrente && ed.desde < E.mes ? ` Como se repite desde ${esc(ed.desde)}, el cambio cuenta desde ${esc(E.nombre)}; los meses anteriores no cambian.` : ''}</p>` : ''}
+      ${empTipo === 'ingreso' ? '<p class="emp-hint" style="margin-top:6px">💡 Si escribes un ingreso de «Publicidad (pago real de la red)», ese valor reemplaza la estimación por CPM de este mes.</p>' : ''}`;
+  const nomCat = c => (c.tipo === 'ingreso' ? E.categoriasIngreso : E.categorias)[c.categoria] || c.categoria;
+  const filasMov = lista => lista.map(c => `<tr${c.id === empEdit ? ' style="background:rgba(57,255,136,.06)"' : ''}><td class="small">${esc(nomCat(c))}</td><td style="white-space:normal">${esc(c.concepto)}${c.recurrente ? ` <span class="tag t-ok" title="Se repite cada mes desde ${esc(c.desde)}">cada mes</span>` : ''}</td><td class="num ${c.tipo === 'ingreso' ? 'emp-pos' : ''}">${c.tipo === 'ingreso' ? '+' : ''}${usd(c.usd)}</td><td class="num" style="white-space:nowrap"><button class="btn sm ghost" onclick="empEditar('${esc(c.id)}')" aria-label="Editar ${esc(c.concepto)}" title="Editar"><ion-icon name="create-outline"></ion-icon></button><button class="btn sm ghost" onclick="empDelCosto('${esc(c.id)}')" aria-label="Quitar ${esc(c.concepto)}" title="Quitar"><ion-icon name="trash-outline"></ion-icon></button></td></tr>`).join('');
+  const cos = E.costos.filter(c => c.tipo !== 'ingreso'), ings = E.costos.filter(c => c.tipo === 'ingreso');
+  const lista = (cos.length || ings.length) ? `<div style="overflow:auto"><table class="tbl" style="margin-top:12px"><tr><th>Categoría</th><th>Concepto</th><th class="num">USD</th><th></th></tr>
+      ${ings.length ? `${filasMov(ings)}<tr class="tot"><td colspan="2"><b>Ingresos escritos a mano</b></td><td class="num emp-pos">+${usd(ings.reduce((a, c) => a + c.usd, 0))}</td><td></td></tr>` : ''}
+      ${cos.length ? `${filasMov(cos)}<tr class="tot"><td colspan="2"><b>Total costos fijos del mes</b></td><td class="num">${usd(E.pyg.costos.manualesUsd)}</td><td></td></tr>` : ''}</table></div>`
+    : '<div class="empty" style="padding:16px">Aún no hay movimientos en este mes. Empieza por los costos que pagas siempre: servidor, base de datos, correo, IA y dominio (marca «Cada mes»).</div>';
   const pr = E.proyeccion;
   const bal = empDl([
     ['💵 Caja disponible', usd(B.cajaUsd), B.cajaFecha ? `Escrita el ${fdate(B.cajaFecha)}` : 'Escríbela en Metas y parámetros'],
@@ -2259,14 +2290,30 @@ function empFin() {
   ]);
   const prod = Object.entries(E.pyg.ingresos.porProducto).sort((a, b) => b[1].usd - a[1].usd);
   const tProd = prod.length ? `<table class="tbl"><tr><th>Producto</th><th class="num">Ventas</th><th class="num">USD</th></tr>${prod.map(([k, v]) => `<tr><td>${prodNombre(k)}</td><td class="num muted">${num(v.n)}</td><td class="num">${usd(v.usd)}</td></tr>`).join('')}</table>` : '<div class="empty" style="padding:16px">Sin ventas con dinero este mes</div>';
-  return empCard('🧾 Estado de resultados', 'Últimos 6 meses en USD · devengado: lo generado en cada mes, aunque se cobre o pague después', pyg)
-    + empCard(`💸 Costos de ${esc(E.nombre)}`, 'Lo que pagas a proveedores y personas. «Cada mes» lo repite en los meses siguientes hasta que lo quites', form + lista)
+  return empCard('🧾 Estado de resultados', 'Últimos 6 meses en USD (en el celular: este mes y el anterior; el Excel trae los 6) · devengado: lo generado en cada mes, aunque se cobre o pague después', pyg)
+    + empCard(`💸 Costos e ingresos reales de ${esc(E.nombre)}`, 'Escribe lo que pagas y lo que cobras fuera de la app. «Cada mes» lo repite en los meses siguientes hasta que lo quites. Toca ✏️ para corregir un valor', form + lista)
     + `<div class="grid2" style="margin-bottom:14px">${empCard('🏦 Balance de hoy', 'Lo que tienes y lo que debes', bal, ';margin-bottom:0')}${empCard('🔮 Proyección', pr.finMes ? 'Al ritmo de lo que va del mes' : 'Promedio de los últimos meses cerrados', proy || '<div class="empty" style="padding:16px">Aún no hay meses suficientes</div>', ';margin-bottom:0')}</div>`
     + empCard('🛒 Ventas por producto', 'Solo lo pagado con dinero en el mes', tProd);
 }
 
 function empOpe() {
-  const O = EMP.operacion, S2 = O.servidor, Se = O.seguridad, F = Se.fraude, R = O.respaldo;
+  const O = EMP.operacion, S2 = O.servidor, Se = O.seguridad, F = Se.fraude, R = O.respaldo, Dg = O.diagnostico, Mo = O.monitor || {};
+  const COL = { ok: 'var(--ok)', lento: 'var(--warn)', falla: 'var(--bad)', sin_configurar: 'var(--tx3)' }, TXT = { ok: 'Funciona', lento: 'Lento', falla: 'Falla', sin_configurar: 'Sin configurar' };
+  const fallas = (Dg?.resultados || []).filter(r => r.estado === 'falla'), lentos = (Dg?.resultados || []).filter(r => r.estado === 'lento');
+  const general = !Dg ? ['var(--tx3)', 'Aún sin diagnóstico: ejecútalo ahora'] : fallas.length ? ['var(--bad)', `${fallas.length} servicio(s) con fallas`] : lentos.length ? ['var(--warn)', `Todo responde; ${lentos.length} lento(s)`] : ['var(--ok)', 'Todo funciona'];
+  const diag = `<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div class="row" style="gap:10px;flex-wrap:nowrap;min-width:0"><span style="flex:none;width:14px;height:14px;border-radius:50%;background:${general[0]};box-shadow:0 0 12px ${general[0]}"></span><div><b>${general[1]}</b><div class="emp-hint">${Dg ? `Última prueba ${ago(Dg.fecha) === 'ahora' ? 'hace un momento' : 'hace ' + ago(Dg.fecha)} · se repite sola cada 30 min y te avisa por correo si algo deja de funcionar` : 'Se ejecuta solo cada 30 minutos'}</div></div></div>
+      <button class="btn sm pri" id="empDgBtn" onclick="empDiagnosticar()"><ion-icon name="pulse-outline"></ion-icon> Probar ahora</button></div>`
+    + (Dg ? `<div class="emp-diag">${Dg.resultados.map(r => `<div class="emp-ck" style="border-color:color-mix(in srgb,${COL[r.estado]} 35%,transparent)"><i style="background:${COL[r.estado]}"></i><div><b>${esc(r.nombre)}</b><small>${TXT[r.estado]}${r.ms !== null && r.estado !== 'sin_configurar' ? ` · ${num(r.ms)} ms` : ''}${r.detalle ? ' · ' + esc(r.detalle) : ''}</small></div></div>`).join('')}</div>` : '');
+  const ah = Mo.ahora || {}, fotos = Mo.fotos || [];
+  const maxP = Math.max(1, ...fotos.map(f => f.peticiones || 0));
+  const mini = fotos.length ? `<div class="emp-mini">${fotos.map(f => `<span class="${!f.dbOk || f.e5 ? 'mal' : ''}" style="height:${Math.max(2, (f.peticiones || 0) / maxP * 100)}%" data-tip="${new Date(f.t).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })} · ${num(f.peticiones)} peticiones${f.e5 ? ` · ${num(f.e5)} errores` : ''} · p95 ${f.p95 ?? '—'} ms · ${f.heapMB} MB${f.dbOk ? '' : ' · BASE DE DATOS SIN RESPUESTA'}"></span>`).join('')}</div><div class="emp-x"><span style="text-align:left">hace 24 h</span><span style="text-align:right">ahora</span></div>` : '<div class="empty" style="padding:12px">Las primeras mediciones aparecen a los 5 minutos de arrancar el servidor</div>';
+  const mon = empDl([
+    ['Disponibilidad (24 h)', sinDato(Mo.disponibilidad24h) ? '—' : `<span class="${Mo.disponibilidad24h >= 99 ? 'emp-pos' : 'emp-neg'}">${pctTxt(Mo.disponibilidad24h)}</span>`, 'Tiempo con el servidor y la base de datos respondiendo'],
+    ['Peticiones por minuto (15 min)', String(ah.porMinuto ?? 0).replace('.', ',')],
+    ['Errores del servidor (15 min)', `<span class="${ah.erroresPct >= 1 ? 'emp-neg' : ''}">${pctTxt(ah.erroresPct ?? 0)}</span> <span class="muted small">(${num(ah.e5 || 0)} de ${num(ah.peticiones || 0)})</span>`],
+    ['Tiempo de respuesta', ah.msProm === null || ah.msProm === undefined ? '—' : `${num(ah.msProm)} ms <span class="muted small">· p95 ${num(ah.p95)} ms</span>`, 'p95: lo que tarda el 5 % más lento'],
+    ['Peticiones en 24 h', `${num(Mo.peticiones24h || 0)} <span class="muted small">· ${num(Mo.errores5xx24h || 0)} con error</span>`],
+  ]);
   const fmtUpS = s => fmtUp(s || 0);
   const srv = empDl([
     ['Base de datos', S2.db ? `<span class="emp-pos">● responde</span> <span class="muted small">${num(S2.dbMs)} ms</span>` : '<span class="emp-neg">● sin respuesta</span>'],
@@ -2293,7 +2340,9 @@ function empOpe() {
     <button class="btn pri" id="empRespBtn" style="margin-top:12px" onclick="empRespaldo()"><ion-icon name="cloud-download-outline"></ion-icon> Descargar respaldo completo</button>
     <p class="emp-hint" style="margin-top:8px">Copia de todas las colecciones (cuentas, publicaciones, ventas, pagos, blogs…) en EJSON: conserva los ID, fechas y números exactos. Incluye datos personales y contraseñas cifradas: guárdalo cifrado y fuera de este equipo. Cómo restaurarlo: docs/panel-admin.md → Respaldo.</p>`;
   const ret = `<table class="tbl">${O.retencionDatos.map(([a, b]) => `<tr><td>${esc(a)}</td><td class="num muted">${esc(b)}</td></tr>`).join('')}</table><p class="emp-hint" style="margin-top:8px">Lo que se borra solo se conserva en el informe mensual: descárgalo cada mes en Informes.</p>`;
-  return `<div class="grid2" style="margin-bottom:14px">${empCard('🖥️ Servidor', 'Estado ahora mismo', srv, ';margin-bottom:0')}${empCard('🐞 Errores', 'Servidor y navegador de los usuarios', errores, ';margin-bottom:0')}</div>`
+  return empCard('🩺 Diagnóstico de la plataforma', 'Prueba de verdad cada servicio: base de datos, API, sitio web, pagos, correo, IA e imágenes', diag)
+    + empCard('📡 Monitoreo en vivo', 'Medido en cada petición real de los usuarios · barras rojas = errores o base de datos sin respuesta', mini + '<div style="margin-top:12px"></div>' + mon)
+    + `<div class="grid2" style="margin-bottom:14px">${empCard('🖥️ Servidor', 'Estado ahora mismo', srv, ';margin-bottom:0')}${empCard('🐞 Errores', 'Servidor y navegador de los usuarios', errores, ';margin-bottom:0')}</div>`
     + `<div class="grid2" style="margin-bottom:14px">${empCard('🛡️ Seguridad y fraude', 'Lo que pone en riesgo a la comunidad y al dinero', seg, ';margin-bottom:0')}${empCard('📋 Trabajo pendiente', 'Toca un número para ir a la sección', pend, ';margin-bottom:0')}</div>`
     + `<div class="grid2">${empCard('💾 Respaldo de la base de datos', 'Una copia tuya, fuera del servidor, por si algo sale mal', resp, ';margin-bottom:0')}${empCard('🗂️ Cuánto se guarda cada dato', '', ret, ';margin-bottom:0')}</div>`;
 }
@@ -2326,19 +2375,20 @@ function empCre() {
 
 function empCfg() {
   const c = EMP.cfg, M = EMP.nombresMetas;
-  const campo = (id, l, v, h, extra = '') => `<div class="fg"><label class="lbl" for="${id}">${l}</label><input class="in" id="${id}" type="number" inputmode="decimal" value="${sinDato(v) ? '' : esc(v)}" ${extra}>${h ? `<div class="emp-hint">${h}</div>` : ''}</div>`;
+  const campo = (id, l, v, h, extra = '') => `<div class="fg"><label class="lbl" for="${id}">${l}</label><input class="in" id="${id}" type="text" inputmode="decimal" autocomplete="off" value="${esc(empNumIn(v))}" ${extra}>${h ? `<div class="emp-hint">${h}</div>` : ''}</div>`;
   return empCard('⚙️ Parámetros', 'Con esto se calculan los ingresos por publicidad, las comisiones y los meses de caja', `<div class="emp-cfg">
-      ${campo('ecfCpm', 'CPM de la red publicitaria (USD)', c.cpmBrutoUsd, 'Lo que la red te paga por 1.000 anuncios vistos. Míralo en el panel de tu red de anuncios.', 'min="0" max="100" step="0.01"')}
-      ${campo('ecfPct', 'Comisión de la pasarela (%)', c.comisionPct, 'PayPal o Mercado Pago, por venta', 'min="0" max="30" step="0.1"')}
-      ${campo('ecfFija', 'Comisión fija por venta (USD)', c.comisionFijaUsd, '', 'min="0" max="5" step="0.01"')}
-      ${campo('ecfCaja', 'Caja disponible hoy (USD)', c.cajaUsd, c.cajaFecha ? `Actualizada el ${fdate(c.cajaFecha)}. Déjala vacía si no quieres usarla.` : 'Suma de tus cuentas (PayPal, banco…). Déjala vacía si no quieres usarla.', 'step="0.01"')}</div>`)
-    + empCard('🎯 Metas mensuales', 'Se comparan con cada mes. Deja en 0 las que no quieras seguir', `<div class="emp-cfg">${Object.entries(M).map(([k, n]) => campo('ecfM-' + k, esc(n), c.metas[k] || 0, '', 'min="0" step="1"')).join('')}</div>`)
+      ${campo('ecfCpm', 'CPM de la red publicitaria (USD)', c.cpmBrutoUsd, 'Lo que la red te paga por 1.000 anuncios vistos (por ejemplo 2,50). Si escribes el pago real del mes en Finanzas, se usa ese.')}
+      ${campo('ecfPct', 'Comisión de la pasarela (%)', c.comisionPct, 'PayPal o Mercado Pago, por venta (por ejemplo 5,4)')}
+      ${campo('ecfFija', 'Comisión fija por venta (USD)', c.comisionFijaUsd, 'Por ejemplo 0,30')}
+      ${campo('ecfCaja', 'Caja disponible hoy (USD)', c.cajaUsd, c.cajaFecha ? `Actualizada el ${fdate(c.cajaFecha)}. Déjala vacía si no quieres usarla.` : 'Suma de tus cuentas (PayPal, banco…). Déjala vacía si no quieres usarla.')}</div>`)
+    + empCard('🎯 Metas mensuales', 'Se comparan con cada mes. Deja en 0 las que no quieras seguir', `<div class="emp-cfg">${Object.entries(M).map(([k, n]) => campo('ecfM-' + k, esc(n), c.metas[k] || 0, '')).join('')}</div>`)
     + `<button class="btn pri" id="ecfBtn" onclick="empGuardarCfg()"><ion-icon name="save-outline"></ion-icon> Guardar</button>`;
 }
 
 async function empGuardarCfg() {
-  const v = id => $(id).value.trim();
-  const body = { cpmBrutoUsd: v('ecfCpm'), comisionPct: v('ecfPct'), comisionFijaUsd: v('ecfFija'), cajaUsd: v('ecfCaja'),
+  // (se envía el número ya interpretado: 12,50 → 12.5; un texto que no es número llega tal cual y el servidor explica el error)
+  const v = id => { const t = $(id).value.trim(); if (!t) return ''; const n = empNum(t); return Number.isFinite(n) ? n : t; };
+  const body = { cpmBrutoUsd: v('ecfCpm') || 0, comisionPct: v('ecfPct'), comisionFijaUsd: v('ecfFija'), cajaUsd: v('ecfCaja'),
     metas: Object.fromEntries(Object.keys(EMP.nombresMetas).map(k => [k, v('ecfM-' + k) || 0])) };
   $('ecfBtn').disabled = true;
   try {
@@ -2348,24 +2398,46 @@ async function empGuardarCfg() {
   } catch (e) { if (e.message !== '401') toast(e.message, 'err'); }
   finally { const b = $('ecfBtn'); if (b) b.disabled = false; }
 }
-async function empAddCosto() {
-  const body = { mes: EMP.mes, categoria: $('ecCat2').value, concepto: $('ecCon').value.trim(), usd: $('ecUsd').value, recurrente: $('ecRec').checked };
-  if (!body.concepto) { toast('Escribe el concepto', 'err'); return $('ecCon').focus(); }
-  if (!(Number(body.usd) > 0)) { toast('Escribe un monto mayor que 0', 'err'); return $('ecUsd').focus(); }
+async function empDiagnosticar() {
+  const b = $('empDgBtn'); if (b) { b.disabled = true; b.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Probando…'; }
   try {
-    const { ok, d } = await api('/admin/empresa/costos', { method: 'POST', body });
+    const { ok, d } = await api('/admin/empresa/diagnostico', { method: 'POST' });
+    if (!ok || !d.success) throw new Error(d?.error || 'No se pudo ejecutar');
+    const f = d.diagnostico.resultados.filter(r => r.estado === 'falla').length;
+    toast(f ? `⚠ ${f} servicio(s) con fallas` : '✓ Diagnóstico completo: todo funciona', f ? 'err' : 'ok');
+    await loadEmp(true);
+  } catch (e) { if (e.message !== '401') toast(e.message, 'err'); const b2 = $('empDgBtn'); if (b2) { b2.disabled = false; b2.innerHTML = '<ion-icon name="pulse-outline"></ion-icon> Probar ahora'; } }
+}
+function empSetTipo(t) {
+  if (empEdit || empTipo === t) return;
+  const con = $('ecCon')?.value || '', monto = $('ecUsd')?.value || '', rec = $('ecRec')?.checked;   // no perder lo ya escrito
+  empTipo = t; rEmp();
+  $('ecCon').value = con; $('ecUsd').value = monto; $('ecRec').checked = !!rec; $('ecCon').focus();
+}
+function empEditar(id) { empEdit = id; if (!id) empTipo = 'costo'; rEmp(); if (id) setTimeout(() => { $('ecUsd')?.focus(); $('ecUsd')?.select(); $('ecCon')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 40); }
+async function empGuardarMov() {
+  const monto = empNum($('ecUsd').value);
+  const body = { mes: EMP.mes, tipo: empTipo, categoria: $('ecCat2').value, concepto: $('ecCon').value.trim(), usd: monto, recurrente: $('ecRec').checked };
+  if (!body.concepto) { toast('Escribe el concepto', 'err'); return $('ecCon').focus(); }
+  if (!(monto > 0)) { toast('Escribe el monto en USD, por ejemplo 12,50', 'err'); return $('ecUsd').focus(); }
+  const editando = empEdit;
+  try {
+    const { ok, d } = await api(editando ? `/admin/empresa/costos/${encodeURIComponent(editando)}` : '/admin/empresa/costos', { method: editando ? 'PUT' : 'POST', body });
     if (!ok || !d.success) throw new Error(d?.error || 'No se pudo guardar');
-    toast(`✓ Costo agregado${body.recurrente ? ' (se repetirá cada mes)' : ''}`); await loadEmp(true);
+    empEdit = null;
+    toast(editando ? (d.accion === 'partido' ? '✓ Cambio guardado desde este mes' : '✓ Cambio guardado') : `✓ ${empTipo === 'ingreso' ? 'Ingreso' : 'Costo'} agregado${body.recurrente ? ' (se repetirá cada mes)' : ''}`);
+    await loadEmp(true);
   } catch (e) { if (e.message !== '401') toast(e.message, 'err'); }
 }
 async function empDelCosto(id) {
   const c = EMP.costos.find(x => x.id === id); if (!c) return;
+  if (empEdit === id) empEdit = null;
   const detener = c.recurrente && c.desde < EMP.mes;
   if (!confirm(detener ? `«${c.concepto}» dejará de contar desde ${EMP.nombre}. Los meses anteriores no cambian. ¿Continuar?` : `¿Eliminar «${c.concepto}»${c.recurrente ? ' de todos los meses' : ''}?`)) return;
   try {
     const { ok, d } = await api(`/admin/empresa/costos/${encodeURIComponent(id)}?mes=${EMP.mes}`, { method: 'DELETE' });
     if (!ok || !d.success) throw new Error(d?.error || 'No se pudo quitar');
-    toast(d.accion === 'detenido' ? '✓ Deja de repetirse desde este mes' : '🗑 Costo eliminado'); await loadEmp(true);
+    toast(d.accion === 'detenido' ? '✓ Deja de repetirse desde este mes' : '🗑 Eliminado'); await loadEmp(true);
   } catch (e) { if (e.message !== '401') toast(e.message, 'err'); }
 }
 async function empCSV() {
