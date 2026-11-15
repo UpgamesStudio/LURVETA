@@ -12,6 +12,14 @@ const AtribucionBlog = require('../modulos/blogs/atribucion');
 const { Blog, Entrada, BlogVista } = require('../modulos/blogs/modelos')(mongoose);
 // `via` = entrada de blog de la que llegó la persona (opcional). Se normaliza: cualquier otra cosa se ignora.
 const viaDe = v => (typeof v === 'string' && /^[a-f0-9]{24}$/i.test(v) ? v.toLowerCase() : '');
+async function usarAcortador(req, via) {
+    try {
+        const u = usuarioOpcional && usuarioOpcional(req);
+        if (u) { const d = await Usuario.findOne({ usuario: u }).select('planHasta').lean(); if (d?.planHasta && new Date(d.planHasta) > new Date()) return false; }
+        if (via) { const e = await Entrada.findById(via).select('blog').lean(); const b = e && await Blog.findById(e.blog).select('monetizar').lean(); return !!b?.monetizar; }
+        return true;
+    } catch (_) { return true; }
+}
 app.post('/economia/ticket', [body('juegoId').isMongoId()], async (req, res) => {
     if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'ID inválido' });
     if (!(await Limites.permitir(`ticket:${req.ip}`, [[Limites.MIN, 20]]))) return res.status(429).json({ success: false, error: 'Demasiadas peticiones' });
@@ -25,6 +33,12 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
 
         const { juegoId, tieneAdBlocker } = req.body;
         const ip = req.ip;
+
+        // Acortador de anuncios (Cuty): toda respuesta que entrega el enlace dice si se usa o no.
+        // No se usa con Premium ni cuando la descarga viene de un blog cuyo creador no activó la monetización.
+        const acortador = await usarAcortador(req, viaDe(req.body.via));
+        const responder = res.json.bind(res);
+        res.json = o => responder(o && o.link ? { ...o, acortador } : o);
 
         logger.info(`Validación de descarga - Juego: ${juegoId}, IP: ${ip}, AdBlocker: ${tieneAdBlocker ? '⚠️ SÍ' : '✅ NO'}`);
 

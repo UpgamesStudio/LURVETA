@@ -83,6 +83,7 @@
         .debug-info { background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 5px; font-size: 0.7rem; color: #666; margin-top: 15px; text-align: left; max-height: 200px; overflow-y: auto; }
     </style>
 <script src="./upgames-errores.js?v=20261029i"></script>
+<script src="./upgames-cuty.js?v=20261115a"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./upgames-neo-paginas.css?v=20261112a">
@@ -183,6 +184,20 @@
         // ⭐ ESTADO
         let countdown = 30;
         let enlaceFinal = null;
+        // Acortador de anuncios (Cuty): lo decide el servidor; nunca con Premium ni con acceso directo
+        let usarCuty = false;
+        // Dentro de la app (WebView de Android) las ventanas nuevas fallan: se abre el navegador del teléfono
+        const EN_APP = /; wv\)|UpGamesApp/i.test(navigator.userAgent) || !!window.Capacitor;
+        function abrirFuera(url) {
+            if (EN_APP && /Android/i.test(navigator.userAgent)) {
+                const u = new URL(url);
+                location.href = `intent://${u.host}${u.pathname}${u.search}#Intent;scheme=${u.protocol.replace(':', '')};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+                return true;
+            }
+            const w = window.open(url, '_blank');
+            if (w) { try { w.opener = null; } catch (_) {} }
+            return !!w;
+        }
         let validacionRealizada = false;
         let tieneAdBlocker = false; // Se detecta al cargar
         // Ticket firmado por el servidor al abrir la página: sin él (o antes de la espera) no hay enlace
@@ -369,7 +384,8 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        ...(localStorage.getItem('token') ? { Authorization: `Bearer ${localStorage.getItem('token')}` } : {})   // con Premium, sin acortador
                     },
                     body: JSON.stringify(requestBody)
                 });
@@ -408,6 +424,7 @@
                 if (data.success) {
                     // ⭐ CRÍTICO: Asignar el enlace primero
                     enlaceFinal = data.link;
+                    usarCuty = data.acortador === true && !window.UG_SIN_ANUNCIOS;
 
                     // Guardar metadata del item para notificar al autor al hacer clic
                     window._itemData = {
@@ -490,9 +507,11 @@
                     // Registrar la descarga real (fire & forget)
                     notificarDescarga(juegoId, window._itemData || {});
 
-                    // Abrir en nueva pestaña
-                    const nuevaVentana = window.open(enlaceFinal, '_blank');
-                    
+                    // Abrir en una ventana nueva del navegador (con el acortador de anuncios si corresponde)
+                    const destinoFinal = usarCuty && window.UGCuty ? window.UGCuty.enlace(enlaceFinal) : enlaceFinal;
+                    const nuevaVentana = abrirFuera(destinoFinal);
+                    if (EN_APP) mostrarCopiar(destinoFinal);
+
                     if (nuevaVentana) {
                         timerEl.style.display = 'block';
                         timerEl.innerText = "✅ Enlace abierto en nueva pestaña";
@@ -508,6 +527,17 @@
                     log("Intento de click sin enlace", 'error');
                 }
             };
+        }
+
+        // En la app, por si el teléfono no abre el navegador solo: copiar el enlace y pegarlo en Chrome
+        function mostrarCopiar(url) {
+            if (document.getElementById('copiar-enlace')) return;
+            const b = document.createElement('button');
+            b.id = 'copiar-enlace'; b.type = 'button'; b.className = btnEl.className;
+            b.style.cssText = 'margin-top:10px;background:transparent;border:1px solid currentColor';
+            b.textContent = '📋 Copiar enlace para abrirlo en el navegador';
+            b.onclick = async () => { try { await navigator.clipboard.writeText(url); b.textContent = '✅ Copiado: pégalo en Chrome'; } catch (_) { prompt('Copia este enlace y ábrelo en tu navegador:', url); } };
+            btnEl.insertAdjacentElement('afterend', b);
         }
 
         // ⭐ SERIES POR PARTES: marca esta parte como descargada y ofrece la siguiente.
@@ -580,6 +610,7 @@
                 clearInterval(interval);
                 validacionRealizada = true;
                 enlaceFinal = link;
+                usarCuty = false;   // Premium o acceso directo: enlace directo, sin acortador
                 timerEl.style.display = 'none';
                 errorEl.style.display = 'none';
                 showSuccess(msg);

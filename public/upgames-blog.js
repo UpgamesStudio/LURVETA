@@ -376,7 +376,7 @@ async function vistaIngresos() {
   const usd = n => 'US$' + Number(n || 0).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: Number(n) > 0 && Number(n) < 0.1 ? 4 : 2 });
   v.innerHTML = `<h1>Ingresos</h1><p class="sub">Tú decides si tu blog lleva publicidad. Si la activas, ganas dinero con cada anuncio que ven tus visitantes.</p>
     <section class="seccion glass"><h2>${ico('cash')} Monetizar con UpGames</h2>
-      <label class="interruptor"><span><b>Mostrar publicidad en mi blog</b><br><small style="color:var(--txt3)">Un anuncio al final de cada entrada y del inicio.</small></span><input type="checkbox" id="monetizar"${b.monetizar ? ' checked' : ''}></label>
+      <label class="interruptor"><span><b>Mostrar publicidad en mi blog</b><br><small style="color:var(--txt3)">Un anuncio al final de cada entrada y del inicio. Además, el bloque «Descarga» abre el enlace final a través del acortador de anuncios Cuty.io (nunca a usuarios Premium). Tus otros enlaces y botones no cambian.</small></span><input type="checkbox" id="monetizar"${b.monetizar ? ' checked' : ''}></label>
       <p>Ganas <b style="color:var(--g)">${usd(d.cpm)}</b> por cada 1.000 anuncios vistos. Se suma a tu saldo de UpGames, el mismo de tus publicaciones, y lo retiras desde <a href="./biblioteca.html">tu perfil → Economía</a>.</p>
       ${b.visibilidad !== 'publico' ? '<p style="color:var(--amber)">Tu blog está oculto: los anuncios solo se muestran en blogs públicos.</p>' : ''}
     </section>
@@ -389,7 +389,7 @@ async function vistaIngresos() {
       <p>Un anuncio cuenta cuando una persona real lo tuvo a la vista unos segundos y no usa bloqueador. Cada visitante cuenta hasta 3 veces al día en tu blog. Las visitas falsas o hechas por ti mismo no pagan y pueden suspender la monetización.</p></section>`;
   $('#monetizar').onchange = async e => {
     const quiere = e.target.checked;
-    if (quiere && !(await confirmar('¿Activar la publicidad?', 'Tus visitantes verán un anuncio al final de cada entrada. Puedes quitarla cuando quieras.', 'Activar'))) { e.target.checked = false; return; }
+    if (quiere && !(await confirmar('¿Activar la publicidad?', 'Tus visitantes verán un anuncio al final de cada entrada y el bloque «Descarga» pasará por el acortador de anuncios Cuty.io (sin acortador para quien tiene Premium). Puedes quitarla cuando quieras.', 'Activar'))) { e.target.checked = false; return; }
     try { await guardarBlog({ monetizar: quiere }, quiere ? 'Publicidad activada' : 'Publicidad desactivada'); } catch (err) { e.target.checked = !quiere; toast(err.message, true); }
   };
 }
