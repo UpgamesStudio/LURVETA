@@ -2280,7 +2280,7 @@ fetch(API + '/tienda/catalogo').then(r => r.json()).then(d => { TASA_COP = d?.me
 async function verDatosCobro(id) {
   const el = $('dc-' + id); if (!el) return;
   try { const { ok, d } = await api(`/admin/finanzas/datos-cobro/${id}`, { method: 'POST' }); if (!ok) { toast(d.error || 'Error', 'err'); return; }
-    const L = { email: 'Email', celular: 'Celular', cuenta: 'Cuenta', titular: 'Titular', banco: 'Banco', tipoCuenta: 'Tipo de cuenta', numero: 'Número de cuenta', tipoDoc: 'Tipo doc.', documento: 'Documento' };
+    const L = { email: 'Email', celular: 'Celular', cuenta: 'Cuenta', titular: 'Titular' };
     el.innerHTML = `<div class="small" style="padding:8px 10px;border:1px dashed var(--bd);border-radius:10px"><b>${esc(d.nombre || d.metodo)}</b>${Object.entries(d.datos).map(([k, v]) => `<div>${esc(L[k] || k)}: <span class="mono" style="cursor:pointer;color:var(--g1)" onclick="cp(this.textContent)">${esc(v)}</span></div>`).join('')}<div class="muted">Toca un dato para copiarlo. Esta consulta queda registrada.</div></div>`;
   } catch (_) {}
 }

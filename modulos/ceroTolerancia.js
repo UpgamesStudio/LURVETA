@@ -129,7 +129,7 @@ async function expediente(usuario) {
     return {
         usuario: u.usuario, email: u.email, creada: u.fecha || null, ultimoAcceso: u.ultimoLogin || null,
         ipRegistro: u.registrationIP || '', ultimaIp: u.ultimaIp || '', ipsVistas: u.ipsVistas || [],
-        cobro: { paypal: u.paypalEmail || '', tipo: u.cobro?.tipo || '', resumen: u.cobro?.resumen || '', nota: u.cobro?.tipo ? 'Datos bancarios completos cifrados: el dueño los puede exportar con /admin/seguridad/incidentes/:id/expediente' : '' },
+        cobro: { paypal: u.paypalEmail || '', tipo: u.cobro?.tipo || '', resumen: u.cobro?.resumen || '', nota: u.cobro?.tipo ? 'Datos de cobro completos cifrados: el dueño los puede exportar con /admin/seguridad/incidentes/:id/expediente' : '' },
         tarjetas: (u.tarjetas || []).map(t => ({ titular: t.titular, ultimos4: t.ultimos4, tipo: t.tipo })),
         pagos: pagos.map(p => ({ monto: p.monto, metodo: p.metodo, resumen: p.resumen || p.paypalEmail || '', estado: p.estado, fecha: p.fecha, referencia: p.referencia || '' })),
         seguidores: (u.listaSeguidores || []).length, siguiendo: (u.siguiendo || []).length,
