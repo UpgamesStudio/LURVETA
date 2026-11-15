@@ -13,7 +13,7 @@ function ugAB(evento, modo) {
 // Animación tipo "SaaS" hecha con el DOM: render(t) es una función pura del tiempo
 // (así se puede pausar, adelantar por capítulos y grabar). Al terminar llama a alTerminar().
 function ugBienvAnim(escena, prog, { alTerminar } = {}) {
-  const CAPS = [0, 5.6, 12.4, 18.2, 25.6, 31.2, 35.4];   // inicio de cada capítulo · fin
+  const CAPS = [0, 5.6, 12.4, 18.2, 25.6, 32.4, 36.6];   // inicio de cada capítulo · fin (el 4 tiene 5 novedades)
   const DUR = CAPS[CAPS.length - 1];
   const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -77,7 +77,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
       pal0.forEach((w, i) => entra(w, en(t, 1.6 + i * .11, .5), { dy: 16, blur: 8 }));
       entra(caps[0].querySelector('.obh-sub'), en(t, 1.9 + pal0.length * .11, .7), { dy: 12 });
     }
-    // 1 · Seis apps que se funden en UpGames
+    // 1 · Nueve apps que se funden en UpGames
     if (t > CAPS[1] - .5 && t < CAPS[2] + .5) {
       const a = CAPS[1];
       entra(caps[1].querySelector('.oba-kicker'), en(t, a + .1, .5));
@@ -124,12 +124,12 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
       q(3, '.oba-fila').forEach((el, i) => entra(el, en(t, a + 4.3 + i * .8, .55), { dy: 18 }));
       q(3, '.oba-metodos i').forEach((el, i) => entra(el, en(t, a + 5.4 + i * .12, .45, E.back), { dy: 10, s: .7 }));
     }
-    // 4 · Premium, misiones y NEXUS IA
+    // 4 · Blogs, NEXUS IA, juegos y Studio, Premium y misiones
     if (t > CAPS[4] - .5 && t < CAPS[5] + .5) {
       const a = CAPS[4];
       entra(caps[4].querySelector('.oba-kicker'), en(t, a + .1, .5));
-      q(4, '.oba-feat').forEach((el, i) => entra(el, en(t, a + .4 + i * .9, .6), { dy: 26 }));
-      entra(caps[4].querySelector('.oba-nota'), en(t, a + 3.4, .7));
+      q(4, '.oba-feat').forEach((el, i) => entra(el, en(t, a + .4 + i * .8, .6), { dy: 26 }));
+      entra(caps[4].querySelector('.oba-nota'), en(t, a + 4.6, .7));
     }
     // 5 · Reglas claras
     if (t > CAPS[5] - .5) {
