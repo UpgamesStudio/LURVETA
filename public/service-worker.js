@@ -11,7 +11,7 @@
 // IMPORTANTE: bump CACHE_VERSION cuando cambies archivos estáticos.
 // ========================================
 
-const CACHE_VERSION = 'upgames-v7.1.8';
+const CACHE_VERSION = 'upgames-v7.1.9';
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_RUNTIME = `${CACHE_VERSION}-runtime`;
 const CACHE_API     = `${CACHE_VERSION}-api`;
@@ -40,7 +40,6 @@ const PRECACHE_URLS = [
     './upgames-guia.js',
   './upgames-errores.js',
     './script.js',
-    './upgames-autoinfo.js',
     './upgames-motion.js',
     './upgames-tema.js',
     './upgames-nexus-plus.js',

@@ -1,10 +1,10 @@
 /**
  * Publicaciones: catálogo, publicar, editar y reportes
  *
- * GET /items (orden de Nexus), publicar con verificación de títulos comerciales, editar, reportes, vistas, series, autoinfo y plantillas.
+ * GET /items (orden de Nexus), publicar con verificación de títulos comerciales, editar, reportes, vistas, series y plantillas.
  * Extraído de index.js: recibe sus dependencias explícitas (ver la llamada en index.js).
  */
-module.exports = function items({ CeroTolerancia, ContenidoLegal, JWT_SECRET, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, autoInfo, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, jwt, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, validationResult, verificarAdmin, verificarToken }) {
+module.exports = function items({ CeroTolerancia, ContenidoLegal, JWT_SECRET, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, jwt, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, validationResult, verificarAdmin, verificarToken }) {
 // Creadas en index.js después de registrar este módulo: llegan con vincularTarde()
 let paginasSeoPronto;
 app.put("/items/report/:id", [verificarToken, param('id').isMongoId(), body('motivo').isIn(['caido', 'viejo', 'malware'])], async (req, res) => {
@@ -488,22 +488,8 @@ app.get('/items/recomendados/:usuario', async (req, res) => {
     }
 });
 
-// GET /items/autoinfo?title=&cat= — reconoce el título y devuelve imagen + descripción breve
-// Debe ir ANTES de /items/:id, si no Express interpreta "autoinfo" como un id.
-app.get('/items/autoinfo', async (req, res) => {
-    const title = String(req.query.title || '').trim().slice(0, 120);
-    const cat   = String(req.query.cat || 'Juego').trim().slice(0, 30);
-    if (title.length < 3) return res.json({ found: false });
-    try {
-        const info = await autoInfo.lookup(title, cat);
-        if (!info) return res.json({ found: false });
-        res.set('Cache-Control', 'public, max-age=3600');
-        res.json({ found: true, ...info });
-    } catch (err) {
-        logger.error(`[autoinfo] ${err.message}`);
-        res.status(500).json({ found: false });
-    }
-});
+// El autocompletado de portadas y descripciones (GET /items/autoinfo) se retiró: el creador escribe sus metadatos.
+app.get('/items/autoinfo', (req, res) => res.status(410).json({ found: false, retirado: true }));
 
 // Plantillas de descripción y "Que NEXUS la escriba": llena la plantilla con lo que se sabe del título,
 // sin inventar datos (deja "(complétalo)" donde no hay certeza). 10 por usuario y hora.
@@ -515,17 +501,16 @@ app.post('/items/describir', verificarToken, async (req, res) => {
         if (title.length < 3) return res.status(400).json({ success: false, error: 'Escribe primero el título' });
         if (!(await Limites.permitir(`describir:${req.usuario}`, [[Limites.HORA, 10]]))) return res.status(429).json({ success: false, error: 'Ya pediste varias descripciones. Intenta en un rato.' });
         const base = Plantillas.plantilla(cat);
-        const info = await autoInfo.lookup(title, cat).catch(() => null);
         const extras = Object.entries(req.body?.extras || {}).filter(([k, v]) => typeof v === 'string' && v.trim()).slice(0, 8).map(([k, v]) => `${k}: ${v.slice(0, 80)}`).join('\n');
         const r = await nexusLLM.json(`Eres NEXUS, el asistente de UpGames. Escribe la descripción de una publicación de la categoría "${cat}" en español neutro, clara y útil.
 Usa EXACTAMENTE esta estructura (mismos títulos con emoji y viñetas) y llénala:
 ${base}
 Reglas: no inventes requisitos, versiones, tamaños ni datos técnicos que no conozcas con certeza: en esos casos escribe "(complétalo)". No prometas nada ilegal ni "gratis/full/crack". Máximo 900 caracteres.
-Responde SOLO JSON: {"descripcion":"..."}`, `Título: ${title}\n${info?.description ? 'Lo que se sabe: ' + String(info.description).slice(0, 500) + '\n' : ''}${extras ? 'Datos del creador:\n' + extras : ''}`, { rapido: true, maxTokens: 700, timeout: 20000 }).catch(() => null);
+Responde SOLO JSON: {"descripcion":"..."}`, `Título: ${title}\n${extras ? 'Datos del creador:\n' + extras : ''}`, { rapido: true, maxTokens: 700, timeout: 20000 }).catch(() => null);
         const desc = String(r?.descripcion || '').replace(/\r/g, '').trim().slice(0, 1000);
         if (desc.length >= 40) return res.json({ success: true, descripcion: desc, fuente: 'nexus' });
         // Sin IA: la plantilla con lo que se sabe del título al inicio
-        res.json({ success: true, descripcion: (info?.description ? String(info.description).slice(0, 300) + '\n\n' : '') + base, fuente: 'plantilla' });
+        res.json({ success: true, descripcion: base, fuente: 'plantilla' });
     } catch (e) { logger.error(`[describir] ${e.message}`); res.status(500).json({ success: false, error: 'No se pudo generar la descripción' }); }
 });
 

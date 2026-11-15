@@ -71,7 +71,6 @@ const nexusMentor     = require('./modulos/nexus/mentor');
 const gameDetector    = require('./modulos/gameDetector');
 const series          = require('./modulos/series');
 const push            = require('./modulos/push');
-const autoInfo        = require('./modulos/autoInfo');
 const memCache        = require('./modulos/cache');
 const Limites         = require('./modulos/limites');
 const StatsItems      = require('./modulos/statsItems');
@@ -1151,7 +1150,7 @@ const _admin = require('./rutas/admin')({ Comentario, DescargaIP, Juego, Notific
 const { revisionIA } = _admin;
 
 
-const _items = require('./rutas/items')({ CeroTolerancia, ContenidoLegal, JWT_SECRET, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, autoInfo, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, jwt, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, validationResult, verificarAdmin, verificarToken });   // Publicaciones: catálogo, publicar, editar y reportes
+const _items = require('./rutas/items')({ CeroTolerancia, ContenidoLegal, JWT_SECRET, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, jwt, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, validationResult, verificarAdmin, verificarToken });   // Publicaciones: catálogo, publicar, editar y reportes
 const { LINKS_PERMITIDOS, errorLinkPublicacion } = _items;
 _admin.vincularTarde({ errorLinkPublicacion });   // rutas/admin.js usa estas dependencias, creadas después de registrar el módulo
 
