@@ -151,3 +151,12 @@ strong { color: var(--txt); font-weight: 700; }
   .lg-card, .lg-note, .lg-tile { background: none; border-color: #ccc; }
   .lg-sec { opacity: 1; transform: none; }
 }
+
+/* Historial de novedades plegable: solo se ve la última versión */
+.lg-hist { margin: 0 0 18px; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; background: rgba(255,255,255,.025); }
+.lg-hist > summary { cursor: pointer; list-style: none; padding: 14px 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.lg-hist > summary::-webkit-details-marker { display: none; }
+.lg-hist > summary::before { content: '▸'; transition: transform .2s; color: rgba(var(--g-rgb), 1); }
+.lg-hist[open] > summary::before { transform: rotate(90deg); }
+.lg-hist > summary small { font-weight: 500; opacity: .6; }
+.lg-hist > .lg-note { margin: 0 12px 12px; }
