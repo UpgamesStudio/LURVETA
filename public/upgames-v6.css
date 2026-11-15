@@ -165,8 +165,13 @@ html[data-tema] .game-tile .tile-info { display: block !important; height: auto 
 html[data-tema] .game-tile .tile-meta { display: flex !important; align-items: center; position: static !important; }
 html[data-tema] .game-tile .tile-title { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0 !important; }
 html[data-tema] #detail-sheet.ds-tienda { overflow: clip !important; }
-/* la galería de miniaturas se aplastaba en una franja bajo «Acerca de» */
-html[data-tema] #detail-sheet.ds-tienda #ds-gallery { display: none !important; }
+/* nada del contenido se aplasta (la galería de miniaturas quedaba en una franja bajo «Acerca de») */
+html[data-tema] #detail-sheet.ds-tienda .sheet-scroll > * { flex-shrink: 0; }
+/* puntos del carrusel por encima del título que sube sobre la portada */
+html[data-tema] #detail-sheet.ds-tienda .ds-car-dots { bottom: 72px; }
+/* con un reproductor arriba, el título no tapa sus controles */
+html[data-tema] #detail-sheet.ds-tienda.ds-media-video .sheet-scroll { margin-top: 0 !important; }
+html[data-tema] #detail-sheet.ds-tienda.ds-media-video .ds-car-dots { bottom: 8px; }
 html[data-tema] #detail-sheet .v6-amb { left: 0 !important; right: 0 !important; }
 html[data-tema] .ugx-fila-track { gap: 12px !important; grid-auto-columns: 148px !important; }
 /* la fila nunca ensancha la página: se desplaza por dentro */

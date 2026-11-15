@@ -1154,6 +1154,8 @@ function openDetail(item) {
 
     const isYT2  = isYouTubeUrl(mediaUrl);
     const isMp42 = ugEsVideoArchivo(mediaUrl);
+    // Con un reproductor arriba, el título no se monta sobre sus controles
+    document.getElementById('detail-sheet').classList.toggle('ds-media-video', isYT2 || (isMp42 && isVideoItem));
 
     if(isYT2) {
       img2.style.display='none'; vid2.style.display='none'; vid2.src='';
@@ -1244,11 +1246,15 @@ function openDetail(item) {
       img2.onerror = () => { img2.onerror = null; img2.removeAttribute('srcset'); img2.src = window.UG_PH; };
     }
   }
-  loadSheetMedia(primaryMedia);
+  // Varias imágenes o videos: la portada es un carrusel deslizable (las miniaturas quedan para los videos)
+  ugCarruselQuitar();
+  const conCarrusel = !isVideoItem && allMedias.length > 1;
+  if (conCarrusel) ugCarruselFicha([primaryMedia, ...allMedias.filter(m => m !== primaryMedia)]);
+  else loadSheetMedia(primaryMedia);
 
   // Galería de miniaturas
   const galleryEl = document.getElementById('ds-gallery');
-  if(allMedias.length > 1) {
+  if(allMedias.length > 1 && !conCarrusel) {
     galleryEl.style.display='flex'; galleryEl.innerHTML='';
     allMedias.forEach((m,i)=>{
       const th=document.createElement('div');
@@ -1600,6 +1606,54 @@ function closeDetail() {
   if(overlay) overlay.style.display = '';
   const gal=document.getElementById('ds-gallery');
   if(gal){ gal.innerHTML=''; gal.style.display='none'; }
+  ugCarruselQuitar();
+}
+
+// ── Carrusel de la portada (publicaciones con varias imágenes o videos) ──
+function ugCarruselQuitar() {
+  document.getElementById('ds-car')?.remove();
+  document.getElementById('ds-car-dots')?.remove();
+  document.getElementById('detail-sheet').classList.remove('ds-media-video');
+}
+function ugCarruselFicha(medias) {
+  const caja = document.querySelector('#detail-sheet .sheet-media'), sheet = document.getElementById('detail-sheet');
+  const img = document.getElementById('ds-media-img'), vid = document.getElementById('ds-media-vid');
+  document.getElementById('ds-yt-iframe')?.remove();
+  document.getElementById('ds-injected-vid')?.remove();
+  img.style.display = 'none'; vid.style.display = 'none'; vid.src = '';
+  const n = medias.length;
+  const pista = document.createElement('div'); pista.id = 'ds-car'; pista.className = 'ds-car';
+  pista.innerHTML = medias.map((m, i) => {
+    if (isYouTubeUrl(m)) return `<div class="ds-slide" data-yt="${escH(getYouTubeId(m))}"><img src="${escH(getYouTubeThumbnail(m))}" alt="Video ${i + 1} de ${n}"><button type="button" class="ds-car-play" aria-label="Reproducir video"><ion-icon name="play"></ion-icon></button></div>`;
+    if (ugEsVideoArchivo(m)) { const p = ugVideoThumb(m); return `<div class="ds-slide"><video src="${escH(ugVideoSrc(m))}"${p ? ` poster="${escH(p)}"` : ''} muted loop playsinline preload="metadata"></video></div>`; }
+    return `<div class="ds-slide"><img src="${escH(cldOpt(m, 'c_limit,w_1280,q_auto,f_auto'))}" alt="Imagen ${i + 1} de ${n}"${i ? ' loading="lazy"' : ''} onerror="this.onerror=null;this.src=window.UG_PH"></div>`;
+  }).join('');
+  const puntos = document.createElement('div'); puntos.id = 'ds-car-dots'; puntos.className = 'ds-car-dots';
+  puntos.innerHTML = medias.map((_, i) => `<button type="button" aria-label="Ver ${i + 1} de ${n}"${i ? '' : ' class="on"'}></button>`).join('');
+  caja.insertBefore(pista, caja.querySelector('.sheet-media-overlay'));
+  caja.appendChild(puntos);
+
+  const slides = [...pista.children], botones = [...puntos.children];
+  let actual = -1;
+  const mostrar = () => {
+    const k = Math.round(pista.scrollLeft / (pista.clientWidth || 1));
+    if (k === actual) return; actual = k;
+    botones.forEach((b, i) => b.classList.toggle('on', i === k));
+    slides.forEach((s, i) => {
+      const v = s.querySelector('video'); if (v) { if (i === k) v.play().catch(() => {}); else v.pause(); }
+      if (i !== k && s._html) { s.innerHTML = s._html; s._html = null; }   // al salir de un video de YouTube se detiene
+    });
+    sheet.classList.toggle('ds-media-video', !!slides[k]?._html);
+  };
+  pista.addEventListener('scroll', mostrar, { passive: true });
+  botones.forEach((b, i) => b.onclick = () => pista.scrollTo({ left: i * pista.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+  pista.addEventListener('click', e => {
+    const s = e.target.closest('.ds-car-play')?.closest('.ds-slide'); if (!s) return;
+    s._html = s.innerHTML;
+    s.innerHTML = `<iframe src="https://www.youtube.com/embed/${s.dataset.yt}?autoplay=1&controls=1&rel=0&playsinline=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    sheet.classList.add('ds-media-video');
+  });
+  mostrar();
 }
 
 document.getElementById('ds-close').addEventListener('click', closeDetail);

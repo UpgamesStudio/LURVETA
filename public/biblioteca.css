@@ -641,6 +641,18 @@ input, textarea { font-family:inherit; }
   width:100%; height:100%;
   object-fit:cover;
 }
+/* Fuera del flujo: una portada vertical ya no estira la caja (se comía la hoja y no dejaba hacer scroll) */
+.sheet-media > img, .sheet-media > video { position:absolute; inset:0; }
+/* Carrusel de la portada: se desliza con el dedo, un medio por vez */
+.ds-car { position:absolute; inset:0; display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:contain; }
+.ds-car::-webkit-scrollbar { display:none; }
+.ds-slide { position:relative; flex:0 0 100%; height:100%; scroll-snap-align:center; scroll-snap-stop:always; }
+.ds-slide iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+.ds-car-play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:2; width:64px; height:64px; border-radius:50%; border:0; background:rgba(0,0,0,.6); color:#fff; font-size:1.8rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ds-car-dots { position:absolute; left:0; right:0; bottom:8px; z-index:3; display:flex; justify-content:center; pointer-events:none; }
+.ds-car-dots button { pointer-events:auto; width:22px; height:24px; padding:0; border:0; background:none; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ds-car-dots button::before { content:''; width:7px; height:7px; border-radius:4px; background:rgba(255,255,255,.5); box-shadow:0 1px 3px rgba(0,0,0,.5); transition:width .2s, background .2s; }
+.ds-car-dots button.on::before { width:18px; background:#fff; }
 /* El video inyectado usa contain para no recortar */
 #ds-injected-vid {
   object-fit: contain !important;
