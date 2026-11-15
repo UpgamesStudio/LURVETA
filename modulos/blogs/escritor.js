@@ -48,7 +48,7 @@ ${nota ? `- Enfoque pedido por quien escribe: ${String(nota).slice(0, 200)}` : '
  */
 function armar(o, j, tipo) {
     if (!o || typeof o !== 'object') return null;
-    let bloques = V.limpiarBloques(o.bloques).filter(b => !['juego', 'descarga', 'imagen', 'boton', 'redes', 'galeria', 'video', 'audio', 'codigo'].includes(b.tipo));
+    let bloques = V.limpiarBloques(o.bloques).filter(b => !['juego', 'descarga', 'imagen', 'boton', 'redes', 'galeria', 'video', 'audio', 'codigo', 'apoyo', 'afiliado'].includes(b.tipo));
     if (bloques.length < 3) return null;
     const imagen = V.urlSegura(j.image);
     const extra = [];

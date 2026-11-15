@@ -387,6 +387,9 @@ async function vistaIngresos() {
       <p>Cuando alguien pulsa un bloque <b>Descarga</b> de tus entradas y la descarga es válida, ganas <b style="color:var(--g)">${usd(d.cpmDescargas)}</b> por cada 1.000, <b>aunque tengas la publicidad apagada</b>. Es aparte de lo que cobra el autor del juego. No aplica a tus propios juegos.</p>
       <div class="cifras"><div class="cifra glass"><b>${usd(d.ingresosDescargasMes)}</b><span>Últimos 30 días</span></div><div class="cifra glass"><b>${usd(d.ingresosDescargas)}</b><span>Desde siempre</span></div><div class="cifra glass"><b>${num(d.descargas)}</b><span>Descargas pagadas</span></div></div>
     </section>
+    <section class="seccion glass"><h2>${ico('heart')} Apoyos de tus lectores y afiliados</h2>
+      <p>Añade a una página el bloque <b>«Apoyar al creador»</b>: tus lectores te apoyan con UpCoins desde UpGames y recibes tu parte como ganancia (25 %, retirable tras 7 días), igual que los apoyos a tus publicaciones. Te avisamos cada vez que alguien te apoya.</p>
+      <p>Con el bloque <b>«Enlaces de afiliado»</b> recomiendas productos con tu enlace de Amazon u otras tiendas; la comisión te la paga la tienda, no UpGames. El aviso «Enlaces de afiliado» se muestra siempre.</p></section>
     <section class="seccion glass"><h2>${ico('shield-checkmark')} Cómo se cuenta</h2>
       <p>Un anuncio cuenta cuando una persona real lo tuvo a la vista unos segundos y no usa bloqueador. Cada visitante cuenta hasta 3 veces al día en tu blog. Las visitas falsas o hechas por ti mismo no pagan y pueden suspender la monetización.</p></section>`;
   $('#monetizar').onchange = async e => {
@@ -612,6 +615,13 @@ const SEC = {
     item: [['imagen', 'Foto del producto', 0, 'img'], ['nombre', 'Nombre del producto', 80], ['precio', 'Precio: solo el número (ej.: 25000). Vacío = «Consultar»', 20], ['descripcion', 'Descripción corta (opcional)', 300, 1]],
     max: 30, nombreItem: 'Producto', otro: 'Añadir producto', nuevo: () => ({}), inicio: () => [{}, {}], defecto: { moneda: 'COP' }, idea: 'Ej.: 4 tortas de mi pastelería con su descripción',
     ayuda: 'El visitante elige cantidades y se abre WhatsApp con el pedido y el total ya escritos.' },
+  apoyo: { nombre: 'Apoyar al creador', ico: 'heart', campos: [['titulo', 'Título (ej.: ¿Te gusta lo que hago?)', 120], ['texto', 'Frase corta (ej.: Tu apoyo me ayuda a seguir creando)', 400, 1], ['bTexto', 'Texto del botón (ej.: Apoyar con UpCoins)', 40]],
+    defecto: { titulo: 'Apoya este blog', bTexto: 'Apoyar con UpCoins' }, sinNexus: true,
+    ayuda: 'Tus lectores te apoyan con UpCoins desde UpGames. Recibes tu parte como ganancia (25 %, retirable tras 7 días), igual que los apoyos a tus publicaciones.' },
+  afiliado: { nombre: 'Enlaces de afiliado', ico: 'pricetag', campos: [['titulo', 'Título (ej.: Mi setup gamer)', 120], ['texto', 'Frase corta (opcional)', 400, 1]],
+    item: [['imagen', 'Foto del producto', 0, 'img'], ['nombre', 'Nombre del producto', 80], ['tienda', 'Tienda (ej.: Amazon)', 40], ['precio', 'Precio aproximado (opcional)', 30], ['url', 'Tu enlace de afiliado: https://…', 600]],
+    max: 12, nombreItem: 'Producto', otro: 'Añadir producto', nuevo: () => ({}), inicio: () => [{}], sinNexus: true,
+    ayuda: 'Se muestra siempre el aviso «Enlaces de afiliado» para tus lectores. Tú eres responsable de cumplir las reglas de cada programa de afiliados.' },
   cta: { nombre: 'Llamada a la acción', ico: 'megaphone', campos: [['titulo', 'Título (ej.: ¿Listo para empezar?)', 120], ['texto', 'Frase corta (opcional)', 300, 1], ...BOTON], idea: 'Ej.: invitar a escribir por WhatsApp para pedir una cotización' },
 };
 const FONDOS_SEC = [['', 'Sin fondo'], ['suave', 'Suave'], ['acento', 'Color del blog'], ['degradado', 'Degradado'], ['oscuro', 'Oscuro'], ['imagen', 'Imagen']];
@@ -875,14 +885,14 @@ async function editor(tipo, id) {
         : t === 'sel' ? `<label class="sec-sel"><span>${h(ph)}</span><select data-k="${k}">${max.map(([o, n]) => `<option value="${h(o)}"${o === v ? ' selected' : ''}>${h(n)}</option>`).join('')}</select></label>`
         : t === 'img' ? `<div class="sec-img sec-img-it"><input type="hidden" data-k="${k}" value="${h(v || '')}">${v ? `<img src="${h(mini(v, 300))}" alt="">` : ''}<button class="btn chico" data-it-img>${ico('image-outline')} ${v ? 'Cambiar foto' : 'Añadir foto'}</button></div>`
         : k === 'precio' ? `<input data-k="${k}" maxlength="${max}" placeholder="${h(ph)}" value="${h(v || '')}" inputmode="decimal">`
-        : t === 1 ? `<textarea data-k="${k}" rows="2" maxlength="${max}" placeholder="${h(ph)}">${h(v || '')}</textarea>` : `<input data-k="${k}" maxlength="${max}" placeholder="${h(ph)}" value="${h(v || '')}"${k.endsWith('Url') ? ' inputmode="url" autocapitalize="off" spellcheck="false"' : ''}>`;
+        : t === 1 ? `<textarea data-k="${k}" rows="2" maxlength="${max}" placeholder="${h(ph)}">${h(v || '')}</textarea>` : `<input data-k="${k}" maxlength="${max}" placeholder="${h(ph)}" value="${h(v || '')}"${k.endsWith('Url') || k === 'url' ? ' inputmode="url" autocapitalize="off" spellcheck="false"' : ''}>`;
       const leerDatos = () => {
         el.querySelectorAll('.sec-campos [data-k]').forEach(x => { datos[x.dataset.k] = x.type === 'checkbox' ? x.checked : x.value; });
         el.querySelectorAll('.sec-item').forEach((it, i) => it.querySelectorAll('[data-k]').forEach(x => { items[i][x.dataset.k] = x.type === 'checkbox' ? x.checked : x.value; }));
       };
       const fondoVista = () => st.fondo === 'imagen' && (st.fondoImg || st.imagen) ? ` style="background-image:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.7)),url('${h(mini(st.fondoImg || st.imagen, 700))}')"` : '';
       const pintar = () => {
-        el.innerHTML = barra(`<button class="nx" data-sec-nx aria-label="Escribir esta sección con Nexus" title="Escribir con Nexus">✦</button><button data-sec-estilo aria-label="Estilo de la sección" title="Fondo, espacio y alineación">${ico('color-palette-outline')}</button>`)
+        el.innerHTML = barra(`${spec.sinNexus ? '' : '<button class="nx" data-sec-nx aria-label="Escribir esta sección con Nexus" title="Escribir con Nexus">✦</button>'}<button data-sec-estilo aria-label="Estilo de la sección" title="Fondo, espacio y alineación">${ico('color-palette-outline')}</button>`)
           + `<div class="sec-vista f-${st.fondo || 'ninguno'}${st.alinear === 'izquierda' ? ' a-izq' : ''}"${fondoVista()}>`
           + (spec.variantes ? `<div class="sec-var">${spec.variantes.map(([k, n]) => `<button data-var="${k}" aria-pressed="${st.variante === k}">${n}</button>`).join('')}</div>` : '')
           + (spec.ayuda ? `<p class="red-ayuda">${h(spec.ayuda)}</p>` : '')
@@ -898,7 +908,7 @@ async function editor(tipo, id) {
         const si = $('[data-sec-img]', el); if (si) si.onclick = () => { leerDatos(); subida(si, u => { st.imagen = u; pintar(); }); };
         const sn = $('[data-sec-img-no]', el); if (sn) sn.onclick = () => { leerDatos(); st.imagen = ''; sucio = true; pintar(); };
         $('[data-sec-estilo]', el).onclick = () => { leerDatos(); estiloSeccion(st, () => { sucio = true; pintar(); }); };
-        $('[data-sec-nx]', el).onclick = () => { leerDatos(); nexusSeccion(b.tipo, spec, { ...datos, items }, nuevo => {
+        if (!spec.sinNexus) $('[data-sec-nx]', el).onclick = () => { leerDatos(); nexusSeccion(b.tipo, spec, { ...datos, items }, nuevo => {
           spec.campos.forEach(([k]) => { if (nuevo[k] !== undefined) datos[k] = nuevo[k]; });
           if (spec.item) items.splice(0, items.length, ...(nuevo.items || []));
           if (nuevo.variante && spec.variantes?.some(([k]) => k === nuevo.variante)) st.variante = nuevo.variante;
@@ -1282,6 +1292,8 @@ async function editor(tipo, id) {
       const pend = [hayCorchetes(bloques) && 'hay textos entre [corchetes] sin completar', enlacesSec.some(([t, u]) => String(t || '').trim() && !String(u || '').trim()) && 'hay botones sin enlace (no se mostrarán)'].filter(Boolean);
       if (pend.length && !(await confirmar('¿Publicar así?', `Nexus te avisa: ${pend.join(' y ')}.`, 'Publicar igual'))) return;
     }
+    const afil = bloques.flatMap(b => b.tipo === 'afiliado' ? (b.items || []) : []).find(i => String(i.nombre || '').trim() && !/^https:\/\/\S+\.\S+/.test(String(i.url || '').trim()));
+    if (afil) return toast(`El producto «${afil.nombre}» necesita su enlace de afiliado (https://…).`, true);
     const cat = bloques.find(b => b.tipo === 'catalogo' && (!window.UGRedes.normalizar('whatsapp', b.whatsapp) || !(b.items || []).some(i => String(i.nombre || '').trim())));
     if (cat) return toast('El catálogo necesita tu WhatsApp (con código de país) y al menos un producto con nombre.', true);
     const malRed = bloques.flatMap(b => b.tipo === 'redes' ? b.items : []).find(i => !window.UGRedes.normalizar(i.red, i.url));

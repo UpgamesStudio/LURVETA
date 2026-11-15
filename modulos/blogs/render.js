@@ -67,6 +67,13 @@ function seccionHtml(b, ctx = {}, i = 0) {
         case 'precios': return seccion(b, 'precios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<div class="plan${i.destacado ? ' destacado' : ''}">${i.destacado ? '<span class="plan-chip">Recomendado</span>' : ''}<h3>${esc(i.nombre)}</h3>${i.precio ? `<p class="plan-precio"><b>${esc(i.precio)}</b>${i.periodo ? ` <small>${esc(i.periodo)}</small>` : ''}</p>` : ''}${i.items ? `<ul>${i.items.split('\n').map(x => x.replace(/^\s*[-•✓]\s*/, '').trim()).filter(Boolean).map(x => `<li>${enLinea(x)}</li>`).join('')}</ul>` : ''}${boton(i.bTexto, i.bUrl, 'boton', ctx)}</div>`).join('')}</div>`);
         case 'testimonios': return seccion(b, 'testimonios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<figure class="testi"><blockquote>${textoHtml(i.texto)}</blockquote><figcaption><span class="testi-ini" aria-hidden="true">${esc([...i.nombre][0].toUpperCase())}</span><span><b>${esc(i.nombre)}</b>${i.rol ? `<small>${esc(i.rol)}</small>` : ''}</span></figcaption></figure>`).join('')}</div>`);
         case 'cta': return seccion(b, 'cta', `${cabSec(b)}${b.bTexto && b.bUrl ? `<div class="botones">${boton(b.bTexto, b.bUrl, 'boton', ctx)}</div>` : ''}`);
+        case 'apoyo': {
+            const href = ctx.blog?._id && ctx.appUrl ? `${ctx.appUrl}/public/biblioteca.html?apoyarBlog=${encodeURIComponent(String(ctx.blog._id))}` : '';
+            return seccion(b, 'apoyo', `<span class="apoyo-ic" aria-hidden="true">💛</span>${cabSec(b)}${href ? `<div class="botones"><a class="boton boton-apoyo" href="${esc(href)}" target="_blank" rel="noopener">🪙 ${esc(b.bTexto)}</a></div>` : ''}<p class="apoyo-nota">Se paga con UpCoins en UpGames. El creador recibe una parte como ganancia.</p>`);
+        }
+        case 'afiliado':
+            return seccion(b, 'afiliado', `${cabSec(b)}<p class="afil-aviso" role="note">🔗 <b>Enlaces de afiliado:</b> si compras desde estos enlaces, el autor de este sitio puede recibir una comisión, sin costo extra para ti.</p>
+<div class="rej-sec prods">${b.items.map(p => `<div class="prod">${p.imagen ? `<div class="prod-img"><img src="${esc(img(p.imagen, 600))}" alt="" loading="lazy" decoding="async"></div>` : ''}<div class="prod-i"><h3>${esc(p.nombre)}</h3>${p.tienda ? `<p>${esc(p.tienda)}</p>` : ''}${p.precio ? `<b class="prod-precio">${esc(p.precio)}</b>` : ''}<a class="boton" href="${esc(destino(p.url, ctx, 'b'))}" target="_blank" rel="sponsored nofollow noopener">${esc(p.tienda ? `Ver en ${p.tienda}` : 'Ver oferta')}</a></div></div>`).join('')}</div>`);
         case 'formulario': {
             // Sin scripts: un formulario HTML normal que va a la API de UpGames y vuelve a esta página
             const r = ctx.formRes?.i === i ? ctx.formRes.r : '';
@@ -324,6 +331,10 @@ main.landing{padding-top:0}main.landing.sin-final{padding-bottom:0}
 .pedido-pie{display:flex;gap:10px;flex-wrap:wrap;position:sticky;bottom:12px;z-index:3;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--borde);border-radius:calc(var(--radio) + 4px);padding:10px}
 .pedido-pie input{flex:1;min-width:200px}.pedido-pie .boton{border:0;cursor:pointer;font:inherit;font-weight:800}
 .boton-wa{background:#25D366!important;color:#fff!important;box-shadow:0 10px 26px -12px #25D366!important}
+.sec-apoyo .apoyo-ic{font-size:2.6rem;display:block;margin-bottom:8px}.boton-apoyo{background:linear-gradient(135deg,#FFCC4D,#FF9F1C)!important;color:#2a1700!important;box-shadow:0 12px 30px -12px #FFB020!important}
+.apoyo-nota{margin-top:12px;font-size:.84rem;color:var(--txt2)}.sec.f-acento .apoyo-nota,.sec.f-imagen .apoyo-nota,.sec.f-oscuro .apoyo-nota{color:inherit;opacity:.75}
+.afil-aviso{max-width:680px;margin:0 auto 18px;font-size:.86rem;padding:10px 14px;border-radius:12px;border:1px dashed var(--borde);background:color-mix(in srgb,var(--acento) 6%,transparent);text-align:left}
+.sec-afiliado .prod .boton{margin-top:auto;text-align:center}
 .revista .tarjeta:first-child{grid-column:1/-1}
 @media(min-width:700px){.revista .tarjeta:first-child{flex-direction:row}.revista .tarjeta:first-child .port{width:58%;aspect-ratio:16/9}.revista .tarjeta:first-child h2{font-size:1.7rem}.revista .tarjeta:first-child .txt{justify-content:center;padding:26px}}
 `.trim();

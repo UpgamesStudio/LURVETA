@@ -4963,7 +4963,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
 
 // ── BIENVENIDA — animación + términos ───────────────────
 (function initOnboarding() {
-  const TERMINOS_VERSION = '8.3';   // súbela al cambiar los Términos o la Privacidad
+  const TERMINOS_VERSION = '8.4';   // súbela al cambiar los Términos o la Privacidad
   // La bienvenida animada (con la aceptación de términos y privacidad) es OBLIGATORIA:
   //  · sin cuenta: una vez al día (día de Colombia);
   //  · con cuenta: cada vez que inicia sesión (cada inicio trae un token nuevo; se guarda
@@ -4981,7 +4981,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
   }
   function avisoTerminosNuevos() {
     const a = document.createElement('div'); a.className = 'ug-terminos-aviso'; a.setAttribute('role', 'status');
-    a.innerHTML = `<span>📜 Actualizamos los <a href="./terminos_condiciones.html" target="_blank" rel="noopener">Términos (v${TERMINOS_VERSION})</a> y la <a href="./politica-privacidad.html" target="_blank" rel="noopener">Privacidad</a>: juegos y herramientas de UpGames, novedades de UpGames Blogs, sin reconocimiento automático de títulos (tú escribes tus metadatos) y un protocolo claro para los fondos de cuentas suspendidas.</span><button type="button">Entendido</button>`;
+    a.innerHTML = `<span>📜 Actualizamos los <a href="./terminos_condiciones.html" target="_blank" rel="noopener">Términos (v${TERMINOS_VERSION})</a> y la <a href="./politica-privacidad.html" target="_blank" rel="noopener">Privacidad</a>: juegos y herramientas de UpGames, novedades de UpGames Blogs, sin reconocimiento automático de títulos (tú escribes tus metadatos) un protocolo claro para los fondos de cuentas suspendidas, y apoyos con UpCoins y enlaces de afiliado en los blogs.</span><button type="button">Entendido</button>`;
     a.querySelector('button').onclick = () => { LS.set('upgames_terms_v', TERMINOS_VERSION); a.remove(); };
     setTimeout(() => document.body.appendChild(a), 2500);
   }

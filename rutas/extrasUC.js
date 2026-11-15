@@ -193,6 +193,42 @@ function registrar(app, deps) {
             ok(res, { apoyado: monto, upcoins: await totalUC(req.usuario) });
         } catch (e) { logger.error(`[extras] apoyar: ${e.message}`); err(res, 500, 'No se pudo enviar tu apoyo'); }
     });
+    // ── Apoyar a un blog de UpGames Blogs (mismas reglas que apoyar una publicación) ──
+    // Desde el blog (sin scripts) un botón abre UpGames, donde el visitante tiene su sesión y sus UpCoins.
+    app.post('/blogs-apoyo/:blogId', verificarToken, async (req, res) => {
+        try {
+            const c = await X.config();
+            if (!c.activo.apoyar) return err(res, 409, 'Los apoyos están pausados');
+            const monto = parseInt(req.body?.monto, 10);
+            if (!c.precios.apoyo.includes(monto)) return err(res, 400, 'Monto no válido');
+            if (!esId(req.params.blogId) || !claveOk(req.body?.clave)) return err(res, 400, 'Datos no válidos');
+            const b = await mongoose.model('Blog').findById(req.params.blogId).select('usuario titulo estado').lean();
+            if (!b || b.estado !== 'activo') return err(res, 404, 'Ese blog no está disponible');
+            if (b.usuario === req.usuario) return err(res, 400, 'No puedes apoyar tu propio blog');
+            const rep = L.reparto(monto), retener = L.RETENCION_DIAS > 0;
+            const [code, body] = await cobrarConRegistro(req.usuario, monto, `apoyo-blog:${req.usuario}:${req.body.clave}`, {
+                tipo: 'regalo', destinatario: b.usuario, regaloId: 'apoyo-blog', juegoId: `blog:${b._id}`, creadorUsd: rep.creador, plataformaUsd: rep.plataforma,
+                estado: retener ? 'retenida' : 'liberada', liberarEn: retener ? new Date(Date.now() + L.RETENCION_DIAS * 864e5) : null });
+            if (code !== 200) return err(res, code, body.error, { monedas: body.monedas, faltan: body.faltan });
+            if (!body.repetido) {
+                await Usuario.updateOne({ usuario: b.usuario }, { $inc: retener ? { saldoRetenido: rep.creador } : { saldo: rep.creador } });
+                avisar(b.usuario, b.titulo, `🪙 @${req.usuario} apoyó tu blog «${String(b.titulo).slice(0, 60)}» con ${monto} UpCoins. ¡Gracias por crear!`, `blog:${b._id}`);
+                X.evento(req.usuario, 'apoyar', `blog:${b._id}`);
+            }
+            ok(res, { apoyado: monto, upcoins: await totalUC(req.usuario) });
+        } catch (e) { logger.error(`[extras] apoyar blog: ${e.message}`); err(res, 500, 'No se pudo enviar tu apoyo'); }
+    });
+    // Datos públicos para la hoja de apoyo (nombre del blog y su creador) y contador de fans
+    app.get('/blogs-apoyo/:blogId', async (req, res) => {
+        if (!esId(req.params.blogId)) return err(res, 400, 'ID no válido');
+        try {
+            const b = await mongoose.model('Blog').findById(req.params.blogId).select('usuario titulo estado').lean();
+            if (!b || b.estado !== 'activo') return err(res, 404, 'Ese blog no está disponible');
+            const a = await LiveTx.aggregate([{ $match: { juegoId: `blog:${b._id}`, regaloId: 'apoyo-blog', estado: { $ne: 'revertida' } } }, { $group: { _id: null, uc: { $sum: '$monedas' }, fans: { $addToSet: '$usuario' } } }]);
+            ok(res, { titulo: b.titulo, usuario: b.usuario, fans: (a[0]?.fans || []).length, uc: a[0]?.uc || 0 });
+        } catch (e) { err(res, 500, 'Error'); }
+    });
+
     // Apoyos recibidos por una publicación (contador público)
     app.get('/items/:id/apoyos', async (req, res) => {
         if (!esId(req.params.id)) return err(res, 400, 'ID no válido');

@@ -27,9 +27,9 @@ const RESERVADOS = new Set(['www', 'admin', 'api', 'app', 'blog', 'blogs', 'upga
     'mail', 'correo', 'ftp', 'cdn', 'static', 'assets', 'nexus', 'live', 'studio', 'racing', 'premium', 'oficial', 'official',
     'root', 'null', 'undefined', 'test', 'dev', 'staging', 'status', 'docs', 'legal', 'terminos', 'privacidad']);
 
-const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes', 'heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo']);
+const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes', 'heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo', 'apoyo', 'afiliado']);
 // Secciones de landing: tipos de bloque que ocupan todo el ancho y llevan su propio estilo
-const SECCIONES = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo']);
+const SECCIONES = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo', 'apoyo', 'afiliado']);
 const MONEDAS = ['COP', 'USD', 'MXN', 'ARS', 'CLP', 'PEN', 'EUR', 'BRL', 'UYU', 'BOB', 'GTQ', 'DOP', 'VES'];
 const FONDOS_SEC = new Set(['', 'suave', 'acento', 'degradado', 'oscuro', 'imagen']);
 const ESPACIOS_SEC = new Set(['compacto', 'normal', 'amplio']);
@@ -192,6 +192,17 @@ function limpiarBloques(entrada) {
                 if (items.length && /^https:\/\/wa\.me\/\d+$/.test(wa)) n = { tipo: 'catalogo', titulo: linea(b.titulo, 120), texto: parrafos(b.texto, 400), whatsapp: wa, moneda: MONEDAS.includes(b.moneda) ? b.moneda : 'COP', items, ...estiloSec(b) };
                 break;
             }
+            case 'apoyo': {
+                // Apoyo con UpCoins: el botón abre UpGames (mismas reglas que apoyar una publicación)
+                n = { tipo: 'apoyo', titulo: linea(b.titulo, 120) || 'Apoya este blog', texto: parrafos(b.texto, 400), bTexto: linea(b.bTexto, 40) || 'Apoyar con UpCoins', ...estiloSec(b) };
+                break;
+            }
+            case 'afiliado': {
+                // Enlaces de afiliado: siempre con el aviso visible; el enlace es del creador
+                const items = lista(b.items, 30).map(i => ({ nombre: linea(i?.nombre, 80), precio: linea(i?.precio, 30), tienda: linea(i?.tienda, 40), imagen: urlSegura(i?.imagen), url: urlSegura(i?.url) })).filter(i => i.nombre && i.url).slice(0, 12);
+                if (items.length) n = { tipo: 'afiliado', titulo: linea(b.titulo, 120), texto: parrafos(b.texto, 400), items, ...estiloSec(b) };
+                break;
+            }
             case 'separador': n = { tipo: 'separador' }; break;
             case 'codigo': { const t = String(b.texto ?? '').replace(/\r\n?/g, '\n').replace(/\u0000/g, '').slice(0, 8000); if (t.trim()) n = { tipo: 'codigo', texto: t }; break; }
             case 'descarga': { const id = String(b.id ?? ''); if (/^[a-f0-9]{24}$/i.test(id)) n = { tipo: 'descarga', id: id.toLowerCase() }; break; }
@@ -205,7 +216,7 @@ function limpiarBloques(entrada) {
 
 /** Todo el texto de una entrada junto, para la moderación y para el resumen. */
 function textoDe(bloques) {
-    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v]), ...(b.tipo === 'redes' ? b.items.map(i => i.texto) : []), ...(SECCIONES.has(b.tipo) ? [b.titulo, b.bTexto, b.b2Texto, ...(b.items || []).flatMap(i => [i.titulo, i.texto, i.nombre, i.rol, i.precio, i.periodo, i.items, i.bTexto, i.descripcion, i.nombre])] : []), ...(b.tipo === 'formulario' ? [b.exito] : [])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
+    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v]), ...(b.tipo === 'redes' ? b.items.map(i => i.texto) : []), ...(SECCIONES.has(b.tipo) ? [b.titulo, b.bTexto, b.b2Texto, ...(b.items || []).flatMap(i => [i.titulo, i.texto, i.nombre, i.rol, i.precio, i.periodo, i.items, i.bTexto, i.descripcion, i.nombre, i.tienda])] : []), ...(b.tipo === 'formulario' ? [b.exito] : [])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
 }
 
 /** Enlaces que aparecen en una entrada (botones y enlaces dentro del texto). */
@@ -217,6 +228,7 @@ function enlacesDe(bloques) {
         if (b.tipo === 'redes') for (const i of b.items || []) if (/^https:/.test(i.url)) out.push(i.url);
         if (SECCIONES.has(b.tipo)) for (const u of [b.bUrl, b.b2Url, ...(b.items || []).map(i => i.bUrl)]) if (u) out.push(u);
         if (b.tipo === 'catalogo') out.push(b.whatsapp);
+        if (b.tipo === 'afiliado') for (const i of b.items || []) out.push(i.url);
         for (const i of b.items || []) for (const m of String(i.r).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
         if (b.tipo === 'texto' || b.tipo === 'cita' || b.tipo === 'aviso') for (const m of String(b.texto).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
     }

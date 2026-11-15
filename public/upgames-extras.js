@@ -425,6 +425,28 @@
     });
   }
 
+  // ── Apoyar un blog de UpGames Blogs (llega desde el bloque «Apoyar» del blog: ?apoyarBlog=<id>) ──
+  async function apoyarBlog(blogId) {
+    if (!/^[a-f\d]{24}$/i.test(String(blogId || ''))) return;
+    if (!tok()) return window.ugPedirSesion?.('apoyar a los creadores');
+    await cargarCfg();
+    if (!activo('apoyar')) return aviso('Los apoyos están pausados por ahora', 'error');
+    let b; try { const r = await api(`/blogs-apoyo/${blogId}`); if (!r.ok) throw new Error(r.d.error); b = r.d; } catch (e) { return aviso(e.message || 'Ese blog no está disponible', 'error'); }
+    if (b.usuario === yo()) return aviso('Ese es tu blog: compártelo para que tus lectores te apoyen 💛');
+    const montos = cfg.precios.apoyo || [];
+    let monto = montos[Math.min(1, montos.length - 1)];
+    const html = `<p class="ugx-sub">Apoyas el blog <b>«${esc(b.titulo)}»</b> de @${esc(b.usuario)}. Le llega como ganancia (25 % del valor, retirable tras 7 días).${b.fans ? ` ${fmt(b.fans)} ${b.fans === 1 ? 'persona ya lo apoyó' : 'personas ya lo apoyaron'}.` : ''}</p>
+      <div class="ugx-montos">${montos.map(m => `<button type="button" class="ugx-monto ${m === monto ? 'on' : ''}" data-monto="${m}">🪙 ${fmt(m)}<small>UpCoins</small></button>`).join('')}</div>
+      <button type="button" class="ugx-btn oro" id="ugx-apoyar-ok" style="width:100%">Apoyar con 🪙 <span>${fmt(monto)}</span></button>`;
+    hoja('🪙 Apoyar este blog', html, h => {
+      h.querySelectorAll('[data-monto]').forEach(x => x.onclick = () => { monto = +x.dataset.monto; h.querySelectorAll('[data-monto]').forEach(y => y.classList.toggle('on', y === x)); h.querySelector('#ugx-apoyar-ok span').textContent = fmt(monto); });
+      h.querySelector('#ugx-apoyar-ok').onclick = async e => {
+        const r = await pagar(`/blogs-apoyo/${blogId}`, { monto }, e.currentTarget);
+        if (r) { cerrarHoja(); fiesta('💛', `¡Apoyaste el blog de @${b.usuario}!`); }
+      };
+    });
+  }
+
   // ── Revisión prioritaria (hoja de la publicación propia) ─────────────────
   async function prioridad(id, btn) {
     await cargarCfg();
@@ -456,10 +478,22 @@
       } catch (_) {}
     }
     pintarPrecios();
+    // Llegó desde el bloque «Apoyar» de un blog: abre la hoja (y limpia la dirección).
+    // Espera a que terminen la intro y la bienvenida, para que la hoja no quede tapada.
+    try {
+      const q = new URLSearchParams(location.search), idBlog = q.get('apoyarBlog');
+      if (idBlog) {
+        q.delete('apoyarBlog');
+        history.replaceState(history.state, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
+        const tapada = () => { const ob = document.getElementById('onboarding-modal'); return !!ob && ob.classList.contains('show'); };
+        const abrir = () => { const t = setInterval(() => { if (tapada()) return; clearInterval(t); setTimeout(() => apoyarBlog(idBlog), 400); }, 500); };
+        if (window.UG_INTRO_ACTIVA) addEventListener('ug:intro-fin', abrir, { once: true }); else abrir();
+      }
+    } catch (_) {}
     new MutationObserver(() => { clearTimeout(iniciar.t); iniciar.t = setTimeout(pintarPrecios, 120); }).observe(document.body, { childList: true, subtree: true });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
 
-  window.UGX = { hoja, cerrarHoja, api, aviso, estilizarTiles, vestirTarjeta, precio, activo, cargarCfg, cargarMio, hub, referidos, promoLive, tarjetas, estilizarComentarios, pintarAvatar, misiones, tienda, regalar, apoyar, alAbrirDetalle, prioridad, faltan, aplicarEstilo, insigniasHTML, clasesMarco,
+  window.UGX = { hoja, cerrarHoja, api, aviso, estilizarTiles, vestirTarjeta, precio, activo, cargarCfg, cargarMio, hub, referidos, promoLive, tarjetas, estilizarComentarios, pintarAvatar, misiones, tienda, regalar, apoyar, apoyarBlog, alAbrirDetalle, prioridad, faltan, aplicarEstilo, insigniasHTML, clasesMarco,
     hoja, cerrarHoja, pagar, fiesta, get cfg() { return cfg; } };
 })();
