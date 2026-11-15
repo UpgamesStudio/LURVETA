@@ -25,7 +25,6 @@ const Ranking = require('../public/upgames-ranking');   // niveles, días y prec
 
 // Premium. `monedas` = precio en UpCoins; `monedasRegalo` = UpCoins de regalo, SOLO si se paga con dinero
 const PLANES = [
-    { id: 'pase7',   nombre: 'Premium 7 días',  dias: 7,   usd: 1.99,  monedas: 100,  monedasRegalo: 25,   resumen: 'Ideal para probar' },
     { id: 'pase30',  nombre: 'Premium 30 días', dias: 30,  usd: 4.99,  monedas: 250,  monedasRegalo: 100,  resumen: 'El más elegido', destacado: true },
     { id: 'pase365', nombre: 'Premium 1 año',   dias: 365, usd: 39.99, monedas: 2000, monedasRegalo: 1250, resumen: 'Ahorra 33%' },
 ];

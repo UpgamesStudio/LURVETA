@@ -39,7 +39,6 @@ const REGALOS = [
 
 const PAQUETES = [
     // Los ids se conservan (los usan órdenes y webhooks); las cantidades están en UpCoins
-    { id: 'p100',  monedas: 50,   usd: 1.29 },
     { id: 'p500',  monedas: 250,  usd: 5.49 },
     { id: 'p1100', monedas: 550,  usd: 10.99, extra: '+10%' },
     { id: 'p2800', monedas: 1400, usd: 26.99, extra: '+12%' },

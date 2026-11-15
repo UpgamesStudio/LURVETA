@@ -27,7 +27,7 @@ const yo = { 'GET /users/me': { status: 200, data: { site_id: 'MCO' } } };
 
 (async () => {
     await test('parsear: productos válidos', () => {
-        assert.strictEqual(parsear('monedas:p100').tipo, 'monedas');
+        assert.strictEqual(parsear('monedas:p500').tipo, 'monedas');
         assert.strictEqual(parsear('acceso:' + 'a'.repeat(24)).tipo, 'acceso');
         assert.strictEqual(parsear('plan:pase30').plan.dias, 30);
     });
@@ -39,7 +39,7 @@ const yo = { 'GET /users/me': { status: 200, data: { site_id: 'MCO' } } };
         for (const p of PLANES) assert.strictEqual(precioUsd(parsear(`plan:${p.id}`), 'tarjeta'), p.usd);
     });
     await test('precioUsd: monedas con saldo cuestan su valor nominal (sin comisión)', () => {
-        const p = parsear('monedas:p100');
+        const p = parsear('monedas:p500');
         assert.ok(precioUsd(p, 'saldo') <= precioUsd(p, 'tarjeta'));
     });
     await test('sin configurar → sin_configurar e inactivo', async () => {
