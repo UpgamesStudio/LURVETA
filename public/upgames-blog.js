@@ -116,7 +116,8 @@ function bienvenida() {
     </section>
     <div class="ventajas">
       <div class="glass">${ico('color-palette-outline')}<b>Temas listos</b><span>Cinco diseños que puedes personalizar con tu color, tu logo y tu portada.</span></div>
-      <div class="glass">${ico('create-outline')}<b>Editor fácil</b><span>Texto, imágenes, galerías, videos, botones, redes y contacto (WhatsApp, Instagram…) y tus publicaciones de UpGames.</span></div>
+      <div class="glass">${ico('create-outline')}<b>Editor fácil</b><span>Secciones de landing (portada, servicios, precios, opiniones), texto, galerías, videos, redes y WhatsApp.</span></div>
+      <div class="glass">${ico('sparkles-outline')}<b>✦ Nexus te ayuda</b><span>Crea tu landing con IA a partir de una frase, mejora tus textos y te dice qué falta antes de publicar.</span></div>
       <div class="glass">${ico('globe-outline')}<b>Tu dominio</b><span>Empieza con una dirección gratis y conecta tu dominio cuando lo tengas.</span></div>
       <div class="glass">${ico('stats-chart-outline')}<b>Estadísticas</b><span>Mira cuántas visitas tienes cada día y qué entradas gustan más.</span></div>
     </div>
@@ -247,6 +248,7 @@ function menuEntrada(e, tipo) {
   const c = hoja(`<h3>${h(e.titulo)}</h3><div class="opciones">
     <button data-a="editar">${ico('create-outline')}<span>Editar</span></button>
     ${publica ? `<button data-a="ver">${ico('open-outline')}<span>Ver en el blog</span></button><button data-a="copiar">${ico('link-outline')}<span>Copiar enlace</span></button>` : ''}
+    ${publica && tipo === 'pagina' ? (S.blog.ajustes?.inicio === e.id ? `<button data-a="no-inicio">${ico('home')}<span>Quitar como inicio<small>Volverá a abrir con la lista de entradas</small></span></button>` : `<button data-a="inicio">${ico('home-outline')}<span>Usar como inicio del sitio<small>Será lo primero que vea quien entre</small></span></button>`) : ''}
     <button data-a="borrar" class="rojo">${ico('trash-outline')}<span>Borrar</span></button></div>`);
   c.onclick = async ev => {
     const a = ev.target.closest('[data-a]')?.dataset.a; if (!a) return;
@@ -254,6 +256,7 @@ function menuEntrada(e, tipo) {
     if (a === 'editar') return editor(tipo, e.id);
     if (a === 'ver') return window.open(url, '_blank', 'noopener');
     if (a === 'copiar') return copiar(url);
+    if (a === 'inicio' || a === 'no-inicio') { try { await guardarBlog({ ajustes: { inicio: a === 'inicio' ? e.id : '' } }, a === 'inicio' ? `«${e.titulo}» es ahora el inicio de tu sitio` : 'Inicio: lista de entradas'); } catch (err) { toast(err.message, true); } return; }
     if (!(await confirmar('¿Borrar?', `«${e.titulo}» se borrará para siempre.`, 'Borrar', true))) return;
     try { await api(`/blogs/${S.blog.id}/entradas/${e.id}`, { metodo: 'DELETE' }); toast('Borrada'); vistaLista(tipo); } catch (err) { toast(err.message, true); }
   };
@@ -364,6 +367,9 @@ function vistaAjustes() {
       <label class="campo"><span>Quién puede verlo</span><select class="inp" name="visibilidad"><option value="publico"${b.visibilidad === 'publico' ? ' selected' : ''}>Público: aparece en Google</option><option value="oculto"${b.visibilidad === 'oculto' ? ' selected' : ''}>Oculto: solo quien tenga el enlace</option></select></label>
       <label class="campo"><span>Idioma</span><select class="inp" name="idioma">${[['es', 'Español'], ['en', 'English'], ['pt', 'Português']].map(([k, n]) => `<option value="${k}"${(b.ajustes?.idioma || 'es') === k ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
       <button class="btn pri" type="submit">Guardar cambios</button></form>
+    <section class="seccion glass"><h2>${ico('home')} Página de inicio</h2><p>Lo primero que ve quien entra a tu sitio. Elige una página para tener una landing (tus entradas pasan a «Blog» en el menú).</p>
+      <div class="fila"><select class="inp" id="inicio" style="flex:1;min-width:200px"><option value="">La lista de entradas (blog)</option></select><button class="btn chico" id="inicio-ok">Guardar</button></div>
+      <small id="inicio-nota" style="color:var(--txt3)"></small></section>
     <section class="seccion glass"><h2>${ico('share-social')} Tu enlace</h2>
       <div class="fila"><code style="flex:1;min-width:0;word-break:break-all;color:var(--cy)">${h(b.url)}</code><button class="btn chico" id="copiar-url">${ico('copy-outline')} Copiar</button></div></section>
     <section class="seccion glass" id="s-dominio"><h2>${ico('globe')} Dominio propio ${d ? `<span class="chip ${d.verificado ? 'verde' : 'ambar'}">${d.verificado ? 'Conectado' : 'Pendiente'}</span>` : ''}</h2>
@@ -384,6 +390,15 @@ function vistaAjustes() {
     });
   };
   $('#copiar-url').onclick = () => copiar(b.url);
+  (async () => {
+    const sel = $('#inicio'), nota = $('#inicio-nota');
+    try {
+      const pags = (await api(`/blogs/${b.id}/entradas?tipo=pagina`)).entradas;
+      sel.insertAdjacentHTML('beforeend', pags.map(p => `<option value="${h(p.id)}"${b.ajustes?.inicio === p.id ? ' selected' : ''}${p.estado === 'borrador' ? ' disabled' : ''}>${h(p.titulo)}${p.estado === 'borrador' ? ' (borrador: publícala primero)' : ''}</option>`).join(''));
+      if (!pags.length) nota.textContent = 'Aún no tienes páginas. Crea una en «Páginas» con la plantilla «Landing de negocio» o pídesela a ✦ Nexus.';
+    } catch (_) {}
+    $('#inicio-ok').onclick = e => ocupado(e.currentTarget, () => guardarBlog({ ajustes: { inicio: sel.value } }, sel.value ? 'Inicio cambiado: tu sitio abre con esa página' : 'Inicio: lista de entradas'));
+  })();
   const fDom = $('#f-dominio');
   if (fDom) fDom.onsubmit = e => {
     e.preventDefault();
@@ -454,7 +469,25 @@ const idYouTube = s => { s = String(s || '').trim(); if (/^[\w-]{11}$/.test(s)) 
 
 const TIPOS = [['texto', 'text', 'Texto'], ['titulo', 'reorder-two', 'Subtítulo'], ['imagen', 'image', 'Imagen'], ['galeria', 'images', 'Galería'], ['video', 'logo-youtube', 'Video'],
   ['cita', 'chatbox-ellipses', 'Cita'], ['aviso', 'alert-circle', 'Aviso'], ['ficha', 'list', 'Ficha / requisitos'], ['faq', 'help-circle', 'Preguntas'], ['audio', 'musical-notes', 'Spotify'], ['boton', 'radio-button-on', 'Botón'], ['redes', 'logo-whatsapp', 'Redes y contacto'],['juego', 'game-controller', 'Publicación de UpGames'], ['descarga', 'cloud-download-outline', 'Descarga'], ['codigo', 'code-slash', 'Código'], ['separador', 'remove', 'Separador']];
-const NOMBRE_TIPO = Object.fromEntries(TIPOS.map(([id, , n]) => [id, n]));
+// Secciones de página (landing): ocupan todo el ancho y tienen estilo propio. Campo = [clave, ayuda, máximo, 1 = varias líneas | 'check']
+const BOTON = [['bTexto', 'Texto del botón (ej.: Escríbenos)', 40], ['bUrl', 'Enlace del botón: https://… o wa.me/57300…', 600]];
+const SEC = {
+  heroe: { nombre: 'Héroe (portada)', ico: 'flash', campos: [['titulo', 'Título grande: qué ofreces', 120], ['texto', 'Una frase que explique por qué elegirte', 400, 1], ...BOTON, ['b2Texto', 'Segundo botón (opcional)', 40], ['b2Url', 'Enlace del segundo botón', 600]],
+    imagen: true, variantes: [['centro', 'Centrado'], ['dividido', 'Imagen al lado'], ['fondo', 'Imagen de fondo']], idea: 'Ej.: barbería en Medellín, cortes modernos y reservas por WhatsApp' },
+  columnas: { nombre: 'Columnas / servicios', ico: 'grid', campos: [['titulo', 'Título de la sección (ej.: Lo que hacemos)', 120], ['texto', 'Introducción corta (opcional)', 400, 1]],
+    item: [['icono', 'Emoji', 4], ['titulo', 'Título', 80], ['texto', 'Descripción corta', 300, 1]], max: 6, nombreItem: 'Columna', otro: 'Añadir columna', nuevo: () => ({ icono: '⭐' }),
+    inicio: () => [{ icono: '⚡' }, { icono: '🎯' }, { icono: '💬' }], variantes: [['3', '3 columnas'], ['2', '2 columnas']], idea: 'Ej.: los 3 servicios principales de mi tienda de mods' },
+  precios: { nombre: 'Precios / planes', ico: 'pricetags', campos: [['titulo', 'Título (ej.: Planes y precios)', 120], ['texto', 'Introducción corta (opcional)', 400, 1]],
+    item: [['nombre', 'Nombre del plan', 40], ['precio', 'Precio (ej.: $20.000)', 30], ['periodo', 'Periodo (ej.: al mes)', 20], ['items', 'Qué incluye (uno por línea)', 600, 1], ...BOTON, ['destacado', 'Destacar este plan', 0, 'check']],
+    max: 4, nombreItem: 'Plan', otro: 'Añadir plan', nuevo: () => ({}), inicio: () => [{ nombre: 'Básico' }, { nombre: 'Pro', destacado: true }], idea: 'Ej.: 3 planes de clases de guitarra online' },
+  testimonios: { nombre: 'Testimonios', ico: 'chatbubbles', campos: [['titulo', 'Título (ej.: Lo que dicen nuestros clientes)', 120]],
+    item: [['texto', 'Lo que dijo (usa opiniones reales)', 500, 1], ['nombre', 'Nombre', 60], ['rol', 'Ciudad, cargo o red (opcional)', 60]], max: 6, nombreItem: 'Testimonio', otro: 'Añadir testimonio', nuevo: () => ({}), inicio: () => [{}, {}], idea: 'Ej.: opiniones de clientes de mi taller' },
+  cta: { nombre: 'Llamada a la acción', ico: 'megaphone', campos: [['titulo', 'Título (ej.: ¿Listo para empezar?)', 120], ['texto', 'Frase corta (opcional)', 300, 1], ...BOTON], idea: 'Ej.: invitar a escribir por WhatsApp para pedir una cotización' },
+};
+const FONDOS_SEC = [['', 'Sin fondo'], ['suave', 'Suave'], ['acento', 'Color del blog'], ['degradado', 'Degradado'], ['oscuro', 'Oscuro'], ['imagen', 'Imagen']];
+const NOMBRE_TIPO = Object.fromEntries([...TIPOS.map(([id, , n]) => [id, n]), ...Object.entries(SEC).map(([id, s]) => [id, s.nombre])]);
+const enlaceOk = u => !!window.UGRedes.https(u);
+const hayCorchetes = v => /\[[^\]\n]{2,80}\]/.test(JSON.stringify(v).replace(/\]\(https:[^)]+\)/g, ''));
 
 let sucio = false, urlPreviaInicial = '';
 // «Escribir sobre esto» (desde la ficha de una publicación): blog.html?juego=<id>
@@ -470,19 +503,83 @@ const PLANTILLAS = [
   ['noticia', 'megaphone-outline', 'Noticia', 'Titular, imagen y lo importante', [{ tipo: 'texto', texto: 'Lo más importante de la noticia en una o dos frases.', grande: true }, { tipo: 'imagen' }, { tipo: 'texto', texto: 'Desarrolla la noticia: qué pasó, cuándo y qué significa.' }, { tipo: 'cita', texto: 'Una frase destacada de la fuente.', autor: 'Fuente' }]],
   ['top', 'trophy-outline', 'Top 5', 'Una lista con tus favoritos', [{ tipo: 'texto', texto: 'Explica cómo elegiste esta lista.' }, ...[5, 4, 3, 2, 1].flatMap(n => [{ tipo: 'titulo', texto: `${n}. Nombre` }, { tipo: 'texto', texto: 'Por qué está en la lista.' }]), { tipo: 'boton', texto: 'Ver más en UpGames', url: 'https://upgames.games' }]],
 ];
-function elegirPlantilla() {
+// Para páginas: landing de negocio, contacto o en blanco
+const PLANTILLAS_PAGINA = [
+  ['blanco', 'document-outline', 'En blanco', 'Empieza desde cero', []],
+  ['landing', 'rocket-outline', 'Landing de negocio', 'Portada, servicios, opiniones y contacto', [{ tipo: 'heroe', fondo: 'degradado', espacio: 'amplio' }, { tipo: 'columnas' }, { tipo: 'testimonios', fondo: 'suave' }, { tipo: 'redes', items: [{ red: 'whatsapp', url: '' }] }, { tipo: 'cta', fondo: 'acento' }]],
+  ['producto', 'pricetag-outline', 'Producto o servicio', 'Portada con imagen, beneficios, precios y dudas', [{ tipo: 'heroe', variante: 'dividido' }, { tipo: 'columnas', fondo: 'suave' }, { tipo: 'precios' }, { tipo: 'faq', items: [] }, { tipo: 'cta', fondo: 'degradado' }]],
+  ['contacto', 'call-outline', 'Contacto', 'Tus redes, WhatsApp y una frase', [{ tipo: 'texto', texto: 'Escríbenos y te respondemos lo antes posible.', grande: true, centro: true }, { tipo: 'redes', items: [{ red: 'whatsapp', url: '' }, { red: 'instagram', url: '' }, { red: 'email', url: '' }] }]],
+];
+const PLANTILLA_NEXUS = ['nexus', 'sparkles', '✦ Que Nexus la cree', 'Cuéntale tu idea y arma la página por ti', null];
+function elegirPlantilla(esPag) {
   return new Promise(ok => {
-    const c = hoja(`<h3>¿Cómo quieres empezar?</h3><div class="opciones">${PLANTILLAS.map(([id, i, n, d]) => `<button data-p="${id}">${ico(i)}<span>${n}<small>${d}</small></span></button>`).join('')}</div>`);
+    const lista = [PLANTILLA_NEXUS, ...(esPag ? PLANTILLAS_PAGINA : [...PLANTILLAS, PLANTILLAS_PAGINA[1]])];
+    const c = hoja(`<h3>¿Cómo quieres empezar?</h3><div class="opciones">${lista.map(([id, i, n, d]) => `<button data-p="${id}"${id === 'nexus' ? ' class="nx-op"' : ''}>${ico(i)}<span>${n}<small>${d}</small></span></button>`).join('')}</div>`);
     $('#hoja').onclick = e => { if (e.target.id === 'hoja') { cerrarHoja(); ok(null); } };
-    c.onclick = e => { const x = e.target.closest('[data-p]'); if (!x) return; cerrarHoja(); ok(PLANTILLAS.find(p => p[0] === x.dataset.p)[4]); };
+    c.onclick = e => { const x = e.target.closest('[data-p]'); if (!x) return; cerrarHoja(); const p = lista.find(p => p[0] === x.dataset.p); ok(p[0] === 'nexus' ? 'nexus' : p[4]); };
   });
+}
+
+// ── Ayudas del editor (✦ Nexus y estilo de secciones) ──
+/** Estilo de una sección: fondo, imagen de fondo, espacio y alineación (opciones cerradas para que siempre se vea bien). */
+function estiloSeccion(st, hecho) {
+  const seg = (k, ops) => `<div class="seg">${ops.map(([v, n]) => `<button data-${k}="${v}" aria-pressed="${st[k] === v}">${n}</button>`).join('')}</div>`;
+  const pintar = () => {
+    const c = hoja(`<h3>Estilo de la sección</h3>
+      <div class="campo"><span>Fondo</span><div class="fondos">${FONDOS_SEC.map(([v, n]) => `<button data-fondo="${v}" aria-pressed="${st.fondo === v}"><i class="f-${v || 'ninguno'}"></i>${n}</button>`).join('')}</div></div>
+      ${st.fondo === 'imagen' ? `<div class="campo"><span>Imagen de fondo</span><div class="fila">${st.fondoImg ? `<img src="${h(mini(st.fondoImg, 240))}" alt="" style="height:56px;border-radius:10px">` : ''}<button class="btn chico" data-subir-fondo>${ico('image-outline')} ${st.fondoImg ? 'Cambiar' : 'Subir imagen'}</button></div><small>Se oscurece un poco para que el texto se lea bien.</small></div>` : ''}
+      <div class="campo"><span>Espacio</span>${seg('espacio', [['compacto', 'Compacto'], ['normal', 'Normal'], ['amplio', 'Amplio']])}</div>
+      <div class="campo"><span>Alineación</span>${seg('alinear', [['centro', 'Centrado'], ['izquierda', 'A la izquierda']])}</div>
+      <button class="btn pri ancho" data-listo>Listo</button>`);
+    c.onclick = async e => {
+      const x = e.target.closest('button'); if (!x) return;
+      if (x.dataset.listo !== undefined) { cerrarHoja(); return hecho(); }
+      if (x.dataset.subirFondo !== undefined) { const f = await elegirImagen(); if (!f) return; await ocupado(x, async () => { st.fondoImg = await subirImagen(f); }); return pintar(); }
+      for (const k of ['fondo', 'espacio', 'alinear']) if (x.dataset[k] !== undefined) { st[k] = x.dataset[k]; hecho(); return pintar(); }
+    };
+  };
+  pintar();
+}
+
+/** ✦ Nexus escribe una sección a partir de una idea corta. */
+async function nexusSeccion(tipo, spec, actual, aplicar) {
+  const lleno = JSON.stringify(actual).replace(/"(icono|nombre|destacado)":("[^"]*"|true|false)/g, '').match(/"[^"]{3,}"/g)?.length > 1;
+  if (lleno && !(await confirmar('¿Reemplazar el contenido?', 'Nexus sustituirá los textos de esta sección.', 'Continuar'))) return;
+  const c = hoja(`<h3>✦ Nexus escribe: ${h(spec.nombre)}</h3><label class="campo"><span>¿De qué trata esta sección?</span><textarea class="inp" id="ns-idea" maxlength="500" rows="3" placeholder="${h(spec.idea)}"></textarea><small>Nexus no inventa precios ni opiniones: deja [corchetes] para que pongas los datos reales.</small></label><button class="btn pri ancho" id="ns-ok">${ico('sparkles-outline')} Escribir sección</button>`);
+  $('#ns-ok', c).onclick = ev => {
+    ocupado(ev.currentTarget, async () => {
+      const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'seccion', tipo, idea: $('#ns-idea', c).value, sitio: S.blog?.titulo || '' } });
+      cerrarHoja(); aplicar(r.bloque); toast('✦ Sección escrita. Revísala y complétala.');
+    });
+  };
+  setTimeout(() => $('#ns-idea', c)?.focus(), 50);
+}
+
+/** ✦ Nexus mejora un texto: muestra la propuesta y el creador decide si la usa. */
+const MODOS_TEXTO = [['mejorar', 'sparkles-outline', 'Mejorar redacción'], ['corto', 'contract-outline', 'Más corto'], ['largo', 'expand-outline', 'Desarrollar más'], ['vendedor', 'trending-up-outline', 'Más persuasivo'], ['cercano', 'happy-outline', 'Más cercano'], ['ortografia', 'checkmark-done-outline', 'Corregir ortografía']];
+function nexusTexto(texto, aplicar) {
+  if (!String(texto || '').trim()) return toast('Escribe algo primero y Nexus te ayuda a mejorarlo.', true);
+  const c = hoja(`<h3>✦ ¿Qué hago con este texto?</h3><div class="tipos">${MODOS_TEXTO.map(([m, i, n]) => `<button data-modo="${m}">${ico(i)}<span>${n}</span></button>`).join('')}</div>`);
+  c.onclick = async e => {
+    const x = e.target.closest('[data-modo]'); if (!x) return;
+    c.innerHTML = `<h3>✦ Nexus está escribiendo…</h3><div class="cargando" style="min-height:120px"><span class="giro"></span></div>`;
+    try {
+      const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'texto', modo: x.dataset.modo, texto } });
+      c.innerHTML = `<h3>✦ Propuesta de Nexus</h3><div class="propuesta">${aHtml(r.texto)}</div><div class="fila"><button class="btn" data-otra style="flex:1">Probar otra</button><button class="btn pri" data-usar style="flex:1">Usar este texto</button></div>`;
+      c.onclick = ev => {
+        if (ev.target.closest('[data-usar]')) { cerrarHoja(); aplicar(r.texto); toast('✦ Texto actualizado'); }
+        if (ev.target.closest('[data-otra]')) nexusTexto(texto, aplicar);
+      };
+    } catch (err) { cerrarHoja(); toast(err.message, true); }
+  };
 }
 
 async function editor(tipo, id) {
   const esPag = tipo === 'pagina';
   let inicial = null;
   const juegoDesde = !id && !esPag ? tomarJuegoInicial() : '';
-  if (!id && !esPag) { inicial = juegoDesde ? [{ tipo: 'juego', id: juegoDesde }, { tipo: 'texto', texto: '' }] : await elegirPlantilla(); if (inicial === null) return; }
+  let conNexus = false;
+  if (!id) { inicial = juegoDesde ? [{ tipo: 'juego', id: juegoDesde }, { tipo: 'texto', texto: '' }] : await elegirPlantilla(esPag); if (inicial === null) return; if (inicial === 'nexus') { conNexus = true; inicial = []; } }
   let E = { titulo: '', bloques: inicial?.length ? inicial : [{ tipo: 'texto', texto: '' }], etiquetas: [], portadaPropia: '', resumenPropio: '', estado: 'borrador', publicadaEn: null };
   urlPreviaInicial = '';
   app.innerHTML = '<div class="cargando"><span class="giro"></span></div>';
@@ -519,8 +616,9 @@ async function editor(tipo, id) {
     const subida = async (boton, hecho) => { const f = await elegirImagen(); if (!f) return; await ocupado(boton, async () => { hecho(await subirImagen(f)); sucio = true; }); };
 
     if (b.tipo === 'texto') {
-      el.innerHTML = barra(`<button data-cmd="bold" aria-label="Negrita"><b>B</b></button><button data-cmd="italic" aria-label="Cursiva"><i>I</i></button><button data-cmd="link" aria-label="Enlace">${ico('link')}</button><button data-cmd="insertUnorderedList" aria-label="Lista">${ico('list')}</button><button data-op="centro" aria-label="Centrar">${ico('reorder-three')}</button><button data-op="grande" aria-label="Letra grande">${ico('text')}</button>`) + `<div class="rico" contenteditable="true" data-ph="Escribe aquí…"></div>`;
+      el.innerHTML = barra(`<button data-cmd="bold" aria-label="Negrita"><b>B</b></button><button data-cmd="italic" aria-label="Cursiva"><i>I</i></button><button data-cmd="link" aria-label="Enlace">${ico('link')}</button><button data-cmd="insertUnorderedList" aria-label="Lista">${ico('list')}</button><button data-op="centro" aria-label="Centrar">${ico('reorder-three')}</button><button data-op="grande" aria-label="Letra grande">${ico('text')}</button><button class="nx" data-nx aria-label="Mejorar con Nexus" title="Mejorar con Nexus">✦</button>`) + `<div class="rico" contenteditable="true" data-ph="Escribe aquí…"></div>`;
       const rico = $('.rico', el), op = { centro: !!b.centro, grande: !!b.grande };
+      $('[data-nx]', el).onclick = () => nexusTexto(aMarcas(rico), nuevo => { rico.innerHTML = aHtml(nuevo); sucio = true; });
       const pintarOp = () => { rico.style.textAlign = op.centro ? 'center' : ''; rico.style.fontSize = op.grande ? '1.3rem' : ''; el.querySelectorAll('[data-op]').forEach(x => { x.style.color = op[x.dataset.op] ? 'var(--g)' : ''; }); };
       el.querySelectorAll('[data-op]').forEach(x => { x.onmousedown = e => e.preventDefault(); x.onclick = () => { op[x.dataset.op] = !op[x.dataset.op]; sucio = true; pintarOp(); }; });
       pintarOp();
@@ -584,6 +682,51 @@ async function editor(tipo, id) {
       el.innerHTML = barra() + `<div class="centro" style="text-align:center"><span class="muestra" contenteditable="true">${h(b.texto || 'Descargar')}</span></div><input placeholder="https://… a dónde lleva el botón" value="${h(b.url || '')}" inputmode="url">`;
       $('.muestra', el).addEventListener('paste', e => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain').replace(/\n/g, ' ')); });
       el.leer = () => ({ tipo: 'boton', texto: $('.muestra', el).textContent.trim(), url: $('input', el).value.trim() });
+    } else if (SEC[b.tipo]) {
+      // Sección de landing: campos + elementos repetidos (columnas, planes, testimonios) + estilo + ✦ Nexus
+      const spec = SEC[b.tipo];
+      const st = { fondo: b.fondo || '', fondoImg: b.fondoImg || '', espacio: b.espacio || 'normal', alinear: b.alinear || 'centro', variante: b.variante || spec.variantes?.[0][0] || '', imagen: b.imagen || '' };
+      const datos = Object.fromEntries(spec.campos.map(([k]) => [k, b[k] || '']));
+      const items = spec.item ? (b.items?.length ? b.items.map(x => ({ ...x })) : spec.inicio()) : [];
+      const campo = ([k, ph, max, t], v) => t === 'check' ? `<label class="sec-check"><input type="checkbox" data-k="${k}"${v ? ' checked' : ''}> ${h(ph)}</label>`
+        : t === 1 ? `<textarea data-k="${k}" rows="2" maxlength="${max}" placeholder="${h(ph)}">${h(v || '')}</textarea>` : `<input data-k="${k}" maxlength="${max}" placeholder="${h(ph)}" value="${h(v || '')}"${k.endsWith('Url') ? ' inputmode="url" autocapitalize="off" spellcheck="false"' : ''}>`;
+      const leerDatos = () => {
+        el.querySelectorAll('.sec-campos [data-k]').forEach(x => { datos[x.dataset.k] = x.value; });
+        el.querySelectorAll('.sec-item').forEach((it, i) => it.querySelectorAll('[data-k]').forEach(x => { items[i][x.dataset.k] = x.type === 'checkbox' ? x.checked : x.value; }));
+      };
+      const fondoVista = () => st.fondo === 'imagen' && (st.fondoImg || st.imagen) ? ` style="background-image:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.7)),url('${h(mini(st.fondoImg || st.imagen, 700))}')"` : '';
+      const pintar = () => {
+        el.innerHTML = barra(`<button class="nx" data-sec-nx aria-label="Escribir esta sección con Nexus" title="Escribir con Nexus">✦</button><button data-sec-estilo aria-label="Estilo de la sección" title="Fondo, espacio y alineación">${ico('color-palette-outline')}</button>`)
+          + `<div class="sec-vista f-${st.fondo || 'ninguno'}${st.alinear === 'izquierda' ? ' a-izq' : ''}"${fondoVista()}>`
+          + (spec.variantes ? `<div class="sec-var">${spec.variantes.map(([k, n]) => `<button data-var="${k}" aria-pressed="${st.variante === k}">${n}</button>`).join('')}</div>` : '')
+          + `<div class="sec-campos">${spec.campos.map(c => campo(c, datos[c[0]])).join('')}</div>`
+          + (spec.imagen ? `<div class="sec-img">${st.imagen ? `<img src="${h(mini(st.imagen, 500))}" alt="">` : ''}<button class="btn chico" data-sec-img>${ico('image-outline')} ${st.imagen ? 'Cambiar imagen' : 'Añadir imagen'}</button>${st.imagen ? '<button class="btn chico rojo" data-sec-img-no>Quitar</button>' : ''}</div>` : '')
+          + (spec.item ? `<div class="sec-items">${items.map((it, i) => `<div class="sec-item"><div class="sec-item-h"><b>${spec.nombreItem} ${i + 1}</b><button data-item-fuera="${i}" aria-label="Quitar ${spec.nombreItem.toLowerCase()}">${ico('close')}</button></div>${spec.item.map(c => campo(c, it[c[0]])).join('')}</div>`).join('')}</div>`
+            + (items.length < spec.max ? `<button class="btn chico" data-item-mas style="margin-top:8px">${ico('add')} ${spec.otro}</button>` : '') : '')
+          + '</div>';
+        el.querySelectorAll('[data-var]').forEach(x => { x.onclick = () => { leerDatos(); st.variante = x.dataset.var; sucio = true; pintar(); }; });
+        el.querySelectorAll('[data-item-fuera]').forEach(x => { x.onclick = () => { leerDatos(); items.splice(+x.dataset.itemFuera, 1); sucio = true; pintar(); }; });
+        const mas = $('[data-item-mas]', el); if (mas) mas.onclick = () => { leerDatos(); items.push(spec.nuevo()); sucio = true; pintar(); el.querySelectorAll('.sec-item')[items.length - 1]?.querySelector('input,textarea')?.focus(); };
+        const si = $('[data-sec-img]', el); if (si) si.onclick = () => { leerDatos(); subida(si, u => { st.imagen = u; pintar(); }); };
+        const sn = $('[data-sec-img-no]', el); if (sn) sn.onclick = () => { leerDatos(); st.imagen = ''; sucio = true; pintar(); };
+        $('[data-sec-estilo]', el).onclick = () => { leerDatos(); estiloSeccion(st, () => { sucio = true; pintar(); }); };
+        $('[data-sec-nx]', el).onclick = () => { leerDatos(); nexusSeccion(b.tipo, spec, { ...datos, items }, nuevo => {
+          spec.campos.forEach(([k]) => { datos[k] = nuevo[k] || ''; });
+          if (spec.item) items.splice(0, items.length, ...(nuevo.items || []));
+          if (nuevo.variante && spec.variantes?.some(([k]) => k === nuevo.variante)) st.variante = nuevo.variante;
+          sucio = true; pintar();
+        }); };
+      };
+      pintar();
+      el.leer = () => {
+        leerDatos();
+        const o = { tipo: b.tipo, ...datos, fondo: st.fondo, espacio: st.espacio, alinear: st.alinear };
+        if (st.fondo === 'imagen') o.fondoImg = st.fondoImg || st.imagen;
+        if (spec.variantes) o.variante = st.variante;
+        if (spec.imagen) o.imagen = st.imagen;
+        if (spec.item) o.items = items;
+        return o;
+      };
     } else if (b.tipo === 'redes') {
       // Contacto y redes: cada fila = icono (se elige de la lista) + número, @usuario o enlace + texto opcional
       const R = window.UGRedes, ESTILO = { botones: ['Botones', 'apps-outline'], iconos: ['Solo iconos', 'ellipse-outline'], flotante: ['Flotante', 'chatbubble-ellipses-outline'] };
@@ -674,7 +817,8 @@ async function editor(tipo, id) {
   (E.bloques?.length ? E.bloques : [{ tipo: 'texto', texto: '' }]).forEach(b => cont.appendChild(crearBloque(b)));
 
   $('#anadir').onclick = () => {
-    const c = hoja(`<h3>Añadir bloque</h3><div class="tipos">${TIPOS.map(([t, i, n]) => `<button data-t="${t}">${ico(i)}<span>${n}</span></button>`).join('')}</div>`);
+    const c = hoja(`<h3>Añadir bloque</h3><p class="hoja-sub">Secciones de página <small>· para landings: ocupan todo el ancho</small></p><div class="tipos">${Object.entries(SEC).map(([t, s]) => `<button data-t="${t}" class="t-sec">${ico(s.ico)}<span>${s.nombre}</span></button>`).join('')}</div>
+      <p class="hoja-sub">Contenido</p><div class="tipos">${TIPOS.map(([t, i, n]) => `<button data-t="${t}">${ico(i)}<span>${n}</span></button>`).join('')}</div>`);
     c.onclick = e => {
       const x = e.target.closest('[data-t]'); if (!x) return;
       cerrarHoja();
@@ -701,8 +845,88 @@ async function editor(tipo, id) {
     $('#o-ok', c).onclick = () => { guardarCampos(); cerrarHoja(); pintarEstado(); };
   };
 
-  // ✦ Nexus escritor: arma el borrador con bloques a partir de una publicación de UpGames
+  // ✦ Nexus: el centro de ayuda del editor
+  const leerTodo = () => [...cont.children].map(x => x.leer?.()).filter(Boolean);
+  const hayContenido = () => leerTodo().some(b => [b.texto, b.titulo, b.url, b.id].some(v => String(v || '').trim()) || (b.urls || []).length);
   $('#nexus').onclick = () => {
+    const ops = [
+      ['landing', 'rocket-outline', 'Crear una landing con IA', 'Cuéntale tu negocio y arma portada, servicios, precios, dudas y contacto'],
+      ...(esPag ? [] : [['publicacion', 'game-controller-outline', 'Escribir sobre una publicación', 'Reseña, guía o noticia de un juego de UpGames']]),
+      ['revisar', 'checkmark-done-outline', 'Revisar mi página', 'Consejos para que se vea profesional y la encuentren'],
+      ['seo', 'search-outline', 'Título, resumen y etiquetas', 'Para Google y para cuando la compartan'],
+    ];
+    const c = hoja(`<h3>✦ Nexus</h3><p class="hoja-sub" style="margin:0">Tu asistente: escribe, revisa y mejora contigo. Tú decides qué usar.</p><div class="opciones">${ops.map(([id, i, n, d]) => `<button data-nx-op="${id}">${ico(i)}<span>${n}<small>${d}</small></span></button>`).join('')}</div>
+      <p class="hoja-sub" style="margin:0">También tienes ✦ en cada bloque de texto y en cada sección.</p>`);
+    c.onclick = e => { const x = e.target.closest('[data-nx-op]'); if (!x) return; cerrarHoja(); ({ landing: nexusLanding, publicacion: nexusPublicacion, revisar: nexusRevisar, seo: nexusSeo })[x.dataset.nxOp](); };
+  };
+
+  async function nexusLanding() {
+    if (hayContenido() && !(await confirmar('¿Reemplazar lo que tienes?', 'La landing de Nexus sustituirá los bloques actuales.', 'Continuar', true))) return;
+    const c = hoja(`<h3>✦ Nexus crea tu landing</h3><p style="color:var(--txt2)">Describe tu negocio o proyecto. Nexus arma la página con secciones; tú completas lo que va entre [corchetes] y la publicas.</p>
+      <label class="campo"><span>¿Qué ofreces y para quién?</span><textarea class="inp" id="nl-idea" maxlength="800" rows="3" placeholder="Ej.: Soy barbero en Medellín, hago cortes modernos y diseño de barba para jóvenes. Atiendo con cita."></textarea></label>
+      <label class="campo"><span>¿Qué quieres que haga el visitante?</span><select class="inp" id="nl-obj"><option>Escribirme por WhatsApp</option><option>Comprar o pedir un producto</option><option>Reservar una cita</option><option>Seguirme en redes</option><option>Conocer mi trabajo (portafolio)</option><option>Descargar mis mods o juegos</option></select></label>
+      <label class="campo"><span>WhatsApp (opcional)</span><input class="inp" id="nl-wa" inputmode="tel" placeholder="+57 300 123 4567"><small>Los botones principales llevarán a tu WhatsApp y se añade el botón flotante.</small></label>
+      <button class="btn pri ancho" id="nl-ok">${ico('sparkles-outline')} Crear mi landing</button>`);
+    $('#nl-ok', c).onclick = async ev => {
+      const idea = $('#nl-idea', c).value.trim(), wa = $('#nl-wa', c).value.trim();
+      if (idea.length < 10) return toast('Cuéntale a Nexus un poco más: qué ofreces y para quién.', true);
+      if (wa && !window.UGRedes.normalizar('whatsapp', wa)) return toast('Ese número de WhatsApp no es válido. Escríbelo con el código de país.', true);
+      await ocupado(ev.currentTarget, async () => {
+        const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'landing', idea, objetivo: $('#nl-obj', c).value, whatsapp: wa } });
+        cerrarHoja();
+        cont.innerHTML = ''; r.bloques.forEach(b => cont.appendChild(crearBloque(b)));
+        if (!tit.value.trim()) { tit.value = r.titulo; crecer(tit); }
+        if (r.resumen && !meta.resumen) meta.resumen = r.resumen;
+        sucio = true; window.scrollTo({ top: 0, behavior: 'smooth' });
+        toast('✦ Landing lista. Completa lo que va entre [corchetes] y sube tus imágenes.');
+      });
+    };
+    setTimeout(() => $('#nl-idea', c)?.focus(), 50);
+  }
+
+  function nexusRevisar() {
+    const bl = leerTodo(), sec = bl.filter(b => SEC[b.tipo]);
+    const texto = JSON.stringify(bl.map(b => [b.texto, b.titulo, ...(b.items || []).map(i => [i.texto, i.titulo])]));
+    const conImagen = meta.portada || bl.some(b => b.tipo === 'imagen' || b.tipo === 'galeria' || b.imagen);
+    const contacto = bl.some(b => b.tipo === 'redes' || b.tipo === 'boton' || (SEC[b.tipo] && b.bUrl));
+    const sinEnlace = bl.filter(b => SEC[b.tipo]).flatMap(b => [[b.bTexto, b.bUrl], ...(b.items || []).map(i => [i.bTexto, i.bUrl])]).some(([t, u]) => String(t || '').trim() && !String(u || '').trim());
+    const c = [
+      [!!tit.value.trim() && tit.value.trim().length <= 70, tit.value.trim() ? (tit.value.trim().length > 70 ? 'El título es largo: en Google se corta a unos 65 caracteres.' : 'Tiene un título claro.') : 'Falta el título.'],
+      [!hayCorchetes(bl), hayCorchetes(bl) ? 'Hay textos entre [corchetes] por completar con tus datos reales.' : 'No quedan textos de ejemplo por completar.'],
+      [conImagen, conImagen ? 'Tiene imágenes.' : 'Añade al menos una imagen: las páginas con fotos se ven más profesionales y se comparten mejor.'],
+      [contacto, contacto ? 'El visitante tiene cómo contactarte o actuar.' : 'Añade un botón o el bloque «Redes y contacto» para que el visitante pueda escribirte.'],
+      [!sinEnlace, sinEnlace ? 'Hay botones sin enlace: no se mostrarán hasta que les pongas uno.' : 'Todos los botones llevan a algún sitio.'],
+      [!!meta.resumen, meta.resumen ? 'Tiene resumen para Google y redes.' : 'Falta el resumen: toca ✦ «Título, resumen y etiquetas».'],
+      ...(esPag && sec.length ? [[sec[0] === bl[0] && bl[0].tipo === 'heroe', bl[0]?.tipo === 'heroe' ? 'Empieza con una sección Héroe: buena primera impresión.' : 'Empieza la página con una sección «Héroe» para causar buena primera impresión.']] : []),
+      ...(esPag ? [] : [[texto.length > 900, texto.length > 900 ? 'Tiene contenido suficiente.' : 'El texto es corto: las entradas de más de 300 palabras posicionan mejor.'], [!!meta.etiquetas.trim(), meta.etiquetas.trim() ? 'Tiene etiquetas.' : 'Añade etiquetas para que te encuentren dentro de tu blog.']]),
+    ];
+    const bien = c.filter(x => x[0]).length;
+    hoja(`<h3>✦ Revisión de Nexus</h3><p style="color:var(--txt2)">${bien === c.length ? '¡Todo listo! Tu página se ve profesional. 🎉' : `Vas bien: ${bien} de ${c.length}. Te sugiero:`}</p>
+      <div class="revision">${c.sort((a, b) => a[0] - b[0]).map(([ok, t]) => `<div class="${ok ? 'ok' : 'falta'}">${ico(ok ? 'checkmark-circle' : 'alert-circle')}<span>${h(t)}</span></div>`).join('')}</div><button class="btn pri ancho" data-cerrar>Entendido</button>`).querySelector('[data-cerrar]').onclick = cerrarHoja;
+  }
+
+  async function nexusSeo() {
+    const texto = leerTodo().map(b => [b.titulo, b.texto, ...(b.items || []).flatMap(i => [i.titulo, i.texto, i.p, i.r])].filter(Boolean).join('\n')).join('\n').replace(/\[([^\]\n]+)\]\([^)]*\)/g, '$1');
+    if (texto.trim().length < 40) return toast('Escribe un poco más de contenido para que Nexus sugiera el SEO.', true);
+    const c = hoja(`<h3>✦ Título, resumen y etiquetas</h3><div class="cargando" style="min-height:120px"><span class="giro"></span></div>`);
+    try {
+      const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'seo', titulo: tit.value, texto } });
+      c.innerHTML = `<h3>✦ Propuesta de Nexus</h3>
+        ${r.titulo ? `<label class="campo"><span>Título para buscadores</span><input class="inp" id="s-tit" maxlength="140" value="${h(r.titulo)}"></label>` : ''}
+        <label class="campo"><span>Resumen (Google y redes)</span><textarea class="inp" id="s-res" maxlength="300">${h(r.resumen)}</textarea></label>
+        ${esPag ? '' : `<label class="campo"><span>Etiquetas</span><input class="inp" id="s-et" value="${h(r.etiquetas.join(', '))}"></label>`}
+        <div class="fila"><button class="btn" data-no style="flex:1">Cancelar</button><button class="btn pri" data-si style="flex:1">Usar</button></div>`;
+      $('[data-no]', c).onclick = cerrarHoja;
+      $('[data-si]', c).onclick = () => {
+        const nt = $('#s-tit', c)?.value.trim(); if (nt) { tit.value = nt; crecer(tit); }
+        meta.resumen = $('#s-res', c).value.trim(); if (!esPag) meta.etiquetas = $('#s-et', c).value;
+        sucio = true; cerrarHoja(); toast('✦ Listo. Puedes cambiarlo en Opciones.');
+      };
+    } catch (e) { cerrarHoja(); toast(e.message, true); }
+  }
+
+  // ✦ Nexus escritor: arma el borrador con bloques a partir de una publicación de UpGames
+  function nexusPublicacion() {
     const actual = [...cont.children].map(x => x.leer?.()).find(b => b && (b.tipo === 'juego' || b.tipo === 'descarga'))?.id || juegoDesde || '';
     const c = hoja(`<h3>✦ Nexus escribe por ti</h3><p style="color:var(--txt2)">Elige la publicación y qué quieres escribir. Nexus arma un borrador con bloques; tú lo revisas, lo completas con tu experiencia y lo publicas.</p>
       <label class="campo"><span>Publicación de UpGames</span><input class="inp" id="n-id" placeholder="Pega el enlace de la publicación" value="${h(actual)}"></label>
@@ -725,17 +949,25 @@ async function editor(tipo, id) {
         });
       } catch (e) { toast(e.message, true); }
     };
-  };
-  if (juegoDesde) setTimeout(() => $('#nexus').click(), 350);
+  }
+  if (juegoDesde) setTimeout(nexusPublicacion, 350);
+  else if (conNexus) setTimeout(nexusLanding, 200);
 
   let urlPrevia = urlPreviaInicial;
   async function guardar(estado, boton, callado) {
-    const bloques = [...cont.children].map(el => el.leer()).filter(b => b && (b.tipo === 'separador' || [b.texto, b.url, b.id].some(v => String(v || '').trim()) || [b.urls, b.items, b.filas].some(a => a?.length)));
+    const bloques = [...cont.children].map(el => el.leer()).filter(b => b && (b.tipo === 'separador' || [b.texto, b.url, b.id, b.titulo].some(v => String(v || '').trim()) || [b.urls, b.items, b.filas].some(a => a?.length)));
     const titulo = tit.value.trim();
     if (!titulo) { tit.focus(); return toast('Ponle un título.', true); }
     if (estado !== 'borrador' && !bloques.length) return toast('La entrada está vacía. Escribe algo antes de publicar.', true);
     const malBoton = bloques.find(b => b.tipo === 'boton' && !/^https:\/\/\S+\.\S+/.test(b.url));
     if (malBoton) return toast('El botón necesita un enlace que empiece por https://', true);
+    const enlacesSec = bloques.flatMap(b => SEC[b.tipo] ? [[b.bTexto, b.bUrl], [b.b2Texto, b.b2Url], ...(b.items || []).map(i => [i.bTexto, i.bUrl])] : []);
+    const malEnlace = enlacesSec.find(([t, u]) => String(u || '').trim() && !enlaceOk(u));
+    if (malEnlace) return toast(`El enlace del botón «${malEnlace[0] || 'sin texto'}» no es válido. Usa https://… o wa.me/57300…`, true);
+    if (estado !== 'borrador') {
+      const pend = [hayCorchetes(bloques) && 'hay textos entre [corchetes] sin completar', enlacesSec.some(([t, u]) => String(t || '').trim() && !String(u || '').trim()) && 'hay botones sin enlace (no se mostrarán)'].filter(Boolean);
+      if (pend.length && !(await confirmar('¿Publicar así?', `Nexus te avisa: ${pend.join(' y ')}.`, 'Publicar igual'))) return;
+    }
     const malRed = bloques.flatMap(b => b.tipo === 'redes' ? b.items : []).find(i => !window.UGRedes.normalizar(i.red, i.url));
     if (malRed) return toast(`Revisa el dato de ${window.UGRedes.REDES[malRed.red]?.nombre || 'la red'}: «${malRed.url}» no es válido.`, true);
     const programar = estado !== 'borrador' && meta.programar && new Date(meta.programar) > new Date();
@@ -748,6 +980,10 @@ async function editor(tipo, id) {
       if (E.estado === 'publicada' && antes !== 'publicada') {
         const c = hoja(`<h3>¡Publicada! 🎉</h3><p>Tu ${esPag ? 'página' : 'entrada'} ya está en internet.</p><code style="word-break:break-all;color:var(--cy);font-size:.86rem">${h(r.url)}</code>
           <div class="fila"><button class="btn" data-c style="flex:1">${ico('copy-outline')} Copiar enlace</button><a class="btn pri" style="flex:1" href="${h(r.url)}" target="_blank" rel="noopener">${ico('open-outline')} Verla</a></div><button class="btn ancho" data-l>Volver a la lista</button>`);
+        if (esPag && !S.blog.ajustes?.inicio && SEC[E.bloques?.[0]?.tipo]) {
+          $('[data-l]', c).insertAdjacentHTML('beforebegin', `<button class="btn ancho nx-op" data-ini>${ico('home-outline')} ✦ Usar esta landing como inicio de mi sitio</button>`);
+          $('[data-ini]', c).onclick = ev => ocupado(ev.currentTarget, async () => { await guardarBlog({ ajustes: { inicio: E.id } }, '¡Listo! Tu sitio abre con esta landing'); ev.currentTarget?.remove(); });
+        }
         $('[data-c]', c).onclick = () => copiar(r.url);
         $('[data-l]', c).onclick = () => { cerrarHoja(); panel(); };
       } else toast(E.estado === 'programada' ? `Programada para el ${new Date(E.publicadaEn).toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' })}` : E.estado === 'borrador' ? 'Borrador guardado' : 'Cambios publicados');

@@ -62,4 +62,69 @@ function armar(o, j, tipo) {
     };
 }
 
-module.exports = { SISTEMA, TIPOS, pedido, armar };
+// ── Nexus asistente: landing completa, una sección, mejorar un texto y SEO ──────────────
+const FORMA_SECCIONES = `Bloques de sección (todos aceptan "fondo":"|suave|acento|degradado|oscuro" y "alinear":"centro|izquierda"):
+{"tipo":"heroe","titulo":"…","texto":"…","bTexto":"…","bUrl":"","variante":"centro"}
+{"tipo":"columnas","titulo":"…","texto":"…","variante":"3","items":[{"icono":"emoji","titulo":"…","texto":"…"}]}
+{"tipo":"precios","titulo":"…","texto":"…","items":[{"nombre":"…","precio":"[precio]","periodo":"…","items":"línea 1\nlínea 2","bTexto":"…","bUrl":"","destacado":false}]}
+{"tipo":"testimonios","titulo":"…","items":[{"texto":"[Escribe aquí lo que dijo un cliente real]","nombre":"[Nombre]","rol":"[Ciudad]"}]}
+{"tipo":"cta","titulo":"…","texto":"…","bTexto":"…","bUrl":""}
+También: {"tipo":"texto","texto":"…"} · {"tipo":"titulo","texto":"…"} · {"tipo":"faq","items":[{"p":"…","r":"…"}]}`;
+const REGLAS_HONESTAS = `- NO inventes precios, cifras, premios, clientes ni testimonios: pon [corchetes] para que el creador complete (p. ej. "[precio]", "[Escribe aquí lo que dijo un cliente real]").
+- Deja "bUrl" vacío: el creador pone su enlace o su WhatsApp.
+- Iconos de columnas: un solo emoji que encaje. Títulos cortos y concretos. Tono cercano y profesional, en el idioma del pedido.
+- Nada de contenido sexual, de odio, ilegal ni engañoso.`;
+
+const SISTEMA_LANDING = `Eres Nexus, el asistente de UpGames Blogs. Diseñas landing pages que convierten para personas que no saben programar.
+Devuelves SOLO un JSON: {"titulo":"nombre corto de la página","resumen":"1-2 frases para Google","bloques":[…]}
+${FORMA_SECCIONES}
+Estructura recomendada (adáptala al negocio): heroe (fondo "degradado") → columnas con 3 beneficios o servicios → precios si aplica → testimonios → faq con 3-4 dudas reales → cta final (fondo "acento").
+Alterna fondos para que se distingan las secciones (nunca dos seguidas iguales salvo "").
+${REGLAS_HONESTAS}`;
+
+const SISTEMA_SECCION = `Eres Nexus, el asistente de UpGames Blogs. Escribes el contenido de UNA sección de una página web.
+Devuelves SOLO un JSON con el bloque pedido, con esta forma:
+${FORMA_SECCIONES}
+${REGLAS_HONESTAS}`;
+
+const ACCIONES_TEXTO = {
+    mejorar: 'Mejora la redacción: más claro y fluido, sin cambiar el sentido ni la longitud aproximada.',
+    corto: 'Hazlo más corto y directo (la mitad aproximadamente), conservando lo importante.',
+    largo: 'Desarróllalo un poco más (máximo el doble), sin inventar datos.',
+    vendedor: 'Reescríbelo más persuasivo, centrado en el beneficio para quien lee, sin exagerar ni prometer lo que no dice.',
+    ortografia: 'Corrige solo ortografía, acentos y puntuación. No cambies nada más.',
+    cercano: 'Reescríbelo con un tono más cercano y amigable.',
+};
+const SISTEMA_TEXTO = `Eres Nexus, el asistente de escritura de UpGames Blogs. Reescribes el texto que te pasan según la instrucción.
+Devuelves SOLO un JSON: {"texto":"…"}. Conserva el formato (**negrita**, *cursiva*, listas con "- ", enlaces [texto](https://…)) y el idioma original. No añadas comentarios ni datos inventados.`;
+
+const SISTEMA_SEO = `Eres Nexus, experto en SEO de UpGames Blogs. Con el título y el texto de una entrada o página, propones:
+{"resumen":"descripción para Google y redes, 140-160 caracteres, atractiva y fiel al contenido","etiquetas":["3 a 6 etiquetas cortas en minúscula"],"titulo":"título alternativo más claro para buscadores, máx. 65 caracteres"}
+Devuelves SOLO ese JSON, en el idioma del texto. No inventes datos.`;
+
+const TIPOS_LANDING = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'texto', 'titulo', 'faq']);
+
+/** Landing de Nexus → bloques válidos (solo tipos de landing) o null. Añade el contacto si el creador dio uno. */
+function armarLanding(o, contacto) {
+    if (!o || typeof o !== 'object') return null;
+    let bloques = V.limpiarBloques(o.bloques).filter(b => TIPOS_LANDING.has(b.tipo));
+    if (bloques.length < 3 || bloques[0].tipo !== 'heroe') return null;
+    if (contacto?.items?.length) {
+        const i = bloques.map(b => b.tipo).lastIndexOf('cta');
+        const red = { tipo: 'redes', estilo: 'botones', items: contacto.items };
+        i >= 0 ? bloques.splice(i, 0, red) : bloques.push(red);
+        if (contacto.items[0].red === 'whatsapp') bloques.push({ tipo: 'redes', estilo: 'flotante', items: [contacto.items[0]] });
+        const wa = contacto.items[0].url;   // los botones principales llevan al contacto
+        bloques = bloques.map(b => (b.tipo === 'heroe' || b.tipo === 'cta') && b.bTexto && !b.bUrl ? { ...b, bUrl: wa }
+            : b.tipo === 'precios' ? { ...b, items: b.items.map(i => i.bTexto && !i.bUrl ? { ...i, bUrl: wa } : i) } : b);
+    }
+    return { titulo: V.linea(o.titulo, 90) || 'Inicio', resumen: V.linea(o.resumen, 300), bloques: bloques.slice(0, V.LIMITES.BLOQUES_POR_ENTRADA) };
+}
+
+/** Sección de Nexus: devuelve el bloque si es del tipo pedido, o null. */
+function armarSeccion(o, tipo) {
+    const [b] = V.limpiarBloques([{ ...(o && typeof o === 'object' ? o : {}), tipo }]);
+    return b || null;
+}
+
+module.exports = { SISTEMA, TIPOS, pedido, armar, SISTEMA_LANDING, SISTEMA_SECCION, SISTEMA_TEXTO, SISTEMA_SEO, ACCIONES_TEXTO, armarLanding, armarSeccion };

@@ -255,3 +255,52 @@ select.inp option { background: var(--bg2); }
 .btn.nexus{background:linear-gradient(135deg,rgba(124,92,255,.25),rgba(57,255,136,.15));border:1px solid rgba(186,215,247,.22)}.btn.nexus b{color:var(--g)}
 .acepto{display:flex;gap:10px;align-items:flex-start;margin:4px 0 14px;font-size:.84rem;line-height:1.45;color:var(--txt2)}.acepto input{width:20px;height:20px;flex-shrink:0;margin-top:2px;accent-color:var(--g)}.acepto a{text-decoration:underline}
 .guia-enlace{text-align:center;margin:22px 0 6px;font-size:.9rem}.guia-enlace a{display:inline-flex;gap:8px;align-items:center}
+
+/* ── ✦ Nexus en el editor ─────────────────────────────── */
+.bloque .herr button.nx { color: #B8A6FF; font-size: 1.05rem; }
+.bloque .herr button.nx:hover { background: rgba(124,92,255,.18); color: #fff; }
+.opciones button.nx-op, .btn.nx-op { background: linear-gradient(135deg, rgba(124,92,255,.2), rgba(57,255,136,.1)); border: 1px solid rgba(186,215,247,.2); }
+.opciones button.nx-op ion-icon { color: #B8A6FF; }
+.hoja-sub { color: var(--txt2); font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin: 4px 0 -4px; }
+.hoja-sub small { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--txt3); }
+.tipos button.t-sec { background: linear-gradient(160deg, rgba(var(--g-rgb), .1), transparent); }
+.revision { display: grid; gap: 8px; }
+.revision div { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.04); font-size: .92rem; line-height: 1.4; }
+.revision ion-icon { font-size: 1.25rem; flex-shrink: 0; }
+.revision .ok ion-icon { color: var(--g); } .revision .falta { background: rgba(255,204,0,.07); } .revision .falta ion-icon { color: var(--amber); }
+.propuesta { background: rgba(255,255,255,.04); border: 1px solid var(--bd); border-radius: 14px; padding: 14px; max-height: 46dvh; overflow-y: auto; line-height: 1.65; }
+.propuesta p + p, .propuesta ul, .propuesta ol { margin-top: .8em; } .propuesta ul, .propuesta ol { padding-left: 1.3em; }
+
+/* ── Secciones de página en el editor ────────────────── */
+.sec-vista { border-radius: 14px; padding: 12px; display: grid; gap: 8px; border: 1px solid var(--bd); background-size: cover; background-position: center; }
+.sec-vista.f-suave { background-color: rgba(255,255,255,.06); }
+.sec-vista.f-acento { background-color: rgba(var(--g-rgb), .22); border-color: rgba(var(--g-rgb), .4); }
+.sec-vista.f-degradado { background-image: linear-gradient(135deg, rgba(var(--g-rgb), .25), rgba(var(--cy-rgb), .1)); }
+.sec-vista.f-oscuro { background-color: #000; }
+.sec-vista.f-imagen { border-color: rgba(255,255,255,.25); }
+.sec-campos, .sec-items { display: grid; gap: 8px; }
+.sec-vista input:not([type=checkbox]), .sec-vista textarea { width: 100%; background: rgba(0,0,0,.28); border: 1px solid var(--bd); border-radius: 10px; outline: none; padding: 10px; font-size: .92rem; resize: vertical; color: var(--txt); }
+.sec-vista input:focus, .sec-vista textarea:focus { border-color: var(--g); }
+.sec-vista.a-izq .sec-campos [data-k="titulo"] { text-align: left; }
+.sec-campos [data-k="titulo"] { font-weight: 800; font-size: 1.1rem; text-align: center; }
+.b-heroe .sec-campos [data-k="titulo"] { font-size: 1.35rem; }
+.sec-var, .seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.sec-var button, .seg button { flex: 1; min-height: 36px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--bd); font-size: .8rem; font-weight: 700; color: var(--txt2); background: rgba(0,0,0,.2); }
+.sec-var button[aria-pressed="true"], .seg button[aria-pressed="true"] { border-color: var(--g); color: var(--g); background: rgba(var(--g-rgb), .1); }
+.sec-item { border: 1px solid var(--bd); border-radius: 12px; padding: 10px; display: grid; gap: 6px; background: rgba(0,0,0,.18); }
+.sec-item-h { display: flex; align-items: center; justify-content: space-between; font-size: .76rem; color: var(--txt3); text-transform: uppercase; letter-spacing: .08em; }
+.sec-item-h button { width: 32px; height: 32px; border-radius: 9px; color: var(--txt3); display: grid; place-items: center; }
+.sec-item-h button:hover { color: var(--red); background: rgba(255,90,90,.1); }
+.sec-item [data-k="icono"] { width: 64px !important; text-align: center; font-size: 1.3rem !important; padding: 6px !important; }
+.sec-check { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: var(--txt2); }
+.sec-check input { width: 18px; height: 18px; accent-color: var(--g); }
+.sec-img { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sec-img img { height: 64px; border-radius: 10px; object-fit: cover; max-width: 140px; }
+.fondos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.fondos button { display: grid; justify-items: center; gap: 6px; padding: 10px 4px; border-radius: 12px; border: 1px solid var(--bd); font-size: .76rem; font-weight: 700; color: var(--txt2); }
+.fondos button[aria-pressed="true"] { border-color: var(--g); color: var(--txt); }
+.fondos i { width: 100%; height: 30px; border-radius: 8px; border: 1px solid var(--bd2); }
+.fondos .f-ninguno { background: repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,.05) 6px 12px); }
+.fondos .f-suave { background: rgba(255,255,255,.1); } .fondos .f-acento { background: var(--g); }
+.fondos .f-degradado { background: linear-gradient(135deg, var(--g), var(--cy)); } .fondos .f-oscuro { background: #000; }
+.fondos .f-imagen { background: linear-gradient(135deg, #3a4a6b, #1b2234); }

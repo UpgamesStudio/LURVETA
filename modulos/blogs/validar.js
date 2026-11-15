@@ -27,7 +27,11 @@ const RESERVADOS = new Set(['www', 'admin', 'api', 'app', 'blog', 'blogs', 'upga
     'mail', 'correo', 'ftp', 'cdn', 'static', 'assets', 'nexus', 'live', 'studio', 'racing', 'premium', 'oficial', 'official',
     'root', 'null', 'undefined', 'test', 'dev', 'staging', 'status', 'docs', 'legal', 'terminos', 'privacidad']);
 
-const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes']);
+const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes', 'heroe', 'columnas', 'precios', 'testimonios', 'cta']);
+// Secciones de landing: tipos de bloque que ocupan todo el ancho y llevan su propio estilo
+const SECCIONES = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta']);
+const FONDOS_SEC = new Set(['', 'suave', 'acento', 'degradado', 'oscuro', 'imagen']);
+const ESPACIOS_SEC = new Set(['compacto', 'normal', 'amplio']);
 const ESTILOS_AVISO = new Set(['info', 'exito', 'alerta', 'peligro']);
 
 /** Texto plano de una línea: sin etiquetas, sin saltos, recortado. */
@@ -98,6 +102,18 @@ function etiquetas(v) {
     return out;
 }
 
+/** Enlace de un botón de sección: https (acepta «wa.me/57…» sin el https://). */
+const urlBoton = v => Redes.https(v);
+/** Estilo común de las secciones: fondo, imagen de fondo, espacio y alineación (opciones cerradas). */
+function estiloSec(b) {
+    const fondo = FONDOS_SEC.has(b.fondo) ? b.fondo : '';
+    const fondoImg = fondo === 'imagen' ? urlSegura(b.fondoImg) : '';
+    return { fondo: fondo === 'imagen' && !fondoImg ? '' : fondo, ...(fondoImg ? { fondoImg } : {}), espacio: ESPACIOS_SEC.has(b.espacio) ? b.espacio : 'normal', alinear: b.alinear === 'izquierda' ? 'izquierda' : 'centro' };
+}
+/** El icono de una columna: el primer emoji o carácter completo (sin partir emojis compuestos). */
+const unIcono = v => { const t = linea(v, 32); try { return [...new Intl.Segmenter().segment(t)][0]?.segment || ''; } catch (_) { return [...t].slice(0, 2).join(''); } };
+const lista = (v, max) => (Array.isArray(v) ? v : []).slice(0, max);
+
 /**
  * Limpia la lista de bloques de una entrada. Devuelve solo bloques conocidos y con sus
  * campos permitidos; lo demás se descarta. Nunca lanza.
@@ -137,6 +153,32 @@ function limpiarBloques(entrada) {
                 if (items.length) n = { tipo: 'redes', items, estilo: Redes.ESTILOS.includes(b.estilo) ? b.estilo : 'botones' };
                 break;
             }
+            case 'heroe': {
+                const t = linea(b.titulo, 120);
+                if (t) n = { tipo: 'heroe', titulo: t, texto: parrafos(b.texto, 400), bTexto: linea(b.bTexto, 40), bUrl: urlBoton(b.bUrl), b2Texto: linea(b.b2Texto, 40), b2Url: urlBoton(b.b2Url),
+                    imagen: urlSegura(b.imagen), variante: ['centro', 'dividido', 'fondo'].includes(b.variante) ? b.variante : 'centro', ...estiloSec(b) };
+                break;
+            }
+            case 'columnas': {
+                const items = lista(b.items, 30).map(i => ({ icono: unIcono(i?.icono), titulo: linea(i?.titulo, 80), texto: parrafos(i?.texto, 300) })).filter(i => i.titulo || i.texto).slice(0, 6);
+                if (items.length) n = { tipo: 'columnas', titulo: linea(b.titulo, 120), texto: parrafos(b.texto, 400), items, variante: b.variante === '2' ? '2' : '3', ...estiloSec(b) };
+                break;
+            }
+            case 'precios': {
+                const planes = lista(b.items, 30).map(i => ({ nombre: linea(i?.nombre, 40), precio: linea(i?.precio, 30), periodo: linea(i?.periodo, 20), items: parrafos(i?.items, 600), bTexto: linea(i?.bTexto, 40), bUrl: urlBoton(i?.bUrl), destacado: !!i?.destacado })).filter(i => i.nombre).slice(0, 4);
+                if (planes.length) n = { tipo: 'precios', titulo: linea(b.titulo, 120), texto: parrafos(b.texto, 400), items: planes, ...estiloSec(b) };
+                break;
+            }
+            case 'testimonios': {
+                const items = lista(b.items, 30).map(i => ({ texto: parrafos(i?.texto, 500), nombre: linea(i?.nombre, 60), rol: linea(i?.rol, 60) })).filter(i => i.texto && i.nombre).slice(0, 6);
+                if (items.length) n = { tipo: 'testimonios', titulo: linea(b.titulo, 120), items, ...estiloSec(b) };
+                break;
+            }
+            case 'cta': {
+                const t = linea(b.titulo, 120);
+                if (t) n = { tipo: 'cta', titulo: t, texto: parrafos(b.texto, 300), bTexto: linea(b.bTexto, 40), bUrl: urlBoton(b.bUrl), ...estiloSec(b) };
+                break;
+            }
             case 'separador': n = { tipo: 'separador' }; break;
             case 'codigo': { const t = String(b.texto ?? '').replace(/\r\n?/g, '\n').replace(/\u0000/g, '').slice(0, 8000); if (t.trim()) n = { tipo: 'codigo', texto: t }; break; }
             case 'descarga': { const id = String(b.id ?? ''); if (/^[a-f0-9]{24}$/i.test(id)) n = { tipo: 'descarga', id: id.toLowerCase() }; break; }
@@ -150,7 +192,7 @@ function limpiarBloques(entrada) {
 
 /** Todo el texto de una entrada junto, para la moderación y para el resumen. */
 function textoDe(bloques) {
-    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v]), ...(b.tipo === 'redes' ? b.items.map(i => i.texto) : [])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
+    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v]), ...(b.tipo === 'redes' ? b.items.map(i => i.texto) : []), ...(SECCIONES.has(b.tipo) ? [b.titulo, b.bTexto, b.b2Texto, ...(b.items || []).flatMap(i => [i.titulo, i.texto, i.nombre, i.rol, i.precio, i.periodo, i.items, i.bTexto])] : [])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
 }
 
 /** Enlaces que aparecen en una entrada (botones y enlaces dentro del texto). */
@@ -160,6 +202,7 @@ function enlacesDe(bloques) {
         if (b.tipo === 'boton') out.push(b.url);
         if (b.tipo === 'imagen' && b.enlace) out.push(b.enlace);
         if (b.tipo === 'redes') for (const i of b.items || []) if (/^https:/.test(i.url)) out.push(i.url);
+        if (SECCIONES.has(b.tipo)) for (const u of [b.bUrl, b.b2Url, ...(b.items || []).map(i => i.bUrl)]) if (u) out.push(u);
         for (const i of b.items || []) for (const m of String(i.r).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
         if (b.tipo === 'texto' || b.tipo === 'cita' || b.tipo === 'aviso') for (const m of String(b.texto).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
     }
@@ -182,4 +225,4 @@ function primeraImagen(bloques) {
     return '';
 }
 
-module.exports = { LIMITES, RESERVADOS, linea, parrafos, slug, validarDireccion, validarDominio, urlSegura, idYouTube, idSpotify, etiquetas, limpiarBloques, textoDe, enlacesDe, resumen, primeraImagen };
+module.exports = { SECCIONES, LIMITES, RESERVADOS, linea, parrafos, slug, validarDireccion, validarDominio, urlSegura, idYouTube, idSpotify, etiquetas, limpiarBloques, textoDe, enlacesDe, resumen, primeraImagen };

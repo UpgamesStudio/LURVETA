@@ -64,5 +64,5 @@
   const lista = () => Object.entries(REDES).map(([id, r]) => ({ id, ...r }));
   const svg = (red, extra = '') => REDES[red] ? `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"${extra}><path d="${REDES[red].path}"/></svg>` : '';
 
-  return { REDES, ESTILOS, MAX, normalizar, lista, svg };
+  return { REDES, ESTILOS, MAX, normalizar, lista, svg, https };
 });

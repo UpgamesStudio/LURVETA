@@ -93,6 +93,7 @@ function registrar(app, deps) {
             idioma: ['es', 'en', 'pt'].includes(a.idioma) ? a.idioma : 'es',
             esquinas: Temas.ESQUINAS[a.esquinas] ? a.esquinas : '', fondo: Temas.FONDOS[a.fondo] ? a.fondo : '', portadaForma: Temas.PORTADAS.includes(a.portadaForma) ? a.portadaForma : '',
             gadgets: { perfil: g.perfil !== false, etiquetas: g.etiquetas !== false, populares: g.populares !== false },
+            inicio: /^[a-f0-9]{24}$/.test(String(a.inicio || '')) ? String(a.inicio) : '',   // página de bloques que hace de inicio (landing); '' = lista de entradas
             enlaces: (Array.isArray(a.enlaces) ? a.enlaces : []).map(e => ({ texto: V.linea(e?.texto, 40), url: V.urlSegura(e?.url) })).filter(e => e.texto && e.url).slice(0, 6),
         };
     }
@@ -496,6 +497,51 @@ function registrar(app, deps) {
         } catch (e) { fallo(res, e, 'nexus escribir'); }
     });
 
+    // ✦ Nexus asistente: crea una landing, escribe una sección, mejora un texto o sugiere el SEO.
+    // Lo que devuelve el modelo pasa por V.limpiarBloques igual que lo que escribe una persona.
+    const Redes = require('../public/upgames-redes');
+    const LIMITES_NEXUS = { landing: [[Limites.HORA, 5], [Limites.DIA, 15]], seccion: [[Limites.HORA, 20], [Limites.DIA, 80]], texto: [[Limites.HORA, 40], [Limites.DIA, 150]], seo: [[Limites.HORA, 20], [Limites.DIA, 80]] };
+    app.post('/blogs/nexus/ayuda', verificarToken, async (req, res) => {
+        try {
+            const c = req.body || {}, accion = String(c.accion || '');
+            if (!LIMITES_NEXUS[accion]) return res.status(400).json({ success: false, error: 'Acción de Nexus desconocida.' });
+            if (!llm.disponible()) return res.status(503).json({ success: false, error: 'Nexus no está disponible ahora. Inténtalo más tarde.' });
+            if (!(await Limites.permitir(`blog-nexus-${accion}:${req.usuario}`, LIMITES_NEXUS[accion])) || !(await Limites.permitir('blog-nexus-global', [[Limites.MIN, 30]])))
+                return res.status(429).json({ success: false, error: 'Usaste mucho a Nexus por ahora. Inténtalo en un rato.' });
+            const fallaNexus = () => res.status(502).json({ success: false, error: 'Nexus no pudo hacerlo esta vez. Inténtalo de nuevo.' });
+
+            if (accion === 'landing') {
+                const idea = V.parrafos(c.idea, 800);
+                if (idea.length < 10) return res.status(400).json({ success: false, error: 'Cuéntale a Nexus un poco más: qué ofreces y para quién.' });
+                const u = Redes.normalizar('whatsapp', c.whatsapp);
+                const contacto = u ? { items: [{ red: 'whatsapp', url: u, texto: 'Escríbenos por WhatsApp' }] } : null;
+                const o = await llm.json(Escritor.SISTEMA_LANDING, `Negocio o proyecto: ${idea}\n${c.objetivo ? `Objetivo de la página: ${V.linea(c.objetivo, 120)}\n` : ''}${contacto ? 'Tiene WhatsApp para contacto.' : ''}`, { temperatura: 0.7, maxTokens: 2600, timeout: 45000 });
+                const r = Escritor.armarLanding(o, contacto);
+                return r ? res.json({ success: true, ...r }) : fallaNexus();
+            }
+            if (accion === 'seccion') {
+                const tipo = V.SECCIONES.has(c.tipo) ? c.tipo : '';
+                if (!tipo) return res.status(400).json({ success: false, error: 'Esa sección no existe.' });
+                const o = await llm.json(Escritor.SISTEMA_SECCION, `Bloque pedido: "${tipo}".\nIdea: ${V.parrafos(c.idea, 500) || 'propón un contenido útil'}\nSitio: ${V.linea(c.sitio, 140)}`, { temperatura: 0.7, maxTokens: 1200, timeout: 30000 });
+                const b = Escritor.armarSeccion(o, tipo);
+                return b ? res.json({ success: true, bloque: b }) : fallaNexus();   // el editor conserva el estilo que ya eligió el creador
+            }
+            if (accion === 'texto') {
+                const texto = V.parrafos(c.texto, 6000), instr = Escritor.ACCIONES_TEXTO[c.modo];
+                if (!texto || !instr) return res.status(400).json({ success: false, error: 'Escribe algo primero para que Nexus lo mejore.' });
+                const o = await llm.json(Escritor.SISTEMA_TEXTO, `Instrucción: ${instr}\n\nTexto:\n${texto}`, { temperatura: 0.4, maxTokens: 1800, timeout: 30000 });
+                const nuevo = V.parrafos(o?.texto, V.LIMITES.TEXTO_BLOQUE);
+                return nuevo ? res.json({ success: true, texto: nuevo }) : fallaNexus();
+            }
+            // seo
+            const texto = V.parrafos(c.texto, 5000);
+            if (texto.length < 40) return res.status(400).json({ success: false, error: 'Escribe un poco más de contenido para que Nexus sugiera el SEO.' });
+            const o = await llm.json(Escritor.SISTEMA_SEO, `Título: ${V.linea(c.titulo, 140)}\n\nTexto:\n${texto}`, { temperatura: 0.4, maxTokens: 500, timeout: 25000 });
+            const resumen = V.linea(o?.resumen, 300);
+            return resumen ? res.json({ success: true, resumen, etiquetas: V.etiquetas(o?.etiquetas).slice(0, 6), titulo: V.linea(o?.titulo, 90) }) : fallaNexus();
+        } catch (e) { fallo(res, e, 'nexus ayuda'); }
+    });
+
     // ═══════════════ COMENTARIOS ═══════════════
     // Las páginas del blog no llevan scripts: los comentarios se muestran y escriben en un marco aislado
     // (public/blog-comentarios.html, en el dominio de UpGames, donde está la sesión) que usa estas rutas.
@@ -620,7 +666,8 @@ function registrar(app, deps) {
             Entrada.find({ ...visibles(blog._id), tipo: 'entrada', vistas: { $gt: 0 } }).sort({ vistas: -1 }).limit(5).select('titulo slug').lean(),
             Entrada.aggregate([{ $match: { ...visibles(blog._id), tipo: 'entrada' } }, { $unwind: '$etiquetas' }, { $group: { _id: '$etiquetas', n: { $sum: 1 } } }, { $sort: { n: -1 } }, { $limit: 20 }]),
         ]);
-        return { paginas, autor: autor && { usuario: autor.usuario, avatar: autor.avatar, bio: autor.bio }, premium: premiumActivo(autor), populares, nube: nube.map(x => x._id) };
+        const hayEntradas = !!(await Entrada.exists({ ...visibles(blog._id), tipo: 'entrada' }));
+        return { paginas, autor: autor && { usuario: autor.usuario, avatar: autor.avatar, bio: autor.bio }, premium: premiumActivo(autor), populares, nube: nube.map(x => x._id), hayEntradas };
     }).then(({ premium, ...c }) => ({ ...c, blog: !premium && Temas.TEMAS[blog.tema]?.premium ? { ...blog, tema: Temas.POR_DEFECTO } : blog, sinMarca: premium, base, origen, appUrl: APP_URL, anuncio: !!blog.monetizar && blog.visibilidad === 'publico' }));
 
     async function juegosDe(bloques) {
@@ -662,14 +709,21 @@ function registrar(app, deps) {
             return html(res, 200, R.entrada({ ...ctx, anuncio: false, juegos: await juegosDe(e.bloques) }, { ...e, publicadaEn: e.publicadaEn || new Date() }, { previa: true }), 0);
         }
 
-        if (ruta === '/' || (m = ruta.match(/^\/etiqueta\/([a-z0-9-]{1,40})$/))) {
+        // Inicio = una página de bloques (landing), si el creador la eligió; las entradas pasan a /blog
+        const inicioId = blog.ajustes?.inicio;
+        if (ruta === '/' && inicioId && !req.query.pagina) {
+            const pag = await Entrada.findOne({ ...visibles(blog._id), _id: inicioId, tipo: 'pagina' }).lean();
+            if (pag) return html(res, 200, R.entrada({ ...ctx, juegos: await juegosDe(pag.bloques) }, pag, { inicio: true }));
+        }
+        if (ruta === '/blog' && !inicioId) return res.redirect(301, `${base}/`);
+        if (ruta === '/' || ruta === '/blog' || (m = ruta.match(/^\/etiqueta\/([a-z0-9-]{1,40})$/))) {
             const pagina = Math.min(500, Math.max(1, parseInt(req.query.pagina, 10) || 1));
             const filtro = { ...visibles(blog._id), tipo: 'entrada', ...(m ? { etiquetasSlug: m[1] } : {}) };
             const lista = await Entrada.find(filtro).sort({ publicadaEn: -1 }).skip((pagina - 1) * POR_PAGINA).limit(POR_PAGINA + 1).select('titulo slug portada resumen bloques etiquetas publicadaEn').lean();
             const hayMas = lista.length > POR_PAGINA;
             const etiqueta = m ? (lista[0]?.etiquetas || []).find(t => V.slug(t) === m[1]) || m[1] : '';
             if (m && !lista.length && pagina === 1) return html(res, 404, R.noEncontrada(ctx));
-            return html(res, 200, R.inicio(ctx, { entradas: lista.slice(0, POR_PAGINA), pagina, hayMas, etiqueta }));
+            return html(res, 200, R.inicio(ctx, { entradas: lista.slice(0, POR_PAGINA), pagina, hayMas, etiqueta, enBlog: ruta === '/blog' }));
         }
         if ((m = ruta.match(/^\/(e|p)\/([a-z0-9-]{1,90})$/))) {
             const e = await Entrada.findOne({ ...visibles(blog._id), tipo: m[1] === 'p' ? 'pagina' : 'entrada', slug: m[2] }).lean();

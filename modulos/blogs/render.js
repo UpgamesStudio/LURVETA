@@ -37,7 +37,34 @@ function textoHtml(texto) {
 // Las imágenes de Cloudinary se piden al ancho justo y en formato moderno
 const img = (url, ancho) => String(url).replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\/(?:w_|c_))/, `$1f_auto,q_auto,w_${ancho},c_limit/`);
 
+// ── Secciones de landing ─────────────────────────────────────────────────────────────
+const boton = (t, u, clase = 'boton') => t && u ? `<a class="${clase}" href="${esc(u)}" target="_blank" rel="nofollow ugc noopener">${esc(t)}</a>` : '';
+/** Envoltorio común: ocupa todo el ancho, con el fondo, el espacio y la alineación elegidos. */
+function seccion(b, clase, dentro) {
+    const cls = ['sec', `sec-${clase}`, b.fondo ? `f-${b.fondo}` : '', `e-${b.espacio || 'normal'}`, b.alinear === 'izquierda' ? 'a-izq' : ''].filter(Boolean).join(' ');
+    const estilo = b.fondo === 'imagen' && b.fondoImg ? ` style="--sec-img:url('${esc(img(b.fondoImg, 1800))}')"` : '';
+    return `<section class="${cls}"${estilo}><div class="sec-in">${dentro}</div></section>`;
+}
+const cabSec = b => (b.titulo ? `<h2 class="sec-t">${esc(b.titulo)}</h2>` : '') + (b.texto ? `<div class="sec-p">${textoHtml(b.texto)}</div>` : '');
+function seccionHtml(b) {
+    switch (b.tipo) {
+        case 'heroe': {
+            const botones = boton(b.bTexto, b.bUrl) + boton(b.b2Texto, b.b2Url, 'boton boton-2');
+            const txt = `<div class="h-txt"><h1 class="h-t">${esc(b.titulo)}</h1>${b.texto ? `<div class="h-p">${textoHtml(b.texto)}</div>` : ''}${botones ? `<div class="botones">${botones}</div>` : ''}</div>`;
+            if (b.variante === 'fondo' && b.imagen) return seccion({ ...b, fondo: 'imagen', fondoImg: b.imagen }, 'heroe h-fondo', txt);
+            if (b.variante === 'dividido' && b.imagen) return seccion(b, 'heroe h-dividido', `${txt}<div class="h-img"><img src="${esc(img(b.imagen, 1000))}" alt="" decoding="async"></div>`);
+            return seccion(b, 'heroe', `${txt}${b.imagen ? `<div class="h-img"><img src="${esc(img(b.imagen, 1200))}" alt="" decoding="async"></div>` : ''}`);
+        }
+        case 'columnas': return seccion(b, `columnas c-${b.variante === '2' ? 2 : 3}`, `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<div class="col">${i.icono ? `<span class="col-ico" aria-hidden="true">${esc(i.icono)}</span>` : ''}${i.titulo ? `<h3>${esc(i.titulo)}</h3>` : ''}${i.texto ? textoHtml(i.texto) : ''}</div>`).join('')}</div>`);
+        case 'precios': return seccion(b, 'precios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<div class="plan${i.destacado ? ' destacado' : ''}">${i.destacado ? '<span class="plan-chip">Recomendado</span>' : ''}<h3>${esc(i.nombre)}</h3>${i.precio ? `<p class="plan-precio"><b>${esc(i.precio)}</b>${i.periodo ? ` <small>${esc(i.periodo)}</small>` : ''}</p>` : ''}${i.items ? `<ul>${i.items.split('\n').map(x => x.replace(/^\s*[-•✓]\s*/, '').trim()).filter(Boolean).map(x => `<li>${enLinea(x)}</li>`).join('')}</ul>` : ''}${boton(i.bTexto, i.bUrl)}</div>`).join('')}</div>`);
+        case 'testimonios': return seccion(b, 'testimonios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<figure class="testi"><blockquote>${textoHtml(i.texto)}</blockquote><figcaption><span class="testi-ini" aria-hidden="true">${esc([...i.nombre][0].toUpperCase())}</span><span><b>${esc(i.nombre)}</b>${i.rol ? `<small>${esc(i.rol)}</small>` : ''}</span></figcaption></figure>`).join('')}</div>`);
+        case 'cta': return seccion(b, 'cta', `${cabSec(b)}${b.bTexto && b.bUrl ? `<div class="botones">${boton(b.bTexto, b.bUrl)}</div>` : ''}`);
+    }
+    return '';
+}
+
 function bloqueHtml(b, ctx) {
+    if (V.SECCIONES.has(b.tipo)) return seccionHtml(b);
     switch (b.tipo) {
         case 'texto': return b.centro || b.grande ? `<div class="${[b.centro && 't-centro', b.grande && 't-grande'].filter(Boolean).join(' ')}">${textoHtml(b.texto)}</div>` : textoHtml(b.texto);
         case 'titulo': return `<h${b.nivel === 3 ? 3 : 2}${b.centro ? ' class="t-centro"' : ''}>${esc(b.texto)}</h${b.nivel === 3 ? 3 : 2}>`;
@@ -184,6 +211,7 @@ aside.lateral{display:grid;gap:18px;align-content:start}
 footer.pie{border-top:1px solid var(--borde);padding:22px 0 30px;color:var(--txt2);font-size:.84rem}
 footer.pie .ancho{display:flex;gap:10px 18px;flex-wrap:wrap;justify-content:space-between;align-items:center}
 footer.pie a{color:var(--txt2)}footer.pie .hecho b{color:var(--acento)}
+.oculto{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .pixel{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .t-centro{text-align:center}.t-grande{font-size:1.28em;line-height:1.55;font-weight:500}
 .contenido figure a{display:block}
@@ -201,6 +229,48 @@ footer.pie a{color:var(--txt2)}footer.pie .hecho b{color:var(--acento)}
 .anuncio{margin:30px auto 0;text-align:center;max-width:320px}.anuncio small{display:block;color:var(--txt2);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;opacity:.7}
 .anuncio iframe{width:300px;height:250px;border:0;border-radius:10px;background:var(--tarjeta);max-width:100%}
 .previa{background:#F5A524;color:#1A1203;text-align:center;font-weight:800;font-size:.86rem;padding:8px 12px}
+/* Secciones de landing: de lado a lado de la pantalla, con estilo propio */
+body{overflow-x:clip}
+.contenido>.sec{margin-top:0}.contenido>.sec+*:not(.sec){margin-top:1.6em}.contenido>*:not(.sec)+.sec{margin-top:2em}
+.sec{position:relative;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:56px 0;text-align:center}
+.sec.a-izq{text-align:left}.sec.e-compacto{padding:32px 0}.sec.e-amplio{padding:96px 0}
+.sec-in{max-width:1080px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+.sec.f-suave{background:var(--tarjeta)}
+.sec.f-acento{background:var(--acento);color:var(--sobre-acento)}.sec.f-acento a:not(.boton){color:inherit;text-decoration:underline}
+.sec.f-degradado{background:linear-gradient(135deg,color-mix(in srgb,var(--acento) 30%,var(--bg)),color-mix(in srgb,var(--acento2,var(--acento)) 14%,var(--bg)))}
+.sec.f-oscuro{background:#0B0D12;color:#F4F5F7}.sec.f-oscuro .sec-p,.sec.f-oscuro .col p,.sec.f-oscuro small{color:#B9BDC8}
+.sec.f-imagen{background:#000 var(--sec-img) center/cover no-repeat;color:#fff}.sec.f-imagen::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.65))}
+.sec h2.sec-t{font-family:var(--f-tit);font-size:clamp(1.6rem,5vw,2.4rem);line-height:1.15;font-weight:800;letter-spacing:-.01em;margin:0 0 12px}
+.sec h3{margin-top:0}
+.sec-p{max-width:680px;margin:0 auto 26px;color:var(--txt2);font-size:1.06rem}.sec.a-izq .sec-p{margin-left:0}
+.sec.f-acento .sec-p,.sec.f-imagen .sec-p{color:inherit;opacity:.9}
+.botones{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:22px}.sec.a-izq .botones{justify-content:flex-start}
+.boton-2{background:transparent;color:inherit;border:2px solid currentColor;box-shadow:none}
+.sec.f-acento .boton:not(.boton-2){background:var(--sobre-acento);color:var(--acento)}
+.sec h1.h-t{font-family:var(--f-tit);font-size:clamp(2.1rem,8.4vw,3.8rem);line-height:1.06;font-weight:800;letter-spacing:-.02em;margin:0}
+.h-p{font-size:clamp(1.05rem,2.6vw,1.25rem);max-width:640px;margin:16px auto 0;opacity:.88}.sec.a-izq .h-p{margin-left:0}
+.h-img{margin-top:32px}.h-img img{border-radius:var(--radio);box-shadow:0 30px 60px -30px rgba(0,0,0,.6);margin:0 auto;max-height:560px;object-fit:cover;width:100%}
+.sec-heroe{padding:72px 0}.sec-heroe.e-amplio{padding:120px 0}.h-fondo{min-height:min(78vh,640px);display:flex;align-items:center}.h-fondo .sec-in{width:100%}
+@media(min-width:800px){.h-dividido .sec-in{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;text-align:left}.h-dividido .h-img{margin-top:0}.h-dividido .botones{justify-content:flex-start}.h-dividido .h-p{margin-left:0}}
+.rej-sec{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+@media(min-width:800px){.c-3 .rej-sec{grid-template-columns:repeat(3,1fr)}.c-2 .rej-sec{grid-template-columns:repeat(2,1fr)}}
+.col,.plan,.testi{background:var(--tarjeta);border:1px solid var(--borde);border-radius:var(--radio);padding:24px;text-align:left}
+.sec.f-suave .col,.sec.f-suave .plan,.sec.f-suave .testi{background:var(--bg)}
+.sec.f-acento .col,.sec.f-acento .testi,.sec.f-imagen .col,.sec.f-imagen .testi,.sec.f-oscuro .col,.sec.f-oscuro .testi{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:inherit}
+.col-ico{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:16px;font-size:1.6rem;background:color-mix(in srgb,var(--acento) 16%,transparent);margin-bottom:14px}
+.col h3,.plan h3{font-family:var(--f-tit);font-size:1.15rem;margin-bottom:6px}.col p{color:var(--txt2);font-size:.98rem}
+.precios .rej-sec{align-items:stretch}.plan{display:flex;flex-direction:column;gap:10px;position:relative}
+.plan.destacado{border:2px solid var(--acento);box-shadow:0 24px 50px -28px var(--acento)}
+.plan-chip{position:absolute;top:-12px;left:24px;background:var(--acento);color:var(--sobre-acento);font-size:.72rem;font-weight:800;padding:3px 12px;border-radius:99px;letter-spacing:.04em}
+.plan-precio b{font-family:var(--f-tit);font-size:2rem;font-weight:800}.plan-precio small{color:var(--txt2)}
+.plan ul{list-style:none;display:grid;gap:8px;flex:1}.plan li{padding-left:26px;position:relative}.plan li::before{content:'✓';position:absolute;left:0;color:var(--acento);font-weight:800}
+.plan .boton{text-align:center;margin-top:8px}
+.testi{display:flex;flex-direction:column;gap:16px;margin:0}.testi blockquote{border:0;padding:0;font-style:normal;color:inherit;font-size:1.02rem}
+.testi blockquote::before{content:'“';display:block;font-family:Georgia,serif;font-size:2.6rem;line-height:.6;color:var(--acento);margin-bottom:6px}
+.testi figcaption{display:flex;align-items:center;gap:10px;margin-top:auto}.testi figcaption small{display:block;color:var(--txt2);font-size:.84rem}
+.testi-ini{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--acento);color:var(--sobre-acento);font-weight:800;flex-shrink:0}
+.sec-cta h2.sec-t{font-size:clamp(1.8rem,5.6vw,2.8rem)}
+main.landing{padding-top:0}main.landing.sin-final{padding-bottom:0}
 .revista .tarjeta:first-child{grid-column:1/-1}
 @media(min-width:700px){.revista .tarjeta:first-child{flex-direction:row}.revista .tarjeta:first-child .port{width:58%;aspect-ratio:16/9}.revista .tarjeta:first-child h2{font-size:1.7rem}.revista .tarjeta:first-child .txt{justify-content:center;padding:26px}}
 `.trim();
@@ -221,7 +291,8 @@ function documento(ctx, { titulo, descripcion, ruta, imagen, cuerpo, tipo = 'web
     const oculto = noindex || blog.visibilidad !== 'publico';
     const vars = `--bg:${v.bg};--bg2:${v.bg2};--tarjeta:${v.tarjeta};--borde:${v.borde};--txt:${v.txt};--txt2:${v.txt2};--acento:${v.acento};--acento2:${v.acento2};--sobre-acento:${v.sobreAcento};--radio:${v.radio};--fondo:${v.fondo};--fondo-tam:${v.fondoTam || 'auto'};--fondo-rep:${v.fondoRep || 'no-repeat'};--f-tit:${fTit.css};--f-txt:${fTxt.css}`;
     const menu = [`<a href="${esc(base)}/"${activo === 'inicio' ? ' class="activo"' : ''}>Inicio</a>`,
-        ...(ctx.paginas || []).slice(0, 6).map(p => `<a href="${esc(base)}/p/${esc(p.slug)}"${activo === 'p:' + p.slug ? ' class="activo"' : ''}>${esc(p.titulo)}</a>`)].join('');
+        ...(a.inicio && ctx.hayEntradas ? [`<a href="${esc(base)}/blog"${activo === 'blog' ? ' class="activo"' : ''}>Blog</a>`] : []),
+        ...(ctx.paginas || []).filter(p => String(p._id) !== a.inicio).slice(0, 6).map(p => `<a href="${esc(base)}/p/${esc(p.slug)}"${activo === 'p:' + p.slug ? ' class="activo"' : ''}>${esc(p.titulo)}</a>`)].join('');
     return `<!DOCTYPE html>
 <html lang="${esc(a.idioma || 'es')}">
 <head>
@@ -286,12 +357,12 @@ function tarjeta(e, ctx) {
 
 // ── Páginas ──────────────────────────────────────────────────────────────────────────
 /** Portada del blog (o el listado de una etiqueta). */
-function inicio(ctx, { entradas, pagina = 1, hayMas = false, etiqueta = '' }) {
+function inicio(ctx, { entradas, pagina = 1, hayMas = false, etiqueta = '', enBlog = false }) {
     const { blog, base } = ctx, a = blog.ajustes || {};
     const lat = lateral(ctx);
     const pedida = PORTADAS.includes(a.portadaForma) ? a.portadaForma : temaDe(blog.tema).portada;
     const forma = pedida === 'lista' ? 'lista' : pedida === 'revista' ? 'rejilla revista' : 'rejilla';
-    const ruta = etiqueta ? `/etiqueta/${V.slug(etiqueta)}` : '/';
+    const ruta = etiqueta ? `/etiqueta/${V.slug(etiqueta)}` : enBlog ? '/blog' : '/';
     const heroe = etiqueta
         ? `<section class="heroe"><div class="ancho"><h1>#${esc(etiqueta)}</h1><p>Entradas con esta etiqueta</p></div></section>`
         : `<section class="heroe${a.portada ? ' con-foto' : ''}">${a.portada ? `<div class="foto" style="background-image:url('${esc(img(a.portada, 1600))}')"></div><div class="velo"></div>` : ''}<div class="ancho"><h1>${esc(blog.titulo)}</h1>${blog.descripcion ? `<p>${esc(blog.descripcion)}</p>` : ''}</div></section>`;
@@ -300,7 +371,7 @@ function inicio(ctx, { entradas, pagina = 1, hayMas = false, etiqueta = '' }) {
         : `<div class="vacio">${etiqueta ? 'No hay entradas con esta etiqueta.' : 'Este blog todavía no tiene entradas. ¡Vuelve pronto!'}</div>`;
     const nav = (pagina > 1 || hayMas) ? `<nav class="paginas">${pagina > 1 ? `<a class="chip" href="${esc(base + ruta)}${pagina > 2 ? `?pagina=${pagina - 1}` : ''}">← Más recientes</a>` : '<span></span>'}${hayMas ? `<a class="chip" href="${esc(base + ruta)}?pagina=${pagina + 1}">Más antiguas →</a>` : ''}</nav>` : '';
     return documento(ctx, {
-        titulo: etiqueta ? `#${etiqueta}` : '', ruta, imagen: a.portada || '', activo: etiqueta ? '' : 'inicio', noindex: pagina > 1,
+        titulo: etiqueta ? `#${etiqueta}` : enBlog ? 'Blog' : '', ruta, imagen: a.portada || '', activo: etiqueta ? '' : enBlog ? 'blog' : 'inicio', noindex: pagina > 1,
         jsonld: etiqueta ? null : { '@context': 'https://schema.org', '@type': 'Blog', name: blog.titulo, description: blog.descripcion || undefined, url: ctx.origen + base + '/' },
         cuerpo: `${pagina === 1 ? heroe : ''}<main><div class="ancho cuerpo${lat ? ' con-lateral' : ''}"><div>${lista}${nav}${anuncio(ctx)}</div>${lat}</div></main>`,
     });
@@ -315,17 +386,20 @@ function comentarios(ctx, e) {
     return `<section class="comentarios" aria-label="Comentarios"><iframe src="${esc(src)}" title="Comentarios" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" height="520"></iframe></section>`;
 }
 
-function entrada(ctx, e, { previa = false } = {}) {
+function entrada(ctx, e, { previa = false, inicio = false } = {}) {
     const { blog, base, origen } = ctx;
     const esPagina = e.tipo === 'pagina';
-    const ruta = `/${esPagina ? 'p' : 'e'}/${e.slug}`;
+    const ruta = inicio ? '/' : `/${esPagina ? 'p' : 'e'}/${e.slug}`;
+    // Una página que empieza con una sección (p. ej. Héroe) es una landing: sin título arriba ni margen
+    const landing = esPagina && V.SECCIONES.has(e.bloques?.[0]?.tipo);
+    const terminaEnSeccion = landing && V.SECCIONES.has(e.bloques[e.bloques.length - 1]?.tipo);
     const port = e.portada || '';
     const imagen = port || V.primeraImagen(e.bloques);
     const desc = e.resumen || V.resumen(e.bloques, 160);
     const url = origen + base + ruta;
     const compartir = `<div class="compartir"><span>Compartir:</span><a class="chip" href="https://wa.me/?text=${encodeURIComponent(`${e.titulo} ${url}`)}" target="_blank" rel="noopener">WhatsApp</a><a class="chip" href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(e.titulo)}" target="_blank" rel="noopener">Telegram</a><a class="chip" href="https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(e.titulo)}" target="_blank" rel="noopener">X</a><a class="chip" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener">Facebook</a></div>`;
-    const cuerpo = `<main><div class="ancho"><article class="entrada">
-<header><h1>${esc(e.titulo)}</h1>${esPagina ? '' : `<div class="meta"><span>${esc(fecha(e.publicadaEn))}</span><span>·</span><span>@${esc(blog.usuario)}</span></div>`}</header>
+    const cuerpo = `<main${landing ? ` class="landing${terminaEnSeccion && !ctx.anuncio ? ' sin-final' : ''}"` : ''}><div class="ancho"><article class="entrada">
+${landing ? `<h1 class="oculto">${esc(e.titulo)}</h1>` : `<header><h1>${esc(e.titulo)}</h1>`}${landing ? '' : `${esPagina ? '' : `<div class="meta"><span>${esc(fecha(e.publicadaEn))}</span><span>·</span><span>@${esc(blog.usuario)}</span></div>`}</header>`}
 ${port ? `<div class="portada-entrada"><img src="${esc(img(port, 1400))}" alt=""></div>` : ''}
 <div class="contenido">${bloquesHtml(e.bloques, previa || !e._id ? ctx : { ...ctx, entradaId: String(e._id) })}</div>
 ${!esPagina && e.etiquetas?.length ? `<div class="etiquetas">${e.etiquetas.map(t => `<a class="chip" href="${esc(base)}/etiqueta/${esc(V.slug(t))}">#${esc(t)}</a>`).join('')}</div>` : ''}
@@ -335,7 +409,7 @@ ${previa ? '' : anuncio(ctx)}
 </article></div></main>
 ${e._id && !previa ? `<img class="pixel" src="${esc(base)}/_v/${esc(e._id)}.gif" alt="" width="1" height="1">` : ''}`;
     return documento(ctx, {
-        titulo: e.titulo, descripcion: desc, ruta, imagen, tipo: 'article', activo: esPagina ? 'p:' + e.slug : '', cuerpo, previa, noindex: previa,
+        titulo: inicio ? '' : e.titulo, descripcion: desc, ruta, imagen, tipo: inicio ? 'website' : 'article', activo: inicio ? 'inicio' : esPagina ? 'p:' + e.slug : '', cuerpo, previa, noindex: previa,
         jsonld: esPagina ? null : { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: e.titulo, description: desc || undefined, image: imagen || undefined,
             datePublished: e.publicadaEn ? new Date(e.publicadaEn).toISOString() : undefined, dateModified: e.updatedAt ? new Date(e.updatedAt).toISOString() : undefined,
             author: { '@type': 'Person', name: blog.usuario }, mainEntityOfPage: url },
