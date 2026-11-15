@@ -1,11 +1,10 @@
 /**
  * Métodos de cobro de los creadores: dónde reciben sus retiros.
  *
- * - PayPal (automático si los Payouts están activos) · Nequi · Daviplata ·
- *   cuenta bancaria en Colombia · Mercado Pago (transferencia manual del admin).
+ * - PayPal (automático si los Payouts están activos) · Mercado Pago (transferencia manual del admin).
  * - Pagar "a una tarjeta" no es posible: ni Mercado Pago ni PayPal permiten enviar
  *   dinero a un número de tarjeta, y guardar números de tarjeta exige PCI DSS. Las
- *   tarjetas débito están atadas a una cuenta o a Nequi/Daviplata: se pide eso.
+ *   tarjetas débito están atadas a una cuenta: se pide PayPal o Mercado Pago.
  * - Los datos (cuenta, documento, celular) se guardan CIFRADOS (AES-256-GCM); al
  *   usuario solo se le muestran enmascarados y el admin los ve al pagar (auditado).
  * - Cambiar el método exige la contraseña, avisa por email y deja los retiros en
@@ -17,17 +16,10 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
 const ESPERA_H = Math.max(0, parseFloat(process.env.COBRO_ESPERA_HORAS) || 48);
-const BANCOS = ['Bancolombia', 'Banco de Bogotá', 'Davivienda', 'BBVA', 'Banco de Occidente', 'Banco Popular', 'Banco AV Villas',
-    'Banco Caja Social', 'Scotiabank Colpatria', 'Banco Agrario', 'Itaú', 'Banco GNB Sudameris', 'Banco Falabella', 'Banco Pichincha',
-    'Bancoomeva', 'Banco Finandina', 'Banco Serfinanza', 'Lulo Bank', 'Nu Colombia', 'Banco Mundo Mujer', 'Bancamía', 'Otro'];
 const TIPOS = {
     paypal:      { nombre: 'PayPal',            auto: true },
-    nequi:       { nombre: 'Nequi',             auto: false },
-    daviplata:   { nombre: 'Daviplata',         auto: false },
-    banco:       { nombre: 'Cuenta bancaria',   auto: false },
     mercadopago: { nombre: 'Mercado Pago',      auto: false },
 };
-const TIPOS_DOC = ['CC', 'CE', 'NIT', 'PPT', 'PAS', 'TI'];
 
 // ── Cifrado ─────────────────────────────────────────────────────────────
 function clave() {
@@ -67,27 +59,12 @@ function validar(tipo, d = {}) {
         return { datos: { email }, resumen: `PayPal · ${enmEmail(email)}`, paypalEmail: email };
     }
     if (titular.length < 3) mal('Escribe el nombre completo del titular');
-    if (tipo === 'nequi' || tipo === 'daviplata') {
-        const celular = soloDig(d.celular);
-        if (!/^3\d{9}$/.test(celular)) mal('El celular debe tener 10 dígitos y empezar por 3');
-        return { datos: { celular, titular }, resumen: `${TIPOS[tipo].nombre} · ${fin(celular)} · ${titular}` };
-    }
-    if (tipo === 'mercadopago') {
-        const cuenta = txt(d.cuenta, 120).toLowerCase();
-        const esCel = /^3\d{9}$/.test(soloDig(cuenta));
-        if (!esCel && !emailOk(cuenta)) mal('Escribe el email o el celular de tu cuenta de Mercado Pago');
-        const valor = esCel ? soloDig(cuenta) : cuenta;
-        return { datos: { cuenta: valor, titular }, resumen: `Mercado Pago · ${esCel ? fin(valor) : enmEmail(valor)} · ${titular}` };
-    }
-    // banco
-    const banco = BANCOS.includes(d.banco) ? d.banco : mal('Elige tu banco');
-    const tipoCuenta = ['ahorros', 'corriente'].includes(d.tipoCuenta) ? d.tipoCuenta : mal('Elige el tipo de cuenta');
-    const numero = soloDig(d.numero);
-    if (!/^\d{6,20}$/.test(numero)) mal('El número de cuenta debe tener entre 6 y 20 dígitos');
-    const tipoDoc = TIPOS_DOC.includes(d.tipoDoc) ? d.tipoDoc : mal('Elige el tipo de documento');
-    const documento = soloDig(d.documento).toUpperCase();
-    if (!/^[0-9A-Z]{5,15}$/.test(documento)) mal('Revisa el número de documento');
-    return { datos: { banco, tipoCuenta, numero, titular, tipoDoc, documento }, resumen: `${banco} · ${tipoCuenta} ${fin(numero)} · ${titular}` };
+    // mercadopago
+    const cuenta = txt(d.cuenta, 120).toLowerCase();
+    const esCel = /^3\d{9}$/.test(soloDig(cuenta));
+    if (!esCel && !emailOk(cuenta)) mal('Escribe el email o el celular de tu cuenta de Mercado Pago');
+    const valor = esCel ? soloDig(cuenta) : cuenta;
+    return { datos: { cuenta: valor, titular }, resumen: `Mercado Pago · ${esCel ? fin(valor) : enmEmail(valor)} · ${titular}` };
 }
 
 function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendEmail, plantillaAviso }) {
@@ -112,7 +89,7 @@ function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendE
         const m = metodoDe(u);
         ok(res, {
             metodo: m ? { tipo: m.tipo, nombre: TIPOS[m.tipo]?.nombre, resumen: m.resumen, actualizado: m.actualizado } : null,
-            esperaHasta: esperaHasta(u), tipos: Object.entries(TIPOS).map(([id, t]) => ({ id, nombre: t.nombre })), bancos: BANCOS, tiposDoc: TIPOS_DOC, esperaHoras: ESPERA_H,
+            esperaHasta: esperaHasta(u), tipos: Object.entries(TIPOS).map(([id, t]) => ({ id, nombre: t.nombre })), esperaHoras: ESPERA_H,
         });
     });
 
@@ -165,4 +142,4 @@ function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendE
     return { metodoDe, esperaHasta, TIPOS, validar, cifrar, descifrar };
 }
 
-module.exports = { registrar, validar, cifrar, descifrar, TIPOS, BANCOS };
+module.exports = { registrar, validar, cifrar, descifrar, TIPOS };

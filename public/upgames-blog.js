@@ -388,7 +388,7 @@ async function vistaIngresos() {
       <div class="cifras"><div class="cifra glass"><b>${usd(d.ingresosDescargasMes)}</b><span>Últimos 30 días</span></div><div class="cifra glass"><b>${usd(d.ingresosDescargas)}</b><span>Desde siempre</span></div><div class="cifra glass"><b>${num(d.descargas)}</b><span>Descargas pagadas</span></div></div>
     </section>
     <section class="seccion glass"><h2>${ico('heart')} Apoyos de tus lectores y afiliados</h2>
-      <p>Añade a una página el bloque <b>«Apoyar al creador»</b>: tus lectores te apoyan con UpCoins desde UpGames y recibes tu parte como ganancia (25 %, retirable tras 7 días), igual que los apoyos a tus publicaciones. Te avisamos cada vez que alguien te apoya.</p>
+      <p>Añade a una página el bloque <b>«Apoyar al creador»</b>: tus lectores te apoyan con UpCoins desde UpGames y recibes tu parte como ganancia (50 %, retirable tras 7 días), igual que los apoyos a tus publicaciones. Te avisamos cada vez que alguien te apoya.</p>
       <p>Con el bloque <b>«Enlaces de afiliado»</b> recomiendas productos con tu enlace de Amazon u otras tiendas; la comisión te la paga la tienda, no UpGames. El aviso «Enlaces de afiliado» se muestra siempre.</p></section>
     <section class="seccion glass"><h2>${ico('shield-checkmark')} Cómo se cuenta</h2>
       <p>Un anuncio cuenta cuando una persona real lo tuvo a la vista unos segundos y no usa bloqueador. Cada visitante cuenta hasta 3 veces al día en tu blog. Las visitas falsas o hechas por ti mismo no pagan y pueden suspender la monetización.</p></section>`;
@@ -617,7 +617,7 @@ const SEC = {
     ayuda: 'El visitante elige cantidades y se abre WhatsApp con el pedido y el total ya escritos.' },
   apoyo: { nombre: 'Apoyar al creador', ico: 'heart', campos: [['titulo', 'Título (ej.: ¿Te gusta lo que hago?)', 120], ['texto', 'Frase corta (ej.: Tu apoyo me ayuda a seguir creando)', 400, 1], ['bTexto', 'Texto del botón (ej.: Apoyar con UpCoins)', 40]],
     defecto: { titulo: 'Apoya este blog', bTexto: 'Apoyar con UpCoins' }, sinNexus: true,
-    ayuda: 'Tus lectores te apoyan con UpCoins desde UpGames. Recibes tu parte como ganancia (25 %, retirable tras 7 días), igual que los apoyos a tus publicaciones.' },
+    ayuda: 'Tus lectores te apoyan con UpCoins desde UpGames. Recibes tu parte como ganancia (50 %, retirable tras 7 días), igual que los apoyos a tus publicaciones.' },
   afiliado: { nombre: 'Enlaces de afiliado', ico: 'pricetag', campos: [['titulo', 'Título (ej.: Mi setup gamer)', 120], ['texto', 'Frase corta (opcional)', 400, 1]],
     item: [['imagen', 'Foto del producto', 0, 'img'], ['nombre', 'Nombre del producto', 80], ['tienda', 'Tienda (ej.: Amazon)', 40], ['precio', 'Precio aproximado (opcional)', 30], ['url', 'Tu enlace de afiliado: https://…', 600]],
     max: 12, nombreItem: 'Producto', otro: 'Añadir producto', nuevo: () => ({}), inicio: () => [{}], sinNexus: true,

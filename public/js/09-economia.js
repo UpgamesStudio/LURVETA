@@ -460,11 +460,11 @@ function pfFmt(n) {
   if(n>=1e3) return (n/1e3).toFixed(1)+'K';
   return n.toString();
 }
-// ── MÉTODO DE COBRO (PayPal, Nequi, Daviplata, banco, Mercado Pago) ──
+// ── MÉTODO DE COBRO (PayPal, Mercado Pago) ──
 let _ecoCobroCfg = null;
 function ecoCobroPintar(m, espera) {
   const box = document.getElementById('eco-cobro'); if (!box || box.dataset.editando) return;
-  const ic = { paypal: '🅿️', nequi: '💜', daviplata: '🔴', banco: '🏦', mercadopago: '🤝' };
+  const ic = { paypal: '🅿️', mercadopago: '🤝' };
   box.innerHTML = m
     ? `<div class="eco-cobro-act"><span class="eco-cobro-ic">${ic[m.tipo] || '💳'}</span><div><b>${escH(m.resumen)}</b>${espera ? `<small>🔒 Por seguridad podrás retirar desde el ${new Date(espera).toLocaleString('es-CO')}</small>` : '<small>Aquí te enviamos tus retiros</small>'}</div><button type="button" class="eco-cobro-btn" onclick="ecoCobroEditar()">Cambiar</button></div>`
     : `<div class="eco-cobro-vacio"><p>Aún no has dicho dónde quieres recibir tu dinero.</p><button type="button" class="eco-cobro-btn p" onclick="ecoCobroEditar()">Configurar método de cobro</button></div>`;
@@ -477,19 +477,14 @@ async function ecoCobroEditar() {
   const opt = (arr, sel) => arr.map(x => `<option ${x === sel ? 'selected' : ''}>${escH(x)}</option>`).join('');
   const campos = {
     paypal: `<input name="email" type="email" placeholder="Email de tu cuenta PayPal" autocomplete="email">`,
-    nequi: `<input name="celular" inputmode="numeric" placeholder="Celular Nequi (10 dígitos)"><input name="titular" placeholder="Nombre del titular">`,
-    daviplata: `<input name="celular" inputmode="numeric" placeholder="Celular Daviplata (10 dígitos)"><input name="titular" placeholder="Nombre del titular">`,
     mercadopago: `<input name="cuenta" placeholder="Email o celular de tu cuenta Mercado Pago"><input name="titular" placeholder="Nombre del titular">`,
-    banco: `<select name="banco"><option value="">Banco…</option>${opt(c.bancos)}</select><select name="tipoCuenta"><option value="ahorros">Ahorros</option><option value="corriente">Corriente</option></select>
-      <input name="numero" inputmode="numeric" placeholder="Número de cuenta"><input name="titular" placeholder="Titular (como aparece en el banco)">
-      <div class="eco-cobro-2"><select name="tipoDoc">${opt(c.tiposDoc, 'CC')}</select><input name="documento" placeholder="Número de documento"></div>`,
   };
   box.innerHTML = `<div class="eco-cobro-form">
     <div class="eco-cobro-tipos">${c.tipos.map((t, i) => `<button type="button" data-t="${t.id}" class="${i === 0 ? 'on' : ''}">${escH(t.nombre)}</button>`).join('')}</div>
     <div class="eco-cobro-campos"></div>
     <input name="password" type="password" placeholder="Tu contraseña de UpGames (para confirmar)" autocomplete="current-password">
     <p class="eco-cobro-nota">🔒 Tus datos se guardan cifrados y solo se usan para enviarte tus retiros. Si cambias un método ya configurado, por seguridad los retiros quedan en espera ${c.esperaHoras} h y te avisamos por email.
-      <b>No se puede pagar a un número de tarjeta</b>: si tienes tarjeta débito, usa la cuenta, Nequi o Daviplata asociada.</p>
+      <b>No se puede pagar a un número de tarjeta</b>: si tienes tarjeta débito, usa PayPal o Mercado Pago.</p>
     <div class="eco-cobro-acc"><button type="button" class="eco-cobro-btn" data-a="cancelar">Cancelar</button><button type="button" class="eco-cobro-btn p" data-a="guardar">Guardar</button></div></div>`;
   let tipo = c.tipos[0].id;
   const pintarCampos = () => { box.querySelector('.eco-cobro-campos').innerHTML = campos[tipo]; };

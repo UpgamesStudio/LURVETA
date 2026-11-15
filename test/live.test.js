@@ -15,8 +15,8 @@ function test(name, fn) {
 }
 
 console.log('reparto');
-test('50 UpCoins = US$1: 25% creador, 75% plataforma (comisión por defecto)', () =>
-    assert.deepStrictEqual(L.reparto(50), { bruto: 1, creador: 0.25, plataforma: 0.75 }));
+test('50 UpCoins = US$1: 50% creador, 50% plataforma (comisión por defecto)', () =>
+    assert.deepStrictEqual(L.reparto(50), { bruto: 1, creador: 0.5, plataforma: 0.5 }));
 test('las partes siempre suman el bruto (sin deriva de centavos)', () => {
     for (const m of [10, 50, 300, 999, 5000, 123457]) {
         const r = L.reparto(m, 0.3);

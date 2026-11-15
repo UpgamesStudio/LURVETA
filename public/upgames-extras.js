@@ -401,7 +401,7 @@
     if (!item || !activo('apoyar') || (item.status && item.status !== 'aprobado') || item.usuario === yo()) return;   // el catálogo público no trae status: solo lista aprobadas
     const acc = document.querySelector('#detail-sheet .sheet-actions'); if (!acc) return;
     const b = document.createElement('button'); b.type = 'button'; b.id = 'ugx-apoyar'; b.className = 'ugx-apoyar';
-    b.innerHTML = `<span>🪙</span><span><b>Apoyar a @${esc(item.usuario)}</b><small id="ugx-apoyos">Envíale UpCoins: recibe el 25 % como ganancia</small></span><ion-icon name="chevron-forward"></ion-icon>`;
+    b.innerHTML = `<span>🪙</span><span><b>Apoyar a @${esc(item.usuario)}</b><small id="ugx-apoyos">Envíale UpCoins: recibe el 50 % como ganancia</small></span><ion-icon name="chevron-forward"></ion-icon>`;
     b.onclick = () => apoyar(item);
     acc.after(b);
     try {
@@ -413,7 +413,7 @@
     if (!tok()) return window.ugPedirSesion?.('apoyar a los creadores');
     const montos = cfg.precios.apoyo || [];
     let monto = montos[Math.min(1, montos.length - 1)];
-    const html = `<p class="ugx-sub">Tu apoyo le llega a @${esc(item.usuario)} como ganancia (25 % del valor, retirable tras 7 días). Gracias por impulsar a los creadores.</p>
+    const html = `<p class="ugx-sub">Tu apoyo le llega a @${esc(item.usuario)} como ganancia (50 % del valor, retirable tras 7 días). Gracias por impulsar a los creadores.</p>
       <div class="ugx-montos">${montos.map(m => `<button type="button" class="ugx-monto ${m === monto ? 'on' : ''}" data-monto="${m}">🪙 ${fmt(m)}<small>UpCoins</small></button>`).join('')}</div>
       <button type="button" class="ugx-btn oro" id="ugx-apoyar-ok" style="width:100%">Apoyar con 🪙 <span>${fmt(monto)}</span></button>`;
     hoja('🪙 Apoyar publicación', html, b => {
@@ -435,7 +435,7 @@
     if (b.usuario === yo()) return aviso('Ese es tu blog: compártelo para que tus lectores te apoyen 💛');
     const montos = cfg.precios.apoyo || [];
     let monto = montos[Math.min(1, montos.length - 1)];
-    const html = `<p class="ugx-sub">Apoyas el blog <b>«${esc(b.titulo)}»</b> de @${esc(b.usuario)}. Le llega como ganancia (25 % del valor, retirable tras 7 días).${b.fans ? ` ${fmt(b.fans)} ${b.fans === 1 ? 'persona ya lo apoyó' : 'personas ya lo apoyaron'}.` : ''}</p>
+    const html = `<p class="ugx-sub">Apoyas el blog <b>«${esc(b.titulo)}»</b> de @${esc(b.usuario)}. Le llega como ganancia (50 % del valor, retirable tras 7 días).${b.fans ? ` ${fmt(b.fans)} ${b.fans === 1 ? 'persona ya lo apoyó' : 'personas ya lo apoyaron'}.` : ''}</p>
       <div class="ugx-montos">${montos.map(m => `<button type="button" class="ugx-monto ${m === monto ? 'on' : ''}" data-monto="${m}">🪙 ${fmt(m)}<small>UpCoins</small></button>`).join('')}</div>
       <button type="button" class="ugx-btn oro" id="ugx-apoyar-ok" style="width:100%">Apoyar con 🪙 <span>${fmt(monto)}</span></button>`;
     hoja('🪙 Apoyar este blog', html, h => {

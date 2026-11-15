@@ -40,7 +40,7 @@
   </section>
 
   <div class="lg-note g"><span class="ic">🛡️</span><div><strong>Resumen.</strong> Usamos tu usuario, email y contraseña (cifrada con
-    bcrypt) para autenticarte; opcionalmente tu método de cobro (PayPal, Nequi, Daviplata, banco o Mercado Pago), guardado cifrado, para pagarte. Registramos tu IP de forma temporal contra el
+    bcrypt) para autenticarte; opcionalmente tu método de cobro (PayPal o Mercado Pago), guardado cifrado, para pagarte. Registramos tu IP de forma temporal contra el
     fraude. Si usas NEXUS IA, guardamos un registro mínimo de tus preguntas (30 días) para mejorarla. Si pagas con tarjeta, <strong>los datos de la tarjeta los procesan
     Mercado Pago o PayPal, no nosotros</strong>: solo guardamos qué compraste y el estado del pago. Tus lives no se graban. Nada más, y nunca lo vendemos.</div></div>
 
@@ -93,11 +93,9 @@
     </ul>
     <h3>2.2 Monetización (opcionales)</h3>
     <ul>
-      <li><strong>Método de cobro</strong> — solo si quieres retirar tus ganancias. Según el que elijas: email de PayPal; celular y titular de Nequi
-        o Daviplata; email o celular y titular de Mercado Pago; o banco, tipo y número de cuenta, titular y tipo y número de documento.
+      <li><strong>Método de cobro</strong> — solo si quieres retirar tus ganancias. Según el que elijas: email de PayPal; o email o celular y titular de Mercado Pago.
         Se guardan <strong>cifrados (AES-256)</strong>; tú solo ves una versión enmascarada (•••• 1234) y el administrador los ve únicamente
-        al hacer tu transferencia (cada consulta queda registrada). Se comparten solo con la entidad que recibe el dinero (PayPal, Nequi,
-        Daviplata, tu banco o Mercado Pago).</li>
+        al hacer tu transferencia (cada consulta queda registrada). Se comparten solo con la entidad que recibe el dinero (PayPal o Mercado Pago).</li>
       <li><strong>Retiros</strong> — monto, fecha, método (enmascarado), estado y número de comprobante de cada pago que te hacemos.</li>
       <li><strong>UpCoins</strong> — cuántos tienes comprados, ganados y en retención, y el historial de en qué los gastaste (regalos, Premium,
         accesos, mensajes de NEXUS, publicaciones destacadas).</li>
@@ -273,7 +271,7 @@
     <div class="lg-grid">
       <div class="lg-tile"><b>💳 Mercado Pago</b>Procesa los pagos con tarjeta (recibe los datos de la tarjeta y de identificación directamente; nosotros no).</div>
       <div class="lg-tile"><b>💳 PayPal</b>Procesa los pagos con tarjeta o PayPal (recibe los datos de la tarjeta directamente; nosotros no) y los retiros a tu email de PayPal.</div>
-      <div class="lg-tile"><b>🏦 Nequi · Daviplata · bancos · Mercado Pago</b>Solo si los eliges para cobrar: reciben los datos necesarios para la transferencia de tus ganancias.</div>
+      <div class="lg-tile"><b>🤝 Mercado Pago</b>Solo si los eliges para cobrar: reciben los datos necesarios para la transferencia de tus ganancias.</div>
       <div class="lg-tile"><b>✉️ Resend</b>Envía los correos de la cuenta (verificación, recuperación de contraseña y avisos de seguridad): recibe tu email, tu usuario y el contenido del correo.</div>
       <div class="lg-tile"><b>▶️ YouTube</b>Los videos de YouTube incrustados en una publicación o en un blog se cargan desde YouTube, que puede usar sus propias cookies.</div>
       <div class="lg-tile"><b>🎵 Spotify · 🔤 Google Fonts</b>Solo en los blogs: la música que el creador inserta se carga desde Spotify y las tipografías del tema desde Google Fonts; ven la IP del visitante.</div>
@@ -361,7 +359,7 @@
       <li>HTTPS/TLS en todas las comunicaciones.</li>
       <li>Contraseñas con bcrypt; tokens JWT firmados, con secreto de administración separado.</li>
       <li>Límites de peticiones por ruta, cabeceras de seguridad (helmet) y anti-bots.</li>
-      <li>Datos de cobro (cuentas bancarias, Nequi, Daviplata) cifrados; acceso al panel de administración por roles, con doble factor y registro de auditoría de cada acción.</li>
+      <li>Datos de cobro (PayPal, Mercado Pago) cifrados; acceso al panel de administración por roles, con doble factor y registro de auditoría de cada acción.</li>
       <li>El perfil público solo muestra lo que tú decides publicar (usuario, foto, portada, biografía, redes); no se publica tu correo ni tu última conexión.</li>
       <li>Los enlaces de descarga no se exponen en los listados públicos: solo los entrega la página puente.</li>
       <li>Ante una brecha que afecte datos personales, avisaremos a los afectados en un máximo de 72 horas y lo informaremos a la Superintendencia de Industria y Comercio conforme a la Ley 1581 de 2012.</li>

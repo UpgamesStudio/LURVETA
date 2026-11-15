@@ -2,8 +2,8 @@
  * Usos extra de los UpCoins: configuración editable desde el panel admin.
  *
  *   Estilo del perfil ... marcos de avatar, color del nombre, fondo, insignias y diseño de tarjeta (cosméticos)
- *   Super Chat .......... mensaje destacado y fijado en un live (el creador recibe 25 %)
- *   Apoyar .............. propina a una publicación (el creador recibe 25 %)
+ *   Super Chat .......... mensaje destacado y fijado en un live (el creador recibe 50 %)
+ *   Apoyar .............. propina a una publicación (el creador recibe 50 %)
  *   Revisión prioritaria  la publicación pasa al frente de la cola; si no se revisa en 24 h se devuelve
  *   Regalar Premium ..... pagar con UpCoins el Premium de otra persona
  *   Cambio de nombre .... sin esperar los 30 días

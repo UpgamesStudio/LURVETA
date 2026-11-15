@@ -23,7 +23,7 @@ const num = (v, d) => { const n = parseFloat(v); return Number.isFinite(n) ? n :
 
 const MONEDA_USD     = 0.02;   // 1 UpCoin = US$0,02 (50 UpCoins = US$1)
 const REPARTO        = require('./reparto');
-const COMISION       = Math.round((1 - REPARTO.REGALO_CREADOR) * 10000) / 10000;   // parte de UpGames en cada regalo (75 %)
+const COMISION       = Math.round((1 - REPARTO.REGALO_CREADOR) * 10000) / 10000;   // parte de UpGames en cada regalo (50 %)
 const RETENCION_DIAS = Math.max(0, num(process.env.LIVE_RETENCION_DIAS, 7));
 const P2P_MAX        = Math.max(1, Math.round(num(process.env.LIVE_P2P_MAX_VIEWERS, 12)));
 

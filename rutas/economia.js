@@ -230,7 +230,7 @@ app.post('/economia/solicitar-pago', verificarToken, async (req, res) => {
         if (!usuario.emailVerificado) return res.status(403).json({ success: false, error: "Verifica tu email antes de retirar dinero (revisa tu correo o pide uno nuevo desde el aviso de la biblioteca)", code: 'EMAIL_NO_VERIFICADO' });
         if (usuario.saldo < MIN_WITHDRAWAL) return res.status(400).json({ success: false, error: `Necesitas al menos ${Math.round(MIN_WITHDRAWAL / 0.02)} UpCoins ganados (US$${MIN_WITHDRAWAL}) para retirar. Tienes ${Math.floor(usuario.saldo / 0.02)} UC retirables.` });
         const metodo = cobros.metodoDe(usuario);
-        if (!metodo) return res.status(400).json({ success: false, error: "Configura primero dónde quieres recibir tu dinero (PayPal, Nequi, Daviplata, banco o Mercado Pago)" });
+        if (!metodo) return res.status(400).json({ success: false, error: "Configura primero dónde quieres recibir tu dinero (PayPal o Mercado Pago)" });
         const espera = cobros.esperaHasta(usuario);
         if (espera) return res.status(403).json({ success: false, error: `Cambiaste tu método de cobro hace poco. Por seguridad podrás retirar desde el ${espera.toLocaleString('es-CO')}.` });
         if (usuario.solicitudPagoPendiente) return res.status(400).json({ success: false, error: "Ya tienes una solicitud de pago pendiente" });
