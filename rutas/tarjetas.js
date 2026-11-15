@@ -19,7 +19,7 @@ app.get('/economia/mis-tarjetas', verificarToken, async (req, res) => {
 
 // POST /economia/agregar-tarjeta — RETIRADO: con los últimos 4 dígitos no se puede pagar a nadie.
 // Los creadores configuran dónde cobrar en /economia/metodo-cobro (rutas/cobros.js).
-app.post('/economia/agregar-tarjeta', verificarToken, (req, res) => res.status(410).json({ success: false, error: 'Ya no se registran tarjetas. Configura tu método de cobro (Nequi, Daviplata, banco, Mercado Pago o PayPal) en Economía.' }));
+app.post('/economia/agregar-tarjeta', verificarToken, (req, res) => res.status(410).json({ success: false, error: 'Ya no se registran tarjetas. Configura tu método de cobro (PayPal o Mercado Pago) en Economía.' }));
 
 // DELETE /economia/eliminar-tarjeta/:tarjetaId — eliminar una tarjeta
 app.delete('/economia/eliminar-tarjeta/:tarjetaId', verificarToken, async (req, res) => {
@@ -149,7 +149,7 @@ app.post('/admin/finanzas/procesar-pago/:id', verificarAdmin, [param('id').isMon
             return res.status(existe ? 409 : 404).json({ success: false, error: existe ? "Este pago ya fue procesado (o se está procesando)" : "Pago no encontrado" });
         }
 
-        // Payouts automáticos solo existen para PayPal; Nequi, Daviplata, banco y Mercado Pago los transfiere el admin
+        // Payouts automáticos solo existen para PayPal; Mercado Pago lo transfiere el admin
         const pagoAutomatico = config.FEATURES.ENABLE_AUTO_PAYMENTS && (pago.metodo || 'paypal') === 'paypal' && !!pago.paypalEmail;
         let paypalBatchId = null;
         let metodoProcesamiento = 'manual';

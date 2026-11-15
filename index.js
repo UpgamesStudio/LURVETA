@@ -732,7 +732,7 @@ const PagoSchema = new mongoose.Schema({
     usuario:    { type: String, required: true, index: true },
     monto:      { type: Number, required: true, min: 0 },
     paypalEmail:{ type: String, default: '' },
-    metodo:     { type: String, default: 'paypal' },   // paypal | nequi | daviplata | banco | mercadopago
+    metodo:     { type: String, default: 'paypal' },   // paypal | mercadopago
     resumen:    { type: String, default: '' },         // método enmascarado (lo ve el usuario)
     datosCobro: { type: String, default: '' },         // datos completos cifrados (solo el admin al pagar)
     referencia: { type: String, default: '' },         // comprobante de la transferencia
@@ -1331,7 +1331,7 @@ app.post('/admin/sistema/email-prueba', verificarAdmin, async (req, res) => {
     const ok = await sendEmail({ to: para, subject: '✅ Prueba de correo de UpGames', html: emailAvisoTemplate('equipo', 'Si lees esto, los correos de UpGames (verificación de email, recuperar contraseña y avisos) ya funcionan.') });
     res.status(ok ? 200 : 502).json({ success: ok, ...correo.estado(), error: ok ? undefined : (correo.estado().detalle || 'No se pudo enviar') });
 });
-// Métodos de cobro de los creadores: PayPal, Nequi, Daviplata, banco o Mercado Pago (cifrados)
+// Métodos de cobro de los creadores: PayPal o Mercado Pago (cifrados)
 const cobros = require('./rutas/cobros').registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendEmail, plantillaAviso: emailAvisoTemplate });
 // contracargos de pases pagados con PayPal
 _economia.vincularTarde({ cobros, live });   // rutas/economia.js usa estas dependencias, creadas después de registrar el módulo

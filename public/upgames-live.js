@@ -529,7 +529,7 @@ async function vistaEspectador(usuario) {
   function superChat(montos) {
     let monto = montos[0];
     const seg = m => m >= 200 ? '5 min' : m >= 100 ? '2 min' : m >= 50 ? '1 min' : '30 s';
-    window.UGX.hoja('💬 Super Chat', `<p class="ugx-sub">Tu mensaje sale destacado y fijado arriba del chat. @${esc(c.usuario)} recibe el 25 % como ganancia.</p>
+    window.UGX.hoja('💬 Super Chat', `<p class="ugx-sub">Tu mensaje sale destacado y fijado arriba del chat. @${esc(c.usuario)} recibe el 50 % como ganancia.</p>
       <input class="ugx-in" id="sc-texto" maxlength="200" placeholder="Escribe tu mensaje…" autocomplete="off">
       <div class="ugx-montos">${montos.map(m => `<button type="button" class="ugx-monto ${m === monto ? 'on' : ''}" data-m="${m}">🪙 ${fmt(m)}<small>fijado ${seg(m)}</small></button>`).join('')}</div>
       <button type="button" class="ugx-btn oro" id="sc-ok" style="width:100%">Enviar Super Chat · 🪙 <span>${fmt(monto)}</span></button>`, b => {
