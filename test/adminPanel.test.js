@@ -20,6 +20,7 @@ console.log('permisoRequerido');
 const casos = [
     ['GET', '/admin/equipo', 'owner'], ['PUT', '/admin/equipo/pepe', 'owner'], ['POST', '/admin/equipo-emergencia', 'owner'],
     ['GET', '/admin/auditoria', 'owner'], ['GET', '/admin/auth/me', null],
+    ['GET', '/admin/empresa', 'owner'], ['POST', '/admin/empresa/respaldo', 'owner'], ['DELETE', '/admin/empresa/costos/1', 'owner'],
     ['POST', '/admin/sistema/anuncio', ['anuncios']], ['GET', '/admin/sistema/diagnostico', ['sistema']],
     ['GET', '/admin/stats/dashboard', ['estadisticas']], ['GET', '/analytics/admin/funnel', ['estadisticas']],
     ['POST', '/admin/finanzas/procesar-pago/1', ['finanzas']], ['PUT', '/admin/users/ajustar-saldo/1', ['finanzas']],

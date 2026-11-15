@@ -602,6 +602,27 @@ a{color:var(--g2)}
 #toast.err{border-color:rgba(255,92,122,.55)!important}
 .bnav{background:rgba(6,9,16,.86)!important;border-top-color:var(--line)!important}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* Empresa (solo el dueño) */
+.emp-aviso{margin-bottom:14px;border-color:rgba(255,184,77,.4)}
+.emp-al{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.84rem}
+.emp-al:last-child{border-bottom:none}.emp-al .grow{flex:1;min-width:0}
+.emp-meta{margin-bottom:12px}.emp-meta .row{justify-content:space-between;font-size:.8rem;margin-bottom:5px;gap:8px}
+.emp-pb{height:8px;border-radius:99px;background:rgba(255,255,255,.07);position:relative}
+.emp-pb i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--ok);max-width:100%}
+.emp-pb em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--tx2);border-radius:2px}
+.emp-pyg th,.emp-pyg td{white-space:nowrap}
+.emp-pyg tr.tot td{font-weight:800;border-top:1px solid var(--line)}
+.emp-pyg .sel{background:rgba(57,255,136,.06)}
+.emp-neg{color:var(--bad)}.emp-pos{color:var(--ok)}
+.emp-form{display:grid;grid-template-columns:1.3fr 2fr 1fr auto auto;gap:8px;align-items:end}
+.emp-cfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px}
+@media(max-width:760px){.emp-form{grid-template-columns:1fr 1fr}}
+.emp-dl{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:.82rem;margin:0}.emp-dl dt{color:var(--tx2)}.emp-dl dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.emp-bars{display:flex;align-items:flex-end;gap:10px;height:140px;border-bottom:1px solid var(--line)}
+.emp-bars>div{flex:1;display:flex;gap:3px;align-items:flex-end;height:100%}
+.emp-bars .bar.cost{background:linear-gradient(180deg,#FFB84D,rgba(255,184,77,.25));box-shadow:none}
+.emp-x{display:flex;gap:10px;font-size:.66rem;color:var(--tx3);margin-top:5px}.emp-x span{flex:1;text-align:center}
+.emp-hint{font-size:.72rem;color:var(--tx3);margin:3px 0 0;line-height:1.35}
 </style>
 <script src="../public/upgames-errores.js?v=20261029i"></script>
 </head>
@@ -920,6 +941,16 @@ a{color:var(--g2)}
       <div id="infCuerpo"><div class="skel"></div></div>
     </section>
 
+    <!-- EMPRESA (solo el dueño) -->
+    <section class="view" id="v-emp">
+      <div class="vh"><div><h2>Empresa</h2><p>Toda la empresa en una pantalla: dinero, operación y crecimiento</p></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap"><select class="in" id="empMes" style="width:auto;padding:8px 34px 8px 12px" onchange="loadEmp(true, true)" aria-label="Mes"></select>
+          <button class="btn sm" onclick="empCSV()"><ion-icon name="download-outline"></ion-icon> Excel</button>
+          <button class="btn sm" onclick="loadEmp(true)" title="Recargar" aria-label="Recargar"><ion-icon name="refresh-outline"></ion-icon></button></div></div>
+      <div class="chips" id="empTab" style="margin-bottom:14px"><button class="chip on" data-f="res">📊 Resumen</button><button class="chip" data-f="fin">💵 Finanzas</button><button class="chip" data-f="ope">🛠️ Operación</button><button class="chip" data-f="cre">🚀 Crecimiento</button><button class="chip" data-f="cfg">⚙️ Metas y parámetros</button></div>
+      <div id="empCuerpo"><div class="skel"></div></div>
+    </section>
+
     <!-- GUÍA DEL PANEL -->
     <section class="view" id="v-ayuda">
       <div class="vh"><div><h2>Guía del panel</h2><p>Qué es cada sección, qué se hace en ella y qué mirar primero. Pensada para quien entra por primera vez.</p></div>
@@ -1084,6 +1115,7 @@ const API = (() => { try { const o = new URLSearchParams(location.search).get('a
 const S = { token: null, admin: null, exp: 0 };
 let D = { items: [], users: [], comments: [], pagos: [], tarjetas: [] };
 let dash = null, view = 'dash', bulk = false, sel = new Set();
+let EMP = null;   // tablero Empresa (solo el dueño)
 let itF = 'all', vF = 'all', uF = 'all', pF = 'pend', tF = 'all', itLimit = 60, uLimit = 60;
 let auBefore = null;
 let PERMS = {
@@ -1233,6 +1265,7 @@ function tickExp() { const r = S.exp - Date.now(); if (r <= 0) return logout('Tu
 const NAV = [
   { g: 'General' }, { id: 'dash', ic: 'grid-outline', t: 'Inicio', perm: 'estadisticas' },
   { id: 'metr', ic: 'analytics-outline', t: 'Métricas', perm: 'estadisticas' },
+  { id: 'emp', ic: 'business-outline', t: 'Empresa', perm: 'owner', b: () => (EMP?.alertas || []).filter(a => a.nivel === 'alta').length, hot: true },
   { id: 'inf', ic: 'document-attach-outline', t: 'Informes', perm: ['estadisticas', 'finanzas'] },
   { id: 'ayuda', ic: 'help-circle-outline', t: 'Guía del panel', perm: null },
   { g: 'Contenido' },
@@ -1302,6 +1335,7 @@ function go(v) {
   history.replaceState(null, '', '#' + v);
   closeMenu(); window.scrollTo({ top: 0 });
   if (v === 'inf') infIniciar();
+  if (v === 'emp') { rEmp(); loadEmp(true); }
   if (v === 'ayuda') ayPintar();
   if (v === 'equipo') loadEquipo();
   if (v === 'econ') loadEcon(true);
@@ -1362,6 +1396,7 @@ async function sync(manual) {
     else if (manual) toast(`✓ Sincronizado · ${num(D.items.length)} entradas · ${num(D.users.length)} usuarios`);
     if (view === 'dash') { loadCharts(); loadVivo(); }
     loadEcon(view === 'econ');
+    loadEmp(false);
   } finally { syncing = false; $('syncIco').style.animation = ''; }
 }
 const st = document.createElement('style'); st.textContent = '@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(st);
@@ -1516,6 +1551,7 @@ async function infRevisarMes() {
 const AYUDA = {
   dash: ['Inicio', 'Tu punto de partida cada día.', ['<b>Por hacer</b>: las cuatro tarjetas de arriba son el trabajo pendiente (revisión, reportes, pagos, cuentas suspendidas). Tócalas para ir directo.', '<b>En vivo</b>: cuántas personas hay ahora en la página y qué están haciendo, minuto a minuto.', '<b>Cifras</b>: usuarios, publicaciones, anuncios vistos y lo que se paga hoy a creadores. «Más cifras» despliega el resto.'], 'Si una tarjeta de «Por hacer» está en color, empieza por ahí.'],
   metr: ['Métricas', 'Cómo se comporta la gente en la web: cuántos llegan, buscan, abren publicaciones, van a descargar y vuelven.', ['Elige el rango (7, 30 o 90 días) arriba a la derecha.', '<b>Embudo</b>: en qué paso se pierde más gente.', '<b>Búsquedas sin resultado</b>: contenido que la comunidad pide y no existe; son ideas para publicar.'], 'Los visitantes son anónimos: no se guarda IP ni cuenta.'],
+  emp: ['Empresa', 'La empresa completa en una pantalla (solo el dueño): cuánto entra, cuánto sale, cuánto se gana, cómo está el sistema y cómo crece.', ['<b>Resumen</b>: ingresos, costos, ganancia, caja, usuarios y las alertas que debes mirar ya.', '<b>Finanzas</b>: estado de resultados de 6 meses, costos por proveedor (los escribes tú: Railway, MongoDB, Resend, IA…), balance y proyección.', '<b>Operación</b>: servidor, errores, seguridad, fraude, trabajo pendiente y el <b>respaldo completo</b> de la base de datos.', '<b>Crecimiento</b>: ARPU, conversión a pago, churn de Premium, CAC, LTV y referidos, cada uno explicado.', '<b>Metas y parámetros</b>: el CPM que te paga la red publicitaria, las comisiones, la caja disponible y las metas del mes.'], 'Las cifras son devengadas (lo generado en el mes). Registra los costos cada mes y descarga un respaldo al menos una vez al mes.'],
   inf: ['Informes', 'El registro mensual de toda la actividad, para descargar y archivar.', ['Elige el mes y pulsa <b>Descargar Excel (CSV)</b>: se abre con doble clic en Excel o Google Sheets.', '<b>Imprimir / PDF</b> genera una versión para guardar como PDF.', 'Marca <b>Descargar solo cada mes</b> y el informe del mes cerrado se bajará la primera vez que entres al panel ese mes.', 'El día 1 el dueño recibe además un correo con el resumen.'], 'Los pagos solo aparecen si tienes permiso de finanzas; las acciones del equipo, solo para el dueño. Nunca incluye emails, IP ni datos de cobro.'],
   revn: ['Revisión', 'Publicaciones nuevas que esperan aprobación.', ['Abre cada una, comprueba que el enlace funciona y que el contenido es legítimo.', 'El botón <b>Nexus</b> da una recomendación de la IA antes de decidir.', 'Aprueba o rechaza. Con <b>Seleccionar</b> puedes hacerlo en bloque.'], 'Si no se aprueban en 2 días, el enlace se marca como caído. Las que llevan ⚡ pagaron revisión prioritaria: van primero.'],
   apro: ['Entradas', 'Todo el contenido publicado.', ['Filtra por estado (aprobadas, pendientes, caídas, reportadas…).', 'Edita título, categoría o enlace, o cambia el estado del enlace.'], 'Usa el buscador de arriba para encontrar una publicación por título o creador.'],
@@ -2098,6 +2134,263 @@ function rEcon() {
     <tr><td><b>Tope del creador</b></td><td class="num"><b>${pct(e.reparto.tope)}</b></td></tr></table>
     <p class="small muted" style="margin:10px 0 0">Fondo Premium acumulado sin repartir: <b>${money(c.fondoPremiumUsd)}</b>. Los UC comprados nunca se retiran; los ganados sí (retiro mínimo y retención según términos).</p>
     ${Object.keys(e.retiros || {}).length ? `<p class="small muted" style="margin:6px 0 0">Retiros: ${Object.entries(e.retiros).map(([st, v]) => `${esc(st)} <b>${money(v.usd)}</b> (${num(v.n)})`).join(' · ')}</p>` : ''}`;
+}
+
+// ─────────── Empresa (solo el dueño · rutas/empresa.js) ───────────
+let empAt = 0, empTab = 'res', empCargando = false, empPend = false;
+chips('empTab', f => { empTab = f; rEmp(); });
+const empMesHoy = () => new Date(Date.now() - 5 * 3600e3).toISOString().slice(0, 7);   // hora de Colombia
+function empMesesInit() {
+  if ($('empMes').options.length) return;
+  let [a, m] = empMesHoy().split('-').map(Number); const ops = [];
+  for (let i = 0; i < 12; i++) {
+    const mes = `${a}-${String(m).padStart(2, '0')}`, nom = new Date(Date.UTC(a, m - 1, 15)).toLocaleDateString('es-CO', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    ops.push(`<option value="${mes}">${nom[0].toUpperCase() + nom.slice(1)}${i ? '' : ' (en curso)'}</option>`);
+    if (--m === 0) { m = 12; a--; }
+  }
+  $('empMes').innerHTML = ops.join('');
+}
+async function loadEmp(forzar, cambioMes) {
+  if (!isOwner()) return;
+  if (empCargando) { if (forzar) empPend = true; return; }   // (p. ej. cambió el mes mientras cargaba)
+  empMesesInit();
+  if (!forzar && Date.now() - empAt < 300e3) return;
+  empAt = Date.now(); empCargando = true;
+  if (cambioMes && view === 'emp') $('empCuerpo').innerHTML = '<div class="skel"></div>';
+  try {
+    const { ok, d } = await api('/admin/empresa?mes=' + $('empMes').value);
+    if (!ok || !d.success) throw new Error(d?.error || 'Error');
+    EMP = d.empresa; updBadges();
+    // la recarga automática no repinta mientras se escribe en un formulario de la vista
+    const ae = document.activeElement, escribiendo = $('empCuerpo').contains(ae) && /^(INPUT|SELECT|TEXTAREA)$/.test(ae?.tagName);
+    if (view === 'emp' && (forzar || !escribiendo)) rEmp();
+  } catch (e) {
+    if (e.message !== '401' && view === 'emp') $('empCuerpo').innerHTML = `<div class="empty">No se pudo cargar el tablero: ${esc(e.message)} <button class="btn sm" onclick="loadEmp(true)">Reintentar</button></div>`;
+  } finally { empCargando = false; if (empPend) { empPend = false; loadEmp(true); } }
+}
+const usd = n => n === null || n === undefined ? '—' : (n < 0 ? '−' : '') + '$' + Math.abs(Number(n) || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const sinDato = v => v === null || v === undefined;
+const pctTxt = v => sinDato(v) ? '—' : String(v).replace('.', ',') + ' %';
+// Cambio contra el mes anterior (inv: para costos, subir es malo)
+function empVs(a, b, inv) {
+  if (!b) return '<span class="muted">sin datos del mes anterior</span>';
+  const p = Math.round((a - b) / Math.abs(b) * 100), bueno = inv ? p <= 0 : p >= 0;
+  return `<span style="color:${bueno ? 'var(--ok)' : 'var(--bad)'}">${p >= 0 ? '▲' : '▼'} ${Math.abs(p)} %</span> vs. ${esc(EMP.anterior)}`;
+}
+const empK = (ic, col, v, l, det) => `<div class="card kpi"><div class="k-ic" style="background:color-mix(in srgb,${col} 15%,transparent);color:${col}"><ion-icon name="${ic}"></ion-icon></div><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-d">${det}</div></div>`;
+const empCard = (t, s, cuerpo, extra = '') => `<div class="card" style="margin-bottom:14px${extra}"><p class="ct">${t}</p>${s ? `<p class="cs">${s}</p>` : ''}${cuerpo}</div>`;
+const empDl = filas => `<dl class="emp-dl">${filas.map(([a, b, h]) => `<dt>${a}${h ? `<div class="emp-hint">${h}</div>` : ''}</dt><dd>${b}</dd>`).join('')}</dl>`;
+const empSigno = n => `<span class="${n < 0 ? 'emp-neg' : n > 0 ? 'emp-pos' : ''}">${usd(n)}</span>`;
+const EMP_NIVEL = { alta: ['t-bad', 'Urgente'], media: ['t-warn', 'Atención'], info: ['t-mut', 'Pendiente'] };
+// Una alerta de la propia sección Empresa abre la pestaña que la resuelve
+function empIr(a) {
+  if (a.ir !== 'emp') return go(a.ir);
+  empTab = { Configuración: 'cfg', Metas: 'cfg', Sistema: 'ope' }[a.area] || 'fin';
+  $('empTab').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.f === empTab)); rEmp();
+}
+
+function rEmp() {
+  if (!EMP) { $('empCuerpo').innerHTML = '<div class="kpis"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>'; return; }
+  const aviso = EMP.enCurso ? `<div class="card emp-aviso"><span class="small">⏳ Mes en curso: van ${Math.round(EMP.avanceMes * EMP.diasMes)} de ${EMP.diasMes} días. Las cifras siguen subiendo${EMP.proyeccion.finMes ? `; al ritmo actual el mes cerraría con una ganancia de <b>${usd(EMP.proyeccion.finMes.ganancia)}</b>` : ''}.</span></div>` : '';
+  $('empCuerpo').innerHTML = aviso + ({ res: empRes, fin: empFin, ope: empOpe, cre: empCre, cfg: empCfg }[empTab] || empRes)();
+}
+
+function empRes() {
+  const E = EMP, P = E.pyg, A = E.pygAnterior, B = E.balance, U = E.usuarios, C = E.crecimiento;
+  const kp = empK('cash', 'var(--ok)', usd(P.ingresos.total), 'Ingresos', `${empVs(P.ingresos.total, A.ingresos.total)}<br>Ventas <b>${usd(P.ingresos.ventasUsd)}</b> · publicidad <b>${usd(P.ingresos.publicidadUsd)}</b>`)
+    + empK('receipt', 'var(--warn)', usd(P.costos.total), 'Costos', `${empVs(P.costos.total, A.costos.total, true)}<br>Creadores <b>${usd(P.costos.creadoresVentasUsd + P.costos.creadoresPublicidadUsd + P.costos.creadoresBlogsUsd)}</b> · fijos <b>${usd(P.costos.manualesUsd)}</b>`)
+    + empK('trending-up', P.ganancia < 0 ? 'var(--bad)' : 'var(--g1)', empSigno(P.ganancia), 'Ganancia', `Margen <b>${pctTxt(P.margenPct)}</b> · ${empVs(P.ganancia, A.ganancia)}`)
+    + empK('wallet', 'var(--info)', usd(B.cajaUsd), 'Caja disponible', sinDato(B.cajaUsd) ? '<a href="#" onclick="empIr({ir:\'emp\',area:\'Configuración\'});return false" style="color:var(--g1)">Escríbela en Metas y parámetros →</a>' : `${sinDato(B.runwayMeses) ? 'Sin pérdidas: no se agota' : `Alcanza para <b>${String(B.runwayMeses).replace('.', ',')} meses</b>`} · libre <b>${usd(B.cajaLibreUsd)}</b>`)
+    + empK('people', 'var(--g2)', num(U.activos30), 'Cuentas activas (30 días)', `Hoy <b>${num(U.dau)}</b> visitantes · 30 días <b>${num(U.mau)}</b>`)
+    + empK('person-add', 'var(--g1)', num(U.nuevosMes), 'Cuentas nuevas', empVs(U.nuevosMes, U.nuevosAnterior))
+    + empK('star', 'var(--vio)', num(U.premiumActivos), 'Premium activos', `Churn del mes <b>${pctTxt(C.churnPremiumPct)}</b> · ${num(U.premiumVencidos)} no renovaron`)
+    + empK('people-circle', 'var(--org)', usd(B.deudaCreadoresUsd), 'Deuda con creadores', `Lo que pueden retirar · por pagar ahora <b>${usd(B.pagosPendientesUsd)}</b>`);
+  const al = E.alertas.length ? E.alertas.map(a => `<div class="emp-al"><span class="tag ${EMP_NIVEL[a.nivel][0]}">${EMP_NIVEL[a.nivel][1]}</span><div class="grow"><span class="muted small">${esc(a.area)} · </span>${esc(a.texto)}</div><button class="btn sm" onclick='empIr(${JSON.stringify({ ir: a.ir, area: a.area }).replace(/'/g, '&#39;')})'>Ver</button></div>`).join('') : '<div class="empty" style="padding:16px">✅ Todo en orden: nada urgente</div>';
+  const metas = E.metas.length ? E.metas.map(m => `<div class="emp-meta"><div class="row"><span>${esc(m.nombre)}</span><span><b>${/Usd$/.test(m.clave) ? usd(m.valor) : num(m.valor)}</b> de ${/Usd$/.test(m.clave) ? usd(m.objetivo) : num(m.objetivo)} · <b style="color:${m.atrasada ? 'var(--warn)' : 'var(--ok)'}">${pctTxt(m.pct)}</b></span></div><div class="emp-pb" title="La raya marca lo esperado a esta altura del mes (${m.esperadoPct} %)"><i style="width:${Math.max(0, Math.min(100, m.pct))}%;${m.atrasada ? 'background:var(--warn)' : ''}"></i>${m.esperadoPct < 100 ? `<em style="left:${m.esperadoPct}%"></em>` : ''}</div></div>`).join('')
+    : `<div class="empty" style="padding:16px">Sin metas para este mes. <a href="#" onclick="empIr({ir:'emp',area:'Metas'});return false" style="color:var(--g1)">Ponerlas →</a></div>`;
+  const H = E.historia, max = Math.max(1, ...H.map(h => Math.max(h.pyg.ingresos.total, h.pyg.costos.total)));
+  const graf = `<div class="emp-bars">${H.map(h => `<div><div class="bar" style="height:${Math.max(2, h.pyg.ingresos.total / max * 100)}%" data-tip="${esc(h.nombre)} · ingresos ${usd(h.pyg.ingresos.total)}"></div><div class="bar cost" style="height:${Math.max(2, h.pyg.costos.total / max * 100)}%" data-tip="${esc(h.nombre)} · costos ${usd(h.pyg.costos.total)} · ganancia ${usd(h.pyg.ganancia)}"></div></div>`).join('')}</div><div class="emp-x">${H.map(h => `<span>${esc(h.nombre.split(' ')[0].slice(0, 3))}</span>`).join('')}</div><p class="small muted" style="margin:8px 0 0">🟩 ingresos · 🟧 costos</p>`;
+  return `<div class="kpis">${kp}</div>`
+    + `<div class="grid2" style="margin-bottom:14px">${empCard('🚨 Alertas', 'Lo que deberías mirar ya, de más a menos urgente', al, ';margin-bottom:0')}${empCard('🎯 Metas del mes', 'La raya marca dónde deberías ir a esta altura del mes', metas, ';margin-bottom:0')}</div>`
+    + empCard('📈 Ingresos y costos · últimos 6 meses', 'Pasa el dedo o el ratón por cada barra para ver la cifra', graf);
+}
+
+function empFin() {
+  const E = EMP, H = E.historia, B = E.balance;
+  const filas = [
+    ['Ventas con dinero', p => p.ingresos.ventasUsd, '', 'Premium, UpCoins, NEXUS, destacados… pagados con tarjeta o PayPal'],
+    ['Publicidad (estimada)', p => p.ingresos.publicidadUsd, '', `Anuncios vistos × CPM de la red (${usd(E.cfg.cpmBrutoUsd)} por 1.000)`],
+    ['Ingresos', p => p.ingresos.total, 'tot'],
+    ['Creadores · ventas y regalos', p => -p.costos.creadoresVentasUsd, '', 'Su parte de regalos, Super Chat, apoyos, accesos y fondo Premium'],
+    ['Creadores · publicidad', p => -p.costos.creadoresPublicidadUsd, '', 'CPM que se les abona por los anuncios de sus publicaciones'],
+    ['Creadores · blogs', p => -p.costos.creadoresBlogsUsd, '', 'Publicidad y descargas generadas desde UpGames Blogs'],
+    ['Comisiones de pasarela (est.)', p => -p.costos.comisionesUsd, '', `${String(E.cfg.comisionPct).replace('.', ',')} % + ${usd(E.cfg.comisionFijaUsd)} por venta`],
+    ['Margen de contribución', p => p.contribucion, 'tot', 'Lo que queda para pagar los costos fijos'],
+    ...Object.entries(E.categorias).filter(([k]) => H.some(h => h.pyg.costos.manuales[k])).map(([k, n]) => [n, p => -(p.costos.manuales[k] || 0)]),
+    ['Costos totales', p => -p.costos.total, 'tot'],
+    ['Ganancia', p => p.ganancia, 'tot'],
+    ['Margen', p => p.margenPct, 'pct'],
+  ];
+  const ultimo = H.length - 1;
+  const pyg = `<div style="overflow:auto"><table class="tbl emp-pyg"><tr><th>Concepto</th>${H.map((h, i) => `<th class="num${i === ultimo ? ' sel' : ''}">${esc(h.nombre.replace(' de ', ' '))}</th>`).join('')}</tr>${filas.map(([n, f, cls, h]) => `<tr class="${cls === 'tot' ? 'tot' : ''}"><td>${esc(n)}${h ? `<div class="emp-hint">${esc(h)}</div>` : ''}</td>${H.map((x, i) => { const v = f(x.pyg); return `<td class="num${i === ultimo ? ' sel' : ''}">${cls === 'pct' ? pctTxt(v) : cls === 'tot' ? empSigno(v) : usd(v)}</td>`; }).join('')}</tr>`).join('')}</table></div>`;
+  const cats = Object.entries(E.categorias).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join('');
+  const form = `<div class="emp-form">
+      <div class="fg"><label class="lbl" for="ecCat2">Categoría</label><select class="in" id="ecCat2">${cats}</select></div>
+      <div class="fg"><label class="lbl" for="ecCon">Concepto</label><input class="in" id="ecCon" maxlength="80" placeholder="Ej.: Railway plan Pro" autocomplete="off"></div>
+      <div class="fg"><label class="lbl" for="ecUsd">Monto (USD)</label><input class="in" id="ecUsd" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00"></div>
+      <label class="row small muted" style="gap:6px;cursor:pointer;padding-bottom:10px"><input type="checkbox" id="ecRec" style="accent-color:#32D583"> Cada mes</label>
+      <button class="btn pri" style="margin-bottom:2px" onclick="empAddCosto()"><ion-icon name="add-outline"></ion-icon> Agregar</button></div>`;
+  const lista = E.costos.length ? `<table class="tbl" style="margin-top:12px"><tr><th>Categoría</th><th>Concepto</th><th class="num">USD</th><th></th></tr>${E.costos.map(c => `<tr><td class="small">${esc(E.categorias[c.categoria] || c.categoria)}</td><td>${esc(c.concepto)}${c.recurrente ? ` <span class="tag t-ok" title="Se repite cada mes desde ${esc(c.desde)}">cada mes</span>` : ''}</td><td class="num">${usd(c.usd)}</td><td class="num"><button class="btn sm ghost" onclick="empDelCosto('${esc(c.id)}')" aria-label="Quitar ${esc(c.concepto)}"><ion-icon name="trash-outline"></ion-icon></button></td></tr>`).join('')}<tr class="tot"><td colspan="2"><b>Total costos fijos del mes</b></td><td class="num">${usd(E.pyg.costos.manualesUsd)}</td><td></td></tr></table>`
+    : '<div class="empty" style="padding:16px">Aún no hay costos en este mes. Empieza por los que pagas siempre: servidor, base de datos, correo, IA y dominio (marca «Cada mes»).</div>';
+  const pr = E.proyeccion;
+  const bal = empDl([
+    ['💵 Caja disponible', usd(B.cajaUsd), B.cajaFecha ? `Escrita el ${fdate(B.cajaFecha)}` : 'Escríbela en Metas y parámetros'],
+    ['👥 Deuda con creadores', usd(B.deudaCreadoresUsd), `Lo ganado que pueden retirar (incluye ${usd(B.retenidoUsd)} aún en retención)`],
+    ['⏳ Retiros pedidos sin pagar', usd(B.pagosPendientesUsd)],
+    ['✅ Retiros pagados este mes', `${usd(B.retirosPagadosMes.usd)} <span class="muted small">(${num(B.retirosPagadosMes.n)})</span>`],
+    ['🧾 Caja libre', empSigno(B.cajaLibreUsd), 'Caja menos la deuda con creadores'],
+    ['🪙 UpCoins comprados sin gastar', usd(B.ucCompradosUsd), 'Servicio que aún debes prestar (no se retiran en dinero)'],
+    ['⭐ Fondo Premium sin repartir', usd(B.fondoPremiumUsd)],
+    ['🛟 Meses de caja', sinDato(B.runwayMeses) ? '<span class="emp-pos">sin pérdidas</span>' : String(B.runwayMeses).replace('.', ','), 'Caja ÷ pérdida media de los últimos 3 meses'],
+  ]);
+  const proy = empDl([
+    ...(pr.finMes ? [['Ingresos al cierre', usd(pr.finMes.ingresos)], ['Costos al cierre', usd(pr.finMes.costos), 'Los fijos no se multiplican'], ['Ganancia al cierre', empSigno(pr.finMes.ganancia)]] : []),
+    ...(pr.promedio3 ? [['Ingresos · promedio 3 meses', usd(pr.promedio3.ingresos)], ['Costos · promedio 3 meses', usd(pr.promedio3.costos)], ['Ganancia · promedio 3 meses', empSigno(pr.promedio3.ganancia)]] : []),
+  ]);
+  const prod = Object.entries(E.pyg.ingresos.porProducto).sort((a, b) => b[1].usd - a[1].usd);
+  const tProd = prod.length ? `<table class="tbl"><tr><th>Producto</th><th class="num">Ventas</th><th class="num">USD</th></tr>${prod.map(([k, v]) => `<tr><td>${prodNombre(k)}</td><td class="num muted">${num(v.n)}</td><td class="num">${usd(v.usd)}</td></tr>`).join('')}</table>` : '<div class="empty" style="padding:16px">Sin ventas con dinero este mes</div>';
+  return empCard('🧾 Estado de resultados', 'Últimos 6 meses en USD · devengado: lo generado en cada mes, aunque se cobre o pague después', pyg)
+    + empCard(`💸 Costos de ${esc(E.nombre)}`, 'Lo que pagas a proveedores y personas. «Cada mes» lo repite en los meses siguientes hasta que lo quites', form + lista)
+    + `<div class="grid2" style="margin-bottom:14px">${empCard('🏦 Balance de hoy', 'Lo que tienes y lo que debes', bal, ';margin-bottom:0')}${empCard('🔮 Proyección', pr.finMes ? 'Al ritmo de lo que va del mes' : 'Promedio de los últimos meses cerrados', proy || '<div class="empty" style="padding:16px">Aún no hay meses suficientes</div>', ';margin-bottom:0')}</div>`
+    + empCard('🛒 Ventas por producto', 'Solo lo pagado con dinero en el mes', tProd);
+}
+
+function empOpe() {
+  const O = EMP.operacion, S2 = O.servidor, Se = O.seguridad, F = Se.fraude, R = O.respaldo;
+  const fmtUpS = s => fmtUp(s || 0);
+  const srv = empDl([
+    ['Base de datos', S2.db ? `<span class="emp-pos">● responde</span> <span class="muted small">${num(S2.dbMs)} ms</span>` : '<span class="emp-neg">● sin respuesta</span>'],
+    ['Encendido desde hace', fmtUpS(S2.uptimeS), 'Se reinicia con cada despliegue'],
+    ['Memoria en uso', `${num(S2.heapMB)} MB <span class="muted small">(proceso ${num(S2.rssMB)} MB)</span>`],
+    ['Versión', `<span class="mono small">${esc(S2.commit || '—')}</span> · Node ${esc(S2.node)}`],
+  ]);
+  const er = O.errores;
+  const errores = empDl([['Errores activos (24 h)', num(er.activos24h)], ['Errores nuevos (24 h)', er.nuevos24h ? `<span class="emp-neg">${num(er.nuevos24h)}</span>` : '0']])
+    + (er.top.length ? `<table class="tbl" style="margin-top:10px">${er.top.map(e => `<tr><td class="small" style="white-space:normal">${esc(e.mensaje)}<div class="emp-hint">${e.origen === 'navegador' ? '🌐 navegador' : '🖥️ servidor'} · hace ${ago(e.ultima)}</div></td><td class="num">${num(e.n)}×</td></tr>`).join('')}</table>` : '')
+    + '<button class="btn sm" style="margin-top:10px" onclick="go(\'api\')">Ver todos en API Test →</button>';
+  const seg = empDl([
+    ['🚨 Incidentes de seguridad abiertos', Se.incidentesAbiertos ? `<span class="emp-neg">${num(Se.incidentesAbiertos)}</span>` : '0', 'Contenido de cero tolerancia (Moderación → Incidentes)'],
+    ['🕵️ Fraude sin revisar', `<span class="${F.critical + F.high ? 'emp-neg' : ''}">${num(F.critical + F.high)} grave</span> · ${num(F.medium + F.low)} leve`],
+    ['⛔ Cuentas suspendidas', num(Se.suspendidas)], ['👁️ En lista negra', num(Se.listaNegra)],
+    ['↩️ Reembolsos y contracargos del mes', `${num(Se.contracargos.n)} · ${usd(Se.contracargos.usd)}`],
+  ]);
+  const pend = empDl([
+    ['📝 Publicaciones en revisión', `<a href="#" onclick="go('revn');return false" style="color:var(--g1)">${num(O.contenido.enRevision)}</a>`],
+    ['🚩 Publicaciones con reportes', `<a href="#" onclick="go('reportes');return false" style="color:var(--g1)">${num(O.contenido.reportadas)}</a>`],
+    ['💸 Pagos a creadores pendientes', `<a href="#" onclick="go('pays');return false" style="color:var(--g1)">${num(O.pagos.n)}</a> · ${usd(O.pagos.usd)}`, O.pagos.n ? `El más antiguo espera hace ${num(O.pagos.masAntiguoDias)} día(s)` : ''],
+  ]);
+  const resp = `${R ? empDl([['Último respaldo', `${fdate(R.fecha)} <span class="muted small">hace ${ago(R.fecha)}</span>`], ['Tamaño', `${String(R.mb).replace('.', ',')} MB · ${num(R.colecciones)} colecciones · ${num(R.documentos)} documentos`], ['Por', '@' + esc(R.por)]]) : '<p class="small" style="color:var(--warn);margin:0">Nunca se ha descargado un respaldo.</p>'}
+    <button class="btn pri" id="empRespBtn" style="margin-top:12px" onclick="empRespaldo()"><ion-icon name="cloud-download-outline"></ion-icon> Descargar respaldo completo</button>
+    <p class="emp-hint" style="margin-top:8px">Copia de todas las colecciones (cuentas, publicaciones, ventas, pagos, blogs…) en EJSON: conserva los ID, fechas y números exactos. Incluye datos personales y contraseñas cifradas: guárdalo cifrado y fuera de este equipo. Cómo restaurarlo: docs/panel-admin.md → Respaldo.</p>`;
+  const ret = `<table class="tbl">${O.retencionDatos.map(([a, b]) => `<tr><td>${esc(a)}</td><td class="num muted">${esc(b)}</td></tr>`).join('')}</table><p class="emp-hint" style="margin-top:8px">Lo que se borra solo se conserva en el informe mensual: descárgalo cada mes en Informes.</p>`;
+  return `<div class="grid2" style="margin-bottom:14px">${empCard('🖥️ Servidor', 'Estado ahora mismo', srv, ';margin-bottom:0')}${empCard('🐞 Errores', 'Servidor y navegador de los usuarios', errores, ';margin-bottom:0')}</div>`
+    + `<div class="grid2" style="margin-bottom:14px">${empCard('🛡️ Seguridad y fraude', 'Lo que pone en riesgo a la comunidad y al dinero', seg, ';margin-bottom:0')}${empCard('📋 Trabajo pendiente', 'Toca un número para ir a la sección', pend, ';margin-bottom:0')}</div>`
+    + `<div class="grid2">${empCard('💾 Respaldo de la base de datos', 'Una copia tuya, fuera del servidor, por si algo sale mal', resp, ';margin-bottom:0')}${empCard('🗂️ Cuánto se guarda cada dato', '', ret, ';margin-bottom:0')}</div>`;
+}
+
+function empCre() {
+  const C = EMP.crecimiento, U = EMP.usuarios;
+  const ind = [
+    ['ARPU', usd(C.arpuUsd), 'Ingreso medio por cuenta activa en el mes'],
+    ['ARPPU', usd(C.arppuUsd), `Lo que gasta, de media, quien paga (${num(C.pagadores)} pagaron este mes)`],
+    ['Conversión a pago', pctTxt(C.conversionPct), 'De las cuentas activas, cuántas pagaron algo con dinero'],
+    ['Premium', pctTxt(C.premiumPct), 'De las cuentas activas, cuántas tienen Premium'],
+    ['Churn de Premium', pctTxt(C.churnPremiumPct), 'Premium que vencieron este mes sin renovar (aprox.)'],
+    ['CAC', sinDato(C.cacUsd) ? '—' : usd(C.cacUsd), sinDato(C.cacUsd) ? 'Registra el gasto en «Marketing y publicidad» para calcularlo' : `Costo de conseguir una cuenta: ${usd(C.marketingUsd)} en marketing ÷ cuentas nuevas`],
+    ['LTV', usd(C.ltvUsd), `Lo que deja un cliente que paga en toda su vida (~${String(C.vidaMeses).replace('.', ',')} meses, con el margen de contribución)`],
+    ['LTV ÷ CAC', sinDato(C.ltvCac) ? '—' : String(C.ltvCac).replace('.', ',') + '×', 'Sano por encima de 3×: cada dólar en marketing vuelve multiplicado'],
+  ];
+  const kp = ind.map(([l, v, h]) => `<div class="card kpi"><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-d">${h}</div></div>`).join('');
+  const us = empDl([
+    ['Cuentas en total', num(U.total)], ['Cuentas nuevas en el mes', `${num(U.nuevosMes)} <span class="muted small">(antes ${num(U.nuevosAnterior)})</span>`],
+    ['Cuentas activas (30 días)', num(U.activos30), 'Entraron con su cuenta al menos una vez'],
+    ['Visitantes hoy', num(U.dau)], ['Visitantes únicos (30 días)', num(U.mau), 'Anónimos, con o sin cuenta'],
+    ['Visitas del mes', num(U.visitantesMes), 'Un visitante cuenta una vez por día'],
+  ]);
+  const rf = C.referidos;
+  const ref = empDl([['Invitados con referido (total)', num(rf.total)], ['Invitaciones premiadas', num(rf.pagados)], ['Invitados este mes', num(rf.mes)]]);
+  return `<div class="kpis">${kp}</div>`
+    + `<div class="grid2" style="margin-bottom:14px">${empCard('👥 Usuarios', '', us, ';margin-bottom:0')}${empCard('🤝 Referidos', 'Invita y gana', ref, ';margin-bottom:0')}</div>`
+    + empCard('🔁 Embudo, retención y prueba A/B', 'Ya tienen su propia sección', `<div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="go('metr')">Métricas: embudo y retención →</button><button class="btn sm" onclick="go('dash')">Inicio: prueba A/B de la bienvenida →</button><button class="btn sm" onclick="go('econ')">Economía: UpCoins y Premium →</button></div>`);
+}
+
+function empCfg() {
+  const c = EMP.cfg, M = EMP.nombresMetas;
+  const campo = (id, l, v, h, extra = '') => `<div class="fg"><label class="lbl" for="${id}">${l}</label><input class="in" id="${id}" type="number" inputmode="decimal" value="${sinDato(v) ? '' : esc(v)}" ${extra}>${h ? `<div class="emp-hint">${h}</div>` : ''}</div>`;
+  return empCard('⚙️ Parámetros', 'Con esto se calculan los ingresos por publicidad, las comisiones y los meses de caja', `<div class="emp-cfg">
+      ${campo('ecfCpm', 'CPM de la red publicitaria (USD)', c.cpmBrutoUsd, 'Lo que la red te paga por 1.000 anuncios vistos. Míralo en el panel de tu red de anuncios.', 'min="0" max="100" step="0.01"')}
+      ${campo('ecfPct', 'Comisión de la pasarela (%)', c.comisionPct, 'PayPal o Mercado Pago, por venta', 'min="0" max="30" step="0.1"')}
+      ${campo('ecfFija', 'Comisión fija por venta (USD)', c.comisionFijaUsd, '', 'min="0" max="5" step="0.01"')}
+      ${campo('ecfCaja', 'Caja disponible hoy (USD)', c.cajaUsd, c.cajaFecha ? `Actualizada el ${fdate(c.cajaFecha)}. Déjala vacía si no quieres usarla.` : 'Suma de tus cuentas (PayPal, banco…). Déjala vacía si no quieres usarla.', 'step="0.01"')}</div>`)
+    + empCard('🎯 Metas mensuales', 'Se comparan con cada mes. Deja en 0 las que no quieras seguir', `<div class="emp-cfg">${Object.entries(M).map(([k, n]) => campo('ecfM-' + k, esc(n), c.metas[k] || 0, '', 'min="0" step="1"')).join('')}</div>`)
+    + `<button class="btn pri" id="ecfBtn" onclick="empGuardarCfg()"><ion-icon name="save-outline"></ion-icon> Guardar</button>`;
+}
+
+async function empGuardarCfg() {
+  const v = id => $(id).value.trim();
+  const body = { cpmBrutoUsd: v('ecfCpm'), comisionPct: v('ecfPct'), comisionFijaUsd: v('ecfFija'), cajaUsd: v('ecfCaja'),
+    metas: Object.fromEntries(Object.keys(EMP.nombresMetas).map(k => [k, v('ecfM-' + k) || 0])) };
+  $('ecfBtn').disabled = true;
+  try {
+    const { ok, d } = await api('/admin/empresa/config', { method: 'PUT', body });
+    if (!ok || !d.success) throw new Error(d?.error || 'No se pudo guardar');
+    toast('✓ Parámetros y metas guardados'); await loadEmp(true);
+  } catch (e) { if (e.message !== '401') toast(e.message, 'err'); }
+  finally { const b = $('ecfBtn'); if (b) b.disabled = false; }
+}
+async function empAddCosto() {
+  const body = { mes: EMP.mes, categoria: $('ecCat2').value, concepto: $('ecCon').value.trim(), usd: $('ecUsd').value, recurrente: $('ecRec').checked };
+  if (!body.concepto) { toast('Escribe el concepto', 'err'); return $('ecCon').focus(); }
+  if (!(Number(body.usd) > 0)) { toast('Escribe un monto mayor que 0', 'err'); return $('ecUsd').focus(); }
+  try {
+    const { ok, d } = await api('/admin/empresa/costos', { method: 'POST', body });
+    if (!ok || !d.success) throw new Error(d?.error || 'No se pudo guardar');
+    toast(`✓ Costo agregado${body.recurrente ? ' (se repetirá cada mes)' : ''}`); await loadEmp(true);
+  } catch (e) { if (e.message !== '401') toast(e.message, 'err'); }
+}
+async function empDelCosto(id) {
+  const c = EMP.costos.find(x => x.id === id); if (!c) return;
+  const detener = c.recurrente && c.desde < EMP.mes;
+  if (!confirm(detener ? `«${c.concepto}» dejará de contar desde ${EMP.nombre}. Los meses anteriores no cambian. ¿Continuar?` : `¿Eliminar «${c.concepto}»${c.recurrente ? ' de todos los meses' : ''}?`)) return;
+  try {
+    const { ok, d } = await api(`/admin/empresa/costos/${encodeURIComponent(id)}?mes=${EMP.mes}`, { method: 'DELETE' });
+    if (!ok || !d.success) throw new Error(d?.error || 'No se pudo quitar');
+    toast(d.accion === 'detenido' ? '✓ Deja de repetirse desde este mes' : '🗑 Costo eliminado'); await loadEmp(true);
+  } catch (e) { if (e.message !== '401') toast(e.message, 'err'); }
+}
+async function empCSV() {
+  try {
+    const mes = $('empMes').value || empMesHoy();
+    const r = await fetch(`${API}/admin/empresa?mes=${mes}&formato=csv`, { headers: { 'x-admin-token': S.token } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = `UpGames-resultados-${mes}.csv`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast('Estado de resultados descargado', 'ok');
+  } catch (_) { toast('No se pudo descargar', 'err'); }
+}
+async function empRespaldo() {
+  if (!confirm('Se descargará una copia COMPLETA de la base de datos, con datos personales y contraseñas cifradas.\n\nGuárdala en un lugar seguro y no la compartas. ¿Continuar?')) return;
+  const b = $('empRespBtn'); if (b) { b.disabled = true; b.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Generando… no cierres el panel'; }
+  try {
+    const r = await fetch(`${API}/admin/empresa/respaldo`, { method: 'POST', headers: { 'x-admin-token': S.token } });
+    if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || 'HTTP ' + r.status); }
+    const blob = await r.blob();
+    // un respaldo cortado a medias no termina en }} : no se guarda como si fuera válido
+    if (blob.size < 20 || (await blob.slice(-2).text()) !== '}}') throw new Error('La descarga se cortó: vuelve a intentarlo');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `UpGames-respaldo-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    toast(`✓ Respaldo descargado (${(blob.size / 1048576).toFixed(1).replace('.', ',')} MB)`, 'ok'); loadEmp(true);
+  } catch (e) { toast(e.message || 'No se pudo generar el respaldo', 'err'); }
+  finally { const b2 = $('empRespBtn'); if (b2) { b2.disabled = false; b2.innerHTML = '<ion-icon name="cloud-download-outline"></ion-icon> Descargar respaldo completo'; } }
 }
 
 // ─────────── Extras UC ───────────

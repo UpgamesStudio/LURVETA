@@ -74,7 +74,7 @@ const esOwnerEmail = email => ownerEmails().includes(String(email || '').toLower
  * 'owner' = solo el dueño; null = cualquier admin con sesión.
  */
 function permisoRequerido(method, path) {
-    if (/^\/admin\/(equipo|auditoria)/.test(path)) return 'owner';
+    if (/^\/admin\/(equipo|auditoria|empresa)/.test(path)) return 'owner';   // Empresa: finanzas reales, caja y respaldo completo
     if (/^\/admin\/auth/.test(path)) return null;
     if (/^\/admin\/nexus\/(briefing|chat)/.test(path)) return null;   // cada admin ve solo sus áreas
     if (/^\/admin\/nexus\/(buscar|buscador)/.test(path)) return ['revision', 'contenido', 'estadisticas'];   // descubrir contenido para la comunidad

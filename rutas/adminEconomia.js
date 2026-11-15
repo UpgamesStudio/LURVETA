@@ -191,4 +191,4 @@ function registrar(app, deps) {
     });
 }
 
-module.exports = { registrar, clasificar };
+module.exports = { registrar, clasificar, EXPR_PRODUCTO, EXPR_DINERO };

@@ -1323,6 +1323,8 @@ require('./rutas/social').registrar(app, { verificarToken, verificarAdmin, usuar
 require('./rutas/grupos').registrar(app, { verificarToken, Usuario, Notificacion, push, imagenes, urlImagenSegura, Moderacion, CeroTolerancia, Limites, logger });
 // Panel admin → Economía (UpCoins, ventas, Premium, NEXUS, destacadas)
 require('./rutas/adminEconomia').registrar(app, { verificarAdmin, Usuario, Juego, LiveTx: live.LiveTx, Pago, Notificacion, logger, olvidarPerfil: live.olvidarPerfil });
+// Panel admin → Empresa (solo el dueño): estado de resultados, costos, caja, operación, crecimiento y respaldo
+require('./rutas/empresa').registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx: live.LiveTx, logger });
 // Estado del correo y envío de prueba (panel admin → Sistema)
 app.get('/admin/sistema/email', verificarAdmin, async (req, res) => res.json({ success: true, ...(await correo.verificar()), ...correo.estado() }));
 app.post('/admin/sistema/email-prueba', verificarAdmin, async (req, res) => {
