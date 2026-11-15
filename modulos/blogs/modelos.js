@@ -64,7 +64,11 @@ module.exports = function modelos(mongoose) {
     EntradaSchema.index({ blog: 1, estado: 1, publicadaEn: -1 });
     EntradaSchema.index({ blog: 1, etiquetasSlug: 1 });
 
-    const BlogVistaSchema = new mongoose.Schema({ blog: { type: mongoose.Schema.Types.ObjectId, required: true }, dia: { type: String, required: true }, n: { type: Number, default: 0 }, a: { type: Number, default: 0 }, g: { type: Number, default: 0 }, d: { type: Number, default: 0 }, gd: { type: Number, default: 0 } });   // n visitas · a anuncios vistos · g ganancia US$ · d descargas atribuidas · gd ganancia US$ por ellas
+    const BlogVistaSchema = new mongoose.Schema({ blog: { type: mongoose.Schema.Types.ObjectId, required: true }, dia: { type: String, required: true }, n: { type: Number, default: 0 }, a: { type: Number, default: 0 }, g: { type: Number, default: 0 }, d: { type: Number, default: 0 }, gd: { type: Number, default: 0 },
+        u: { type: Number, default: 0 }, mo: { type: Number, default: 0 }, pc: { type: Number, default: 0 },   // visitantes (aprox.) · visitas desde móvil · desde computador
+        rd: { type: Number, default: 0 }, rb: { type: Number, default: 0 }, rs: { type: Number, default: 0 }, ru: { type: Number, default: 0 }, ro: { type: Number, default: 0 },   // de dónde llegan: directo · buscadores · redes · UpGames · otros sitios
+        cw: { type: Number, default: 0 }, cr: { type: Number, default: 0 }, cb: { type: Number, default: 0 }, fm: { type: Number, default: 0 }, pe: { type: Number, default: 0 } });   // clics a WhatsApp · a redes · a botones · formularios recibidos · pedidos
+    // n visitas · a anuncios vistos · g ganancia US$ · d descargas atribuidas · gd ganancia US$ por ellas
     BlogVistaSchema.index({ blog: 1, dia: 1 }, { unique: true });
 
     const BlogReporteSchema = new mongoose.Schema({ blog: { type: mongoose.Schema.Types.ObjectId, required: true, index: true }, motivo: String, detalle: String, ip: String }, { timestamps: true });

@@ -79,4 +79,24 @@ assert.strictEqual(E.armarSeccion({ tipo: 'texto', texto: 'colado' }, 'precios')
 assert.ok(E.SISTEMA_LANDING.includes('NO inventes precios') && E.SISTEMA_SECCION.includes('testimonios'));
 assert.ok(Object.keys(E.ACCIONES_TEXTO).includes('ortografia'));
 
+
+// ── Fuentes de visitas (panel de estadísticas) ──
+const { categoriaFuente: cf } = require('../rutas/blogs');
+assert.strictEqual(cf(''), 'rd');
+assert.strictEqual(cf('https://www.google.com.co/search'), 'rb');
+assert.strictEqual(cf('https://l.facebook.com/l.php'), 'rs');
+assert.strictEqual(cf('https://t.co/abc'), 'rs');
+assert.strictEqual(cf('https://box.com/x'), 'ro');
+assert.strictEqual(cf('https://fbi.gov/'), 'ro');
+assert.strictEqual(cf('https://kero.com/p/x', 'kero.com'), '', 'navegar dentro del blog no cuenta');
+assert.strictEqual(cf('https://upgames.games/b/kero/e/a', 'upgames.games', '/b/kero'), '');
+assert.strictEqual(cf('https://upgames.games/public/biblioteca.html', 'upgames.games', '/b/kero'), 'ru');
+
+// ── Retoque de diseño de Nexus: héroe amplio, CTA con color, fondos alternos ──
+const pul = E.pulirSecciones(V.limpiarBloques([{ tipo: 'heroe', titulo: 'a' }, { tipo: 'columnas', fondo: 'suave', items: [{ titulo: 'x' }] }, { tipo: 'precios', fondo: 'suave', items: [{ nombre: 'p' }] }, { tipo: 'texto', texto: 't' }, { tipo: 'cta', titulo: 'c' }]));
+assert.deepStrictEqual(pul.map(b => b.fondo), ['degradado', 'suave', '', undefined, 'acento']);
+assert.strictEqual(pul[0].espacio, 'amplio');
+// El ejemplo de las instrucciones es JSON válido (si no, el modelo aprende JSON roto)
+assert.ok(JSON.parse(E.SISTEMA_LANDING.match(/\{"titulo":"Estudio[\s\S]*\]\}/)[0]).bloques.length >= 5);
+
 console.log('seccionesBlog: pruebas OK');

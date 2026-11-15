@@ -30,7 +30,8 @@ async function api(ruta, { metodo = 'GET', cuerpo, publico } = {}) {
   } catch (_) { throw new Error('Sin conexión. Revisa tu internet e inténtalo de nuevo.'); }
   const d = await r.json().catch(() => ({}));
   if (r.status === 401 && !publico) { toast('Tu sesión expiró. Inicia sesión de nuevo.', true); setTimeout(() => location.replace('../login.html'), 1500); throw new Error('Sesión expirada'); }
-  if (!r.ok || d.success === false) throw new Error(d.error || 'No se pudo completar. Inténtalo de nuevo.');
+  if (!r.ok || d.success === false) { const e = new Error(d.error || 'No se pudo completar. Inténtalo de nuevo.'); e.code = d.code; throw e; }
+  if (d.cupo) nexusCupoVisto(d.cupo);
   return d;
 }
 
@@ -61,7 +62,23 @@ async function ocupado(boton, tarea) {
   if (boton.disabled) return;
   const antes = boton.innerHTML;
   boton.disabled = true; boton.innerHTML = '<span class="giro" style="width:18px;height:18px;border-width:2px"></span>';
-  try { return await tarea(); } catch (e) { toast(e.message, true); } finally { boton.disabled = false; boton.innerHTML = antes; }
+  try { return await tarea(); } catch (e) { avisarError(e); } finally { boton.disabled = false; boton.innerHTML = antes; }
+}
+/** Error para el usuario; si es el límite del plan gratis de Nexus, ofrece Premium en vez de un aviso suelto. */
+function avisarError(e) {
+  if (e.code !== 'LIMITE') return toast(e.message, true);
+  hoja(`<h3>✦ Llegaste al límite de hoy</h3><p>${h(e.message)}</p><p style="color:var(--txt2)">Con <b>Premium</b> tienes Nexus ilimitado, temas exclusivos y tu blog sin la marca de UpGames.</p>
+    <div class="fila"><button class="btn" data-no style="flex:1">Mañana sigo</button><a class="btn pri" style="flex:1" href="./biblioteca.html?plan=1">${ico('star')} Ver Premium</a></div>`).querySelector('[data-no]').onclick = cerrarHoja;
+}
+// Cupo de Nexus (lo devuelve el servidor en cada respuesta de Nexus)
+let NX_CUPO = null;
+function nexusCupoVisto(c) { if (NX_CUPO && !c.premium && c.quedan != null && NX_CUPO.ultima) NX_CUPO.acciones[NX_CUPO.ultima] = { ...NX_CUPO.acciones[NX_CUPO.ultima], quedan: c.quedan }; }
+async function nexusCupo() { try { NX_CUPO = await api('/blogs/nexus/cupo'); } catch (_) {} return NX_CUPO; }
+function lineaCupo() {
+  if (!NX_CUPO) return '';
+  if (NX_CUPO.premium) return `<p class="nx-cupo pro">${ico('star')} Premium: Nexus ilimitado</p>`;
+  const a = NX_CUPO.acciones, n = (k, s, p) => `<b>${a[k].quedan}</b> ${a[k].quedan === 1 ? s : p}`;
+  return `<p class="nx-cupo">Plan gratis · hoy te quedan ${n('landing', 'landing', 'landings')}, ${n('seccion', 'sección', 'secciones')}, ${n('texto', 'mejora de texto', 'mejoras de texto')} y ${n('seo', 'SEO', 'SEO')}. <a href="./biblioteca.html?plan=1">✦ Ilimitado con Premium</a></p>`;
 }
 const fechaCorta = d => d ? new Date(d).toLocaleDateString('es', { day: 'numeric', month: 'short', year: new Date(d).getFullYear() === new Date().getFullYear() ? undefined : 'numeric' }) : '';
 const num = n => Number(n || 0).toLocaleString('es');
@@ -262,18 +279,54 @@ function menuEntrada(e, tipo) {
   };
 }
 
+let rangoStats = 30;
 async function vistaEstadisticas() {
   const v = $('#vista');
   let d;
   try { d = await api(`/blogs/${S.blog.id}/estadisticas`); } catch (e) { v.innerHTML = `<div class="vacio"><b>No se pudo cargar</b>${h(e.message)}</div>`; return; }
-  const max = Math.max(1, ...d.serie.map(x => x.n));
-  v.innerHTML = `<h1>Estadísticas</h1><p class="sub">Visitas a las entradas de tu blog.</p>
-    <div class="cifras"><div class="cifra glass"><b>${num(d.hoy)}</b><span>Hoy</span></div><div class="cifra glass"><b>${num(d.mes)}</b><span>Últimos 30 días</span></div><div class="cifra glass"><b>${num(d.total)}</b><span>Desde siempre</span></div><div class="cifra glass"><b>${num(d.publicadas)}</b><span>Entradas publicadas</span></div></div>
-    <section class="seccion glass"><h2>${ico('trending-up')} Visitas por día</h2>
-      <div><div class="grafica" role="img" aria-label="Visitas de los últimos 30 días">${d.serie.map(x => `<i class="${x.n ? '' : 'cero'}" style="height:${Math.max(3, Math.round(x.n / max * 100))}%" title="${h(x.dia)}: ${x.n}"></i>`).join('')}</div>
-      <div class="eje"><span>${h(fechaCorta(d.serie[0].dia + 'T12:00:00'))}</span><span>Hoy</span></div></div></section>
-    <section class="seccion glass"><h2>${ico('flame')} Lo más leído</h2>
-      ${d.top.length ? `<div class="top">${d.top.map(t => `<div><b>${h(t.titulo)}</b><span>${num(t.vistas)} visitas</span></div>`).join('')}</div>` : '<p>Cuando tus entradas reciban visitas aparecerán aquí.</p>'}</section>`;
+  const pintar = () => {
+    const R = rangoStats, act = d.serie90.slice(-R), ant = d.serie90.slice(-2 * R, -R);
+    const suma = (l, k) => l.reduce((s, x) => s + (x[k] || 0), 0);
+    const cambio = k => { if (ant.length < R) return '<em class="neutro">sin periodo anterior</em>'; const a = suma(act, k), b = suma(ant, k); if (!b) return a ? '<em class="sube">nuevo</em>' : ''; const p = Math.round((a - b) / b * 100); return `<em class="${p >= 0 ? 'sube' : 'baja'}">${p >= 0 ? '▲' : '▼'} ${Math.abs(p)}%</em>`; };
+    const kpi = (k, n, icono, extra = '') => /* vs. los R días anteriores */ `<div class="cifra glass">${ico(icono)}<b>${num(suma(act, k))}</b><span>${n}</span>${extra || cambio(k)}</div>`;
+    const max = Math.max(1, ...act.map(x => x.n));
+    const barras = (pares, total) => pares.map(([n, x, col]) => `<div class="barra-h"><span>${n}</span><i><u style="width:${total ? Math.round(x / total * 100) : 0}%;background:${col}"></u></i><b>${total ? Math.round(x / total * 100) : 0}%</b></div>`).join('');
+    const fu = [['Directo o guardado', suma(act, 'rd'), '#5CE1FF'], ['Buscadores (Google…)', suma(act, 'rb'), '#39FF88'], ['Redes sociales', suma(act, 'rs'), '#B8A6FF'], ['UpGames', suma(act, 'ru'), '#FFCC00'], ['Otros sitios', suma(act, 'ro'), '#FF8A65']];
+    const tf = fu.reduce((s, x) => s + x[1], 0), mo = suma(act, 'mo'), pc = suma(act, 'pc');
+    const contactos = suma(act, 'cw') + suma(act, 'cr') + suma(act, 'cb') + suma(act, 'fm') + suma(act, 'pe');
+    const visitas = suma(act, 'n');
+    v.innerHTML = `<h1>Estadísticas</h1><p class="sub">Cómo le va a tu sitio: visitas, de dónde llegan y qué hacen.</p>
+      <div class="seg rango">${[[7, '7 días'], [30, '30 días'], [90, '90 días']].map(([n, t]) => `<button data-rango="${n}" aria-pressed="${R === n}">${t}</button>`).join('')}</div>
+      <div class="cifras">${kpi('n', 'Visitas', 'eye-outline')}${kpi('u', 'Visitantes', 'people-outline')}
+        <div class="cifra glass">${ico('today-outline')}<b>${num(d.hoy)}</b><span>Visitas hoy</span></div>
+        <div class="cifra glass">${ico('trending-up-outline')}<b>${num(Math.round(visitas / R * 10) / 10)}</b><span>Media por día</span></div></div>
+      <section class="seccion glass"><h2>${ico('stats-chart')} Visitas por día</h2>
+        ${visitas ? `<div><div class="grafica${R > 30 ? ' fina' : ''}" role="img" aria-label="Visitas de los últimos ${R} días">${act.map(x => `<i class="${x.n ? '' : 'cero'}" style="height:${Math.max(3, Math.round(x.n / max * 100))}%" title="${h(fechaCorta(x.dia + 'T12:00:00'))}: ${x.n} visitas"></i>`).join('')}</div>
+        <div class="eje"><span>${h(fechaCorta(act[0].dia + 'T12:00:00'))}</span><span>Hoy</span></div></div>` : '<p>Cuando lleguen visitas aparecerán aquí. Comparte tu enlace en tus redes para empezar. ✦</p>'}</section>
+      <section class="seccion glass"><h2>${ico('flash')} Contactos y clics</h2>
+        <div class="cifras mini">${[['cw', 'WhatsApp', 'logo-whatsapp'], ['cr', 'Redes', 'share-social-outline'], ['cb', 'Botones', 'hand-left-outline'], ['fm', 'Mensajes', 'mail-outline'], ['pe', 'Pedidos', 'bag-handle-outline']].map(([k, n, i]) => `<div class="cifra">${ico(i)}<b>${num(suma(act, k))}</b><span>${n}</span></div>`).join('')}</div>
+        <p class="nota-stats">${visitas ? `Conversión: <b>${(contactos / visitas * 100).toFixed(1)}%</b> de las visitas terminaron en un contacto, clic o pedido.` : 'Aquí verás cuántas personas te escriben o tocan tus botones.'}</p></section>
+      <div class="dos">
+        <section class="seccion glass"><h2>${ico('navigate')} De dónde llegan</h2>${tf ? barras(fu, tf) : '<p>Aún no hay datos.</p>'}</section>
+        <section class="seccion glass"><h2>${ico('phone-portrait')} Dispositivos</h2>${mo + pc ? barras([['Celular', mo, '#39FF88'], ['Computador', pc, '#5CE1FF']], mo + pc) : '<p>Aún no hay datos.</p>'}</section>
+      </div>
+      <section class="seccion glass"><h2>${ico('flame')} Lo más visto</h2>
+        ${d.top.length ? `<div class="top">${d.top.map((t, k) => `<div><span class="pos">${k + 1}</span><b>${h(t.titulo)}</b><small>${t.tipo === 'pagina' ? 'Página' : 'Entrada'}</small><span>${num(t.vistas)}</span></div>`).join('')}</div>` : '<p>Cuando tus páginas reciban visitas aparecerán aquí.</p>'}
+        <p class="nota-stats">${num(d.total)} visitas desde siempre · ${num(d.publicadas)} entradas publicadas. Los visitantes y las fuentes son aproximados.</p></section>
+      ${consejoStats(act, fu, tf, visitas, contactos)}`;
+    v.querySelectorAll('[data-rango]').forEach(b => { b.onclick = () => { rangoStats = +b.dataset.rango; pintar(); }; });
+  };
+  pintar();
+}
+/** ✦ Nexus lee tus números y te da un consejo concreto. */
+function consejoStats(act, fu, tf, visitas, contactos) {
+  let t;
+  if (!visitas) t = 'Comparte tu enlace en WhatsApp, Instagram y TikTok: las primeras visitas casi siempre llegan desde tus propias redes.';
+  else if (tf && fu[1][1] / tf < 0.1) t = 'Casi nadie te encuentra en Google. Usa ✦ «Título, resumen y etiquetas» en tus páginas y publica entradas útiles con frecuencia.';
+  else if (contactos / visitas < 0.02) t = 'Te visitan, pero pocos te contactan. Añade una sección «Llamada a la acción» y el botón flotante de WhatsApp en tu página principal.';
+  else if (tf && fu[2][1] / tf > 0.5) t = 'Tus redes te traen la mayoría de visitas. Pon el enlace de tu sitio en la biografía y en tus historias para mantener el ritmo.';
+  else t = '¡Buen ritmo! Publica algo nuevo cada semana para que Google y tus seguidores vuelvan.';
+  return `<section class="seccion glass nx-consejo"><h2>✦ Consejo de Nexus</h2><p>${t}</p></section>`;
 }
 
 async function vistaIngresos() {
@@ -548,6 +601,7 @@ async function nexusSeccion(tipo, spec, actual, aplicar) {
   const c = hoja(`<h3>✦ Nexus escribe: ${h(spec.nombre)}</h3><label class="campo"><span>¿De qué trata esta sección?</span><textarea class="inp" id="ns-idea" maxlength="500" rows="3" placeholder="${h(spec.idea)}"></textarea><small>Nexus no inventa precios ni opiniones: deja [corchetes] para que pongas los datos reales.</small></label><button class="btn pri ancho" id="ns-ok">${ico('sparkles-outline')} Escribir sección</button>`);
   $('#ns-ok', c).onclick = ev => {
     ocupado(ev.currentTarget, async () => {
+      if (NX_CUPO) NX_CUPO.ultima = 'seccion';
       const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'seccion', tipo, idea: $('#ns-idea', c).value, sitio: S.blog?.titulo || '' } });
       cerrarHoja(); aplicar(r.bloque); toast('✦ Sección escrita. Revísala y complétala.');
     });
@@ -564,13 +618,14 @@ function nexusTexto(texto, aplicar) {
     const x = e.target.closest('[data-modo]'); if (!x) return;
     c.innerHTML = `<h3>✦ Nexus está escribiendo…</h3><div class="cargando" style="min-height:120px"><span class="giro"></span></div>`;
     try {
+      if (NX_CUPO) NX_CUPO.ultima = 'texto';
       const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'texto', modo: x.dataset.modo, texto } });
       c.innerHTML = `<h3>✦ Propuesta de Nexus</h3><div class="propuesta">${aHtml(r.texto)}</div><div class="fila"><button class="btn" data-otra style="flex:1">Probar otra</button><button class="btn pri" data-usar style="flex:1">Usar este texto</button></div>`;
       c.onclick = ev => {
         if (ev.target.closest('[data-usar]')) { cerrarHoja(); aplicar(r.texto); toast('✦ Texto actualizado'); }
         if (ev.target.closest('[data-otra]')) nexusTexto(texto, aplicar);
       };
-    } catch (err) { cerrarHoja(); toast(err.message, true); }
+    } catch (err) { cerrarHoja(); avisarError(err); }
   };
 }
 
@@ -856,7 +911,8 @@ async function editor(tipo, id) {
       ['seo', 'search-outline', 'Título, resumen y etiquetas', 'Para Google y para cuando la compartan'],
     ];
     const c = hoja(`<h3>✦ Nexus</h3><p class="hoja-sub" style="margin:0">Tu asistente: escribe, revisa y mejora contigo. Tú decides qué usar.</p><div class="opciones">${ops.map(([id, i, n, d]) => `<button data-nx-op="${id}">${ico(i)}<span>${n}<small>${d}</small></span></button>`).join('')}</div>
-      <p class="hoja-sub" style="margin:0">También tienes ✦ en cada bloque de texto y en cada sección.</p>`);
+      <p class="hoja-sub" style="margin:0">También tienes ✦ en cada bloque de texto y en cada sección.</p><div id="nx-cupo">${lineaCupo()}</div>`);
+    nexusCupo().then(() => { const x = $('#nx-cupo', c); if (x) x.innerHTML = lineaCupo(); });
     c.onclick = e => { const x = e.target.closest('[data-nx-op]'); if (!x) return; cerrarHoja(); ({ landing: nexusLanding, publicacion: nexusPublicacion, revisar: nexusRevisar, seo: nexusSeo })[x.dataset.nxOp](); };
   };
 
@@ -872,7 +928,8 @@ async function editor(tipo, id) {
       if (idea.length < 10) return toast('Cuéntale a Nexus un poco más: qué ofreces y para quién.', true);
       if (wa && !window.UGRedes.normalizar('whatsapp', wa)) return toast('Ese número de WhatsApp no es válido. Escríbelo con el código de país.', true);
       await ocupado(ev.currentTarget, async () => {
-        const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'landing', idea, objetivo: $('#nl-obj', c).value, whatsapp: wa } });
+        if (NX_CUPO) NX_CUPO.ultima = 'landing';
+        const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'landing', idea, objetivo: $('#nl-obj', c).value, whatsapp: wa, sitio: S.blog?.titulo || '' } });
         cerrarHoja();
         cont.innerHTML = ''; r.bloques.forEach(b => cont.appendChild(crearBloque(b)));
         if (!tit.value.trim()) { tit.value = r.titulo; crecer(tit); }
@@ -910,6 +967,7 @@ async function editor(tipo, id) {
     if (texto.trim().length < 40) return toast('Escribe un poco más de contenido para que Nexus sugiera el SEO.', true);
     const c = hoja(`<h3>✦ Título, resumen y etiquetas</h3><div class="cargando" style="min-height:120px"><span class="giro"></span></div>`);
     try {
+      if (NX_CUPO) NX_CUPO.ultima = 'seo';
       const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'seo', titulo: tit.value, texto } });
       c.innerHTML = `<h3>✦ Propuesta de Nexus</h3>
         ${r.titulo ? `<label class="campo"><span>Título para buscadores</span><input class="inp" id="s-tit" maxlength="140" value="${h(r.titulo)}"></label>` : ''}
@@ -922,7 +980,7 @@ async function editor(tipo, id) {
         meta.resumen = $('#s-res', c).value.trim(); if (!esPag) meta.etiquetas = $('#s-et', c).value;
         sucio = true; cerrarHoja(); toast('✦ Listo. Puedes cambiarlo en Opciones.');
       };
-    } catch (e) { cerrarHoja(); toast(e.message, true); }
+    } catch (e) { cerrarHoja(); avisarError(e); }
   }
 
   // ✦ Nexus escritor: arma el borrador con bloques a partir de una publicación de UpGames
