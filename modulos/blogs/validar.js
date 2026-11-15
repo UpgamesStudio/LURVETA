@@ -27,9 +27,10 @@ const RESERVADOS = new Set(['www', 'admin', 'api', 'app', 'blog', 'blogs', 'upga
     'mail', 'correo', 'ftp', 'cdn', 'static', 'assets', 'nexus', 'live', 'studio', 'racing', 'premium', 'oficial', 'official',
     'root', 'null', 'undefined', 'test', 'dev', 'staging', 'status', 'docs', 'legal', 'terminos', 'privacidad']);
 
-const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes', 'heroe', 'columnas', 'precios', 'testimonios', 'cta']);
+const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes', 'heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo']);
 // Secciones de landing: tipos de bloque que ocupan todo el ancho y llevan su propio estilo
-const SECCIONES = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta']);
+const SECCIONES = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo']);
+const MONEDAS = ['COP', 'USD', 'MXN', 'ARS', 'CLP', 'PEN', 'EUR', 'BRL', 'UYU', 'BOB', 'GTQ', 'DOP', 'VES'];
 const FONDOS_SEC = new Set(['', 'suave', 'acento', 'degradado', 'oscuro', 'imagen']);
 const ESPACIOS_SEC = new Set(['compacto', 'normal', 'amplio']);
 const ESTILOS_AVISO = new Set(['info', 'exito', 'alerta', 'peligro']);
@@ -179,6 +180,18 @@ function limpiarBloques(entrada) {
                 if (t) n = { tipo: 'cta', titulo: t, texto: parrafos(b.texto, 300), bTexto: linea(b.bTexto, 40), bUrl: urlBoton(b.bUrl), ...estiloSec(b) };
                 break;
             }
+            case 'formulario': {
+                // Formulario de contacto: siempre pide nombre y mensaje; correo y teléfono son opcionales
+                n = { tipo: 'formulario', titulo: linea(b.titulo, 120), texto: parrafos(b.texto, 400), bTexto: linea(b.bTexto, 40) || 'Enviar mensaje', exito: linea(b.exito, 200), pideEmail: b.pideEmail !== false, pideTel: !!b.pideTel, ...estiloSec(b) };
+                break;
+            }
+            case 'catalogo': {
+                // Catálogo con pedido por WhatsApp: el precio es un número (para sumar el total en el servidor)
+                const wa = Redes.normalizar('whatsapp', b.whatsapp);
+                const items = lista(b.items, 60).map(i => { const p = Number(String(i?.precio ?? '').replace(/[^\d.,]/g, '').replace(/[.,](?=\d{3}(\D|$))/g, '').replace(',', '.')); return { nombre: linea(i?.nombre, 80), precio: Number.isFinite(p) && p > 0 ? Math.round(p * 100) / 100 : 0, descripcion: parrafos(i?.descripcion, 300), imagen: urlSegura(i?.imagen) }; }).filter(i => i.nombre).slice(0, 30);
+                if (items.length && /^https:\/\/wa\.me\/\d+$/.test(wa)) n = { tipo: 'catalogo', titulo: linea(b.titulo, 120), texto: parrafos(b.texto, 400), whatsapp: wa, moneda: MONEDAS.includes(b.moneda) ? b.moneda : 'COP', items, ...estiloSec(b) };
+                break;
+            }
             case 'separador': n = { tipo: 'separador' }; break;
             case 'codigo': { const t = String(b.texto ?? '').replace(/\r\n?/g, '\n').replace(/\u0000/g, '').slice(0, 8000); if (t.trim()) n = { tipo: 'codigo', texto: t }; break; }
             case 'descarga': { const id = String(b.id ?? ''); if (/^[a-f0-9]{24}$/i.test(id)) n = { tipo: 'descarga', id: id.toLowerCase() }; break; }
@@ -192,7 +205,7 @@ function limpiarBloques(entrada) {
 
 /** Todo el texto de una entrada junto, para la moderación y para el resumen. */
 function textoDe(bloques) {
-    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v]), ...(b.tipo === 'redes' ? b.items.map(i => i.texto) : []), ...(SECCIONES.has(b.tipo) ? [b.titulo, b.bTexto, b.b2Texto, ...(b.items || []).flatMap(i => [i.titulo, i.texto, i.nombre, i.rol, i.precio, i.periodo, i.items, i.bTexto])] : [])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
+    return (bloques || []).map(b => [b.texto, b.pie, b.autor, b.titulo, ...(b.items || []).flatMap(i => [i.p, i.r]), ...(b.filas || []).flatMap(f => [f.k, f.v]), ...(b.tipo === 'redes' ? b.items.map(i => i.texto) : []), ...(SECCIONES.has(b.tipo) ? [b.titulo, b.bTexto, b.b2Texto, ...(b.items || []).flatMap(i => [i.titulo, i.texto, i.nombre, i.rol, i.precio, i.periodo, i.items, i.bTexto, i.descripcion, i.nombre])] : []), ...(b.tipo === 'formulario' ? [b.exito] : [])].filter(Boolean).join(' ')).filter(Boolean).join('\n');
 }
 
 /** Enlaces que aparecen en una entrada (botones y enlaces dentro del texto). */
@@ -203,6 +216,7 @@ function enlacesDe(bloques) {
         if (b.tipo === 'imagen' && b.enlace) out.push(b.enlace);
         if (b.tipo === 'redes') for (const i of b.items || []) if (/^https:/.test(i.url)) out.push(i.url);
         if (SECCIONES.has(b.tipo)) for (const u of [b.bUrl, b.b2Url, ...(b.items || []).map(i => i.bUrl)]) if (u) out.push(u);
+        if (b.tipo === 'catalogo') out.push(b.whatsapp);
         for (const i of b.items || []) for (const m of String(i.r).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
         if (b.tipo === 'texto' || b.tipo === 'cita' || b.tipo === 'aviso') for (const m of String(b.texto).matchAll(/\]\((https:\/\/[^\s)]+)\)/g)) out.push(m[1]);
     }
@@ -225,4 +239,4 @@ function primeraImagen(bloques) {
     return '';
 }
 
-module.exports = { SECCIONES, LIMITES, RESERVADOS, linea, parrafos, slug, validarDireccion, validarDominio, urlSegura, idYouTube, idSpotify, etiquetas, limpiarBloques, textoDe, enlacesDe, resumen, primeraImagen };
+module.exports = { SECCIONES, MONEDAS, LIMITES, RESERVADOS, linea, parrafos, slug, validarDireccion, validarDominio, urlSegura, idYouTube, idSpotify, etiquetas, limpiarBloques, textoDe, enlacesDe, resumen, primeraImagen };

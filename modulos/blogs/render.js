@@ -38,7 +38,15 @@ function textoHtml(texto) {
 const img = (url, ancho) => String(url).replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\/(?:w_|c_))/, `$1f_auto,q_auto,w_${ancho},c_limit/`);
 
 // ── Secciones de landing ─────────────────────────────────────────────────────────────
-const boton = (t, u, clase = 'boton') => t && u ? `<a class="${clase}" href="${esc(u)}" target="_blank" rel="nofollow ugc noopener">${esc(t)}</a>` : '';
+// Enlaces hacia fuera: si el blog cuenta clics (ctx.clic), pasan por una redirección firmada del propio blog
+const destino = (u, ctx, tipo) => ctx?.clic && /^https:\/\//.test(u) ? ctx.clic(u, /^https:\/\/(wa\.me|api\.whatsapp\.com)\//.test(u) ? 'w' : tipo) : u;
+const boton = (t, u, clase = 'boton', ctx) => t && u ? `<a class="${clase}" href="${esc(destino(u, ctx, 'b'))}" target="_blank" rel="nofollow ugc noopener">${esc(t)}</a>` : '';
+const DECIMALES_0 = new Set(['COP', 'CLP', 'ARS', 'PYG', 'VES', 'UYU', 'DOP', 'GTQ', 'BOB']);
+const LOCAL_MONEDA = { COP: 'es-CO', MXN: 'es-MX', ARS: 'es-AR', CLP: 'es-CL', PEN: 'es-PE', USD: 'en-US', EUR: 'es-ES', BRL: 'pt-BR', UYU: 'es-UY', BOB: 'es-BO', GTQ: 'es-GT', DOP: 'es-DO', VES: 'es-VE' };
+function precio(n, moneda) {
+    if (!n) return '';
+    try { return new Intl.NumberFormat(LOCAL_MONEDA[moneda] || 'es', { style: 'currency', currency: moneda, currencyDisplay: 'narrowSymbol', maximumFractionDigits: DECIMALES_0.has(moneda) ? 0 : 2, minimumFractionDigits: 0 }).format(n); } catch (_) { return `${n} ${moneda}`; }
+}
 /** Envoltorio común: ocupa todo el ancho, con el fondo, el espacio y la alineación elegidos. */
 function seccion(b, clase, dentro) {
     const cls = ['sec', `sec-${clase}`, b.fondo ? `f-${b.fondo}` : '', `e-${b.espacio || 'normal'}`, b.alinear === 'izquierda' ? 'a-izq' : ''].filter(Boolean).join(' ');
@@ -46,25 +54,47 @@ function seccion(b, clase, dentro) {
     return `<section class="${cls}"${estilo}><div class="sec-in">${dentro}</div></section>`;
 }
 const cabSec = b => (b.titulo ? `<h2 class="sec-t">${esc(b.titulo)}</h2>` : '') + (b.texto ? `<div class="sec-p">${textoHtml(b.texto)}</div>` : '');
-function seccionHtml(b) {
+function seccionHtml(b, ctx = {}, i = 0) {
     switch (b.tipo) {
         case 'heroe': {
-            const botones = boton(b.bTexto, b.bUrl) + boton(b.b2Texto, b.b2Url, 'boton boton-2');
+            const botones = boton(b.bTexto, b.bUrl, 'boton', ctx) + boton(b.b2Texto, b.b2Url, 'boton boton-2', ctx);
             const txt = `<div class="h-txt"><h1 class="h-t">${esc(b.titulo)}</h1>${b.texto ? `<div class="h-p">${textoHtml(b.texto)}</div>` : ''}${botones ? `<div class="botones">${botones}</div>` : ''}</div>`;
             if (b.variante === 'fondo' && b.imagen) return seccion({ ...b, fondo: 'imagen', fondoImg: b.imagen }, 'heroe h-fondo', txt);
             if (b.variante === 'dividido' && b.imagen) return seccion(b, 'heroe h-dividido', `${txt}<div class="h-img"><img src="${esc(img(b.imagen, 1000))}" alt="" decoding="async"></div>`);
             return seccion(b, 'heroe', `${txt}${b.imagen ? `<div class="h-img"><img src="${esc(img(b.imagen, 1200))}" alt="" decoding="async"></div>` : ''}`);
         }
         case 'columnas': return seccion(b, `columnas c-${b.variante === '2' ? 2 : 3}`, `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<div class="col">${i.icono ? `<span class="col-ico" aria-hidden="true">${esc(i.icono)}</span>` : ''}${i.titulo ? `<h3>${esc(i.titulo)}</h3>` : ''}${i.texto ? textoHtml(i.texto) : ''}</div>`).join('')}</div>`);
-        case 'precios': return seccion(b, 'precios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<div class="plan${i.destacado ? ' destacado' : ''}">${i.destacado ? '<span class="plan-chip">Recomendado</span>' : ''}<h3>${esc(i.nombre)}</h3>${i.precio ? `<p class="plan-precio"><b>${esc(i.precio)}</b>${i.periodo ? ` <small>${esc(i.periodo)}</small>` : ''}</p>` : ''}${i.items ? `<ul>${i.items.split('\n').map(x => x.replace(/^\s*[-•✓]\s*/, '').trim()).filter(Boolean).map(x => `<li>${enLinea(x)}</li>`).join('')}</ul>` : ''}${boton(i.bTexto, i.bUrl)}</div>`).join('')}</div>`);
+        case 'precios': return seccion(b, 'precios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<div class="plan${i.destacado ? ' destacado' : ''}">${i.destacado ? '<span class="plan-chip">Recomendado</span>' : ''}<h3>${esc(i.nombre)}</h3>${i.precio ? `<p class="plan-precio"><b>${esc(i.precio)}</b>${i.periodo ? ` <small>${esc(i.periodo)}</small>` : ''}</p>` : ''}${i.items ? `<ul>${i.items.split('\n').map(x => x.replace(/^\s*[-•✓]\s*/, '').trim()).filter(Boolean).map(x => `<li>${enLinea(x)}</li>`).join('')}</ul>` : ''}${boton(i.bTexto, i.bUrl, 'boton', ctx)}</div>`).join('')}</div>`);
         case 'testimonios': return seccion(b, 'testimonios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<figure class="testi"><blockquote>${textoHtml(i.texto)}</blockquote><figcaption><span class="testi-ini" aria-hidden="true">${esc([...i.nombre][0].toUpperCase())}</span><span><b>${esc(i.nombre)}</b>${i.rol ? `<small>${esc(i.rol)}</small>` : ''}</span></figcaption></figure>`).join('')}</div>`);
-        case 'cta': return seccion(b, 'cta', `${cabSec(b)}${b.bTexto && b.bUrl ? `<div class="botones">${boton(b.bTexto, b.bUrl)}</div>` : ''}`);
+        case 'cta': return seccion(b, 'cta', `${cabSec(b)}${b.bTexto && b.bUrl ? `<div class="botones">${boton(b.bTexto, b.bUrl, 'boton', ctx)}</div>` : ''}`);
+        case 'formulario': {
+            // Sin scripts: un formulario HTML normal que va a la API de UpGames y vuelve a esta página
+            const r = ctx.formRes?.i === i ? ctx.formRes.r : '';
+            if (r === 'ok') return seccion(b, 'form', `${cabSec(b)}<div class="form-ok" id="f${i}" role="status">✓ ${esc(b.exito || '¡Gracias! Recibimos tu mensaje y te responderemos pronto.')}</div>`);
+            const aviso = r === 'lim' ? 'Enviaste varios mensajes seguidos. Inténtalo de nuevo más tarde.' : r ? 'No se pudo enviar. Revisa tu nombre y tu mensaje e inténtalo de nuevo.' : '';
+            const campo = (n, et, tipo = 'text', req = false, extra = '') => `<label><span>${et}${req ? '' : ' <small>(opcional)</small>'}</span><input name="${n}" type="${tipo}"${req ? ' required' : ''} ${extra}></label>`;
+            return seccion(b, 'form', `${cabSec(b)}<form class="form" id="f${i}" method="post" action="${esc(ctx.accion ? ctx.accion('form', i) : '#')}">
+${aviso ? `<p class="form-error" role="alert">${aviso}</p>` : ''}${campo('nombre', 'Tu nombre', 'text', true, 'maxlength="80" autocomplete="name"')}
+${b.pideEmail ? campo('email', 'Tu correo', 'email', false, 'maxlength="120" autocomplete="email"') : ''}${b.pideTel ? campo('telefono', 'Tu teléfono o WhatsApp', 'tel', false, 'maxlength="30" autocomplete="tel"') : ''}
+<label><span>Mensaje</span><textarea name="mensaje" required maxlength="2000" rows="4"></textarea></label>
+<input class="trampa" name="web" tabindex="-1" autocomplete="off" aria-hidden="true"><input type="hidden" name="t" value="${esc(ctx.sello ? ctx.sello() : '')}">
+<button class="boton" type="submit"${ctx.accion ? '' : ' disabled'}>${esc(b.bTexto || 'Enviar mensaje')}</button></form>`);
+        }
+        case 'catalogo': {
+            // Catálogo: el visitante elige cantidades y el pedido se arma en el servidor (con los precios guardados) y abre WhatsApp
+            const r = ctx.formRes?.i === i ? ctx.formRes.r : '';
+            const conPrecio = b.items.some(p => p.precio);
+            return seccion(b, 'catalogo', `${cabSec(b)}<form class="catalogo" id="f${i}" method="post" action="${esc(ctx.accion ? ctx.accion('pedido', i) : '#')}">${r === 'vacio' ? '<p class="form-error" role="alert">Elige al menos un producto (cantidad 1 o más).</p>' : ''}
+<div class="rej-sec prods">${b.items.map((p, j) => `<div class="prod">${p.imagen ? `<div class="prod-img"><img src="${esc(img(p.imagen, 600))}" alt="" loading="lazy" decoding="async"></div>` : ''}<div class="prod-i"><h3>${esc(p.nombre)}</h3>${p.descripcion ? `<p>${esc(p.descripcion)}</p>` : ''}${conPrecio ? `<b class="prod-precio">${p.precio ? esc(precio(p.precio, b.moneda)) : 'Consultar'}</b>` : ''}
+<div class="prod-acc"><label>Cantidad <input type="number" name="c${j}" min="0" max="99" value="0" inputmode="numeric"></label><button class="boton boton-2" name="solo" value="${j}" type="submit">Pedir</button></div></div></div>`).join('')}</div>
+<div class="pedido-pie"><input name="nota" maxlength="300" placeholder="Tu nombre y una nota para el pedido (opcional)"><button class="boton boton-wa" type="submit">Pedir por WhatsApp</button></div></form>`);
+        }
     }
     return '';
 }
 
-function bloqueHtml(b, ctx) {
-    if (V.SECCIONES.has(b.tipo)) return seccionHtml(b);
+function bloqueHtml(b, ctx, i) {
+    if (V.SECCIONES.has(b.tipo)) return seccionHtml(b, ctx, i);
     switch (b.tipo) {
         case 'texto': return b.centro || b.grande ? `<div class="${[b.centro && 't-centro', b.grande && 't-grande'].filter(Boolean).join(' ')}">${textoHtml(b.texto)}</div>` : textoHtml(b.texto);
         case 'titulo': return `<h${b.nivel === 3 ? 3 : 2}${b.centro ? ' class="t-centro"' : ''}>${esc(b.texto)}</h${b.nivel === 3 ? 3 : 2}>`;
@@ -79,11 +109,11 @@ function bloqueHtml(b, ctx) {
         case 'galeria': return `<div class="galeria">${b.urls.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(img(u, 600))}" alt="" loading="lazy" decoding="async"></a>`).join('')}</div>`;
         case 'video': return `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${esc(b.id)}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
         case 'cita': return `<blockquote>${textoHtml(b.texto)}${b.autor ? `<cite>${esc(b.autor)}</cite>` : ''}</blockquote>`;
-        case 'boton': return `<p class="centro"><a class="boton" href="${esc(b.url)}" target="_blank" rel="nofollow ugc noopener">${esc(b.texto)}</a></p>`;
+        case 'boton': return `<p class="centro"><a class="boton" href="${esc(destino(b.url, ctx, 'b'))}" target="_blank" rel="nofollow ugc noopener">${esc(b.texto)}</a></p>`;
         case 'redes': {
             // Contacto y redes: botones con su icono, solo iconos o un botón flotante (el primero) para landing pages
             const a = i => { const r = Redes.REDES[i.red], nombre = i.texto || r.nombre, fuera = /^https:/.test(i.url);
-                return `href="${esc(i.url)}"${fuera ? ' target="_blank" rel="nofollow ugc noopener"' : ''} style="--red:${esc(r.color)};--red-txt:${esc(r.txt || '#fff')}" aria-label="${esc(nombre)}"`; };
+                return `href="${esc(destino(i.url, ctx, 'r'))}"${fuera ? ' target="_blank" rel="nofollow ugc noopener"' : ''} style="--red:${esc(r.color)};--red-txt:${esc(r.txt || '#fff')}" aria-label="${esc(nombre)}"`; };
             if (b.estilo === 'flotante') { const i = b.items[0]; return `<a class="red-flota" ${a(i)}>${Redes.svg(i.red)}</a>`; }
             return `<div class="redes redes-${b.estilo === 'iconos' ? 'iconos' : 'botones'}">${b.items.map(i => `<a class="red" ${a(i)}>${Redes.svg(i.red)}<span>${esc(i.texto || Redes.REDES[i.red].nombre)}</span></a>`).join('')}</div>`;
         }
@@ -104,7 +134,7 @@ function bloqueHtml(b, ctx) {
     }
     return '';
 }
-const bloquesHtml = (bloques, ctx) => (bloques || []).map(b => bloqueHtml(b, ctx)).join('\n');
+const bloquesHtml = (bloques, ctx = {}) => (bloques || []).map((b, i) => bloqueHtml(b, ctx, i)).join('\n');
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 function fecha(d) {
@@ -117,10 +147,11 @@ function variables(blog) {
     const t = temaDe(blog.tema), a = blog.ajustes || {};
     const v = { ...t.v };
     if (esColor(a.acento)) { v.acento = a.acento; v.sobreAcento = sobre(a.acento); }
+    if (esColor(a.acento2)) v.acento2 = a.acento2;   // kit de marca: color secundario (degradados)
     if (ESQUINAS[a.esquinas]) v.radio = ESQUINAS[a.esquinas];
     const f = FONDOS[a.fondo];
     if (f) { v.fondo = f.css; v.fondoTam = f.tam || 'auto'; v.fondoRep = f.repetir ? 'repeat' : 'no-repeat'; }
-    const fTit = FUENTES[a.fuente] || FUENTES[t.titulos], fTxt = FUENTES.manrope;
+    const fTit = FUENTES[a.fuente] || FUENTES[t.titulos], fTxt = FUENTES[a.fuenteTexto] || FUENTES.manrope;
     const google = [...new Set([fTit.google, fTxt.google])].map(f => `family=${f}`).join('&');
     return { t, v, fTit, fTxt, google };
 }
@@ -271,6 +302,28 @@ body{overflow-x:clip}
 .testi-ini{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--acento);color:var(--sobre-acento);font-weight:800;flex-shrink:0}
 .sec-cta h2.sec-t{font-size:clamp(1.8rem,5.6vw,2.8rem)}
 main.landing{padding-top:0}main.landing.sin-final{padding-bottom:0}
+/* Formulario y catálogo */
+.form,.catalogo{display:grid;gap:14px;text-align:left;max-width:640px;margin:0 auto}
+.catalogo{max-width:none}
+.form label{display:grid;gap:6px;font-weight:700;font-size:.92rem}.form label small{font-weight:500;color:var(--txt2)}
+.form input,.form textarea,.pedido-pie input{width:100%;font:inherit;font-weight:500;color:var(--txt);background:var(--bg);border:1px solid var(--borde);border-radius:calc(var(--radio)*.6);padding:12px 14px;outline:none}
+.form input:focus,.form textarea:focus,.pedido-pie input:focus{border-color:var(--acento);box-shadow:0 0 0 3px color-mix(in srgb,var(--acento) 25%,transparent)}
+.form .boton{justify-self:start;border:0;cursor:pointer;font:inherit;font-weight:800}.sec:not(.a-izq) .form .boton{justify-self:center}
+.form-ok{max-width:640px;margin:0 auto;padding:18px;border-radius:var(--radio);background:color-mix(in srgb,#2FBF71 16%,transparent);border:1px solid #2FBF71;font-weight:700}
+.form-error{padding:10px 14px;border-radius:12px;background:color-mix(in srgb,#F04438 14%,transparent);border:1px solid #F04438;font-size:.92rem}
+.trampa{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}
+.prods{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important}
+.prod{background:var(--tarjeta);border:1px solid var(--borde);border-radius:var(--radio);overflow:hidden;display:flex;flex-direction:column}
+.sec.f-suave .prod{background:var(--bg)}
+.prod-img{aspect-ratio:4/3;background:var(--bg2)}.prod-img img{width:100%;height:100%;object-fit:cover}
+.prod-i{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}.prod-i h3{font-family:var(--f-tit);font-size:1.08rem;margin:0}.prod-i p{color:var(--txt2);font-size:.93rem}
+.prod-precio{font-family:var(--f-tit);font-size:1.3rem;font-weight:800}
+.prod-acc{display:flex;gap:10px;align-items:end;margin-top:auto;flex-wrap:wrap}.prod-acc label{display:grid;gap:4px;font-size:.78rem;color:var(--txt2);font-weight:700}
+.prod-acc input{width:76px;font:inherit;font-weight:700;color:var(--txt);background:var(--bg);border:1px solid var(--borde);border-radius:10px;padding:8px 10px}
+.prod-acc .boton{padding:9px 18px;cursor:pointer;font:inherit;font-weight:800;flex:1;text-align:center}
+.pedido-pie{display:flex;gap:10px;flex-wrap:wrap;position:sticky;bottom:12px;z-index:3;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--borde);border-radius:calc(var(--radio) + 4px);padding:10px}
+.pedido-pie input{flex:1;min-width:200px}.pedido-pie .boton{border:0;cursor:pointer;font:inherit;font-weight:800}
+.boton-wa{background:#25D366!important;color:#fff!important;box-shadow:0 10px 26px -12px #25D366!important}
 .revista .tarjeta:first-child{grid-column:1/-1}
 @media(min-width:700px){.revista .tarjeta:first-child{flex-direction:row}.revista .tarjeta:first-child .port{width:58%;aspect-ratio:16/9}.revista .tarjeta:first-child h2{font-size:1.7rem}.revista .tarjeta:first-child .txt{justify-content:center;padding:26px}}
 `.trim();
@@ -450,4 +503,4 @@ ${entradas.map(e => u(`${raiz}/${e.tipo === 'pagina' ? 'p' : 'e'}/${e.slug}`, e.
 </urlset>`;
 }
 
-module.exports = { esc, enLinea, textoHtml, bloquesHtml, inicio, entrada, noEncontrada, aviso, feed, sitemap, fecha };
+module.exports = { precio, esc, enLinea, textoHtml, bloquesHtml, inicio, entrada, noEncontrada, aviso, feed, sitemap, fecha };

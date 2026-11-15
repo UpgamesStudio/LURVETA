@@ -73,7 +73,18 @@ module.exports = function modelos(mongoose) {
 
     const BlogReporteSchema = new mongoose.Schema({ blog: { type: mongoose.Schema.Types.ObjectId, required: true, index: true }, motivo: String, detalle: String, ip: String }, { timestamps: true });
 
+    // Lo que mandan los visitantes desde el blog: mensajes del formulario de contacto y pedidos del catálogo
+    const BlogMensajeSchema = new mongoose.Schema({
+        blog: { type: mongoose.Schema.Types.ObjectId, required: true }, entrada: mongoose.Schema.Types.ObjectId,
+        tipo: { type: String, enum: ['mensaje', 'pedido'], default: 'mensaje' },
+        nombre: String, email: String, telefono: String, texto: String,
+        items: [{ _id: false, nombre: String, cantidad: Number, precio: Number }], total: Number, moneda: String,
+        leido: { type: Boolean, default: false }, ip: String,
+    }, { timestamps: true });
+    BlogMensajeSchema.index({ blog: 1, createdAt: -1 });
+
     return {
+        BlogMensaje: mongoose.model('BlogMensaje', BlogMensajeSchema),
         Blog: mongoose.model('Blog', BlogSchema),
         Entrada: mongoose.model('Entrada', EntradaSchema),
         BlogVista: mongoose.model('BlogVista', BlogVistaSchema),

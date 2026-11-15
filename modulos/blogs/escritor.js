@@ -71,6 +71,8 @@ const FORMA_SECCIONES = `Bloques de sección (todos aceptan "fondo":"|suave|acen
 {"tipo":"precios","titulo":"…","texto":"…","items":[{"nombre":"…","precio":"[precio]","periodo":"…","items":"línea 1\\nlínea 2\\nlínea 3","bTexto":"…","bUrl":"","destacado":false}]}
 {"tipo":"testimonios","titulo":"…","items":[{"texto":"[Escribe aquí lo que dijo un cliente real]","nombre":"[Nombre]","rol":"[Ciudad]"}]}
 {"tipo":"cta","titulo":"…","texto":"…","bTexto":"…","bUrl":""}
+{"tipo":"formulario","titulo":"…","texto":"…","bTexto":"Enviar mensaje","exito":"mensaje de gracias","pideEmail":true,"pideTel":false}
+{"tipo":"catalogo","titulo":"…","texto":"…","items":[{"nombre":"…","precio":0,"descripcion":"…"}]}  (precio siempre 0: el creador pone el real)
 Además: {"tipo":"texto","texto":"…"} · {"tipo":"titulo","texto":"…"} · {"tipo":"faq","items":[{"p":"…","r":"…"}]}`;
 
 // Criterio de redacción profesional (común a todo lo que escribe Nexus para páginas)
@@ -129,6 +131,11 @@ const SISTEMA_SEO = `Eres Nexus, especialista SEO de UpGames Blogs. Con el títu
 {"titulo":"título SEO de 45-60 caracteres: palabra clave principal al inicio + beneficio o lugar; sin mayúsculas sostenidas ni clickbait","resumen":"meta descripción de 140-155 caracteres: qué ofrece, para quién y una llamada a la acción","etiquetas":["3 a 6 palabras clave cortas en minúscula, las que buscaría la gente"]}
 Devuelves SOLO ese JSON, en el idioma del texto. Fiel al contenido: no inventes datos, precios ni lugares.`;
 
+// Kit de marca: Nexus propone paletas (colores en hex de 6 dígitos y letras de la lista disponible)
+const SISTEMA_COLORES = fuentes => `Eres Nexus, director de arte de UpGames Blogs. Propones 3 identidades visuales distintas para una marca.
+Devuelves SOLO un JSON: {"paletas":[{"nombre":"nombre evocador de 1-3 palabras","porque":"1 frase de por qué encaja con la marca","acento":"#RRGGBB","acento2":"#RRGGBB","fuente":"id de letra para títulos","fuenteTexto":"id de letra para el texto"}]}
+Reglas: el color principal ("acento") debe leerse bien sobre el fondo del tema (en tema oscuro, colores vivos o claros; en tema claro, colores con buen contraste, no pasteles). "acento2" combina con el principal para degradados. Evita los clichés obvios si hay opciones mejores. Letras disponibles (usa SOLO estos id): ${fuentes}. El texto debe ser muy legible (manrope, inter, poppins, montserrat o lora).`;
+
 const TIPOS_LANDING = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'texto', 'titulo', 'faq']);
 
 /**
@@ -172,4 +179,4 @@ function armarSeccion(o, tipo) {
     return b || null;
 }
 
-module.exports = { SISTEMA, TIPOS, pedido, armar, pulirSecciones, SISTEMA_LANDING, SISTEMA_SECCION, SISTEMA_TEXTO, SISTEMA_SEO, ACCIONES_TEXTO, armarLanding, armarSeccion };
+module.exports = { SISTEMA, TIPOS, pedido, armar, pulirSecciones, SISTEMA_LANDING, SISTEMA_SECCION, SISTEMA_TEXTO, SISTEMA_SEO, SISTEMA_COLORES, ACCIONES_TEXTO, armarLanding, armarSeccion };

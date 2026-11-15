@@ -54,7 +54,7 @@ function categoriaFuente(ref, hostPropio = '', base = '') {
 
 function registrar(app, deps) {
     const { verificarToken, verificarAdmin, Usuario, Juego, Limites, Moderacion, CeroTolerancia, fraudDetector, logger, mongoose, APP_URL, API_URL_SELF, JWT_SECRET, Comentario, Notificacion, crearNotif, gamification } = deps;
-    const { Blog, Entrada, BlogVista, BlogReporte } = require('../modulos/blogs/modelos')(mongoose);
+    const { Blog, Entrada, BlogVista, BlogReporte, BlogMensaje } = require('../modulos/blogs/modelos')(mongoose);
 
     const HOST_API = (() => { try { return new URL(API_URL_SELF).hostname; } catch (_) { return ''; } })();
     const BLOGS_DOMINIO = String(process.env.BLOGS_DOMINIO || '').toLowerCase().replace(/^\.+|\.+$/g, '');   // p. ej. upgames.site
@@ -103,7 +103,9 @@ function registrar(app, deps) {
         const g = a.gadgets && typeof a.gadgets === 'object' ? a.gadgets : (previo.gadgets || {});
         return {
             acento: Temas.esColor(a.acento) ? a.acento.toLowerCase() : '',
+            acento2: Temas.esColor(a.acento2) ? a.acento2.toLowerCase() : '',   // kit de marca: color secundario
             fuente: Temas.FUENTES[a.fuente] ? a.fuente : '',
+            fuenteTexto: Temas.FUENTES[a.fuenteTexto] ? a.fuenteTexto : '',
             portada: V.urlSegura(a.portada), logo: V.urlSegura(a.logo),
             idioma: ['es', 'en', 'pt'].includes(a.idioma) ? a.idioma : 'es',
             esquinas: Temas.ESQUINAS[a.esquinas] ? a.esquinas : '', fondo: Temas.FONDOS[a.fondo] ? a.fondo : '', portadaForma: Temas.PORTADAS.includes(a.portadaForma) ? a.portadaForma : '',
@@ -241,7 +243,7 @@ function registrar(app, deps) {
     app.delete('/blogs/:id', verificarToken, async (req, res) => {
         try {
             const b = await miBlog(req, res); if (!b) return;
-            await Promise.all([Entrada.deleteMany({ blog: b._id }), BlogVista.deleteMany({ blog: b._id }), BlogReporte.deleteMany({ blog: b._id }), b.deleteOne()]);
+            await Promise.all([Entrada.deleteMany({ blog: b._id }), BlogVista.deleteMany({ blog: b._id }), BlogReporte.deleteMany({ blog: b._id }), BlogMensaje.deleteMany({ blog: b._id }), b.deleteOne()]);
             olvidar();
             logger.info(`[blogs] @${req.usuario} borró el blog «${b.direccion}»`);
             res.json({ success: true });
@@ -565,7 +567,9 @@ function registrar(app, deps) {
                 const tipo = V.SECCIONES.has(c.tipo) ? c.tipo : '';
                 if (!tipo) return res.status(400).json({ success: false, error: 'Esa sección no existe.' });
                 const o = await llm.json(Escritor.SISTEMA_SECCION, `Bloque pedido: "${tipo}".\nIdea: ${V.parrafos(c.idea, 500) || 'propón un contenido útil'}\nSitio: ${V.linea(c.sitio, 140)}`, { temperatura: 0.7, maxTokens: 1200, timeout: 30000 });
-                const b = Escritor.armarSeccion(o, tipo);
+                // El catálogo necesita un WhatsApp válido para pasar la validación: se usa el del creador y no se devuelve
+                const b = Escritor.armarSeccion(tipo === 'catalogo' ? { ...(o || {}), whatsapp: Redes.normalizar('whatsapp', c.whatsapp) || 'https://wa.me/10000000000' } : o, tipo);
+                if (b && tipo === 'catalogo') { delete b.whatsapp; delete b.moneda; }
                 return b ? res.json({ success: true, bloque: b }) : fallaNexus();   // el editor conserva el estilo que ya eligió el creador
             }
             if (accion === 'texto') {
@@ -575,6 +579,14 @@ function registrar(app, deps) {
                 const nuevo = V.parrafos(o?.texto, V.LIMITES.TEXTO_BLOQUE);
                 return nuevo ? res.json({ success: true, texto: nuevo }) : fallaNexus();
             }
+            if (accion === 'colores') {
+                const idea = V.parrafos(c.idea, 400);
+                if (idea.length < 4) return res.status(400).json({ success: false, error: 'Cuéntale a Nexus de qué es tu marca o negocio.' });
+                const ids = Object.entries(Temas.FUENTES).map(([id, f]) => `${id} (${f.nombre})`).join(', ');
+                const o = await llm.json(Escritor.SISTEMA_COLORES(ids), `Marca o negocio: ${idea}\nNombre del sitio: ${V.linea(c.sitio, 140)}\nTema actual: ${Temas.TEMAS[c.tema]?.oscuro ? 'oscuro' : 'claro'}`, { temperatura: 0.8, maxTokens: 700, timeout: 25000 });
+                const paletas = (Array.isArray(o?.paletas) ? o.paletas : []).map(p => ({ nombre: V.linea(p?.nombre, 40), porque: V.linea(p?.porque, 160), acento: Temas.esColor(p?.acento) ? p.acento.toLowerCase() : '', acento2: Temas.esColor(p?.acento2) ? p.acento2.toLowerCase() : '', fuente: Temas.FUENTES[p?.fuente] ? p.fuente : '', fuenteTexto: Temas.FUENTES[p?.fuenteTexto] ? p.fuenteTexto : '' })).filter(p => p.nombre && p.acento).slice(0, 3);
+                return paletas.length ? res.json({ success: true, paletas }) : fallaNexus();
+            }
             // seo
             const texto = V.parrafos(c.texto, 5000);
             if (texto.length < 40) return res.status(400).json({ success: false, error: 'Escribe un poco más de contenido para que Nexus sugiera el SEO.' });
@@ -582,6 +594,86 @@ function registrar(app, deps) {
             const resumen = V.linea(o?.resumen, 300);
             return resumen ? res.json({ success: true, resumen, etiquetas: V.etiquetas(o?.etiquetas).slice(0, 6), titulo: V.linea(o?.titulo, 90) }) : fallaNexus();
         } catch (e) { fallo(res, e, 'nexus ayuda'); }
+    });
+
+    // ═══════════════ FORMULARIOS Y PEDIDOS (lo que envían los visitantes desde el blog) ═══════════════
+    // Los formularios del blog no llevan scripts: llegan como POST normales y se vuelve a la página con ?f=<bloque>-<resultado>.
+    async function bloqueDeVisitante(eid, i, tipo) {
+        if (!idOk(eid) || !/^\d{1,2}$/.test(String(i))) return null;
+        const e = await Entrada.findOne({ _id: eid, $or: [{ estado: 'publicada' }, { estado: 'programada', publicadaEn: { $lte: new Date() } }] }).select('blog tipo slug titulo bloques').lean();
+        const b = e && await Blog.findById(e.blog).lean();
+        const bloque = e?.bloques?.[+i];
+        return b && b.estado === 'activo' && bloque?.tipo === tipo ? { e, b, bloque } : null;
+    }
+    // A dónde vuelve el visitante: lo calcula el servidor con los datos del blog (nunca un enlace que mande el navegador)
+    const volverA = (b, e, i, r) => `${urlPublica(b)}${String(e._id) === b.ajustes?.inicio ? '' : `${e.tipo === 'pagina' ? 'p' : 'e'}/${e.slug}`}?f=${i}-${r}#f${i}`;
+    const selloValido = (b, t) => { const [ts, k] = String(t || '').split('.'), edad = Date.now() - parseInt(ts, 36); return !!ts && k === firma(`s|${b._id}|${ts}`) && edad > 2500 && edad < 3 * 864e5; };
+    const contarDia = (blogId, campo) => BlogVista.updateOne({ blog: blogId, dia: new Date().toISOString().slice(0, 10) }, { $inc: { [campo]: 1 } }, { upsert: true }).catch(() => {});
+
+    app.post('/blogs/_form/:eid/:i', async (req, res) => {
+        try {
+            const x = await bloqueDeVisitante(req.params.eid, req.params.i, 'formulario');
+            if (!x) return res.status(404).type('text/plain').send('Este formulario ya no existe.');
+            const { e, b } = x, i = +req.params.i, c = req.body || {};
+            const volver = r => res.redirect(303, volverA(b, e, i, r));
+            if (String(c.web || '').trim() || !selloValido(b, c.t)) return volver('ok');   // bot: se le dice que sí y no se guarda nada
+            if (!(await Limites.permitir(`blog-form:${req.ip}`, [[Limites.HORA, 5], [Limites.DIA, 15]])) || !(await Limites.permitir(`blog-form-blog:${b._id}`, [[Limites.DIA, 300]]))) return volver('lim');
+            const nombre = V.linea(c.nombre, 80), texto = V.parrafos(c.mensaje, 2000);
+            const email = /^[^\s@<>"']{1,64}@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,24}$/i.test(String(c.email || '').trim()) ? String(c.email).trim().slice(0, 120) : '';
+            const telefono = V.linea(c.telefono, 30).replace(/[^\d+\s()-]/g, '');
+            if (nombre.length < 2 || texto.length < 2) return volver('err');
+            if (Moderacion.reglas(`${nombre}\n${texto}`, 'comentario').bloquear || (texto.match(/https?:\/\//g) || []).length > 3) return volver('ok');   // spam o insultos: no llega al creador
+            await BlogMensaje.create({ blog: b._id, entrada: e._id, tipo: 'mensaje', nombre, email, telefono, texto, ip: String(req.ip || '').slice(0, 64) });
+            contarDia(b._id, 'fm');
+            crearNotif({ destinatario: b.usuario, tipo: 'sistema', emisor: 'UpGames Blogs', itemId: String(b._id), itemTitle: b.titulo, mensaje: `📩 ${nombre} te escribió desde tu blog «${V.linea(b.titulo, 60)}». Míralo en UpGames Blogs → Mensajes.` });
+            return volver('ok');
+        } catch (err) { logger.error(`[blogs] formulario: ${err.message}`); res.status(500).type('text/plain').send('No se pudo enviar. Inténtalo de nuevo.'); }
+    });
+
+    const fmtPrecio = (n, m) => R.precio(n, m);   // mismo formato que en la página
+    app.post('/blogs/_pedido/:eid/:i', async (req, res) => {
+        try {
+            const x = await bloqueDeVisitante(req.params.eid, req.params.i, 'catalogo');
+            if (!x) return res.status(404).type('text/plain').send('Este catálogo ya no existe.');
+            const { e, b, bloque } = x, i = +req.params.i, c = req.body || {};
+            // Los productos, precios y el número salen de lo guardado, no de lo que manda el navegador
+            const solo = /^\d{1,2}$/.test(String(c.solo ?? '')) ? +c.solo : -1;
+            const items = bloque.items.map((p, j) => ({ ...p, cantidad: solo >= 0 ? (j === solo ? 1 : 0) : Math.min(99, Math.max(0, parseInt(c[`c${j}`], 10) || 0)) })).filter(p => p.cantidad > 0);
+            if (!items.length) return res.redirect(303, volverA(b, e, i, 'vacio'));
+            const conTotal = items.every(p => p.precio > 0), total = items.reduce((s, p) => s + p.precio * p.cantidad, 0);
+            const nota = V.linea(c.nota, 300);
+            const msg = [`Hola 👋 Quiero hacer este pedido desde ${V.linea(b.titulo, 80)}:`, ...items.map(p => `• ${p.cantidad} × ${p.nombre}${p.precio ? ` — ${fmtPrecio(p.precio * p.cantidad, bloque.moneda)}` : ''}`), conTotal ? `Total: ${fmtPrecio(total, bloque.moneda)}` : '', nota ? `Nota: ${nota}` : ''].filter(Boolean).join('\n');
+            if (await Limites.permitir(`blog-pedido:${req.ip}:${b._id}`, [[Limites.HORA, 10]])) {   // sin abuso: se registra para el creador (el pedido de verdad se cierra en WhatsApp)
+                BlogMensaje.create({ blog: b._id, entrada: e._id, tipo: 'pedido', nombre: nota.slice(0, 80), texto: nota, items: items.map(p => ({ nombre: p.nombre, cantidad: p.cantidad, precio: p.precio })), total: conTotal ? total : 0, moneda: bloque.moneda, ip: String(req.ip || '').slice(0, 64) }).catch(() => {});
+                contarDia(b._id, 'pe');
+            }
+            res.set('Referrer-Policy', 'no-referrer').redirect(303, `${bloque.whatsapp}?text=${encodeURIComponent(msg)}`);
+        } catch (err) { logger.error(`[blogs] pedido: ${err.message}`); res.status(500).type('text/plain').send('No se pudo armar el pedido. Inténtalo de nuevo.'); }
+    });
+
+    // Bandeja del creador: mensajes del formulario y pedidos del catálogo
+    app.get('/blogs/:id/mensajes', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            const lista = await BlogMensaje.find({ blog: b._id }).sort({ createdAt: -1 }).limit(200).select('-ip').lean();
+            res.json({ success: true, mensajes: lista.map(m => ({ id: String(m._id), tipo: m.tipo, nombre: m.nombre, email: m.email, telefono: m.telefono, texto: m.texto, items: m.items || [], total: m.total || 0, moneda: m.moneda, leido: !!m.leido, fecha: m.createdAt })), sinLeer: lista.filter(m => !m.leido).length });
+        } catch (e) { fallo(res, e, 'mensajes'); }
+    });
+    app.put('/blogs/:id/mensajes/:mid', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            if (!idOk(req.params.mid)) return res.status(400).json({ success: false, error: 'Mensaje no válido.' });
+            await BlogMensaje.updateOne({ _id: req.params.mid, blog: b._id }, { $set: { leido: req.body?.leido !== false } });
+            res.json({ success: true });
+        } catch (e) { fallo(res, e, 'mensaje leido'); }
+    });
+    app.delete('/blogs/:id/mensajes/:mid', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            if (!idOk(req.params.mid)) return res.status(400).json({ success: false, error: 'Mensaje no válido.' });
+            await BlogMensaje.deleteOne({ _id: req.params.mid, blog: b._id });
+            res.json({ success: true });
+        } catch (e) { fallo(res, e, 'borrar mensaje'); }
     });
 
     // ═══════════════ COMENTARIOS ═══════════════
@@ -652,7 +744,18 @@ function registrar(app, deps) {
     // ═══════════════ PÁGINAS PÚBLICAS ═══════════════
 
     const APP_ORIGEN = (() => { try { return new URL(APP_URL).origin; } catch (_) { return ''; } })();
-    const CSP = `default-src 'none'; img-src 'self' https: data:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src 'self' ${APP_ORIGEN} https://www.youtube-nocookie.com https://open.spotify.com; base-uri 'none'; form-action 'none'`;
+    const API_ORIGEN = (() => { try { return new URL(API_URL_SELF).origin; } catch (_) { return ''; } })();
+    // Los formularios del blog solo pueden ir a la API de UpGames (y el pedido, de ahí, a WhatsApp)
+    const CSP = `default-src 'none'; img-src 'self' https: data:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src 'self' ${APP_ORIGEN} https://www.youtube-nocookie.com https://open.spotify.com; base-uri 'none'; form-action 'self' ${API_ORIGEN} https://wa.me https://api.whatsapp.com`;
+    // Firmas cortas (HMAC) para los enlaces con conteo de clics y el sello anti-bots de los formularios
+    const firma = txt => crypto.createHmac('sha256', JWT_SECRET).update(txt).digest('hex').slice(0, 16);
+    const ctxInteractivo = (blog, base) => ({
+        clic: (u, t) => `${base}/_c?t=${t}&u=${encodeURIComponent(u)}&k=${firma(`c|${blog._id}|${t}|${u}`)}`,
+        accion: (tipo, i) => null,   // se completa por entrada (necesita su id): ver conAcciones
+        sello: () => { const t = Date.now().toString(36); return `${t}.${firma(`s|${blog._id}|${t}`)}`; },
+    });
+    const conAcciones = (ctx, e, blog) => ({ ...ctx, ...ctxInteractivo(blog, ctx.base), accion: (tipo, i) => `${API_URL_SELF}/blogs/_${tipo}/${e._id}/${i}` });
+    const resultadoForm = q => { const m = /^(\d{1,2})-(ok|err|lim|vacio)$/.exec(String(q.f || '')); return m ? { i: +m[1], r: m[2] } : null; };
     function html(res, estado, cuerpo, cacheSeg = 300) {
         if (!cacheSeg) return res.status(estado).set({ 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': CSP, 'Cache-Control': 'no-store' }).send(cuerpo);
         res.status(estado).set({ 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': CSP, 'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -661,6 +764,7 @@ function registrar(app, deps) {
 
     const vistos = new Map();   // ip|entrada → ms (una visita por persona y entrada cada 30 min)
     // Visitantes del día (aprox.: misma IP = misma persona; se reinicia cada día y al reiniciar el servidor)
+    const clics = new Map();
     const visitantes = new Map();   // `${dia}|${blog}|${ip}` → 1
     function contarVista(blog, eid, ip, ua = '') {
         const k = `${ip}|${eid}`, ahora = Date.now();
@@ -758,6 +862,19 @@ function registrar(app, deps) {
             pagarAnuncio(blog, String(req.query.t || ''), req.ip || '').catch(e => logger.error(`[blogs] anuncio: ${e.message}`));
             return res.set({ 'Content-Type': 'image/gif', 'Cache-Control': 'no-store' }).send(GIF);
         }
+        // Clic en un botón, red o WhatsApp: se cuenta y se redirige (solo si la firma es nuestra: no es una redirección abierta)
+        if (ruta === '/_c') {
+            const u = String(req.query.u || ''), t = String(req.query.t || ''), k = String(req.query.k || '');
+            const buena = firma(`c|${blog._id}|${t}|${u}`);
+            if (!['w', 'r', 'b'].includes(t) || !/^https:\/\//.test(u) || k.length !== buena.length || !crypto.timingSafeEqual(Buffer.from(k), Buffer.from(buena))) return res.status(400).type('text/plain').send('Enlace no válido');
+            const kc = `${req.ip}|${u}`, ahora = Date.now();
+            if ((clics.get(kc) || 0) < ahora - 10 * 60000) {
+                if (clics.size > 100000) clics.clear();
+                clics.set(kc, ahora);
+                BlogVista.updateOne({ blog: blog._id, dia: new Date().toISOString().slice(0, 10) }, { $inc: { [{ w: 'cw', r: 'cr', b: 'cb' }[t]]: 1 } }, { upsert: true }).catch(() => {});
+            }
+            return res.set({ 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex', 'Referrer-Policy': 'no-referrer' }).redirect(302, u);
+        }
         const ctx = await contexto(blog, base, origen);
         if (ruta === '/' || ruta === '/blog' || /^\/(e|p)\//.test(ruta)) { try { contarFuente(blog, req, new URL(origen).hostname, base); } catch (_) {} }
         if ((m = ruta.match(/^\/_previa\/([a-f0-9]{24})$/))) {
@@ -772,7 +889,7 @@ function registrar(app, deps) {
         const inicioId = blog.ajustes?.inicio;
         if (ruta === '/' && inicioId && !req.query.pagina) {
             const pag = await Entrada.findOne({ ...visibles(blog._id), _id: inicioId, tipo: 'pagina' }).lean();
-            if (pag) return html(res, 200, R.entrada({ ...ctx, juegos: await juegosDe(pag.bloques) }, pag, { inicio: true }));
+            if (pag) return html(res, 200, R.entrada({ ...conAcciones(ctx, pag, blog), formRes: resultadoForm(req.query), juegos: await juegosDe(pag.bloques) }, pag, { inicio: true }));
         }
         if (ruta === '/blog' && !inicioId) return res.redirect(301, `${base}/`);
         if (ruta === '/' || ruta === '/blog' || (m = ruta.match(/^\/etiqueta\/([a-z0-9-]{1,40})$/))) {
@@ -788,7 +905,7 @@ function registrar(app, deps) {
             const e = await Entrada.findOne({ ...visibles(blog._id), tipo: m[1] === 'p' ? 'pagina' : 'entrada', slug: m[2] }).lean();
             if (!e) return html(res, 404, R.noEncontrada(ctx));
             if (m[1] === 'p' && String(e._id) === blog.ajustes?.inicio) return res.redirect(301, `${base}/`);   // la página de inicio vive en «/» (una sola dirección para Google)
-            return html(res, 200, R.entrada({ ...ctx, juegos: await juegosDe(e.bloques) }, e));
+            return html(res, 200, R.entrada({ ...conAcciones(ctx, e, blog), formRes: resultadoForm(req.query), juegos: await juegosDe(e.bloques) }, e));
         }
         if (ruta === '/feed.xml') {
             const lista = await Entrada.find({ ...visibles(blog._id), tipo: 'entrada' }).sort({ publicadaEn: -1 }).limit(30).select('titulo slug resumen bloques publicadaEn').lean();

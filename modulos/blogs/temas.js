@@ -13,6 +13,12 @@ const FUENTES = {
     rajdhani: { nombre: 'Rajdhani', css: "'Rajdhani', 'Manrope', sans-serif",         google: 'Rajdhani:wght@500;600;700' },
     serif:    { nombre: 'Serif',    css: "'Playfair Display', Georgia, serif",        google: 'Playfair+Display:wght@500;700;800' },
     mono:     { nombre: 'Mono',     css: "'Share Tech Mono', ui-monospace, monospace", google: 'Share+Tech+Mono' },
+    // Para negocios y marcas (kit de marca): sirven para títulos y para el texto
+    poppins:    { nombre: 'Poppins (moderna)',         css: "'Poppins', system-ui, sans-serif",         google: 'Poppins:wght@400;500;600;700;800' },
+    montserrat: { nombre: 'Montserrat (geométrica)',   css: "'Montserrat', system-ui, sans-serif",      google: 'Montserrat:wght@400;500;600;700;800' },
+    inter:      { nombre: 'Inter (limpia)',            css: "'Inter', system-ui, sans-serif",           google: 'Inter:wght@400;500;600;700;800' },
+    grotesk:    { nombre: 'Space Grotesk (tecnológica)', css: "'Space Grotesk', system-ui, sans-serif", google: 'Space+Grotesk:wght@400;500;600;700' },
+    lora:       { nombre: 'Lora (elegante, para leer)', css: "'Lora', Georgia, serif",                  google: 'Lora:wght@400;500;600;700' },
 };
 
 // v: variables CSS · titulos: fuente de títulos por defecto · portada: 'rejilla' | 'lista' · oscuro: para theme-color
