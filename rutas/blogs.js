@@ -85,7 +85,7 @@ function registrar(app, deps) {
         dominio: b.dominio?.nombre ? { nombre: b.dominio.nombre, verificado: !!b.dominio.verificado, registros: registrosDns(b.dominio) } : null });
     const vistaEntrada = (e, completa) => ({ id: String(e._id), tipo: e.tipo, titulo: e.titulo, slug: e.slug, estado: e.estado, publicadaEn: e.publicadaEn,
         etiquetas: e.etiquetas || [], portada: e.portada || V.primeraImagen(e.bloques), resumen: e.resumen || V.resumen(e.bloques, 140), vistas: e.vistas || 0, actualizada: e.updatedAt,
-        ...(completa ? { bloques: e.bloques || [], portadaPropia: e.portada || '', resumenPropio: e.resumen || '' } : {}) });
+        ...(completa ? { bloques: e.bloques || [], portadaPropia: e.portada || '', resumenPropio: e.resumen || '', tituloSeo: e.tituloSeo || '', noindex: !!e.noindex, nVersiones: (e.versiones || []).length } : {}) });
     // Enlace privado para ver un borrador tal como quedará (solo lo conoce el autor)
     const urlPrevia = (b, e) => `${API_URL_SELF}/b/${b.direccion}/_previa/${e._id}?k=${Anuncios.firmaPrevia(JWT_SECRET, String(e._id))}`;
 
@@ -255,7 +255,7 @@ function registrar(app, deps) {
         try {
             const b = await miBlog(req, res); if (!b) return;
             const tipo = req.query.tipo === 'pagina' ? 'pagina' : 'entrada';
-            const lista = await Entrada.find({ blog: b._id, tipo }).sort({ updatedAt: -1 }).limit(V.LIMITES.ENTRADAS_POR_BLOG).lean();
+            const lista = await Entrada.find({ blog: b._id, tipo }).sort({ updatedAt: -1 }).limit(V.LIMITES.ENTRADAS_POR_BLOG).select('-versiones').lean();
             res.json({ success: true, entradas: lista.map(e => vistaEntrada(e)) });
         } catch (e) { fallo(res, e, 'entradas'); }
     });
@@ -293,7 +293,8 @@ function registrar(app, deps) {
         const pedido = c.slug !== undefined ? V.slug(c.slug) : '';
         if (!yaPublica || (pedido && pedido !== e.slug)) e.slug = await slugLibre(blog._id, e.tipo, pedido || V.slug(titulo), e._id);
         const et = e.tipo === 'pagina' ? [] : V.etiquetas(c.etiquetas);
-        Object.assign(e, { titulo, bloques, etiquetas: et, etiquetasSlug: et.map(t => V.slug(t)), portada: V.urlSegura(c.portada), resumen: V.linea(c.resumen, 300), estado, publicadaEn: estado === 'borrador' ? e.publicadaEn : cuando });
+        Object.assign(e, { titulo, bloques, etiquetas: et, etiquetasSlug: et.map(t => V.slug(t)), portada: V.urlSegura(c.portada), resumen: V.linea(c.resumen, 300), estado, publicadaEn: estado === 'borrador' ? e.publicadaEn : cuando,
+            tituloSeo: V.linea(c.tituloSeo, 90), noindex: !!c.noindex });
         e.markModified('bloques');
         return '';
     }
@@ -349,8 +350,10 @@ function registrar(app, deps) {
             const e = idOk(req.params.eid) && await Entrada.findOne({ _id: req.params.eid, blog: b._id });
             if (!e) return res.status(404).json({ success: false, error: 'Esa entrada no existe.' });
             if (await CeroTolerancia.restringido(req.usuario)) return res.status(403).json({ success: false, code: 'RESTRINGIDO', error: 'Tu cuenta está restringida mientras el equipo de seguridad revisa un reporte.' });
+            const antes = { fecha: e.updatedAt || new Date(), titulo: e.titulo, estado: e.estado, bloques: e.bloques || [] };
             const error = await aplicar(e, req.body || {}, b);
             if (error) return res.status(400).json({ success: false, error });
+            guardarVersion(e, antes);
             await e.save(); olvidar();
             if (e.estado !== 'borrador') revisarConIA(e, b);
             res.json({ success: true, entrada: vistaEntrada(e, true), url: `${urlPublica(b)}${e.tipo === 'pagina' ? 'p' : 'e'}/${e.slug}`, previa: urlPrevia(b, e) });
@@ -358,6 +361,81 @@ function registrar(app, deps) {
             if (e.code === 11000) return res.status(409).json({ success: false, error: 'Ya hay otra con esa misma dirección. Cambia un poco el título.' });
             fallo(res, e, 'editar entrada');
         }
+    });
+
+    // ── Historial de versiones ──
+    // Se guarda el estado anterior si la última versión tiene más de 10 minutos o si cambió el estado
+    // (así el guardado automático no llena el historial). Máximo 15; la más nueva primero.
+    function guardarVersion(e, antes) {
+        const ult = e.versiones?.[0];
+        const cambio = JSON.stringify(antes.bloques) !== JSON.stringify(e.bloques) || antes.titulo !== e.titulo;
+        if (!cambio || !antes.bloques.length) return;
+        if (ult && Date.now() - new Date(ult.creada || ult.fecha) < 10 * 60000 && antes.estado === e.estado) return;   // como mucho una cada 10 min, salvo al cambiar de estado (publicar)
+        e.versiones = [{ ...antes, creada: new Date() }, ...(e.versiones || [])].slice(0, 15);
+        e.markModified('versiones');
+    }
+    app.get('/blogs/:id/entradas/:eid/versiones', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            const e = idOk(req.params.eid) && await Entrada.findOne({ _id: req.params.eid, blog: b._id }).select('versiones').lean();
+            if (!e) return res.status(404).json({ success: false, error: 'Esa entrada no existe.' });
+            res.json({ success: true, versiones: (e.versiones || []).map((v, i) => ({ n: i, fecha: v.fecha, titulo: v.titulo, estado: v.estado, bloques: v.bloques })) });
+        } catch (err) { fallo(res, err, 'versiones'); }
+    });
+
+    // ── Duplicar una entrada o página (queda como borrador) ──
+    app.post('/blogs/:id/entradas/:eid/duplicar', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            const o = idOk(req.params.eid) && await Entrada.findOne({ _id: req.params.eid, blog: b._id }).lean();
+            if (!o) return res.status(404).json({ success: false, error: 'Esa entrada no existe.' });
+            if (await Entrada.countDocuments({ blog: b._id }) >= V.LIMITES.ENTRADAS_POR_BLOG) return res.status(400).json({ success: false, error: `Llegaste al máximo de ${V.LIMITES.ENTRADAS_POR_BLOG} entradas y páginas en este blog.` });
+            if (!(await Limites.permitir(`blog-entrada:${req.usuario}`, [[Limites.HORA, 40], [Limites.DIA, 120]]))) return res.status(429).json({ success: false, error: 'Vas muy rápido. Espera un poco.' });
+            const titulo = V.linea(`${o.titulo} (copia)`, V.LIMITES.TITULO);
+            const e = await Entrada.create({ blog: b._id, usuario: req.usuario, tipo: o.tipo, titulo, slug: await slugLibre(b._id, o.tipo, V.slug(titulo)), bloques: o.bloques, etiquetas: o.etiquetas, etiquetasSlug: o.etiquetasSlug, portada: o.portada, resumen: o.resumen, tituloSeo: o.tituloSeo || '', estado: 'borrador' });
+            olvidar();
+            res.json({ success: true, entrada: vistaEntrada(e.toObject(), true) });
+        } catch (err) { fallo(res, err, 'duplicar'); }
+    });
+
+    // ── Vista previa en vivo: renderiza lo que hay en el editor, sin guardarlo ──
+    app.post('/blogs/:id/previa-viva', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            if (!(await Limites.permitir(`blog-previa:${req.usuario}`, [[Limites.MIN, 40]]))) return res.status(429).json({ success: false, error: 'Espera un momento.' });
+            const c = req.body || {};
+            const bloques = V.limpiarBloques(c.bloques);
+            const ctx = await contexto(b.toObject ? b.toObject() : b, `/b/${b.direccion}`, API_URL_SELF);
+            const e = { tipo: c.tipo === 'pagina' ? 'pagina' : 'entrada', titulo: V.linea(c.titulo, V.LIMITES.TITULO) || 'Sin título', slug: 'previa', bloques, etiquetas: V.etiquetas(c.etiquetas), portada: V.urlSegura(c.portada), resumen: V.linea(c.resumen, 300), publicadaEn: new Date() };
+            const html = R.entrada({ ...ctx, anuncio: false, juegos: await juegosDe(bloques) }, e, { previa: true });
+            res.json({ success: true, html: html.replace('<head>', '<head><base target="_blank">') });
+        } catch (err) { fallo(res, err, 'previa viva'); }
+    });
+
+    // ── «Mis secciones»: bloques guardados para reutilizar ──
+    app.get('/blogs/:id/secciones', verificarToken, async (req, res) => {
+        try { const b = await miBlog(req, res); if (!b) return; res.json({ success: true, secciones: (b.secciones || []).map(x => ({ id: String(x._id), nombre: x.nombre, bloque: x.bloque })) }); }
+        catch (err) { fallo(res, err, 'secciones'); }
+    });
+    app.post('/blogs/:id/secciones', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            const [bloque] = V.limpiarBloques([req.body?.bloque]);
+            const nombre = V.linea(req.body?.nombre, 60);
+            if (!bloque || !nombre) return res.status(400).json({ success: false, error: 'Ponle un nombre a la sección y revisa que tenga contenido.' });
+            if ((b.secciones || []).length >= 30) return res.status(400).json({ success: false, error: 'Llegaste al máximo de 30 secciones guardadas. Borra alguna.' });
+            b.secciones = [...(b.secciones || []), { nombre, bloque, fecha: new Date() }];
+            await b.save();
+            res.json({ success: true, secciones: b.secciones.map(x => ({ id: String(x._id), nombre: x.nombre, bloque: x.bloque })) });
+        } catch (err) { fallo(res, err, 'guardar sección'); }
+    });
+    app.delete('/blogs/:id/secciones/:sid', verificarToken, async (req, res) => {
+        try {
+            const b = await miBlog(req, res); if (!b) return;
+            b.secciones = (b.secciones || []).filter(x => String(x._id) !== req.params.sid);
+            await b.save();
+            res.json({ success: true });
+        } catch (err) { fallo(res, err, 'borrar sección'); }
     });
 
     app.delete('/blogs/:id/entradas/:eid', verificarToken, async (req, res) => {

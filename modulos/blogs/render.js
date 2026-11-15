@@ -462,7 +462,7 @@ ${previa ? '' : anuncio(ctx)}
 </article></div></main>
 ${e._id && !previa ? `<img class="pixel" src="${esc(base)}/_v/${esc(e._id)}.gif" alt="" width="1" height="1">` : ''}`;
     return documento(ctx, {
-        titulo: inicio ? '' : e.titulo, descripcion: desc, ruta, imagen, tipo: inicio ? 'website' : 'article', activo: inicio ? 'inicio' : esPagina ? 'p:' + e.slug : '', cuerpo, previa, noindex: previa,
+        titulo: inicio ? (e.tituloSeo || '') : (e.tituloSeo || e.titulo), descripcion: desc, ruta, imagen, tipo: inicio ? 'website' : 'article', activo: inicio ? 'inicio' : esPagina ? 'p:' + e.slug : '', cuerpo, previa, noindex: previa || !!e.noindex,
         jsonld: esPagina ? null : { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: e.titulo, description: desc || undefined, image: imagen || undefined,
             datePublished: e.publicadaEn ? new Date(e.publicadaEn).toISOString() : undefined, dateModified: e.updatedAt ? new Date(e.updatedAt).toISOString() : undefined,
             author: { '@type': 'Person', name: blog.usuario }, mainEntityOfPage: url },

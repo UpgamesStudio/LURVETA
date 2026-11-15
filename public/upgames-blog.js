@@ -265,6 +265,7 @@ function menuEntrada(e, tipo) {
   const url = `${S.blog.url}${tipo === 'pagina' ? 'p' : 'e'}/${e.slug}`, publica = e.estado !== 'borrador';
   const c = hoja(`<h3>${h(e.titulo)}</h3><div class="opciones">
     <button data-a="editar">${ico('create-outline')}<span>Editar</span></button>
+    <button data-a="duplicar">${ico('copy-outline')}<span>Duplicar<small>Crea una copia como borrador</small></span></button>
     ${publica ? `<button data-a="ver">${ico('open-outline')}<span>Ver en el blog</span></button><button data-a="copiar">${ico('link-outline')}<span>Copiar enlace</span></button>` : ''}
     ${publica && tipo === 'pagina' ? (S.blog.ajustes?.inicio === e.id ? `<button data-a="no-inicio">${ico('home')}<span>Quitar como inicio<small>Volverá a abrir con la lista de entradas</small></span></button>` : `<button data-a="inicio">${ico('home-outline')}<span>Usar como inicio del sitio<small>Será lo primero que vea quien entre</small></span></button>`) : ''}
     <button data-a="borrar" class="rojo">${ico('trash-outline')}<span>Borrar</span></button></div>`);
@@ -272,6 +273,7 @@ function menuEntrada(e, tipo) {
     const a = ev.target.closest('[data-a]')?.dataset.a; if (!a) return;
     cerrarHoja();
     if (a === 'editar') return editor(tipo, e.id);
+    if (a === 'duplicar') { try { await api(`/blogs/${S.blog.id}/entradas/${e.id}/duplicar`, { metodo: 'POST' }); toast('Copia creada como borrador'); vistaLista(tipo); } catch (err) { toast(err.message, true); } return; }
     if (a === 'ver') return window.open(url, '_blank', 'noopener');
     if (a === 'copiar') return copiar(url);
     if (a === 'inicio' || a === 'no-inicio') { try { await guardarBlog({ ajustes: { inicio: a === 'inicio' ? e.id : '' } }, a === 'inicio' ? `«${e.titulo}» es ahora el inicio de tu sitio` : 'Inicio: lista de entradas'); } catch (err) { toast(err.message, true); } return; }
@@ -648,6 +650,38 @@ function elegirPlantilla(esPag) {
   });
 }
 
+// ── Vista previa en vivo (sin guardar), en celular o computador ──
+let anchoPrevia = 'movil';
+async function previaViva(datos, abrirPrivada) {
+  const c = hoja(`<div class="previa-h"><h3>${ico('eye-outline')} Vista previa</h3><div class="seg">${[['movil', 'phone-portrait-outline', 'Celular'], ['pc', 'desktop-outline', 'Computador']].map(([k, i, n]) => `<button data-ancho="${k}" aria-pressed="${anchoPrevia === k}">${ico(i)} ${n}</button>`).join('')}</div></div>
+    <div class="previa-marco" id="previa-marco"><div class="cargando"><span class="giro"></span></div></div>
+    <div class="fila">${abrirPrivada ? `<button class="btn chico" data-privada>${ico('link-outline')} Enlace privado para compartir</button>` : ''}<span style="flex:1"></span><button class="btn pri chico" data-cerrar>Seguir editando</button></div>`);
+  c.classList.add('caja-previa');
+  let html = '';
+  const pintar = () => {
+    const marco = $('#previa-marco', c); if (!marco) return;
+    const ancho = anchoPrevia === 'pc' ? 1280 : 390, esc = Math.min(1, (marco.clientWidth - 2) / ancho);
+    marco.innerHTML = `<iframe title="Vista previa" sandbox="allow-popups allow-popups-to-escape-sandbox" style="width:${ancho}px;height:${Math.round((marco.clientHeight - 2) / esc)}px;transform:scale(${esc});transform-origin:0 0"></iframe>`;
+    marco.firstElementChild.srcdoc = html;
+  };
+  c.onclick = e => {
+    const a = e.target.closest('[data-ancho]'); if (a) { anchoPrevia = a.dataset.ancho; c.querySelectorAll('[data-ancho]').forEach(x => x.setAttribute('aria-pressed', x === a)); return pintar(); }
+    if (e.target.closest('[data-cerrar]')) return cerrarHoja();
+    if (e.target.closest('[data-privada]')) { cerrarHoja(); abrirPrivada(); }
+  };
+  try { html = (await api(`/blogs/${S.blog.id}/previa-viva`, { metodo: 'POST', cuerpo: datos })).html; pintar(); }
+  catch (e) { const m = $('#previa-marco', c); if (m) m.innerHTML = `<div class="vacio">${h(e.message)}</div>`; }
+}
+
+/** Guarda un bloque en «Mis secciones» para reutilizarlo en cualquier página. */
+function guardarMiSeccion(bloque, nombreTipo) {
+  if (!bloque) return toast('Rellena el bloque antes de guardarlo.', true);
+  const c = hoja(`<h3>${ico('bookmark-outline')} Guardar en Mis secciones</h3><p style="color:var(--txt2)">La tendrás en «Añadir bloque» para usarla en cualquier página de este blog.</p>
+    <label class="campo"><span>Nombre</span><input class="inp" id="ms-nom" maxlength="60" value="${h(bloque.titulo || nombreTipo)}"></label><button class="btn pri ancho" id="ms-ok">Guardar</button>`);
+  $('#ms-ok', c).onclick = ev => ocupado(ev.currentTarget, async () => { await api(`/blogs/${S.blog.id}/secciones`, { metodo: 'POST', cuerpo: { nombre: $('#ms-nom', c).value, bloque } }); cerrarHoja(); toast('Guardada en Mis secciones ★'); });
+  setTimeout(() => $('#ms-nom', c)?.select(), 50);
+}
+
 // ── Color: luminancia y contraste (WCAG) para el kit de marca ──
 const rgb = hex => { const m = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(String(hex || '').trim()); return m ? m.slice(1).map(x => parseInt(x, 16) / 255) : null; };
 const luz = hex => { const c = rgb(hex); if (!c) return 0; const [r, g, b] = c.map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4); return .2126 * r + .7152 * g + .0722 * b; };
@@ -732,18 +766,19 @@ async function editor(tipo, id) {
   urlPreviaInicial = '';
   app.innerHTML = '<div class="cargando"><span class="giro"></span></div>';
   if (id) { try { const r = await api(`/blogs/${S.blog.id}/entradas/${id}`); E = r.entrada; urlPreviaInicial = r.previa || ''; } catch (e) { toast(e.message, true); return panel(); } }
-  const meta = { etiquetas: (E.etiquetas || []).join(', '), portada: E.portadaPropia || '', resumen: E.resumenPropio || '', programar: E.estado === 'programada' && new Date(E.publicadaEn) > new Date() ? E.publicadaEn : '' };
+  const meta = { tituloSeo: E.tituloSeo || '', noindex: !!E.noindex, etiquetas: (E.etiquetas || []).join(', '), portada: E.portadaPropia || '', resumen: E.resumenPropio || '', programar: E.estado === 'programada' && new Date(E.publicadaEn) > new Date() ? E.publicadaEn : '' };
   sucio = false;
   const publica = () => E.estado !== 'borrador';
 
   app.innerHTML = `<div class="editor">
     <header class="barra"><button class="ico" id="salir" aria-label="Volver">${ico('chevron-back')}</button><b>${id ? 'Editar' : 'Nueva'} ${esPag ? 'página' : 'entrada'}</b><span class="chip estado" id="estado"></span><button class="btn chico nexus" id="nexus" style="margin-left:8px" aria-label="Nexus escribe un borrador"><b>✦</b><span>Nexus</span></button><button class="btn chico" id="previa" style="margin-left:8px" aria-label="Vista previa">${ico('eye-outline')}<span>Vista previa</span></button></header>
+    <div class="guardado" id="guardado" aria-live="polite"></div>
     <div class="lienzo">
       <textarea class="titulo-entrada" id="titulo" rows="1" maxlength="140" placeholder="${esPag ? 'Título de la página' : 'Título de la entrada'}">${h(E.titulo)}</textarea>
       <div id="bloques"></div>
       <button class="anadir" id="anadir">${ico('add-circle-outline')} Añadir bloque</button>
     </div>
-    <footer class="pie-editor"><button class="ico" id="opciones" aria-label="Opciones de la entrada">${ico('options-outline')}</button><button class="btn" id="borrador">Guardar borrador</button><button class="btn pri" id="publicar"></button></footer>
+    <footer class="pie-editor"><button class="ico" id="deshacer" aria-label="Deshacer" title="Deshacer (Ctrl+Z)" disabled>${ico('arrow-undo')}</button><button class="ico" id="rehacer" aria-label="Rehacer" title="Rehacer (Ctrl+Y)" disabled>${ico('arrow-redo')}</button><button class="ico" id="opciones" aria-label="Opciones de la entrada">${ico('options-outline')}</button><button class="btn" id="borrador">Guardar borrador</button><button class="btn pri" id="publicar"></button></footer>
   </div>`;
   const cont = $('#bloques'), tit = $('#titulo');
   const pintarEstado = () => {
@@ -760,7 +795,7 @@ async function editor(tipo, id) {
   function crearBloque(b) {
     const el = document.createElement('div');
     el.className = `bloque b-${b.tipo}`;
-    const barra = extra => `<div class="herr"><span class="tipo">${NOMBRE_TIPO[b.tipo]}</span>${extra || ''}<span class="sep"></span><button data-mover="-1" aria-label="Subir">${ico('arrow-up')}</button><button data-mover="1" aria-label="Bajar">${ico('arrow-down')}</button><button data-borrar aria-label="Borrar bloque">${ico('trash-outline')}</button></div>`;
+    const barra = extra => `<div class="herr"><span class="tipo">${NOMBRE_TIPO[b.tipo]}</span>${extra || ''}<span class="sep"></span><button data-duplicar aria-label="Duplicar bloque" title="Duplicar">${ico('copy-outline')}</button>${SEC[b.tipo] || ['redes', 'faq', 'ficha', 'aviso', 'boton'].includes(b.tipo) ? `<button data-guardar-sec aria-label="Guardar en Mis secciones" title="Guardar en Mis secciones">${ico('bookmark-outline')}</button>` : ''}<button data-mover="-1" aria-label="Subir">${ico('arrow-up')}</button><button data-mover="1" aria-label="Bajar">${ico('arrow-down')}</button><button data-borrar aria-label="Borrar bloque">${ico('trash-outline')}</button></div>`;
     const subida = async (boton, hecho) => { const f = await elegirImagen(); if (!f) return; await ocupado(boton, async () => { hecho(await subirImagen(f)); sucio = true; }); };
 
     if (b.tipo === 'texto') {
@@ -958,20 +993,106 @@ async function editor(tipo, id) {
       el.innerHTML = barra() + '<hr>';
       el.leer = () => ({ tipo: 'separador' });
     }
+    // Activo también al recibir el foco (teclado): la barra del bloque no aparece y desaparece moviendo la página
+    el.addEventListener('focusin', () => { cont.querySelectorAll('.bloque.activo').forEach(x => x !== el && x.classList.remove('activo')); el.classList.add('activo'); });
     el.addEventListener('click', e => {
       cont.querySelectorAll('.bloque.activo').forEach(x => x !== el && x.classList.remove('activo'));
       el.classList.add('activo');
       const mv = e.target.closest('[data-mover]');
       if (mv) { const otro = +mv.dataset.mover < 0 ? el.previousElementSibling : el.nextElementSibling; if (otro) { +mv.dataset.mover < 0 ? cont.insertBefore(el, otro) : cont.insertBefore(otro, el); sucio = true; el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } }
       if (e.target.closest('[data-borrar]')) { el.remove(); sucio = true; }
+      if (e.target.closest('[data-duplicar]')) { const copia = crearBloque(JSON.parse(JSON.stringify(el.leer() || { tipo: b.tipo }))); el.after(copia); copia.classList.add('activo'); el.classList.remove('activo'); sucio = true; toast('Bloque duplicado'); }
+      if (e.target.closest('[data-guardar-sec]')) guardarMiSeccion(el.leer(), NOMBRE_TIPO[b.tipo]);
     });
     return el;
   }
   (E.bloques?.length ? E.bloques : [{ tipo: 'texto', texto: '' }]).forEach(b => cont.appendChild(crearBloque(b)));
 
+  // ── Deshacer / Rehacer: instantáneas de lo que hay en el editor (título + bloques) ──
+  const foto = () => JSON.stringify({ t: tit.value, b: [...cont.children].map(x => x.leer?.()) });
+  const pila = [foto()]; let enPila = 0, tFoto, restaurando = false;
+  const pintarPila = () => { $('#deshacer').disabled = enPila <= 0; $('#rehacer').disabled = enPila >= pila.length - 1; };
+  const tomarFoto = () => {
+    if (restaurando) return;
+    clearTimeout(tFoto);
+    tFoto = setTimeout(() => {
+      const f = foto(); if (f === pila[enPila]) return;
+      pila.splice(enPila + 1); pila.push(f); if (pila.length > 60) pila.shift(); enPila = pila.length - 1; pintarPila();
+    }, 600);
+  };
+  const restaurar = f => {
+    restaurando = true;
+    const o = JSON.parse(f);
+    tit.value = o.t; crecer(tit);
+    cont.innerHTML = ''; o.b.forEach(x => cont.appendChild(crearBloque(x || { tipo: 'texto', texto: '' })));
+    sucio = true; pintarPila();
+    setTimeout(() => { restaurando = false; }, 50);
+  };
+  $('#deshacer').onclick = () => { clearTimeout(tFoto); if (enPila > 0) restaurar(pila[--enPila]); };
+  $('#rehacer').onclick = () => { clearTimeout(tFoto); if (enPila < pila.length - 1) restaurar(pila[++enPila]); };
+  new MutationObserver(tomarFoto).observe(cont, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-pressed', 'class', 'style'] });
+  cont.addEventListener('input', tomarFoto); tit.addEventListener('input', tomarFoto); cont.addEventListener('change', tomarFoto);
+  const atajos = e => {
+    if (!document.body.contains(cont)) return document.removeEventListener('keydown', atajos);
+    if (!(e.ctrlKey || e.metaKey) || e.target.closest('input, textarea, [contenteditable="true"]')) return;   // dentro de un campo, el deshacer propio del navegador
+    const k = e.key.toLowerCase();
+    if (k === 'z' && !e.shiftKey) { e.preventDefault(); $('#deshacer').click(); }
+    else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); $('#rehacer').click(); }
+  };
+  document.addEventListener('keydown', atajos);
+
+  // ── Guardado automático ──
+  // Borradores: se guardan solos en el servidor. Lo ya publicado NO (se publicaría): se guarda una copia
+  // en este dispositivo para no perder cambios si se cierra la pestaña.
+  const claveLocal = () => `ug_editor_${S.blog.id}_${id || 'nueva-' + tipo}`;
+  const marcaGuardado = t => { const g = $('#guardado'); if (g) g.textContent = t; };
+  const copiaLocal = () => { try { localStorage.setItem(claveLocal(), JSON.stringify({ t: Date.now(), titulo: tit.value, bloques: [...cont.children].map(x => x.leer?.()).filter(Boolean) })); } catch (_) {} };
+  const borrarCopiaLocal = () => { try { localStorage.removeItem(claveLocal()); } catch (_) {} };
+  let autoOcupado = false;
+  const autoguardar = async () => {
+    if (!sucio || autoOcupado || !document.body.contains(cont)) return;
+    if (E.estado !== 'borrador' || !tit.value.trim()) { copiaLocal(); return marcaGuardado(publica() ? 'Cambios guardados en este dispositivo · toca «Actualizar» para publicarlos' : 'Copia guardada en este dispositivo'); }
+    autoOcupado = true;
+    try {
+      const bloques = [...cont.children].map(x => x.leer()).filter(x => x && (x.tipo === 'separador' || x.tipo === 'formulario' || [x.texto, x.url, x.id, x.titulo].some(v => String(v || '').trim()) || [x.urls, x.items, x.filas].some(a => a?.length)));
+      const r = await api(`/blogs/${S.blog.id}/entradas${id ? '/' + id : ''}`, { metodo: id ? 'PUT' : 'POST', cuerpo: { tipo, titulo: tit.value.trim(), bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, tituloSeo: meta.tituloSeo, noindex: meta.noindex, estado: 'borrador' } });
+      const nueva = !id; E = r.entrada; id = E.id; urlPrevia = r.previa || urlPrevia; sucio = false; pintarEstado();
+      if (nueva) try { localStorage.removeItem(`ug_editor_${S.blog.id}_nueva-${tipo}`); } catch (_) {}
+      borrarCopiaLocal();
+      marcaGuardado(`Guardado automáticamente · ${new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}`);
+    } catch (_) { copiaLocal(); marcaGuardado('Sin conexión: copia guardada en este dispositivo'); }
+    finally { autoOcupado = false; }
+  };
+  const tAuto = setInterval(() => { if (!document.body.contains(cont)) return clearInterval(tAuto); autoguardar(); }, 20000);
+  // ¿Quedaron cambios sin guardar de la última vez?
+  try {
+    const l = JSON.parse(localStorage.getItem(claveLocal()) || 'null');
+    if (l && l.bloques?.length && l.t > new Date(E.actualizada || 0).getTime() && JSON.stringify(l.bloques) !== JSON.stringify(E.bloques || [])) {
+      setTimeout(async () => {
+        if (await confirmar('¿Recuperar tus cambios?', `Tienes cambios sin guardar del ${new Date(l.t).toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' })}.`, 'Recuperar')) {
+          tit.value = l.titulo || tit.value; crecer(tit); cont.innerHTML = ''; l.bloques.forEach(x => cont.appendChild(crearBloque(x))); sucio = true; toast('Cambios recuperados');
+        } else borrarCopiaLocal();
+      }, 400);
+    }
+  } catch (_) {}
+
   $('#anadir').onclick = () => {
-    const c = hoja(`<h3>Añadir bloque</h3><p class="hoja-sub">Secciones de página <small>· para landings: ocupan todo el ancho</small></p><div class="tipos">${Object.entries(SEC).map(([t, s]) => `<button data-t="${t}" class="t-sec">${ico(s.ico)}<span>${s.nombre}</span></button>`).join('')}</div>
+    const c = hoja(`<h3>Añadir bloque</h3><div id="mis-sec"></div><p class="hoja-sub">Secciones de página <small>· para landings: ocupan todo el ancho</small></p><div class="tipos">${Object.entries(SEC).map(([t, s]) => `<button data-t="${t}" class="t-sec">${ico(s.ico)}<span>${s.nombre}</span></button>`).join('')}</div>
       <p class="hoja-sub">Contenido</p><div class="tipos">${TIPOS.map(([t, i, n]) => `<button data-t="${t}">${ico(i)}<span>${n}</span></button>`).join('')}</div>`);
+    // «Mis secciones» guardadas
+    api(`/blogs/${S.blog.id}/secciones`).then(r => {
+      const caja = $('#mis-sec', c); if (!caja || !r.secciones.length) return;
+      caja.innerHTML = `<p class="hoja-sub">Mis secciones</p><div class="tipos">${r.secciones.map(x => `<button data-mia="${h(x.id)}" class="t-mia">${ico(SEC[x.bloque.tipo]?.ico || TIPOS.find(t => t[0] === x.bloque.tipo)?.[1] || 'bookmark')}<span>${h(x.nombre)}</span><i data-quitar-mia="${h(x.id)}" aria-label="Quitar">×</i></button>`).join('')}</div>`;
+      caja.onclick = async ev => {
+        const q = ev.target.closest('[data-quitar-mia]');
+        if (q) { ev.stopPropagation(); try { await api(`/blogs/${S.blog.id}/secciones/${q.dataset.quitarMia}`, { metodo: 'DELETE' }); q.closest('button').remove(); toast('Sección quitada de Mis secciones'); } catch (err) { toast(err.message, true); } return; }
+        const m = ev.target.closest('[data-mia]'); if (!m) return;
+        const x = r.secciones.find(y => y.id === m.dataset.mia);
+        cerrarHoja();
+        const el = crearBloque(JSON.parse(JSON.stringify(x.bloque))); cont.appendChild(el); sucio = true;
+        el.classList.add('activo'); el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      };
+    }).catch(() => {});
     c.onclick = e => {
       const x = e.target.closest('[data-t]'); if (!x) return;
       cerrarHoja();
@@ -991,12 +1112,49 @@ async function editor(tipo, id) {
       <div class="campo"><span>Imagen de portada</span><div class="fila">${meta.portada ? `<img src="${h(mini(meta.portada, 240))}" alt="" style="height:60px;border-radius:10px">` : ''}<button class="btn chico" id="o-port">${ico('image-outline')} ${meta.portada ? 'Cambiar' : 'Subir'}</button>${meta.portada ? '<button class="btn chico rojo" id="o-port-no">Quitar</button>' : ''}</div><small>Si no subes una, se usa la primera imagen de la entrada.</small></div>
       <label class="campo"><span>Resumen</span><textarea class="inp" id="o-res" maxlength="300" placeholder="Una o dos frases. Si lo dejas vacío se toma del texto.">${h(meta.resumen)}</textarea></label>
       ${esPag ? '' : `<label class="campo"><span>Programar publicación</span><input class="inp" type="datetime-local" id="o-prog" value="${h(local(meta.programar))}"><small>Déjalo vacío para publicar al momento.</small></label>`}
+      <div class="campo"><span>${ico('search-outline')} Google y redes</span>
+        <input class="inp" id="o-seo" maxlength="90" placeholder="Título para Google (si lo dejas vacío, el de la ${esPag ? 'página' : 'entrada'})" value="${h(meta.tituloSeo)}"><small id="o-seo-n"></small>
+        <div class="serp" id="o-serp"></div>
+        <label class="sec-check"><input type="checkbox" id="o-noindex"${meta.noindex ? ' checked' : ''}> Ocultar de Google (sigue abierta para quien tenga el enlace)</label></div>
+      ${id ? `<button class="btn ancho" id="o-hist">${ico('time-outline')} Historial de versiones${E.nVersiones ? ` (${E.nVersiones})` : ''}</button>` : ''}
       <button class="btn pri ancho" id="o-ok">Listo</button>`);
-    const guardarCampos = () => { if (!esPag) { meta.etiquetas = $('#o-et', c).value; const p = $('#o-prog', c).value; meta.programar = p ? new Date(p).toISOString() : ''; } meta.resumen = $('#o-res', c).value; sucio = true; };
+    // Vista previa de cómo sale en Google y al compartir
+    const serp = () => {
+      const t = $('#o-seo', c).value.trim() || tit.value.trim() || 'Sin título', d = $('#o-res', c).value.trim() || 'Escribe un resumen para que la gente sepa de qué trata antes de entrar.';
+      const n = $('#o-seo', c).value.trim().length;
+      $('#o-seo-n', c).textContent = n ? `${n}/60 caracteres${n > 60 ? ' · Google lo cortará' : ''}` : '';
+      const img = meta.portada || [...cont.children].map(x => x.leer?.()).find(b => b?.tipo === 'imagen')?.url || '';
+      $('#o-serp', c).innerHTML = `<small>Así se verá en Google</small><div class="serp-g"><span>${h(S.blog.url.replace(/^https?:\/\//, ''))}</span><b>${h(t.slice(0, 62))}${t.length > 62 ? '…' : ''} · ${h(S.blog.titulo)}</b><p>${h(d.slice(0, 158))}${d.length > 158 ? '…' : ''}</p></div>
+        <small>Y al compartirla en WhatsApp</small><div class="serp-w">${img ? `<i style="background-image:url('${h(mini(img, 300))}')"></i>` : ''}<span><b>${h(t.slice(0, 70))}</b><p>${h(d.slice(0, 90))}</p></span></div>`;
+    };
+    ['o-seo', 'o-res'].forEach(k => $('#' + k, c).addEventListener('input', serp)); serp();
+    const hist = $('#o-hist', c); if (hist) hist.onclick = () => { guardarCampos(); verHistorial(); };
+    const guardarCampos = () => { if (!esPag) { meta.etiquetas = $('#o-et', c).value; const p = $('#o-prog', c).value; meta.programar = p ? new Date(p).toISOString() : ''; } meta.resumen = $('#o-res', c).value; meta.tituloSeo = $('#o-seo', c).value.trim(); meta.noindex = $('#o-noindex', c).checked; sucio = true; };
     $('#o-port', c).onclick = async ev => { const f = await elegirImagen(); if (!f) return; guardarCampos(); await ocupado(ev.currentTarget, async () => { meta.portada = await subirImagen(f); }); $('#opciones').click(); };
     const no = $('#o-port-no', c); if (no) no.onclick = () => { guardarCampos(); meta.portada = ''; $('#opciones').click(); };
     $('#o-ok', c).onclick = () => { guardarCampos(); cerrarHoja(); pintarEstado(); };
   };
+
+  // ── Historial de versiones: ver y restaurar (lo restaurado queda en el editor hasta que guardes) ──
+  async function verHistorial() {
+    const c = hoja(`<h3>${ico('time-outline')} Historial de versiones</h3><div class="cargando" style="min-height:100px"><span class="giro"></span></div>`);
+    let vs;
+    try { vs = (await api(`/blogs/${S.blog.id}/entradas/${id}/versiones`)).versiones; } catch (e) { cerrarHoja(); return toast(e.message, true); }
+    c.innerHTML = `<h3>${ico('time-outline')} Historial de versiones</h3><p style="color:var(--txt2)">Se guarda una versión cada vez que cambias algo (como mucho una cada 10 minutos) y al publicar. Hasta 15.</p>
+      ${vs.length ? `<div class="opciones">${vs.map(v => `<div class="version"><span><b>${h(new Date(v.fecha).toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' }))}</b><small>${h(v.titulo)} · ${v.bloques.length} bloques · ${ESTADOS[v.estado]?.[0] || ''}</small></span><button class="btn chico" data-ver="${v.n}">${ico('eye-outline')}</button><button class="btn chico" data-rest="${v.n}">Restaurar</button></div>`).join('')}</div>`
+        : '<div class="vacio" style="padding:24px">Aún no hay versiones anteriores. Aparecerán cuando hagas cambios.</div>'}`;
+    c.onclick = async e => {
+      const ver = e.target.closest('[data-ver]'), rest = e.target.closest('[data-rest]');
+      if (ver) { const v = vs[+ver.dataset.ver]; return previaViva({ tipo, titulo: v.titulo, bloques: v.bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen }); }
+      if (rest) {
+        const v = vs[+rest.dataset.rest];
+        cerrarHoja();
+        if (!(await confirmar('¿Restaurar esta versión?', 'Reemplaza lo que tienes en el editor. Podrás deshacerlo con ↶ y no se publica hasta que guardes.', 'Restaurar'))) return;
+        tit.value = v.titulo; crecer(tit); cont.innerHTML = ''; v.bloques.forEach(b => cont.appendChild(crearBloque(b))); sucio = true;
+        toast('Versión restaurada. Revisa y guarda para conservarla.');
+      }
+    };
+  }
 
   // ✦ Nexus: el centro de ayuda del editor
   const leerTodo = () => [...cont.children].map(x => x.leer?.()).filter(Boolean);
@@ -1129,11 +1287,13 @@ async function editor(tipo, id) {
     const malRed = bloques.flatMap(b => b.tipo === 'redes' ? b.items : []).find(i => !window.UGRedes.normalizar(i.red, i.url));
     if (malRed) return toast(`Revisa el dato de ${window.UGRedes.REDES[malRed.red]?.nombre || 'la red'}: «${malRed.url}» no es válido.`, true);
     const programar = estado !== 'borrador' && meta.programar && new Date(meta.programar) > new Date();
-    const cuerpo = { tipo, titulo, bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, estado: programar ? 'programada' : estado, publicadaEn: programar ? meta.programar : undefined };
+    const cuerpo = { tipo, titulo, bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, tituloSeo: meta.tituloSeo, noindex: meta.noindex, estado: programar ? 'programada' : estado, publicadaEn: programar ? meta.programar : undefined };
     await ocupado(boton, async () => {
       const r = await api(`/blogs/${S.blog.id}/entradas${id ? '/' + id : ''}`, { metodo: id ? 'PUT' : 'POST', cuerpo });
       const antes = E.estado;
       E = r.entrada; id = E.id; urlPrevia = r.previa || ''; sucio = false; pintarEstado();
+      try { localStorage.removeItem(`ug_editor_${S.blog.id}_${E.id}`); localStorage.removeItem(`ug_editor_${S.blog.id}_nueva-${tipo}`); } catch (_) {}
+      marcaGuardado('');
       if (callado) return;
       if (E.estado === 'publicada' && antes !== 'publicada') {
         const c = hoja(`<h3>¡Publicada! 🎉</h3><p>Tu ${esPag ? 'página' : 'entrada'} ya está en internet.</p><code style="word-break:break-all;color:var(--cy);font-size:.86rem">${h(r.url)}</code>
@@ -1148,9 +1308,11 @@ async function editor(tipo, id) {
     });
   }
   $('#publicar').onclick = e => guardar('publicada', e.currentTarget);
-  // Vista previa: guarda lo que hay (sin cambiar si está publicada o no) y abre el enlace privado
-  $('#previa').onclick = async e => {
-    const boton = e.currentTarget, w = window.open('', '_blank');
+  // Vista previa en vivo: lo que hay en el editor, sin guardar, en celular o computador
+  $('#previa').onclick = () => previaViva({ tipo, titulo: tit.value, bloques: [...cont.children].map(x => x.leer?.()).filter(Boolean), etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen }, () => abrirPreviaPrivada());
+  // Enlace privado (lo último guardado): para compartirlo antes de publicar
+  const abrirPreviaPrivada = async e => {
+    const boton = $('#previa'), w = window.open('', '_blank');
     // Un borrador se guarda antes de verlo. Lo ya publicado no: guardarlo publicaría los cambios.
     if (E.estado === 'borrador') await guardar('borrador', boton, true);
     else if (sucio) toast('Se muestra lo último guardado. Toca «Actualizar» para ver tus cambios.');
@@ -1162,8 +1324,10 @@ async function editor(tipo, id) {
     guardar('borrador', boton);
   };
   $('#salir').onclick = async () => {
-    if (sucio && !(await confirmar('¿Salir sin guardar?', 'Hay cambios que no has guardado.', 'Salir', true))) return;
-    sucio = false; S.vista = esPag ? 'paginas' : 'entradas'; panel();
+    if (sucio && E.estado === 'borrador' && tit.value.trim()) await autoguardar();   // un borrador se guarda solo al salir
+    if (sucio && !(await confirmar('¿Salir sin guardar?', 'Hay cambios que no has guardado. Quedará una copia en este dispositivo.', 'Salir', true))) return;
+    if (sucio) copiaLocal();
+    sucio = false; clearInterval(tAuto); S.vista = esPag ? 'paginas' : 'entradas'; panel();
   };
   if (!id) tit.focus();
 }

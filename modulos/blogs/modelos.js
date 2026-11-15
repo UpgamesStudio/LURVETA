@@ -30,6 +30,8 @@ module.exports = function modelos(mongoose) {
         vistas:      { type: Number, default: 0 },
         // Monetización opcional: el creador decide si su blog lleva publicidad de UpGames
         monetizar:   { type: Boolean, default: false },
+        // «Mis secciones»: bloques guardados por el creador para reutilizar en cualquier página (máx. 30)
+        secciones:   { type: [{ nombre: String, bloque: mongoose.Schema.Types.Mixed, fecha: Date }], default: [] },
         ingresos:    { type: Number, default: 0 },   // US$ ganados con los anuncios del blog
         anunciosVistos: { type: Number, default: 0 },
         descargasGeneradas: { type: Number, default: 0 },   // descargas pagadas que llegaron desde sus entradas
@@ -59,6 +61,10 @@ module.exports = function modelos(mongoose) {
         publicadaEn: { type: Date, default: null },
         vistas:    { type: Number, default: 0 },
         avisada:   { type: Boolean, default: false },   // ya se avisó a los seguidores del creador
+        tituloSeo: { type: String, default: '', maxlength: 90 },    // título para Google y redes (si no, el título)
+        noindex:   { type: Boolean, default: false },               // pedir a Google que no la muestre
+        // Historial: estados anteriores (máx. 15) para volver atrás
+        versiones: { type: [{ _id: false, fecha: Date, creada: Date, titulo: String, estado: String, bloques: [mongoose.Schema.Types.Mixed] }], default: [] },   // fecha: de cuándo es ese contenido · creada: cuándo se guardó la versión
     }, { timestamps: true });
     EntradaSchema.index({ blog: 1, tipo: 1, slug: 1 }, { unique: true });
     EntradaSchema.index({ blog: 1, estado: 1, publicadaEn: -1 });
