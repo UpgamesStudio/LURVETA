@@ -94,12 +94,12 @@ function ugContadorUC(total) {
   const acc = document.querySelector('.hdr-actions'); if (!acc) return;
   let b = document.getElementById('hdr-uc');
   if (!b) {
-    b = document.createElement('button'); b.id = 'hdr-uc'; b.type = 'button'; b.title = 'Tus UpCoins'; b.setAttribute('aria-label', 'Tus UpCoins');
-    b.style.cssText = 'display:inline-flex;align-items:center;gap:5px;height:38px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,204,77,.35);background:rgba(255,204,77,.1);color:#ffcc4d;font-weight:800;font-size:.85rem;cursor:pointer;font-family:inherit;white-space:nowrap';
+    b = document.createElement('button'); b.id = 'hdr-uc'; b.className = 'hdr-uc'; b.type = 'button'; b.title = 'Tus UpCoins'; b.setAttribute('aria-label', 'Tus UpCoins');
     b.onclick = () => { switchTab('economia'); setTimeout(() => { document.getElementById('eco-tienda')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); ecoAbrirTienda(); }, 350); };
     acc.insertBefore(b, acc.firstChild);
   }
-  const pintar = t => { const n = Math.floor(t || 0); b.innerHTML = `🪙 <span>${n >= 1e4 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : n.toLocaleString('es-CO')}</span>`; };
+  const pintar = t => { const n = Math.floor(t || 0); b.innerHTML = `<span class="hdr-uc-coin" aria-hidden="true"></span><span class="hdr-uc-txt"><b>${n >= 1e5 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : n.toLocaleString('es-CO')}</b><small>UpCoins</small></span>`; };
+  if (!b.firstChild) pintar(0);   // mientras llega el saldo, la píldora no queda vacía
   if (typeof total === 'number') return pintar(total);
   fetch(`${API_URL}/monedas/saldo`, { headers: { Authorization: `Bearer ${LS.get('token')}` } }).then(r => r.ok ? r.json() : null).then(d => d?.success && pintar(d.upcoins?.total ?? d.monedas)).catch(() => {});
 }
@@ -151,8 +151,22 @@ const UGR = (() => {
     orbe()?.setAttribute('aria-expanded', 'false'); orbe()?.classList.remove('on');
     if (volverFoco) orbe()?.focus({ preventScroll: true });
   }
+  // Con sesión, el orbe es el avatar del usuario (sigue abriendo el mismo menú rápido)
+  function avatar() {
+    const o = orbe(), u = LS.get('user_admin'); if (!o || !ugSesion() || !u) return;
+    o.classList.add('hdr-orb--yo'); o.setAttribute('aria-label', `Menú de @${u}`); o.title = `@${u} · Menú rápido`;
+    let av = o.querySelector('.hdr-av');
+    if (!av) { av = document.createElement('span'); av.className = 'hdr-av'; av.textContent = avatarLetter(u); o.prepend(av); }
+    const poner = url => { if (!url) return; const img = new Image(); img.alt = ''; img.onload = () => { av.textContent = ''; av.appendChild(img); }; img.src = cldOpt(url, 'c_fill,g_face,w_96,h_96,q_auto,f_auto'); };
+    const k = 'ug_hdr_av_' + u; let guardado = null; try { guardado = sessionStorage.getItem(k); } catch (_) {}
+    if (guardado !== null) return poner(guardado);
+    fetch(`${API_URL}/usuarios/perfil-publico/${encodeURIComponent(u)}`).then(r => r.ok ? r.json() : null).then(d => {
+      const url = String(d?.usuario?.avatar || '').trim(); try { sessionStorage.setItem(k, url); } catch (_) {} poner(url);
+    }).catch(() => {});
+  }
   document.addEventListener('DOMContentLoaded', () => {
     const r = raiz(), o = orbe(); if (!r || !o) return;
+    avatar();
     o.addEventListener('click', e => { e.stopPropagation(); abierto ? cerrar() : abrir(); });
     r.addEventListener('click', e => {
       if (e.target.closest('[data-ugr-cerrar]')) return cerrar(true);
@@ -627,14 +641,10 @@ function initHeroCarousel(items, isVideoMode) {
     const lk = item.likesCount || 0;
     const vistas = vistasVideo(item);
 
-    // Puesto: modo video usa icono play + cyan, normal usa estrella
+    // Insignia: «Mod recomendado», «App recomendada»… (el carrusel muestra lo mejor del catálogo)
     const badgeHTML = isVideoMode
-      ? `<div class="hero-badge hero-badge--video"><ion-icon name="play-circle"></ion-icon> TOP ${i+1}</div>`
-      : `<div class="hero-badge">⭐ Top ${i+1}</div>`;
-    // Etiquetas de arriba: categoría y plataforma (solo lo que la publicación realmente trae)
-    const ex = item.extraData || {};
-    const plat = String(ex.plataforma || '').split(/[,/·]/)[0].trim();
-    const chips = [item.category, !isVideoMode && plat].filter(Boolean).map(t => `<span class="hero-chip">${escH(t)}</span>`).join('');
+      ? `<div class="hero-badge hero-badge--video"><ion-icon name="play-circle"></ion-icon> Video destacado</div>`
+      : `<div class="hero-badge">${escH(heroInsignia(item.category))}</div>`;
     const dls = item.descargasEfectivas || 0;
 
     // Tipo de video (Tutorial, Gameplay, etc.)
@@ -646,22 +656,23 @@ function initHeroCarousel(items, isVideoMode) {
       <img src="${escH(cldOpt(mediaSrc, CLD_DESTACADA))}"${cldSrcset(mediaSrc, UG_SS_GRANDE, '(min-width: 1100px) 1100px, 100vw')} alt="${escH(item.title)}" loading="${i===0?'eager':'lazy'}"${i===0?' fetchpriority="high"':''} decoding="async"
            onerror="this.onerror=null;this.src=window.UG_PH">
       ${isYT || isMp4 || isVideoMode ? '<div class="yt-play-badge large"><ion-icon name="play-circle"></ion-icon></div>' : ''}
-      <div class="hero-top">${badgeHTML}${chips}</div>
+      <div class="hero-top">${badgeHTML}</div>
       <div class="hero-info">
         ${vidTypeHTML}
         <div class="hero-title">${escH(item.title)}</div>
         <div class="hero-meta">
-          <span class="hero-user">@${escH(item.usuario||'Cloud')}${getBadge(item.usuario)}</span>
+          <span class="hero-user">por @${escH(item.usuario||'Cloud')}${getBadge(item.usuario)}</span>
           ${isVideoMode && vistas ? `<span class="hero-dl"><ion-icon name="eye-outline"></ion-icon>${fmt(vistas)}</span>` : ''}
           ${!isVideoMode && dls ? `<span class="hero-dl"><ion-icon name="cloud-download-outline"></ion-icon>${fmt(dls)}</span>` : ''}
           ${lk ? `<span class="hero-dl"><ion-icon name="heart"></ion-icon>${fmt(lk)}</span>` : ''}
-          <span class="hero-cta" aria-hidden="true">${isVideoMode ? 'Ver video' : 'Ver ahora'}<ion-icon name="arrow-forward"></ion-icon></span>
         </div>
+        <span class="hero-cta" aria-hidden="true">${isVideoMode ? 'Ver video<ion-icon name="play"></ion-icon>' : 'Descargar gratis<ion-icon name="download-outline"></ion-icon>'}</span>
       </div>`;
 
     // Click: se abre la entrada que se VE (heroIdx), no la que pase bajo el dedo durante el deslizamiento
     slide.addEventListener('click', () => {
       if(Date.now() - heroUltimoGesto < 450) return;   // el toque era parte de un deslizamiento o llegó a mitad del cambio
+      if(i !== heroIdx) return heroGoTo(i);   // tocar la tarjeta que asoma al lado la trae al frente
       const item = heroItems[heroIdx] || heroItems[i];
       if(isVideoMode) {
         const tileEl = document.querySelector(`.game-tile--video[data-id="${item._id}"]`);
@@ -695,6 +706,7 @@ function initHeroCarousel(items, isVideoMode) {
   // portada y un deslizamiento saltaba 2, 3 o 4 entradas (y un toque abría otra publicación).
   if(carousel.dataset.gestos) return;
   carousel.dataset.gestos = '1';
+  addEventListener('resize', heroColocar, { passive:true });
   carousel.addEventListener('touchstart', e => {
     heroTouchStartX = e.touches[0].clientX;
     heroAutoplayPaused = true;
@@ -710,13 +722,24 @@ function initHeroCarousel(items, isVideoMode) {
 function heroGoTo(idx) {
   heroIdx = ((idx % heroItems.length) + heroItems.length) % heroItems.length;
   heroUltimoGesto = Date.now();   // durante la transición (.55 s) el toque no abre la entrada que va pasando
-  document.getElementById('hero-track').style.transform = `translateX(-${heroIdx * 100}%)`;
+  heroColocar();
   document.querySelectorAll('.hero-dot').forEach((d,i) => {
     d.classList.remove('active');
     if(i===heroIdx) { void d.offsetWidth; d.classList.add('active'); }   // reinicia la barra de progreso aunque ya fuera la activa
   });
   document.querySelectorAll('.hero-slide').forEach((sl,i) => sl.classList.toggle('is-on', i===heroIdx));   // zoom lento de la portada activa
   if(heroTimer) heroStartAutoplay();   // la barra de progreso y el cambio automático arrancan juntos, también tras un toque
+}
+// Desplaza la pista hasta la tarjeta activa (mide la tarjeta: la siguiente asoma por el lado)
+function heroColocar() {
+  const track = document.getElementById('hero-track'), s = track?.children[heroIdx], s0 = track?.children[0];
+  if (track) track.style.transform = s && s0 ? `translateX(-${s.offsetLeft - s0.offsetLeft}px)` : `translateX(-${heroIdx * 100}%)`;
+}
+const HERO_INSIGNIAS = { mod: 'Mod recomendado', juego: 'Juego recomendado', juegos: 'Juego recomendado', app: 'App recomendada', apps: 'App recomendada',
+  software: 'Software recomendado', herramientas: 'Herramienta recomendada', optimizacion: 'Optimización recomendada', ajustes: 'Ajustes recomendados' };
+function heroInsignia(cat) {
+  const k = String(cat || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return HERO_INSIGNIAS[k] || (cat ? `${cat} · recomendado` : 'Recomendado');
 }
 function heroNext() { heroGoTo(heroIdx + 1); }
 function heroPrev() { heroGoTo(heroIdx - 1); }
@@ -5135,7 +5158,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
 let nxOpen=false, nxExpanded=false;
 const NX = { cargado:false, enviando:false, msgs:[] };   // msgs: [{rol, texto, items, acciones}]
 const NX_SUGERENCIAS_INV = ['¿Qué me recomiendas descargar hoy?', '¿Cómo gano dinero publicando?', 'Mods populares para Minecraft', '¿Cómo publico mi contenido?'];
-const NX_SUGERENCIAS_USR = ['Recomiéndame algo según mis gustos', '¿Cuánto llevo ganado y qué me falta para retirar?', '¿Cómo van mis publicaciones?', '¿Qué está en tendencia ahora?'];
+const NX_SUGERENCIAS_USR = ['Recomiéndame contenido según mis gustos', '¿Cuánto llevo ganado y qué me falta para retirar?', '¿Cómo van mis publicaciones?', '¿Qué está en tendencia ahora?'];
 const nxToken = () => { const t = LS.get('token'); return t && t !== 'null' && t.length > 20 ? t : ''; };
 const nxHeaders = () => { const h = { 'Content-Type':'application/json' }; const t = nxToken(); if (t) h.Authorization = `Bearer ${t}`; return h; };
 
@@ -5219,9 +5242,9 @@ function nxPintar(pensando = false) {
   if (!NX.msgs.length) {
     const sug = nxToken() ? NX_SUGERENCIAS_USR : NX_SUGERENCIAS_INV;
     html = `<div class="nx-hola">
-      <div class="nx-hola-orb"><span></span></div>
-      <h3>${usuario ? `Hola, @${escH(usuario)}` : 'Hola, soy Nexus'}</h3>
-      <p>Conozco todo el catálogo de Lurveta${usuario ? ', tu cuenta y tus publicaciones' : ''}. Pregúntame lo que quieras.</p>
+      <div class="nx-hola-orb" aria-hidden="true"><span></span></div>
+      <h3>${usuario ? `Hola, <em>@${escH(usuario)}</em>` : 'Hola, soy <em>Nexus</em>'}</h3>
+      <p>Tu inteligencia dentro de Lurveta.</p>
       <div class="nx-sugs">${sug.map(s => `<button type="button" class="nx-sug" data-nx-sug="${escH(s)}">${escH(s)}</button>`).join('')}</div>
     </div>`;
   }
@@ -5275,8 +5298,8 @@ async function nxEnviar(texto, extra) {
 function nxPintarCuota(c) {
   const el = document.getElementById('nxCuota'); if (!el || !c) return;
   el.hidden = false; el.classList.toggle('prem', !!c.premium);
-  el.innerHTML = c.premium ? '<span>⭐ <b>Premium</b>: NEXUS ilimitado con el modelo más potente</span>'
-    : `<span><b>${c.restantesHoy}</b> de ${c.gratisDia} mensajes gratis hoy${c.creditos ? ` · <b>${c.creditos}</b> extra` : ''}</span><button type="button" onclick="nxIrPremium()">Ilimitado</button>`;
+  el.innerHTML = c.premium ? '<span title="Ilimitado con el modelo más potente">⭐ <b>Nexus Premium</b></span>'
+    : `<span><b>${c.restantesHoy}</b> de ${c.gratisDia} mensajes gratis hoy${c.creditos ? ` · <b>${c.creditos}</b> extra` : ''}</span><button type="button" onclick="nxIrPremium()">Nexus Premium</button>`;
 }
 function nxCargarCuota() {
   if (!nxToken()) return;
@@ -5335,6 +5358,23 @@ function nxEjecutar(a) {
     const act = e.target.closest('[data-nx-act]');
     if (act) { const m = NX.msgs[+act.closest('[data-nx-i]')?.dataset.nxI]; return nxEjecutar(m?.acciones?.[+act.dataset.nxAct]); }
   });
+  // Dictado por voz (solo donde el navegador lo trae: Chrome, Edge, Safari)
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = document.getElementById('nxMic');
+  if (SR && mic) {
+    let rec = null;
+    mic.hidden = false;
+    const apagar = () => { rec = null; mic.classList.remove('on'); mic.setAttribute('aria-pressed', 'false'); };
+    mic.addEventListener('click', () => {
+      if (rec) return rec.stop();
+      rec = new SR(); rec.lang = 'es-CO'; rec.interimResults = true;
+      const base = input.value.trim() ? input.value.replace(/\s*$/, ' ') : '';
+      rec.onresult = e => { input.value = base + [...e.results].map(r => r[0].transcript).join(''); input.dispatchEvent(new Event('input')); };
+      rec.onend = apagar; rec.onerror = apagar;
+      try { rec.start(); mic.classList.add('on'); mic.setAttribute('aria-pressed', 'true'); } catch (_) { apagar(); }
+    });
+  }
+  // Con Nexus abierto la barra inferior sigue visible: tocar otra pestaña lo cierra
+  document.getElementById('bottom-nav')?.addEventListener('click', e => { if (nxOpen && e.target.closest('.nav-tab') && !e.target.closest('.nav-nexus')) nxClose(); }, true);
   // Tocar fuera de la hoja (zona oscurecida) la cierra
   panel.addEventListener('click', e => { if (e.target === panel && !nxExpanded && e.clientY < panel.getBoundingClientRect().top) nxClose(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && nxOpen) nxClose(); });
@@ -5382,7 +5422,7 @@ const TUT_STEPS = [
   { sel: '.game-tile', title: '📦 Abre una publicación', body: 'Toca una tarjeta para ver su detalle: portada, descripción, comentarios y el botón para <strong>descargar</strong>.' },
   { sel: '#hdr-uc, #hdr-entrar', title: '🪙 Tus UpCoins', body: 'La moneda de Lurveta. Tócala para recargar y úsala en lives, NEXUS, Premium y el estilo de tu perfil. Si aún no tienes cuenta, aquí entras.' },
   { sel: '#hdr-orb', title: '✨ Menú rápido', body: 'Avisos, lives, subir contenido, Premium y soporte, desplegados en círculo.' },
-  { sel: '#bottom-nav', title: '🧭 Navegación', body: '<strong>Inicio</strong>, <strong>Videos</strong>, <strong>NEXUS</strong> (tu asistente de IA), <strong>NEW</strong> (artículos de la comunidad) y tu <strong>Perfil</strong> (publicar, ajustes, Favoritos, Ganancias y Economía).' },
+  { sel: '#bottom-nav', title: '🧭 Navegación', body: '<strong>Inicio</strong>, <strong>Videos</strong>, <strong>NEXUS</strong> (tu asistente de IA), <strong>Novedades</strong> (artículos de la comunidad) y tu <strong>Perfil</strong> (publicar, ajustes, Favoritos, Ganancias y Economía).' },
   { sel: '#tut-fab', title: '❔ Ayuda y guía de inicio', body: 'Aquí tienes tu lista de primeros pasos, guías cortas con buscador y acceso a NEXUS y soporte. ¡Listo! 🚀' },
 ];
 
@@ -5881,7 +5921,7 @@ function _initNotifUI() {
   if ((!hdrActions && !radial) || document.getElementById('notif-btn')) return;
   const btn = document.createElement('button');
   btn.id = 'notif-btn'; btn.type = 'button'; btn.title = 'Notificaciones'; btn.setAttribute('aria-label', 'Notificaciones');
-  if (radial) {
+  if (radial && !(ugSesion() && hdrActions)) {   // con sesión la campana va en la cabecera, junto al saldo
     btn.className = 'ugr-item'; btn.setAttribute('role', 'menuitem');
     btn.innerHTML = '<span class="ugr-bub"><ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span></span><span class="ugr-lbl">Avisos</span>';
     btn.onclick = e => { e.stopPropagation(); UGR.cerrar(); ugnToggle(); };
@@ -6037,11 +6077,12 @@ async function ugnVaciar() {
 }
 
 function _updateNotifBadge(count) {
-  for (const id of ['notif-badge', 'hdr-orb-badge']) {   // el orbe del menú también muestra el número
+  const enMenu = !!document.querySelector('#hdr-radial #notif-btn');   // la campana dentro del menú: el orbe también muestra el número
+  for (const id of enMenu ? ['notif-badge', 'hdr-orb-badge'] : ['notif-badge']) {
     const b = document.getElementById(id);
     if (b) { b.hidden = !(count > 0); b.textContent = count > 99 ? '99+' : count; }
   }
-  document.getElementById('hdr-orb')?.setAttribute('aria-label', count > 0 ? `Abrir menú rápido · ${count} notificaciones sin leer` : 'Abrir menú rápido');
+  if (enMenu) document.getElementById('hdr-orb')?.setAttribute('aria-label', count > 0 ? `Abrir menú rápido · ${count} notificaciones sin leer` : 'Abrir menú rápido');
   try { if ('setAppBadge' in navigator) count > 0 ? navigator.setAppBadge(count) : navigator.clearAppBadge(); } catch (_) {}
 }
 // Conteo periódico: si sube, trae las nuevas y las muestra en la isla

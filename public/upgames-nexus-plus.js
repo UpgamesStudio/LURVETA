@@ -20,10 +20,10 @@
   // ══════════════ 1) BARRA DE BÚSQUEDA ══════════════
   const input = $('buscador'), main = $('main-view'), out = $('output');
   if (input && main && out) {
-    input.placeholder = 'Busca o pregúntale a Nexus';
+    input.placeholder = 'Buscar juegos, mods, apps…';
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'nxb-btn'; btn.title = 'Buscar con Nexus'; btn.setAttribute('aria-label', 'Buscar con Nexus');
-    btn.innerHTML = '<span>✦</span>';
+    btn.innerHTML = '<span aria-hidden="true">✦</span><b>Nexus AI</b>';
     input.after(btn);
     const banner = document.createElement('div');
     banner.className = 'nxb-banner'; banner.hidden = true; banner.setAttribute('role', 'status');

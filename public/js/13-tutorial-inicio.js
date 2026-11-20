@@ -16,7 +16,7 @@ const TUT_STEPS = [
   { sel: '.game-tile', title: '📦 Abre una publicación', body: 'Toca una tarjeta para ver su detalle: portada, descripción, comentarios y el botón para <strong>descargar</strong>.' },
   { sel: '#hdr-uc, #hdr-entrar', title: '🪙 Tus UpCoins', body: 'La moneda de Lurveta. Tócala para recargar y úsala en lives, NEXUS, Premium y el estilo de tu perfil. Si aún no tienes cuenta, aquí entras.' },
   { sel: '#hdr-orb', title: '✨ Menú rápido', body: 'Avisos, lives, subir contenido, Premium y soporte, desplegados en círculo.' },
-  { sel: '#bottom-nav', title: '🧭 Navegación', body: '<strong>Inicio</strong>, <strong>Videos</strong>, <strong>NEXUS</strong> (tu asistente de IA), <strong>NEW</strong> (artículos de la comunidad) y tu <strong>Perfil</strong> (publicar, ajustes, Favoritos, Ganancias y Economía).' },
+  { sel: '#bottom-nav', title: '🧭 Navegación', body: '<strong>Inicio</strong>, <strong>Videos</strong>, <strong>NEXUS</strong> (tu asistente de IA), <strong>Novedades</strong> (artículos de la comunidad) y tu <strong>Perfil</strong> (publicar, ajustes, Favoritos, Ganancias y Economía).' },
   { sel: '#tut-fab', title: '❔ Ayuda y guía de inicio', body: 'Aquí tienes tu lista de primeros pasos, guías cortas con buscador y acceso a NEXUS y soporte. ¡Listo! 🚀' },
 ];
 

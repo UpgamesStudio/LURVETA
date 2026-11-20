@@ -123,7 +123,7 @@ h2{font-size:1.1rem;margin:22px 0 10px}.hero video{display:block;width:100%;heig
 .rel img{width:72px;height:48px;object-fit:cover;border-radius:8px;flex:none;background:#1a1d26}.rel b{display:block;font-size:.9rem;line-height:1.25}.rel small{color:#9aa1af;font-size:.78rem}.pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../../">Explorar</a></div>
+<div class="top"><a class="logo" href="../../"><span>LUR</span>VETA</a><a href="../../">Explorar</a></div>
 <article class="hero">
 ${video ? `<video controls preload="none" playsinline src="${esc(video)}"${esImg(it.image) ? ` poster="${esc(cldAncho(it.image, 960))}"` : ''} width="960" height="540"></video>`
     : esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/w_960,q_auto,f_auto/'))}" alt="${esc(it.title)}" width="960" height="540">` : ''}
@@ -185,7 +185,7 @@ h1{margin:12px 0 4px;font-size:1.4rem}.st{display:flex;gap:18px;color:#c9ced8;fo
 .pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../../">Explorar</a></div>
+<div class="top"><a class="logo" href="../../"><span>LUR</span>VETA</a><a href="../../">Explorar</a></div>
 <div class="cv"${esImg(p.banner) ? ` style="background-image:url('${esc(p.banner.replace('/upload/', '/upload/w_1200,q_auto,f_auto/'))}')"` : ''}></div>
 <div class="hd">${avatar ? `<img class="av" src="${esc(avatar)}" alt="@${esc(p.usuario)}" width="92" height="92">` : '<div class="av"></div>'}</div>
 <h1>@${esc(p.usuario)}</h1>
@@ -270,7 +270,7 @@ h1{margin:6px 0 6px;font-size:1.7rem;line-height:1.2}.intro{color:#c9ced8;margin
 .pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../../">Explorar todo</a></div>
+<div class="top"><a class="logo" href="../../"><span>LUR</span>VETA</a><a href="../../">Explorar todo</a></div>
 <h1>${esc(g.h1)}</h1>
 <p class="intro">${esc(g.intro)}</p>
 <div class="st">${fmt(g.items.length)} publicaciones · ${fmt(total)} descargas</div>

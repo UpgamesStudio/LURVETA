@@ -376,7 +376,7 @@ function emailVerifTemplate(usuario, link) {
     <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#0a0a0f;color:#f0f0f8;border-radius:12px;overflow:hidden">
       <div style="background:linear-gradient(135deg,#1a1a24,#0f0f18);padding:32px 28px;text-align:center;border-bottom:1px solid rgba(94,255,67,.15)">
         <div style="font-size:32px;font-weight:900;letter-spacing:-.5px">
-          <span style="color:#5EFF43">UP</span><span>GAMES</span>
+          <span style="color:#5EFF43">LUR</span><span>VETA</span>
         </div>
         <div style="color:#60607a;font-size:12px;margin-top:4px;letter-spacing:.1em">VERIFICACIÓN DE CUENTA</div>
       </div>
@@ -400,7 +400,7 @@ function emailVerifTemplate(usuario, link) {
 function emailAvisoTemplate(usuario, mensajeHtml) {
     return `
     <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#0a0a0f;color:#f0f0f8;border-radius:12px;overflow:hidden">
-      <div style="padding:24px 28px;text-align:center;border-bottom:1px solid rgba(94,255,67,.15)"><span style="color:#5EFF43;font-size:26px;font-weight:900">UP</span><span style="font-size:26px;font-weight:900">GAMES</span></div>
+      <div style="padding:24px 28px;text-align:center;border-bottom:1px solid rgba(94,255,67,.15)"><span style="color:#5EFF43;font-size:26px;font-weight:900">LUR</span><span style="font-size:26px;font-weight:900">VETA</span></div>
       <div style="padding:28px">
         <h2 style="font-size:18px;margin:0 0 12px">Hola, @${usuario}</h2>
         <p style="color:#c0c0d0;line-height:1.6;margin:0">${mensajeHtml}</p>
@@ -413,7 +413,7 @@ function emailResetTemplate(usuario, link, codigo) {
     <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#0a0a0f;color:#f0f0f8;border-radius:12px;overflow:hidden">
       <div style="background:linear-gradient(135deg,#1a1a24,#0f0f18);padding:32px 28px;text-align:center;border-bottom:1px solid rgba(94,255,67,.15)">
         <div style="font-size:32px;font-weight:900;letter-spacing:-.5px">
-          <span style="color:#5EFF43">UP</span><span>GAMES</span>
+          <span style="color:#5EFF43">LUR</span><span>VETA</span>
         </div>
         <div style="color:#60607a;font-size:12px;margin-top:4px;letter-spacing:.1em">RECUPERACIÓN DE CONTRASEÑA</div>
       </div>

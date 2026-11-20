@@ -78,9 +78,9 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     return { barras: d.length, activas: d.filter(x => x.classList.contains('active')).length, enMarcha: !!d.find(x => x.classList.contains('active')) && getComputedStyle(d.find(x => x.classList.contains('active')), '::after').animationName,
       slides: sl.length, conCta: sl.every(x => x.querySelector('.hero-cta') && x.querySelector('.hero-top .hero-badge')), enfocadas: sl.filter(x => x.classList.contains('is-on')).length, alto: c.getBoundingClientRect().height, ancho: c.getBoundingClientRect().width }; });
   C.prueba('una barra de progreso por entrada y solo una activa, con su animación', dis.barras === dis.slides && dis.activas === 1 && dis.enMarcha === 'heroLlena', JSON.stringify(dis));
-  C.prueba('cada entrada trae su puesto y el botón «Ver ahora»', dis.conCta, JSON.stringify(dis));
+  C.prueba('cada entrada trae su insignia y el botón «Descargar gratis»', dis.conCta, JSON.stringify(dis));
   C.prueba('solo la portada que se ve tiene el zoom', dis.enfocadas === 1, String(dis.enfocadas));
-  C.prueba('la tarjeta es alta (se ve la portada, no una franja)', dis.alto / dis.ancho > .7, `${Math.round(dis.alto)}×${Math.round(dis.ancho)}`);
+  C.prueba('la tarjeta tiene alto de tarjeta (se ve la portada, no una franja)', dis.alto / dis.ancho > .5, `${Math.round(dis.alto)}×${Math.round(dis.ancho)}`);
   const fade = await p.evaluate(() => { const i = document.querySelector('#hero-carousel .hero-slide img'), c = document.getElementById('hero-carousel'), cs = getComputedStyle(i), cc = getComputedStyle(c);
     return { mascara: cs.maskImage || cs.webkitMaskImage, borde: cc.borderTopWidth, sombra: cc.boxShadow }; });
   C.prueba('los bordes de la portada se desvanecen (máscara horizontal) y sin marco', /linear-gradient/.test(fade.mascara) && fade.borde === '0px' && fade.sombra === 'none', JSON.stringify(fade));

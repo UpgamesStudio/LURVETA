@@ -94,12 +94,12 @@ function ugContadorUC(total) {
   const acc = document.querySelector('.hdr-actions'); if (!acc) return;
   let b = document.getElementById('hdr-uc');
   if (!b) {
-    b = document.createElement('button'); b.id = 'hdr-uc'; b.type = 'button'; b.title = 'Tus UpCoins'; b.setAttribute('aria-label', 'Tus UpCoins');
-    b.style.cssText = 'display:inline-flex;align-items:center;gap:5px;height:38px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,204,77,.35);background:rgba(255,204,77,.1);color:#ffcc4d;font-weight:800;font-size:.85rem;cursor:pointer;font-family:inherit;white-space:nowrap';
+    b = document.createElement('button'); b.id = 'hdr-uc'; b.className = 'hdr-uc'; b.type = 'button'; b.title = 'Tus UpCoins'; b.setAttribute('aria-label', 'Tus UpCoins');
     b.onclick = () => { switchTab('economia'); setTimeout(() => { document.getElementById('eco-tienda')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); ecoAbrirTienda(); }, 350); };
     acc.insertBefore(b, acc.firstChild);
   }
-  const pintar = t => { const n = Math.floor(t || 0); b.innerHTML = `🪙 <span>${n >= 1e4 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : n.toLocaleString('es-CO')}</span>`; };
+  const pintar = t => { const n = Math.floor(t || 0); b.innerHTML = `<span class="hdr-uc-coin" aria-hidden="true"></span><span class="hdr-uc-txt"><b>${n >= 1e5 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : n.toLocaleString('es-CO')}</b><small>UpCoins</small></span>`; };
+  if (!b.firstChild) pintar(0);   // mientras llega el saldo, la píldora no queda vacía
   if (typeof total === 'number') return pintar(total);
   fetch(`${API_URL}/monedas/saldo`, { headers: { Authorization: `Bearer ${LS.get('token')}` } }).then(r => r.ok ? r.json() : null).then(d => d?.success && pintar(d.upcoins?.total ?? d.monedas)).catch(() => {});
 }
@@ -151,8 +151,22 @@ const UGR = (() => {
     orbe()?.setAttribute('aria-expanded', 'false'); orbe()?.classList.remove('on');
     if (volverFoco) orbe()?.focus({ preventScroll: true });
   }
+  // Con sesión, el orbe es el avatar del usuario (sigue abriendo el mismo menú rápido)
+  function avatar() {
+    const o = orbe(), u = LS.get('user_admin'); if (!o || !ugSesion() || !u) return;
+    o.classList.add('hdr-orb--yo'); o.setAttribute('aria-label', `Menú de @${u}`); o.title = `@${u} · Menú rápido`;
+    let av = o.querySelector('.hdr-av');
+    if (!av) { av = document.createElement('span'); av.className = 'hdr-av'; av.textContent = avatarLetter(u); o.prepend(av); }
+    const poner = url => { if (!url) return; const img = new Image(); img.alt = ''; img.onload = () => { av.textContent = ''; av.appendChild(img); }; img.src = cldOpt(url, 'c_fill,g_face,w_96,h_96,q_auto,f_auto'); };
+    const k = 'ug_hdr_av_' + u; let guardado = null; try { guardado = sessionStorage.getItem(k); } catch (_) {}
+    if (guardado !== null) return poner(guardado);
+    fetch(`${API_URL}/usuarios/perfil-publico/${encodeURIComponent(u)}`).then(r => r.ok ? r.json() : null).then(d => {
+      const url = String(d?.usuario?.avatar || '').trim(); try { sessionStorage.setItem(k, url); } catch (_) {} poner(url);
+    }).catch(() => {});
+  }
   document.addEventListener('DOMContentLoaded', () => {
     const r = raiz(), o = orbe(); if (!r || !o) return;
+    avatar();
     o.addEventListener('click', e => { e.stopPropagation(); abierto ? cerrar() : abrir(); });
     r.addEventListener('click', e => {
       if (e.target.closest('[data-ugr-cerrar]')) return cerrar(true);

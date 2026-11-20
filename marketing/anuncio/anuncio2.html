@@ -154,7 +154,7 @@ function portadaSVG(seed, titulo) {
     <text x="14" y="270" font-family="Orbitron" font-weight="900" font-size="${titulo.length > 11 ? 17 : 21}" fill="#F2F5F7">${titulo}</text><text x="14" y="296" font-family="Share Tech Mono" font-size="15" fill="#39FF88">✓ VERIFICADO</text></svg>`;
 }
 function telefono(padre, neon) { const t = h('div', 'c tel' + (neon ? ' neon' : ''), '<div class="pant"><div class="notch"></div></div>', padre); return { el: t, pant: t.querySelector('.pant') }; }
-function cabecera(pant, txt = '● EN LÍNEA') { return h('div', 'ui-hdr', `<div class="ui-logo"><b>UP</b>GAMES</div><div class="mono" style="font-size:22px;color:#8A94A6">${txt}</div>`, pant); }
+function cabecera(pant, txt = '● EN LÍNEA') { return h('div', 'ui-hdr', `<div class="ui-logo"><b>LUR</b>VETA</div><div class="mono" style="font-size:22px;color:#8A94A6">${txt}</div>`, pant); }
 
 /* ════════════════ FONDO: degradado, rejilla, partículas con profundidad, pulso del ritmo ════════════════ */
 const bg = document.getElementById('bg'), bx = bg.getContext('2d');
@@ -318,7 +318,7 @@ const a5onda = h('div', 'c', '', a5); Object.assign(a5onda.style, { width: '200p
 const a5chis = h('canvas', 'c', null, a5); a5chis.width = 1080; a5chis.height = 1920; const a5x = a5chis.getContext('2d');
 const CHIS = (() => { const r = rng(77); return Array.from({ length: 160 }, () => ({ a: r() * Math.PI * 2, v: 400 + r() * 1400, s: 2 + r() * 6, c: r() > .7 ? '#F2F5F7' : '#39FF88' })); })();
 const a5logo = h('div', 'c orb', '', a5); a5logo.style.fontSize = '180px';
-const a5let = 'LURVETA'.split('').map((ch, i) => { const s = h('span', '', ch, a5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 2) s.className = 'glow'; return s; });
+const a5let = 'LURVETA'.split('').map((ch, i) => { const s = h('span', '', ch, a5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 3) s.className = 'glow'; return s; });
 const a5cortes = [0, 1, 2].map(i => { const c = h('div', 'c orb', 'LURVETA', a5); c.style.fontSize = '180px'; c.style.color = i ? '#39FF88' : '#fff'; return c; });
 const a5hib = h('div', 'c', '<div class="mono" style="font-size:40px;letter-spacing:.3em;color:#C9CED6;text-align:center">EL ECOSISTEMA</div><div class="orb glow" style="font-size:96px;text-align:center">HÍBRIDO</div>', a5);
 const MOD5 = [['DESCARGAS', IC.bajar], ['LIVES', IC.live], ['CHAT', IC.chat], ['VIDEOS', IC.play], ['NEXUS IA', IC.ia]];
@@ -557,7 +557,7 @@ const CIUDADES = [[-99.1, 19.4], [-74.1, 4.7], [-77, -12], [-70.6, -33.4], [-58.
 
 const a12t = h('div', 'c', '<div class="orb glow" style="font-size:150px;text-align:center;line-height:1">#1</div><div class="orb" style="font-size:52px;text-align:center">EN TODA<br>LATINOAMÉRICA</div>', a12);
 const a12casa = h('div', 'c', `<svg viewBox="0 0 200 200" width="360" height="360"><path d="M100 20 L180 80 L180 180 L20 180 L20 80 Z" fill="none" stroke="#39FF88" stroke-width="8" stroke-linejoin="round"/><path d="M75 180 V120 H125 V180" fill="none" stroke="#F2F5F7" stroke-width="8"/><text x="100" y="100" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="34" fill="#39FF88">UP</text></svg>`, a12);
-const a12logo = h('div', 'c orb', '<span class="glow" style="color:#39FF88">UP</span>GAMES', a12); a12logo.style.fontSize = '150px';
+const a12logo = h('div', 'c orb', '<span class="glow" style="color:#39FF88">LUR</span>VETA', a12); a12logo.style.fontSize = '150px';
 const a12hog = h('div', 'c', '<div class="mono" style="font-size:40px;letter-spacing:.25em;color:#C9CED6;text-align:center">TU NUEVO</div><div class="orb glow" style="font-size:84px;text-align:center">HOGAR DIGITAL</div>', a12);
 const a12dom = h('div', 'c mono', 'upgames.games', a12); Object.assign(a12dom.style, { fontSize: '62px', letterSpacing: '.06em' });
 const a12btn = h('div', 'c boton bisel-s', 'ENTRA HOY · GRATIS', a12);

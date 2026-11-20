@@ -1,0 +1,363 @@
+/* ═══════════════════════════════════════════════════════════════
+   Lurveta · rediseño de la portada y de Nexus AI (noviembre 2026)
+   ───────────────────────────────────────────────────────────────
+   Va la ÚLTIMA del paquete (scripts/unir-css.js): repite los selectores de las capas
+   anteriores (v6, hero, cyber…) y les gana por orden. Solo cambia la presentación;
+   los ids, clases y comportamientos que usa el JS siguen iguales.
+   Las dos variantes de tema (cyber y clásico) comparten este diseño.
+═══════════════════════════════════════════════════════════════ */
+html[data-tema] {
+  --bg: #080C0B; --bg-rgb: 8, 12, 11;
+  --lv-surf: #0F1513; --lv-surf2: #141B18;
+  --lv-bd: rgba(255, 255, 255, .08); --lv-bd2: rgba(255, 255, 255, .13);
+  --lv-txt: #F2F5F4; --lv-txt2: #A9B2AE; --lv-txt3: #75807C;
+  --lv-g: #2FD37F; --lv-g-rgb: 47, 211, 127;
+  --lv-oro: #F4C451;
+  --lv-ease: cubic-bezier(.22, 1, .36, 1);
+  --lv-nav: 66px;
+  --ff: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ff-disp: 'Inter', system-ui, -apple-system, sans-serif;
+}
+html[data-tema] body { background: radial-gradient(130% 55% at 50% -12%, rgba(var(--lv-g-rgb), .07), transparent 62%) var(--bg) fixed !important; font-family: var(--ff); }
+/* Inter en todo lo que la capa v6 forzaba a otra fuente */
+html[data-tema] #app-header *, html[data-tema] #category-row *, html[data-tema] #hero-carousel *, html[data-tema] .ugx-fila-h *, html[data-tema] .section-header *,
+html[data-tema] .game-tile *, html[data-tema] .ugc *, html[data-tema] #bottom-nav *, html[data-tema] #detail-sheet *:not(.mono), html[data-tema] #nxPanel * {
+  font-family: var(--ff) !important;
+}
+
+/* ── Cabecera ─────────────────────────────────────────────────── */
+html[data-tema] #app-header { background: rgba(8, 12, 11, .78) !important; border-bottom: 0 !important; }
+html[data-tema] #app-header .hdr-logo { width: 124px; height: 28px; background-image: url(icons/logo-lurveta.svg); }
+html[data-tema] #app-header .hdr-actions { display: flex; align-items: center; gap: 10px; }
+html[data-tema] #app-header #hdr-uc { order: 1; }
+html[data-tema] #app-header #notif-btn { order: 2; }
+html[data-tema] #app-header .hdr-orb { order: 3; }
+html[data-tema] #app-header #hdr-entrar { order: 4; }
+
+/* Saldo: moneda dorada + cifra + «UpCoins» */
+html[data-tema] #app-header .hdr-uc {
+  display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 13px 0 5px; border-radius: 999px; cursor: pointer;
+  background: linear-gradient(180deg, rgba(244, 196, 81, .17), rgba(244, 196, 81, .07)); border: 1px solid rgba(244, 196, 81, .42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); color: var(--lv-oro); white-space: nowrap; transition: transform .15s var(--lv-ease);
+}
+html[data-tema] #app-header .hdr-uc:active { transform: scale(.96); }
+html[data-tema] #app-header .hdr-uc-coin {
+  width: 29px; height: 29px; border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 34% 30%, #FFF0B8 0 12%, #F8D162 34%, #D99A1E 74%, #A86F0C 100%);
+  box-shadow: inset 0 0 0 2.5px rgba(255, 234, 160, .55), inset 0 -3px 5px rgba(120, 70, 0, .45), 0 2px 8px rgba(244, 196, 81, .35);
+}
+html[data-tema] #app-header .hdr-uc-txt { display: flex; flex-direction: column; line-height: 1.05; text-align: left; }
+html[data-tema] #app-header .hdr-uc-txt b { font-size: 15px; font-weight: 700; color: #FBE7AE; letter-spacing: -.01em; }
+html[data-tema] #app-header .hdr-uc-txt small { font-size: 10.5px; font-weight: 500; color: rgba(244, 196, 81, .78); }
+
+/* Campana */
+html[data-tema] #app-header #notif-btn {
+  position: relative; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
+  background: none !important; border: 0 !important; box-shadow: none !important; color: var(--lv-txt); cursor: pointer;
+}
+html[data-tema] #app-header #notif-btn ion-icon { font-size: 25px; }
+html[data-tema] #app-header #notif-btn .ugn-badge {
+  position: absolute; top: 5px; right: 5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
+  background: #F2643D; color: #fff; font: 700 10px/16px var(--ff); text-align: center; border: 2px solid var(--bg); box-sizing: content-box;
+}
+
+/* Avatar (con sesión el orbe del menú rápido es tu foto) */
+html[data-tema] #app-header .hdr-orb { width: 40px !important; height: 40px !important; position: relative; }
+html[data-tema] #app-header .hdr-orb--yo { padding: 0 !important; background: var(--lv-surf2) !important; border: 2px solid rgba(255, 255, 255, .14) !important; box-shadow: 0 4px 14px rgba(0, 0, 0, .45) !important; }
+html[data-tema] #app-header .hdr-orb--yo .hdr-orb-ic { display: none !important; }
+html[data-tema] #app-header .hdr-av {
+  position: absolute; inset: 0; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
+  background: linear-gradient(135deg, #2FD37F, #1C8F7A); color: #04140B; font: 800 16px/1 var(--ff);
+}
+html[data-tema] #app-header .hdr-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+html[data-tema] #app-header .hdr-orb.on.hdr-orb--yo { border-color: rgba(var(--lv-g-rgb), .7) !important; }
+html[data-tema] #app-header .hdr-orb .ugn-badge, html[data-tema] #app-header .hdr-orb-live { z-index: 2; }
+html[data-tema] #app-header #hdr-entrar {
+  height: 40px !important; padding: 0 18px !important; background: var(--lv-g) !important; color: #04140B !important;
+  border: 0 !important; box-shadow: 0 8px 20px -10px rgba(var(--lv-g-rgb), .8) !important; font-weight: 700 !important; font-size: 14.5px !important;
+}
+
+/* Buscador con la píldora «Nexus AI» */
+html[data-tema] #app-header .search-bar {
+  height: 52px; padding: 0 7px 0 16px !important; gap: 10px; border-radius: 17px !important;
+  background: rgba(255, 255, 255, .045) !important; border: 1px solid rgba(255, 255, 255, .1) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04) !important;
+}
+html[data-tema] #app-header .search-bar > svg { width: 21px; height: 21px; color: var(--lv-txt2); flex: none; }
+html[data-tema] #app-header .search-bar input { font-size: 15.5px !important; color: var(--lv-txt) !important; }
+html[data-tema] #app-header .search-bar input::placeholder { color: #848E8A !important; opacity: 1; }
+html[data-tema] #app-header .search-bar:focus-within { border-color: rgba(var(--lv-g-rgb), .45) !important; }
+html[data-tema] #app-header .nxb-btn {
+  width: auto !important; height: 38px !important; padding: 0 13px !important; display: inline-flex !important; align-items: center; gap: 6px; flex: none;
+  border-radius: 12px !important; background: rgba(var(--lv-g-rgb), .12) !important; border: 1px solid rgba(var(--lv-g-rgb), .22) !important;
+  color: var(--lv-g) !important; font: 600 14px/1 var(--ff) !important; white-space: nowrap; box-shadow: none !important;
+}
+html[data-tema] #app-header .nxb-btn span { font-size: 14px; }
+html[data-tema] #app-header .nxb-btn b { font-weight: 600; }
+html[data-tema] #app-header .nxb-btn.on { background: rgba(var(--lv-g-rgb), .22) !important; }
+
+/* ── Categorías: la activa es una píldora con borde; el resto, texto ── */
+html[data-tema] #category-row { gap: 4px !important; }
+html[data-tema] #category-row .chip {
+  background: none !important; border: 1px solid transparent !important; box-shadow: none !important;
+  color: var(--lv-txt2) !important; font-weight: 500 !important; font-size: 15.5px !important; padding: 8px 14px !important; height: auto !important;
+  border-radius: 999px !important; text-transform: none !important; letter-spacing: -.005em !important; clip-path: none !important;
+}
+html[data-tema] #category-row .chip:hover { color: var(--lv-txt) !important; }
+html[data-tema] #category-row .chip.active {
+  background: rgba(255, 255, 255, .07) !important; color: #fff !important; border-color: rgba(255, 255, 255, .42) !important; font-weight: 600 !important;
+}
+
+/* ── Carrusel principal: tarjeta con la portada a la derecha y la siguiente asomando ── */
+html #hero-carousel, html[data-tema] #hero-carousel {
+  --hero-h: clamp(212px, 56vw, 300px);
+  aspect-ratio: auto !important; height: auto !important; margin: 6px 0 24px !important; border-radius: 0 !important; overflow: hidden;
+  background: none !important; border: 0 !important; box-shadow: none !important;
+}
+html[data-tema] #hero-carousel .hero-track { height: var(--hero-h); padding-left: 16px; box-sizing: border-box; }
+html[data-tema] #hero-carousel .hero-slide {
+  width: calc(100% - 36px) !important; margin-right: 16px; border-radius: 22px;   /* margen = sangría: la anterior no asoma */ overflow: hidden; isolation: isolate;
+  background: radial-gradient(90% 120% at 0% 100%, rgba(var(--lv-g-rgb), .10), transparent 60%), linear-gradient(135deg, #111A17, #0B110F);
+  border: 1px solid rgba(255, 255, 255, .1); box-shadow: 0 22px 44px -26px rgba(0, 0, 0, .95);
+}
+html[data-tema] #hero-carousel .hero-slide img {
+  position: absolute; top: 0; right: 0; width: 74% !important; height: 100% !important; object-fit: cover;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, .5) 20%, #000 46%) !important;
+  mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, .5) 20%, #000 46%) !important;
+}
+html[data-tema] #hero-carousel .hero-slide::after {
+  -webkit-mask-image: none !important; mask-image: none !important;
+  background: linear-gradient(90deg, rgba(10, 15, 13, .9) 0%, rgba(10, 15, 13, .5) 42%, rgba(10, 15, 13, 0) 72%), linear-gradient(0deg, rgba(8, 12, 11, .55) 0%, rgba(8, 12, 11, 0) 46%) !important;
+}
+html[data-tema] #hero-carousel .hero-top { top: 16px; left: 18px; right: 18px; }
+html[data-tema] #hero-carousel .hero-badge {
+  padding: 7px 12px !important; border-radius: 999px !important; background: rgba(8, 16, 13, .62) !important; color: #E9FFF3 !important;
+  border: 1.5px solid rgba(var(--lv-g-rgb), .8) !important; font: 700 11.5px/1 var(--ff) !important; letter-spacing: .045em !important; text-transform: uppercase !important;
+  box-shadow: 0 0 16px rgba(var(--lv-g-rgb), .38), inset 0 0 10px rgba(var(--lv-g-rgb), .22) !important;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+html[data-tema] #hero-carousel .hero-badge--video { border-color: rgba(var(--cy-rgb), .8) !important; box-shadow: 0 0 16px rgba(var(--cy-rgb), .35), inset 0 0 10px rgba(var(--cy-rgb), .2) !important; }
+html[data-tema] #hero-carousel .hero-info { left: 18px; right: 18px; bottom: 16px; padding: 0 !important; max-width: none !important; }
+html[data-tema] #hero-carousel .hero-title {
+  font: 800 clamp(1.38rem, 6.3vw, 1.8rem)/1.12 var(--ff) !important; letter-spacing: -.025em !important; max-width: 82%;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .7) !important; text-transform: none !important;
+}
+html[data-tema] #hero-carousel .hero-meta { margin-top: 5px !important; gap: 4px 12px !important; }
+html[data-tema] #hero-carousel .hero-user { color: rgba(255, 255, 255, .74) !important; font-size: 14px !important; font-weight: 500; }
+html[data-tema] #hero-carousel .hero-dl { font-size: 12.5px !important; color: rgba(255, 255, 255, .6) !important; }
+html[data-tema] #hero-carousel .hero-cta {
+  margin: 12px 0 0 !important; height: 42px; padding: 0 18px; display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 999px; background: var(--lv-g) !important; color: #04140B !important; font: 600 15px/1 var(--ff) !important; letter-spacing: -.005em !important; text-transform: none !important;
+  box-shadow: 0 12px 26px -12px rgba(var(--lv-g-rgb), .85), inset 0 1px 0 rgba(255, 255, 255, .25) !important;
+}
+html[data-tema] #hero-carousel .hero-cta ion-icon { font-size: 18px; }
+html[data-tema] #hero-carousel .hero-vid-type { color: rgba(255, 255, 255, .6); font: 600 11px/1 var(--ff); letter-spacing: .06em; margin-bottom: 6px; }
+html[data-tema] #hero-carousel .yt-play-badge.large { left: 63%; }
+/* Puntos debajo de la tarjeta; el activo es una píldora que se llena con el tiempo de cada entrada */
+html[data-tema] #hero-carousel .hero-dots { position: static !important; inset: auto !important; display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
+html[data-tema] #hero-carousel .hero-dot { flex: none; width: 6px !important; height: 6px; border-radius: 999px !important; background: rgba(255, 255, 255, .24) !important; overflow: hidden; transition: width .3s var(--lv-ease); }
+html[data-tema] #hero-carousel .hero-dot.active { width: 20px !important; background: rgba(255, 255, 255, .3) !important; }
+html[data-tema] #hero-carousel .hero-dot::after { background: #fff !important; }
+/* Flechas (solo con ratón): juntas abajo a la derecha de la tarjeta, lejos del texto. --hero-fin = hueco a la derecha de la tarjeta */
+html[data-tema] #hero-carousel { --hero-fin: 36px; }
+html[data-tema] #hero-carousel .hero-arrow { top: calc(var(--hero-h) - 60px); transform: none; width: 42px; height: 42px; background: rgba(8, 12, 11, .72) !important; border: 1px solid var(--lv-bd2) !important; }
+html[data-tema] #hero-carousel .hero-arrow.prev { left: auto; right: calc(var(--hero-fin) + 68px); }
+html[data-tema] #hero-carousel .hero-arrow.next { right: calc(var(--hero-fin) + 18px); }
+@media (hover: none) { html[data-tema] #hero-carousel .hero-arrow { display: none !important; } }
+
+/* ── Filas («Lo más descargado», «Nuevos»…) y tarjetas ── */
+html[data-tema] .ugx-fila h2, html[data-tema] .section-title {
+  font: 700 21px/1.2 var(--ff) !important; letter-spacing: -.02em !important; text-transform: none !important; text-shadow: none !important; color: var(--lv-txt) !important;
+}
+html[data-tema] .ugx-fila-h { padding: 2px 2px 12px !important; }
+html[data-tema] .game-tile .thumb-wrap { border-radius: 15px !important; box-shadow: 0 0 0 1px rgba(255, 255, 255, .11), 0 18px 34px -24px rgba(0, 0, 0, .95) !important; background: var(--lv-surf); }
+html[data-tema] .ugx-fila-track .game-tile .thumb-wrap { aspect-ratio: 5 / 6 !important; }
+html[data-tema] .game-tile .tile-title { font: 600 15.5px/1.25 var(--ff) !important; letter-spacing: -.01em !important; }
+html[data-tema] .game-tile .tile-meta { gap: 8px !important; margin-top: 5px !important; color: var(--lv-txt3) !important; }
+html[data-tema] .game-tile .tile-meta * { font-size: 13.5px !important; }
+html[data-tema] .ugx-fila .game-tile .tile-user { display: none !important; }   /* en las filas, como en la tienda: título y valoración */
+html[data-tema] .game-tile .ugrs-tile-star { margin-left: 0 !important; gap: 4px; color: var(--lv-txt2) !important; font-weight: 600 !important; order: -1; }
+html[data-tema] .game-tile .ugrs-tile-star i { font-style: normal; color: var(--lv-oro) !important; font-size: 14px !important; }
+html[data-tema] .game-tile .ugrs-tile-star small { color: var(--lv-txt3) !important; font-weight: 500; }
+html[data-tema] .ugx-fila--top .game-tile .thumb-wrap::after {
+  left: 8px !important; top: 8px; bottom: auto !important; width: 26px !important; height: 26px !important; border-radius: 9px !important;
+  font: 700 13px/1 var(--ff) !important; background: rgba(8, 12, 11, .66) !important;
+}
+
+/* ── Barra inferior: fija a todo lo ancho, con la pestaña activa en verde y Nexus al centro ── */
+html[data-tema] #bottom-nav {
+  left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important; width: auto !important; max-width: none !important; transform: none !important;
+  height: calc(var(--lv-nav) + env(safe-area-inset-bottom)) !important; padding: 0 6px env(safe-area-inset-bottom) !important;
+  border-radius: 0 !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, .07) !important; clip-path: none !important;
+  background: rgba(8, 12, 11, .9) !important; -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow: 0 -12px 30px -18px rgba(0, 0, 0, .9) !important;
+}
+html[data-tema] #bottom-nav::before, html[data-tema] #bottom-nav .ug-nav-pill { display: none !important; }
+html[data-tema] #bottom-nav .nav-tab { position: relative; color: var(--lv-txt3) !important; text-transform: none !important; letter-spacing: normal !important; gap: 3px !important; }
+html[data-tema] #bottom-nav .nav-tab span { font-size: 12px !important; font-weight: 500 !important; margin-top: 0 !important; }
+html[data-tema] #bottom-nav .nav-tab ion-icon { font-size: 25px !important; color: inherit !important; }
+html[data-tema] #bottom-nav .nav-tab::before {
+  content: ''; position: absolute; top: -1px; left: 50%; width: 36px; height: 2.5px; margin-left: -18px; border-radius: 0 0 3px 3px;
+  background: var(--lv-g); box-shadow: 0 0 12px rgba(var(--lv-g-rgb), .8); opacity: 0; transform: scaleX(.4); transition: opacity .25s, transform .3s var(--lv-ease);
+}
+html[data-tema] #bottom-nav .nav-tab.active, html[data-tema] body.nx-open #bottom-nav .nav-nexus { color: var(--lv-g) !important; }
+html[data-tema] #bottom-nav .nav-tab.active ion-icon { color: var(--lv-g) !important; }
+html[data-tema] #bottom-nav .nav-tab.active::before, html[data-tema] body.nx-open #bottom-nav .nav-nexus::before { opacity: 1; transform: none; }
+/* con Nexus abierto, la pestaña de debajo deja de marcarse */
+html[data-tema] body.nx-open #bottom-nav .nav-tab.active:not(.nav-nexus) { color: var(--lv-txt3) !important; }
+html[data-tema] body.nx-open #bottom-nav .nav-tab.active:not(.nav-nexus) ion-icon { color: var(--lv-txt3) !important; }
+html[data-tema] body.nx-open #bottom-nav .nav-tab.active:not(.nav-nexus)::before { opacity: 0; }
+/* Nexus: botón redondo con brillo */
+html[data-tema] #bottom-nav .nav-nexus { color: var(--lv-txt2) !important; }
+html[data-tema] #bottom-nav .nav-nexus span { color: inherit !important; }
+html[data-tema] #bottom-nav .nav-nexus .nav-nexus-ring {
+  width: 42px !important; height: 42px !important; margin: -17px 0 0 !important; display: grid !important; place-items: center; border-radius: 50% !important;   /* sube: la etiqueta queda alineada con las demás */
+  background: radial-gradient(circle at 50% 30%, rgba(var(--lv-g-rgb), .34), rgba(var(--lv-g-rgb), .1) 68%) !important;
+  border: 1px solid rgba(var(--lv-g-rgb), .5) !important; box-shadow: 0 0 18px rgba(var(--lv-g-rgb), .32), inset 0 1px 0 rgba(255, 255, 255, .12) !important;
+}
+html[data-tema] #bottom-nav .nav-nexus ion-icon { font-size: 22px !important; color: var(--lv-g) !important; }
+html[data-tema] body.nx-open #bottom-nav .nav-nexus .nav-nexus-ring { background: radial-gradient(circle at 50% 30%, rgba(var(--lv-g-rgb), .5), rgba(var(--lv-g-rgb), .18) 70%) !important; }
+html[data-tema] #bottom-nav .nx-fab-badge { top: 4px; right: calc(50% - 22px); }
+@media (min-width: 900px) {
+  /* escritorio: la misma barra, como un dock centrado */
+  html[data-tema] #bottom-nav {
+    left: 50% !important; right: auto !important; bottom: 16px !important; width: 520px !important; transform: translateX(-50%) !important;
+    height: var(--lv-nav) !important; padding: 0 8px !important; border-radius: 22px !important; border: 1px solid rgba(255, 255, 255, .09) !important;
+    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .95) !important;
+  }
+}
+
+/* ── Nexus AI ─────────────────────────────────────────────────── */
+html[data-tema] #nxPanel {
+  background: radial-gradient(120% 46% at 50% 0%, rgba(38, 150, 118, .26), transparent 62%), #090E0D !important;
+  -webkit-backdrop-filter: none; backdrop-filter: none; color: var(--lv-txt);
+}
+html[data-tema] #nxPanel .nx-hdr { display: block; padding: 14px 18px 6px; border: 0; }
+html[data-tema] #nxPanel .nx-hdr-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+html[data-tema] #nxPanel .nx-name { margin: 0; font: 800 28px/1.1 var(--ff) !important; letter-spacing: -.025em; color: #fff; }
+html[data-tema] #nxPanel .nx-name em { font-style: normal; color: inherit; }
+html[data-tema] #nxPanel .nx-av {
+  position: relative; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: radial-gradient(circle at 35% 28%, rgba(190, 255, 225, .55), rgba(60, 190, 150, .5) 38%, rgba(18, 80, 66, .9) 78%);
+  box-shadow: 0 0 22px rgba(var(--lv-g-rgb), .45), inset 0 0 0 1px rgba(170, 255, 220, .3);
+}
+html[data-tema] #nxPanel .nx-av span { font: 800 15px/1 var(--ff) !important; color: #fff; text-shadow: 0 1px 6px rgba(0, 0, 0, .4); }
+html[data-tema] #nxPanel .nx-hdr-acc { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+html[data-tema] #nxPanel .nx-hdr-r { display: flex; gap: 10px; }
+html[data-tema] #nxPanel .nx-nuevo, html[data-tema] #nxPanel .nx-ibtn {
+  height: 42px; border-radius: 14px; background: rgba(255, 255, 255, .055); border: 1px solid rgba(255, 255, 255, .11);
+  color: #E7ECEA; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s, border-color .2s, transform .15s;
+}
+html[data-tema] #nxPanel .nx-nuevo { gap: 9px; padding: 0 16px 0 13px; font: 500 15px/1 var(--ff) !important; }
+html[data-tema] #nxPanel .nx-nuevo svg { width: 17px; height: 17px; }
+html[data-tema] #nxPanel .nx-ibtn { width: 42px; padding: 0; }
+html[data-tema] #nxPanel .nx-ibtn svg { width: 17px; height: 17px; }
+html[data-tema] #nxPanel .nx-nuevo:hover, html[data-tema] #nxPanel .nx-ibtn:hover { background: rgba(255, 255, 255, .09); border-color: rgba(255, 255, 255, .18); }
+html[data-tema] #nxPanel .nx-nuevo:active, html[data-tema] #nxPanel .nx-ibtn:active { transform: scale(.95); }
+/* Bienvenida: orbe de cristal, saludo y sugerencias en 2 × 2 */
+html[data-tema] #nxPanel .nx-msgs { padding: 14px 18px 12px; }
+html[data-tema] #nxPanel .nx-hola { padding: 8px 0 4px; }
+html[data-tema] #nxPanel .nx-hola-orb {
+  position: relative; width: 116px; height: 116px; padding: 0; animation: lvOrbe 5s ease-in-out infinite;
+  background: radial-gradient(circle at 50% 52%, rgba(150, 255, 210, .95) 0 9%, rgba(70, 215, 160, .9) 10% 15%, rgba(36, 140, 112, .55) 16% 33%, rgba(18, 70, 60, .8) 34% 60%, rgba(10, 34, 31, .95) 61%);
+  box-shadow: inset -10px -12px 26px rgba(0, 0, 0, .55), inset 10px 12px 22px rgba(140, 255, 210, .16), 0 0 0 1px rgba(150, 255, 215, .2), 0 0 60px rgba(var(--lv-g-rgb), .32);
+}
+html[data-tema] #nxPanel .nx-hola-orb span {
+  position: absolute; top: 13%; left: 18%; width: 46%; height: 30%; border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 40%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 70%); filter: blur(2px);
+}
+@keyframes lvOrbe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+html[data-tema] #nxPanel .nx-hola h3 { margin: 26px 0 6px; font: 800 29px/1.15 var(--ff) !important; letter-spacing: -.025em; color: #fff; }
+html[data-tema] #nxPanel .nx-hola h3 em { font-style: normal; color: var(--lv-g); }
+html[data-tema] #nxPanel .nx-hola p { margin: 0 auto 30px; font-size: 16.5px; color: var(--lv-txt2); max-width: none; }
+html[data-tema] #nxPanel .nx-sugs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 520px; }
+html[data-tema] #nxPanel .nx-sug {
+  min-height: 74px; padding: 14px 12px; display: flex; align-items: center; justify-content: center; text-align: center;
+  border-radius: 20px; background: rgba(255, 255, 255, .045); border: 1px solid rgba(255, 255, 255, .1); color: #EEF2F0;
+  font: 500 14.5px/1.32 var(--ff) !important; cursor: pointer; transition: background .2s, border-color .2s, transform .15s;
+}
+html[data-tema] #nxPanel .nx-sug:hover { background: rgba(var(--lv-g-rgb), .08); border-color: rgba(var(--lv-g-rgb), .32); }
+html[data-tema] #nxPanel .nx-sug:active { transform: scale(.97); }
+/* Caja de texto: mensaje arriba, micrófono y enviar abajo a la derecha */
+html[data-tema] #nxPanel .nx-form {
+  flex-direction: column; align-items: stretch; gap: 4px; margin: 4px 16px 0; padding: 12px 10px 10px 16px;
+  border: 1px solid rgba(255, 255, 255, .12); border-radius: 24px; background: rgba(255, 255, 255, .045); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  transition: border-color .2s;
+}
+html[data-tema] #nxPanel .nx-form:focus-within { border-color: rgba(var(--lv-g-rgb), .45); }
+html[data-tema] #nxPanel .nx-form textarea {
+  min-height: 26px; padding: 2px 4px 0 0; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none;
+  color: var(--lv-txt); font: 400 16px/1.4 var(--ff) !important;
+}
+html[data-tema] #nxPanel .nx-form textarea::placeholder { color: #7F8986; }
+html[data-tema] #nxPanel .nx-form-acc { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+html[data-tema] #nxPanel .nx-form button { width: 44px; height: 44px; border-radius: 50%; flex: none; display: grid; place-items: center; }
+html[data-tema] #nxPanel .nx-form .nx-mic { background: none; color: var(--lv-txt2); border: 0; }
+html[data-tema] #nxPanel .nx-form .nx-mic svg { width: 23px; height: 23px; }
+html[data-tema] #nxPanel .nx-form .nx-mic.on { color: #fff; background: rgba(242, 100, 61, .9); animation: lvMic 1.2s ease-in-out infinite; }
+@keyframes lvMic { 50% { box-shadow: 0 0 0 7px rgba(242, 100, 61, .18); } }
+html[data-tema] #nxPanel .nx-form #nxSend { background: var(--lv-g); color: #04140B; box-shadow: 0 10px 22px -10px rgba(var(--lv-g-rgb), .9); }
+html[data-tema] #nxPanel .nx-form #nxSend svg { width: 20px; height: 20px; margin-left: 2px; }
+/* Cuota / Premium: pestaña debajo de la caja */
+html[data-tema] #nxPanel .nx-cuota {
+  align-self: center; justify-content: center; gap: 10px; margin: 0 0 10px; padding: 8px 16px 9px; border: 1px solid rgba(255, 255, 255, .09); border-top: 0;
+  border-radius: 0 0 14px 14px; background: rgba(255, 255, 255, .035); color: var(--lv-txt2); font: 500 13px/1.2 var(--ff) !important;
+}
+html[data-tema] #nxPanel .nx-cuota[hidden] { display: none; }
+html[data-tema] #nxPanel .nx-cuota b { color: #fff; }
+html[data-tema] #nxPanel .nx-cuota.prem b { color: var(--lv-oro); }
+html[data-tema] #nxPanel .nx-cuota button { border: 0; background: none; padding: 0; color: var(--lv-g); font: 600 13px/1.2 var(--ff) !important; }
+/* Burbujas del chat con la paleta nueva */
+html[data-tema] #nxPanel .nx-yo .nx-bub { background: var(--lv-g); color: #04140B; }
+html[data-tema] #nxPanel .nx-ia .nx-bub { background: rgba(255, 255, 255, .055); border-color: rgba(255, 255, 255, .09); }
+
+/* la música (y en móvil la guía) flotan por encima: mientras Nexus está abierto se apartan */
+html[data-tema] body.nx-open .ugm { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+@media (max-width: 899px) {
+  /* Móvil y tablet: Nexus es una pantalla completa sobre la barra inferior, que sigue visible */
+  html[data-tema] #nxPanel {
+    top: 0; bottom: calc(var(--lv-nav) + env(safe-area-inset-bottom)); height: auto !important; border: 0; border-radius: 0;
+    padding-top: env(safe-area-inset-top); box-shadow: none; transform: translateY(14px); transition: transform .32s var(--lv-ease), opacity .22s, visibility .22s;
+  }
+  html[data-tema] #nxPanel.open { transform: none; }
+  html[data-tema] #nxPanel::before { display: none !important; }
+  html[data-tema] #nxPanel.expanded { bottom: 0; z-index: 800; }
+  html[data-tema] body.nx-open #tut-fab { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+}
+@media (min-width: 600px) and (max-width: 899px) {
+  html[data-tema] #nxPanel .nx-hdr, html[data-tema] #nxPanel .nx-msgs { padding-left: max(28px, calc(50% - 300px)); padding-right: max(28px, calc(50% - 300px)); }
+  html[data-tema] #nxPanel .nx-form { width: min(600px, calc(100% - 56px)); margin-left: auto; margin-right: auto; }
+}
+@media (min-width: 900px) {
+  html[data-tema] #nxPanel { border: 1px solid rgba(255, 255, 255, .1) !important; box-shadow: 0 30px 90px rgba(0, 0, 0, .65) !important; }
+  html[data-tema] #nxPanel .nx-name { font-size: 24px !important; }
+  html[data-tema] #nxPanel .nx-hola-orb { width: 96px; height: 96px; }
+  html[data-tema] #nxPanel .nx-hola h3 { font-size: 25px !important; margin-top: 20px; }
+  html[data-tema] #nxPanel .nx-hola p { font-size: 15px; margin-bottom: 22px; }
+  html[data-tema] #nxPanel .nx-sug { min-height: 66px; font-size: 13.5px !important; }
+  html[data-tema] #nxPanel.expanded .nx-msgs, html[data-tema] #nxPanel.expanded .nx-hdr { padding-left: max(24px, calc(50% - 380px)); padding-right: max(24px, calc(50% - 380px)); }
+  html[data-tema] #nxPanel.expanded .nx-form { width: min(760px, calc(100% - 48px)); margin-left: auto; margin-right: auto; }
+}
+
+/* ── Tablet y escritorio ── */
+@media (min-width: 600px) {
+  html[data-tema] #hero-carousel { --hero-h: clamp(290px, 40vw, 360px); }
+  html[data-tema] #hero-carousel .hero-track { padding-left: 24px; }
+  html[data-tema] #hero-carousel .hero-slide { width: calc(100% - 72px) !important; margin-right: 24px; border-radius: 26px; }
+  html[data-tema] #hero-carousel .hero-top { top: 24px; left: 28px; }
+  html[data-tema] #hero-carousel .hero-info { left: 28px; bottom: 26px; }
+  html[data-tema] #hero-carousel .hero-title { font-size: clamp(1.9rem, 4.2vw, 2.6rem) !important; max-width: 64%; }
+  html[data-tema] #hero-carousel .hero-user { font-size: 15px !important; }
+  html[data-tema] #hero-carousel .hero-cta { height: 46px; padding: 0 22px; margin-top: 16px !important; }
+  html[data-tema] #hero-carousel .hero-slide img { width: 66% !important; }
+  html[data-tema] #hero-carousel { --hero-fin: 72px; }
+}
+@media (min-width: 900px) {
+  html[data-tema] #hero-carousel { --hero-h: 380px; }
+  html[data-tema] #hero-carousel .hero-slide { width: calc(100% - 120px) !important; }
+  html[data-tema] #hero-carousel { --hero-fin: 120px; }
+  html[data-tema] #hero-carousel .hero-title { max-width: min(58%, 680px); }
+  html[data-tema] #app-header .hdr-logo { width: 132px; height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-tema] #nxPanel .nx-hola-orb, html[data-tema] #nxPanel .nx-form .nx-mic.on { animation: none; }
+}

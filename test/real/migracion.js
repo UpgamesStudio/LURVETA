@@ -201,7 +201,7 @@ function versionAnterior() {
     C.prueba('A) queda solo el SW raíz (alcance /), sin el de /public/', JSON.stringify(d.regs) === '["/"]', JSON.stringify(d.regs));
     C.prueba('A) cachés viejas de Lurveta borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
     await v.q.reload(); await espera(1500);
-    C.prueba('A) tras recargar, /service-worker.js controla la portada y llena su caché nueva', (await ctl(v.q)) === `${web.url}/service-worker.js` && (await cachés(v.q)).some(n => n.startsWith('upgames-v8.1.0')), JSON.stringify({ ctl: await ctl(v.q), c: await cachés(v.q) }));
+    C.prueba('A) tras recargar, /service-worker.js controla la portada y llena su caché nueva', (await ctl(v.q)) === `${web.url}/service-worker.js` && (await cachés(v.q)).some(n => n.startsWith('upgames-v8.2.0')), JSON.stringify({ ctl: await ctl(v.q), c: await cachés(v.q) }));
     await v.c.close();
 
     // B) Tras el despliegue abre un marcador / la app instalada vieja (/public/biblioteca.html?…)

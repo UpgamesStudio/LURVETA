@@ -52,13 +52,13 @@
 <link rel="preconnect" href="https://upgames-production.up.railway.app" crossorigin>
 <link rel="dns-prefetch" href="https://upgames-production.up.railway.app">
 <!-- Fuentes sin bloquear el primer render (se aplican al llegar; display=swap) -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
 
 <!-- css:inicio -->
-<!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css (scripts/unir-css.js) -->
-<link rel="stylesheet" href="upgames-app.css?v=2d1bb93b44">
+<!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css, lurveta-ui.css (scripts/unir-css.js) -->
+<link rel="stylesheet" href="upgames-app.css?v=8ff48ffc8f">
 <!-- css:fin -->
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-intro.js?v=20261109a"></script>
@@ -94,7 +94,7 @@
 <div id="preloader">
   <div class="pl-glow"></div>
   <div class="pl-logo">
-    <span class="up">UP</span><span class="gm">GAMES</span>
+    <span class="up">LUR</span><span class="gm">VETA</span>
   </div>
   <div class="pl-track"><div class="pl-fill" id="pl-fill"></div></div>
   <div class="pl-sub">La Nube de Contenido</div>
@@ -104,7 +104,7 @@
   HEADER
 ══════════════════════════════════ -->
 <header id="app-header">
-  <div class="hdr-logo"><span class="up">UP</span><span class="gm">GAMES</span></div>
+  <div class="hdr-logo"><span class="up">LUR</span><span class="gm">VETA</span></div>
   <div class="search-bar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" id="buscador" placeholder="Buscar juegos, mods, apps, videos..." autocomplete="off">
@@ -279,10 +279,10 @@
 <!-- ══════════════════════════════════
   NEW — artículos y entradas de los blogs de la comunidad (public/js/16-new.js)
 ══════════════════════════════════ -->
-<div id="new-view" aria-label="NEW: lecturas de la comunidad">
+<div id="new-view" aria-label="Novedades: lecturas de la comunidad">
   <header class="ugn-cab">
     <div>
-      <p class="ugn-marca">NEW</p>
+      <p class="ugn-marca">Novedades</p>
       <h2 class="ugn-titulo">Lecturas de la comunidad</h2>
       <p class="ugn-sub">Guías, reseñas y noticias escritas por creadores de Lurveta.</p>
     </div>
@@ -1798,7 +1798,7 @@
 
         <section class="oba-cap" data-cap="0" aria-label="Bienvenida">
           <div class="obh-pill oba-e"><span class="obh-dot"></span> ACCESO FUNDADOR · ERES DE LOS PRIMEROS</div>
-          <div class="obh-logo oba-logo"><span>UP</span>GAMES</div>
+          <div class="obh-logo oba-logo"><span>LUR</span>VETA</div>
           <h2 class="obh-titulo">No es otra app.<br><span>Es un ecosistema que no existe en ningún otro lugar.</span></h2>
           <p class="obh-sub oba-e">Lo que hoy haces en <b>nueve apps distintas</b>, aquí está unido, conectado… <b>y te paga.</b></p>
         </section>
@@ -1923,10 +1923,10 @@
     <span>Nexus</span>
   </button>
 
-  <button class="nav-tab" data-tab="new" aria-label="NEW: artículos de la comunidad">
+  <button class="nav-tab" data-tab="new" aria-label="Novedades: artículos de la comunidad">
     <div class="nav-dot"></div>
     <ion-icon name="newspaper-outline"></ion-icon>
-    <span>NEW</span>
+    <span>Novedades</span>
   </button>
   <!-- Favoritos y Ganancias/Economía viven ahora dentro del Perfil (accesos del perfil) -->
   <button class="nav-tab" data-tab="profile" data-tabs="profile favs economia" aria-label="Mi perfil">
@@ -1959,48 +1959,43 @@
   </svg>
 </button>
 
-<div id="nxPanel" role="dialog" aria-label="Nexus IA" aria-modal="true">
+<div id="nxPanel" role="dialog" aria-label="Nexus AI" aria-modal="true">
   <header class="nx-hdr">
-    <div class="nx-hdr-l">
-      <div class="nx-logo-box">
-        <svg viewBox="0 0 24 24" fill="none" class="nx-lsvg">
-          <path d="M12 2L22 12L12 22L2 12Z" stroke="url(#hg)" stroke-width=".9" opacity=".4"/>
-          <path d="M12 7L17 12L12 17L7 12Z" stroke="url(#hg)" stroke-width=".7" opacity=".7"/>
-          <line x1="12" y1="9" x2="12" y2="15" stroke="#5AC8FA" stroke-width="1.3" stroke-linecap="round"/>
-          <line x1="9" y1="12" x2="15" y2="12" stroke="#5AC8FA" stroke-width="1.3" stroke-linecap="round"/>
-          <circle cx="12" cy="12" r="2" fill="#32D583"/>
-          <defs><linearGradient id="hg" x1="2" y1="2" x2="22" y2="22"><stop stop-color="#32D583"/><stop offset="1" stop-color="#5AC8FA"/></linearGradient></defs>
-        </svg>
-        <span class="nx-live"></span>
-      </div>
-      <div class="nx-titles">
-        <span class="nx-name">NEXUS <em>IA</em></span>
-        <span class="nx-sub" id="nxSub">Tu asistente en Lurveta</span>
-      </div>
+    <div class="nx-hdr-top">
+      <h2 class="nx-name">Nexus <em>AI</em></h2>
+      <span class="nx-av" aria-hidden="true"><span>AI</span></span>
     </div>
-    <div class="nx-hdr-r">
-      <button class="nx-ibtn" id="nxNuevo" onclick="nxNuevaConversacion()" title="Nueva conversación" aria-label="Nueva conversación">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+    <div class="nx-hdr-acc">
+      <button type="button" class="nx-nuevo" id="nxNuevo" onclick="nxNuevaConversacion()" aria-label="Empezar un chat nuevo">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>Nuevo chat
       </button>
-      <button class="nx-ibtn" id="nxExpBtn" onclick="nxExpand()" title="Expandir" aria-label="Expandir">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-          <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/>
-        </svg>
-      </button>
-      <button class="nx-ibtn nx-ibtn-x" onclick="nxToggle()" aria-label="Cerrar">✕</button>
+      <div class="nx-hdr-r">
+        <button type="button" class="nx-ibtn" id="nxExpBtn" onclick="nxExpand()" title="Expandir" aria-label="Expandir">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+            <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/>
+          </svg>
+        </button>
+        <button type="button" class="nx-ibtn nx-ibtn-x" onclick="nxToggle()" title="Cerrar" aria-label="Cerrar Nexus">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
+      </div>
     </div>
   </header>
-  <div class="nx-div"></div>
   <div class="nx-body">
     <div id="nxMsgs" class="nx-msgs" aria-live="polite"></div>
   </div>
-  <div id="nxCuota" class="nx-cuota" hidden></div>
   <form id="nxForm" class="nx-form" autocomplete="off">
-    <textarea id="nxInput" rows="1" maxlength="1500" placeholder="Pregúntale a Nexus…" aria-label="Mensaje para Nexus"></textarea>
-    <button type="submit" id="nxSend" aria-label="Enviar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-    </button>
+    <textarea id="nxInput" rows="1" maxlength="1500" placeholder="Pregunta lo que quieras a Nexus…" aria-label="Mensaje para Nexus"></textarea>
+    <div class="nx-form-acc">
+      <button type="button" id="nxMic" class="nx-mic" hidden aria-label="Dictar por voz" aria-pressed="false" title="Dictar por voz">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <button type="submit" id="nxSend" aria-label="Enviar">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.4 3.6a1 1 0 0 1 1.1-.15l14.6 7.6a1 1 0 0 1 0 1.8L5.5 20.5a1 1 0 0 1-1.42-1.15L5.9 12 4.08 4.65a1 1 0 0 1 .32-1.05Z"/></svg>
+      </button>
+    </div>
   </form>
+  <div id="nxCuota" class="nx-cuota" hidden></div>
 </div>
 
 <!-- ══════════════════════════════════
@@ -2049,12 +2044,12 @@
 <script src="upgames-metricas.js?v=20261120a"></script>
 <script src="upgames-ranking.js?v=20261108c"></script>
 <script src="upgames-ux.js?v=20261114a"></script>
-<script src="script.js?v=bf7c066c70"></script>
+<script src="script.js?v=3e16cd5541"></script>
 <script src="upgames-publicar.js?v=20261108a"></script>
 <script src="upgames-extras.js?v=20261115a"></script>
-<script src="upgames-social.js?v=20261029i"></script>
+<script src="upgames-social.js?v=20261120a"></script>
 <script src="upgames-guia.js?v=20261029i"></script>
-<script src="upgames-nexus-plus.js?v=20261114a"></script>
+<script src="upgames-nexus-plus.js?v=20261120a"></script>
 <script src="upgames-compat.js?v=20261108a"></script>
 <script src="upgames-videos.js?v=20261108a"></script>
 <script src="upgames-motion.js?v=20261120a"></script>

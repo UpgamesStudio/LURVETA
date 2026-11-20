@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
  * Navegación de la biblioteca en un navegador real (móvil y escritorio):
- *  - barra inferior: exactamente Inicio · Videos · Nexus · NEW · Perfil
+ *  - barra inferior: exactamente Inicio · Videos · Nexus · Novedades · Perfil
  *  - Favoritos, Ganancias y Economía se abren desde el Perfil (y Perfil queda marcado)
  *  - sin pestaña Logros; las demás pestañas del perfil siguen
  *  - Videos abre el feed vertical de siempre
- *  - NEW pinta tarjetas por entrada que llevan al artículo completo
+ *  - Novedades pinta tarjetas por entrada que llevan al artículo completo
  *  - página puente: el botón de descarga queda debajo de la primera pantalla
  * La API se simula (no toca producción). Uso: node test/real/navegacion.js  (CAPTURAS=dir para guardar capturas)
  */
@@ -47,7 +47,7 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
 }
 
 (async () => {
-  const C = contador('Navegación, perfil, NEW y página puente');
+  const C = contador('Navegación, perfil, Novedades y página puente');
   const web = await servirRaiz(), b = await navegador();
   const errores = [];
   const VISTAS = [['móvil', { width: 390, height: 844 }], ['escritorio', { width: 1440, height: 900 }]];
@@ -60,21 +60,21 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
     await p.evaluate(() => { document.getElementById('preloader')?.remove(); document.querySelectorAll('.modal, #onboarding-modal, .btut, #tutorial-overlay').forEach(m => m.remove?.()); });
 
     const nav = await p.$$eval('#bottom-nav .nav-tab', bs => bs.map(x => x.querySelector('span')?.textContent.trim()));
-    C.prueba('barra inferior: Inicio · Videos · Nexus · NEW · Perfil', JSON.stringify(nav) === JSON.stringify(['Inicio', 'Videos', 'Nexus', 'NEW', 'Perfil']), JSON.stringify(nav));
+    C.prueba('barra inferior: Inicio · Videos · Nexus · Novedades · Perfil', JSON.stringify(nav) === JSON.stringify(['Inicio', 'Videos', 'Nexus', 'Novedades', 'Perfil']), JSON.stringify(nav));
     C.prueba('Favoritos y Ganancias ya no están en la barra', await p.$$eval('#bottom-nav .nav-tab', bs => !bs.some(x => /Favoritos|Ganancias|Economía/.test(x.textContent))));
     const anchos = await p.$$eval('#bottom-nav .nav-tab', bs => bs.map(x => Math.round(x.getBoundingClientRect().width)));
     C.prueba('los cinco botones ocupan el mismo ancho', Math.max(...anchos) - Math.min(...anchos) <= 2, JSON.stringify(anchos));
     if (CAPT) await p.locator('#bottom-nav').screenshot({ path: path.join(CAPT, `nav-${nombre}.png`) });
 
-    // NEW
+    // Novedades
     const fallidas = []; p.on('requestfailed', q => fallidas.push(`${q.method()} ${q.url().slice(0, 90)} ${q.failure()?.errorText}`));
     await p.locator('#bottom-nav .nav-tab[data-tab="new"]').click();
     await p.waitForSelector('#new-view .ugn-card', { timeout: 10000 }).catch(() => {});
     const nw = await p.evaluate(() => ({ visible: getComputedStyle(document.getElementById('new-view')).display !== 'none', main: getComputedStyle(document.getElementById('main-view')).display,
       tarjetas: document.querySelectorAll('#new-view .ugn-card').length, grande: !!document.querySelector('#new-view .ugn-card--grande'), activa: document.querySelector('#bottom-nav .nav-tab.active span')?.textContent,
       enlace: document.querySelector('#new-view .ugn-card-link')?.getAttribute('href'), autor: document.querySelector('#new-view .ugn-autor')?.getAttribute('href') }));
-    C.prueba('NEW se abre (y oculta el inicio)', nw.visible && nw.main === 'none' && nw.activa === 'NEW', JSON.stringify(nw));
-    C.prueba('NEW pinta tarjetas por entrada, con una destacada grande', nw.tarjetas >= 8 && nw.grande, `tarjetas ${nw.tarjetas} · NEW: ${await p.evaluate(() => document.getElementById('ugn-cuerpo').innerText.slice(0, 160))} · fallidas: ${fallidas.filter(f => /railway/.test(f)).join(' | ')}`);
+    C.prueba('Novedades se abre (y oculta el inicio)', nw.visible && nw.main === 'none' && nw.activa === 'Novedades', JSON.stringify(nw));
+    C.prueba('Novedades pinta tarjetas por entrada, con una destacada grande', nw.tarjetas >= 8 && nw.grande, `tarjetas ${nw.tarjetas} · NEW: ${await p.evaluate(() => document.getElementById('ugn-cuerpo').innerText.slice(0, 160))} · fallidas: ${fallidas.filter(f => /railway/.test(f)).join(' | ')}`);
     C.prueba('la tarjeta lleva al artículo completo y el creador a su perfil', /\/b\/blog-\d\/e\/guia-\d/.test(nw.enlace || '') && /perfil-publico\.html\?usuario=creador/.test(nw.autor || ''), JSON.stringify(nw));
     const desborde = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     C.prueba('sin desborde horizontal', desborde <= 1, `${desborde}px`);

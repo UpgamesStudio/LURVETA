@@ -330,7 +330,7 @@ function _initNotifUI() {
   if ((!hdrActions && !radial) || document.getElementById('notif-btn')) return;
   const btn = document.createElement('button');
   btn.id = 'notif-btn'; btn.type = 'button'; btn.title = 'Notificaciones'; btn.setAttribute('aria-label', 'Notificaciones');
-  if (radial) {
+  if (radial && !(ugSesion() && hdrActions)) {   // con sesión la campana va en la cabecera, junto al saldo
     btn.className = 'ugr-item'; btn.setAttribute('role', 'menuitem');
     btn.innerHTML = '<span class="ugr-bub"><ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span></span><span class="ugr-lbl">Avisos</span>';
     btn.onclick = e => { e.stopPropagation(); UGR.cerrar(); ugnToggle(); };
@@ -486,11 +486,12 @@ async function ugnVaciar() {
 }
 
 function _updateNotifBadge(count) {
-  for (const id of ['notif-badge', 'hdr-orb-badge']) {   // el orbe del menú también muestra el número
+  const enMenu = !!document.querySelector('#hdr-radial #notif-btn');   // la campana dentro del menú: el orbe también muestra el número
+  for (const id of enMenu ? ['notif-badge', 'hdr-orb-badge'] : ['notif-badge']) {
     const b = document.getElementById(id);
     if (b) { b.hidden = !(count > 0); b.textContent = count > 99 ? '99+' : count; }
   }
-  document.getElementById('hdr-orb')?.setAttribute('aria-label', count > 0 ? `Abrir menú rápido · ${count} notificaciones sin leer` : 'Abrir menú rápido');
+  if (enMenu) document.getElementById('hdr-orb')?.setAttribute('aria-label', count > 0 ? `Abrir menú rápido · ${count} notificaciones sin leer` : 'Abrir menú rápido');
   try { if ('setAppBadge' in navigator) count > 0 ? navigator.setAppBadge(count) : navigator.clearAppBadge(); } catch (_) {}
 }
 // Conteo periódico: si sube, trae las nuevas y las muestra en la isla

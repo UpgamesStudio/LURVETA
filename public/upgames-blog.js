@@ -122,7 +122,7 @@ async function subirImagen(archivo) {
 const mini = (url, w) => String(url || '').replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\/(?:w_|c_))/, `$1f_auto,q_auto,w_${w},c_limit/`);
 
 // ── 2. BIENVENIDA, ASISTENTE Y REPORTE ──────────────────────────────
-const LOGO = '<a class="logo" href="/"><span><i>UP</i>GAMES</span><small>BLOGS</small></a>';
+const LOGO = '<a class="logo" href="/"><span><i>LUR</i>VETA</span><small>BLOGS</small></a>';
 
 function bienvenida() {
   app.innerHTML = `<div class="portal">${LOGO}

@@ -33,7 +33,7 @@
   // ══ Reseñas ═══════════════════════════════════════════════════════════
   function estrellasTile(item) {
     const r = item?.resenas; if (!r || !r.n) return '';
-    return `<span class="ugrs-tile-star" title="${fmt(r.n)} reseña${r.n === 1 ? '' : 's'}">★ ${dec(r.promedio)}</span>`;
+    return `<span class="ugrs-tile-star" title="${fmt(r.n)} reseña${r.n === 1 ? '' : 's'}"><i aria-hidden="true">★</i> ${dec(r.promedio)} <small>(${fmt(r.n)})</small></span>`;
   }
 
   let actual = null;   // publicación abierta en el detalle

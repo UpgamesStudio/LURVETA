@@ -4,7 +4,7 @@
 let nxOpen=false, nxExpanded=false;
 const NX = { cargado:false, enviando:false, msgs:[] };   // msgs: [{rol, texto, items, acciones}]
 const NX_SUGERENCIAS_INV = ['¿Qué me recomiendas descargar hoy?', '¿Cómo gano dinero publicando?', 'Mods populares para Minecraft', '¿Cómo publico mi contenido?'];
-const NX_SUGERENCIAS_USR = ['Recomiéndame algo según mis gustos', '¿Cuánto llevo ganado y qué me falta para retirar?', '¿Cómo van mis publicaciones?', '¿Qué está en tendencia ahora?'];
+const NX_SUGERENCIAS_USR = ['Recomiéndame contenido según mis gustos', '¿Cuánto llevo ganado y qué me falta para retirar?', '¿Cómo van mis publicaciones?', '¿Qué está en tendencia ahora?'];
 const nxToken = () => { const t = LS.get('token'); return t && t !== 'null' && t.length > 20 ? t : ''; };
 const nxHeaders = () => { const h = { 'Content-Type':'application/json' }; const t = nxToken(); if (t) h.Authorization = `Bearer ${t}`; return h; };
 
@@ -88,9 +88,9 @@ function nxPintar(pensando = false) {
   if (!NX.msgs.length) {
     const sug = nxToken() ? NX_SUGERENCIAS_USR : NX_SUGERENCIAS_INV;
     html = `<div class="nx-hola">
-      <div class="nx-hola-orb"><span></span></div>
-      <h3>${usuario ? `Hola, @${escH(usuario)}` : 'Hola, soy Nexus'}</h3>
-      <p>Conozco todo el catálogo de Lurveta${usuario ? ', tu cuenta y tus publicaciones' : ''}. Pregúntame lo que quieras.</p>
+      <div class="nx-hola-orb" aria-hidden="true"><span></span></div>
+      <h3>${usuario ? `Hola, <em>@${escH(usuario)}</em>` : 'Hola, soy <em>Nexus</em>'}</h3>
+      <p>Tu inteligencia dentro de Lurveta.</p>
       <div class="nx-sugs">${sug.map(s => `<button type="button" class="nx-sug" data-nx-sug="${escH(s)}">${escH(s)}</button>`).join('')}</div>
     </div>`;
   }
@@ -144,8 +144,8 @@ async function nxEnviar(texto, extra) {
 function nxPintarCuota(c) {
   const el = document.getElementById('nxCuota'); if (!el || !c) return;
   el.hidden = false; el.classList.toggle('prem', !!c.premium);
-  el.innerHTML = c.premium ? '<span>⭐ <b>Premium</b>: NEXUS ilimitado con el modelo más potente</span>'
-    : `<span><b>${c.restantesHoy}</b> de ${c.gratisDia} mensajes gratis hoy${c.creditos ? ` · <b>${c.creditos}</b> extra` : ''}</span><button type="button" onclick="nxIrPremium()">Ilimitado</button>`;
+  el.innerHTML = c.premium ? '<span title="Ilimitado con el modelo más potente">⭐ <b>Nexus Premium</b></span>'
+    : `<span><b>${c.restantesHoy}</b> de ${c.gratisDia} mensajes gratis hoy${c.creditos ? ` · <b>${c.creditos}</b> extra` : ''}</span><button type="button" onclick="nxIrPremium()">Nexus Premium</button>`;
 }
 function nxCargarCuota() {
   if (!nxToken()) return;
@@ -204,6 +204,23 @@ function nxEjecutar(a) {
     const act = e.target.closest('[data-nx-act]');
     if (act) { const m = NX.msgs[+act.closest('[data-nx-i]')?.dataset.nxI]; return nxEjecutar(m?.acciones?.[+act.dataset.nxAct]); }
   });
+  // Dictado por voz (solo donde el navegador lo trae: Chrome, Edge, Safari)
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = document.getElementById('nxMic');
+  if (SR && mic) {
+    let rec = null;
+    mic.hidden = false;
+    const apagar = () => { rec = null; mic.classList.remove('on'); mic.setAttribute('aria-pressed', 'false'); };
+    mic.addEventListener('click', () => {
+      if (rec) return rec.stop();
+      rec = new SR(); rec.lang = 'es-CO'; rec.interimResults = true;
+      const base = input.value.trim() ? input.value.replace(/\s*$/, ' ') : '';
+      rec.onresult = e => { input.value = base + [...e.results].map(r => r[0].transcript).join(''); input.dispatchEvent(new Event('input')); };
+      rec.onend = apagar; rec.onerror = apagar;
+      try { rec.start(); mic.classList.add('on'); mic.setAttribute('aria-pressed', 'true'); } catch (_) { apagar(); }
+    });
+  }
+  // Con Nexus abierto la barra inferior sigue visible: tocar otra pestaña lo cierra
+  document.getElementById('bottom-nav')?.addEventListener('click', e => { if (nxOpen && e.target.closest('.nav-tab') && !e.target.closest('.nav-nexus')) nxClose(); }, true);
   // Tocar fuera de la hoja (zona oscurecida) la cierra
   panel.addEventListener('click', e => { if (e.target === panel && !nxExpanded && e.clientY < panel.getBoundingClientRect().top) nxClose(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && nxOpen) nxClose(); });

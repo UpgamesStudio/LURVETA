@@ -42,14 +42,10 @@ function initHeroCarousel(items, isVideoMode) {
     const lk = item.likesCount || 0;
     const vistas = vistasVideo(item);
 
-    // Puesto: modo video usa icono play + cyan, normal usa estrella
+    // Insignia: «Mod recomendado», «App recomendada»… (el carrusel muestra lo mejor del catálogo)
     const badgeHTML = isVideoMode
-      ? `<div class="hero-badge hero-badge--video"><ion-icon name="play-circle"></ion-icon> TOP ${i+1}</div>`
-      : `<div class="hero-badge">⭐ Top ${i+1}</div>`;
-    // Etiquetas de arriba: categoría y plataforma (solo lo que la publicación realmente trae)
-    const ex = item.extraData || {};
-    const plat = String(ex.plataforma || '').split(/[,/·]/)[0].trim();
-    const chips = [item.category, !isVideoMode && plat].filter(Boolean).map(t => `<span class="hero-chip">${escH(t)}</span>`).join('');
+      ? `<div class="hero-badge hero-badge--video"><ion-icon name="play-circle"></ion-icon> Video destacado</div>`
+      : `<div class="hero-badge">${escH(heroInsignia(item.category))}</div>`;
     const dls = item.descargasEfectivas || 0;
 
     // Tipo de video (Tutorial, Gameplay, etc.)
@@ -61,22 +57,23 @@ function initHeroCarousel(items, isVideoMode) {
       <img src="${escH(cldOpt(mediaSrc, CLD_DESTACADA))}"${cldSrcset(mediaSrc, UG_SS_GRANDE, '(min-width: 1100px) 1100px, 100vw')} alt="${escH(item.title)}" loading="${i===0?'eager':'lazy'}"${i===0?' fetchpriority="high"':''} decoding="async"
            onerror="this.onerror=null;this.src=window.UG_PH">
       ${isYT || isMp4 || isVideoMode ? '<div class="yt-play-badge large"><ion-icon name="play-circle"></ion-icon></div>' : ''}
-      <div class="hero-top">${badgeHTML}${chips}</div>
+      <div class="hero-top">${badgeHTML}</div>
       <div class="hero-info">
         ${vidTypeHTML}
         <div class="hero-title">${escH(item.title)}</div>
         <div class="hero-meta">
-          <span class="hero-user">@${escH(item.usuario||'Cloud')}${getBadge(item.usuario)}</span>
+          <span class="hero-user">por @${escH(item.usuario||'Cloud')}${getBadge(item.usuario)}</span>
           ${isVideoMode && vistas ? `<span class="hero-dl"><ion-icon name="eye-outline"></ion-icon>${fmt(vistas)}</span>` : ''}
           ${!isVideoMode && dls ? `<span class="hero-dl"><ion-icon name="cloud-download-outline"></ion-icon>${fmt(dls)}</span>` : ''}
           ${lk ? `<span class="hero-dl"><ion-icon name="heart"></ion-icon>${fmt(lk)}</span>` : ''}
-          <span class="hero-cta" aria-hidden="true">${isVideoMode ? 'Ver video' : 'Ver ahora'}<ion-icon name="arrow-forward"></ion-icon></span>
         </div>
+        <span class="hero-cta" aria-hidden="true">${isVideoMode ? 'Ver video<ion-icon name="play"></ion-icon>' : 'Descargar gratis<ion-icon name="download-outline"></ion-icon>'}</span>
       </div>`;
 
     // Click: se abre la entrada que se VE (heroIdx), no la que pase bajo el dedo durante el deslizamiento
     slide.addEventListener('click', () => {
       if(Date.now() - heroUltimoGesto < 450) return;   // el toque era parte de un deslizamiento o llegó a mitad del cambio
+      if(i !== heroIdx) return heroGoTo(i);   // tocar la tarjeta que asoma al lado la trae al frente
       const item = heroItems[heroIdx] || heroItems[i];
       if(isVideoMode) {
         const tileEl = document.querySelector(`.game-tile--video[data-id="${item._id}"]`);
@@ -110,6 +107,7 @@ function initHeroCarousel(items, isVideoMode) {
   // portada y un deslizamiento saltaba 2, 3 o 4 entradas (y un toque abría otra publicación).
   if(carousel.dataset.gestos) return;
   carousel.dataset.gestos = '1';
+  addEventListener('resize', heroColocar, { passive:true });
   carousel.addEventListener('touchstart', e => {
     heroTouchStartX = e.touches[0].clientX;
     heroAutoplayPaused = true;
@@ -125,13 +123,24 @@ function initHeroCarousel(items, isVideoMode) {
 function heroGoTo(idx) {
   heroIdx = ((idx % heroItems.length) + heroItems.length) % heroItems.length;
   heroUltimoGesto = Date.now();   // durante la transición (.55 s) el toque no abre la entrada que va pasando
-  document.getElementById('hero-track').style.transform = `translateX(-${heroIdx * 100}%)`;
+  heroColocar();
   document.querySelectorAll('.hero-dot').forEach((d,i) => {
     d.classList.remove('active');
     if(i===heroIdx) { void d.offsetWidth; d.classList.add('active'); }   // reinicia la barra de progreso aunque ya fuera la activa
   });
   document.querySelectorAll('.hero-slide').forEach((sl,i) => sl.classList.toggle('is-on', i===heroIdx));   // zoom lento de la portada activa
   if(heroTimer) heroStartAutoplay();   // la barra de progreso y el cambio automático arrancan juntos, también tras un toque
+}
+// Desplaza la pista hasta la tarjeta activa (mide la tarjeta: la siguiente asoma por el lado)
+function heroColocar() {
+  const track = document.getElementById('hero-track'), s = track?.children[heroIdx], s0 = track?.children[0];
+  if (track) track.style.transform = s && s0 ? `translateX(-${s.offsetLeft - s0.offsetLeft}px)` : `translateX(-${heroIdx * 100}%)`;
+}
+const HERO_INSIGNIAS = { mod: 'Mod recomendado', juego: 'Juego recomendado', juegos: 'Juego recomendado', app: 'App recomendada', apps: 'App recomendada',
+  software: 'Software recomendado', herramientas: 'Herramienta recomendada', optimizacion: 'Optimización recomendada', ajustes: 'Ajustes recomendados' };
+function heroInsignia(cat) {
+  const k = String(cat || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return HERO_INSIGNIAS[k] || (cat ? `${cat} · recomendado` : 'Recomendado');
 }
 function heroNext() { heroGoTo(heroIdx + 1); }
 function heroPrev() { heroGoTo(heroIdx - 1); }

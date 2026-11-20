@@ -184,7 +184,7 @@ function telefono(padre, neon) {
   const t = h('div', 'c tel' + (neon ? ' neon' : ''), '<div class="pant"><div class="notch"></div></div>', padre);
   return { el: t, pant: t.querySelector('.pant') };
 }
-function cabeceraUI(pant) { return h('div', 'ui-hdr', '<div class="ui-logo"><b>UP</b>GAMES</div><div class="mono" style="font-size:24px;color:#8A94A6">● EN LÍNEA</div>', pant); }
+function cabeceraUI(pant) { return h('div', 'ui-hdr', '<div class="ui-logo"><b>LUR</b>VETA</div><div class="mono" style="font-size:24px;color:#8A94A6">● EN LÍNEA</div>', pant); }
 
 /* ════════════════ FONDO (rejilla en perspectiva, estrellas) ════════════════ */
 const bg = document.getElementById('bg'), bctx = bg.getContext('2d');
@@ -320,7 +320,7 @@ function esc4(t) {
 const e5 = capa(12);
 const e5rayos = h('div', 'c', '', e5); Object.assign(e5rayos.style, { width: '2200px', height: '2200px', background: 'repeating-conic-gradient(from 0deg, rgba(57,255,136,.10) 0deg 6deg, transparent 6deg 18deg)', borderRadius: '50%', WebkitMaskImage: 'radial-gradient(circle, #000 20%, transparent 65%)' });
 const e5logo = h('div', 'c orb', '', e5); e5logo.style.whiteSpace = 'nowrap'; e5logo.style.fontSize = '176px';
-const LOGO = 'LURVETA'; const e5letras = LOGO.split('').map((ch, i) => { const s = h('span', '', ch, e5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 2) s.className = 'glow'; return s; });
+const LOGO = 'LURVETA'; const e5letras = LOGO.split('').map((ch, i) => { const s = h('span', '', ch, e5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 3) s.className = 'glow'; return s; });
 const e5cortes = [0, 1, 2].map(i => { const c = h('div', 'c orb', LOGO, e5); c.style.fontSize = '176px'; c.style.color = i ? '#39FF88' : '#fff'; return c; });
 const e5tag = h('div', 'c mono', '', e5); Object.assign(e5tag.style, { fontSize: '46px', letterSpacing: '.22em', color: '#C9CED6', whiteSpace: 'nowrap' });
 const TAG = 'EL ECOSISTEMA DEFINITIVO';
@@ -579,7 +579,7 @@ function dentro([x, y]) { let d = false; for (let i = 0, j = poli.length - 1; i 
 const puntos = []; for (let y = 10; y < 1050; y += 17) for (let x = 10; x < 1000; x += 17) if (dentro([x, y])) puntos.push([x, y]);
 const CIUDADES = [[-99.1, 19.4], [-74.1, 4.7], [-77, -12], [-70.6, -33.4], [-58.4, -34.6], [-46.6, -23.5], [-66.9, 10.5], [-79.5, 9], [-56.2, -34.9]].map(proy);
 const e13t = h('div', 'c', '<div class="orb glow" style="font-size:150px;text-align:center;line-height:1">#1</div><div class="orb" style="font-size:54px;text-align:center">EN LATINOAMÉRICA</div>', e13);
-const e13logo = h('div', 'c orb', '<span class="glow" style="color:#39FF88">UP</span>GAMES', e13); Object.assign(e13logo.style, { fontSize: '150px', whiteSpace: 'nowrap' });
+const e13logo = h('div', 'c orb', '<span class="glow" style="color:#39FF88">LUR</span>VETA', e13); Object.assign(e13logo.style, { fontSize: '150px', whiteSpace: 'nowrap' });
 const e13dom = h('div', 'c mono', 'upgames.games', e13); Object.assign(e13dom.style, { fontSize: '66px', color: '#F2F5F7', letterSpacing: '.06em' });
 const e13btn = h('div', 'c boton bisel-s', 'EMPIEZA A GANAR HOY', e13);
 const e13sub = h('div', 'c mono', 'GRATIS · PARA CREADORES E INDIES', e13); Object.assign(e13sub.style, { fontSize: '34px', color: '#8A94A6', letterSpacing: '.18em', whiteSpace: 'nowrap' });
