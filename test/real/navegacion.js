@@ -34,9 +34,11 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
   await ctx.route('**/*', r => {
     const u = r.request().url();
     if (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u)) return r.continue();
-    if (u.startsWith(API + '/blogs/descubrir')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...DESCUBRIR, conSesion: sesion }), headers: { 'access-control-allow-origin': '*' } });
-    if (u.startsWith(API + '/economia/ticket')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, ticket: 'a.b', esperaMs: 25000 }), headers: { 'access-control-allow-origin': '*' } });
-    if (u.startsWith(API)) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]', headers: { 'access-control-allow-origin': '*' } });
+    const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type', 'access-control-allow-methods': 'GET, POST, OPTIONS' };
+    if (u.startsWith(API) && r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });   // preflight (la petición lleva Authorization)
+    if (u.startsWith(API + '/blogs/descubrir')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...DESCUBRIR, conSesion: sesion }), headers: cors });
+    if (u.startsWith(API + '/economia/ticket')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, ticket: 'a.b', esperaMs: 25000 }), headers: cors });
+    if (u.startsWith(API)) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]', headers: cors });
     return r.abort();   // anuncios y terceros: fuera de la prueba
   });
   return ctx;
@@ -63,12 +65,14 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
     if (CAPT) await p.locator('#bottom-nav').screenshot({ path: path.join(CAPT, `nav-${nombre}.png`) });
 
     // NEW
-    await p.locator('#bottom-nav .nav-tab[data-tab="new"]').click(); await espera(800);
+    const fallidas = []; p.on('requestfailed', q => fallidas.push(`${q.method()} ${q.url().slice(0, 90)} ${q.failure()?.errorText}`));
+    await p.locator('#bottom-nav .nav-tab[data-tab="new"]').click();
+    await p.waitForSelector('#new-view .ugn-card', { timeout: 10000 }).catch(() => {});
     const nw = await p.evaluate(() => ({ visible: getComputedStyle(document.getElementById('new-view')).display !== 'none', main: getComputedStyle(document.getElementById('main-view')).display,
       tarjetas: document.querySelectorAll('#new-view .ugn-card').length, grande: !!document.querySelector('#new-view .ugn-card--grande'), activa: document.querySelector('#bottom-nav .nav-tab.active span')?.textContent,
       enlace: document.querySelector('#new-view .ugn-card-link')?.getAttribute('href'), autor: document.querySelector('#new-view .ugn-autor')?.getAttribute('href') }));
     C.prueba('NEW se abre (y oculta el inicio)', nw.visible && nw.main === 'none' && nw.activa === 'NEW', JSON.stringify(nw));
-    C.prueba('NEW pinta tarjetas por entrada, con una destacada grande', nw.tarjetas >= 8 && nw.grande, `tarjetas ${nw.tarjetas}`);
+    C.prueba('NEW pinta tarjetas por entrada, con una destacada grande', nw.tarjetas >= 8 && nw.grande, `tarjetas ${nw.tarjetas} · NEW: ${await p.evaluate(() => document.getElementById('ugn-cuerpo').innerText.slice(0, 160))} · fallidas: ${fallidas.filter(f => /railway/.test(f)).join(' | ')}`);
     C.prueba('la tarjeta lleva al artículo completo y el creador a su perfil', /\/b\/blog-\d\/e\/guia-\d/.test(nw.enlace || '') && /perfil-publico\.html\?usuario=creador/.test(nw.autor || ''), JSON.stringify(nw));
     const desborde = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     C.prueba('sin desborde horizontal', desborde <= 1, `${desborde}px`);
