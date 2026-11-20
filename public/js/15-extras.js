@@ -38,69 +38,6 @@ async function pfLoadHistorialPagos() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// LOGROS TAB — gamificación (XP, badges, level)
-// ═══════════════════════════════════════════════════════════
-let _logrosLoaded = false;
-async function pfLoadLogros() {
-  if(_logrosLoaded) return;
-  _logrosLoaded = true;
-  const el = document.getElementById('pf-logros-content');
-  if(!el) return;
-  const token = LS.get('token');
-  const user  = LS.get('user_admin');
-  if(!token || !user) { el.innerHTML = '<div class="pf-empty"><ion-icon name="lock-closed"></ion-icon><p>Inicia sesión para ver tus logros</p></div>'; return; }
-  try {
-    const r = await fetch(`${PF_API}/gamification/profile/${encodeURIComponent(user)}`, { headers: { Authorization: `Bearer ${token}` } });
-    if(!r.ok) throw new Error('no-data');
-    const d = await r.json();
-    const g = d.gamification || d;
-    const xp = g.xp || 0;
-    const nivel = g.nivel || 1;
-    const xpNext = nivel * 500;
-    const pct = Math.min(100, Math.round((xp % xpNext) / xpNext * 100));
-    const badges = g.badges || [];
-    el.innerHTML = `
-      <div style="display:grid;gap:16px;padding:4px 0">
-        <div style="background:linear-gradient(135deg,#1a1a28,#0f0f18);border:1px solid rgba(50,213,131,.2);border-radius:14px;padding:20px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div>
-              <div style="font-size:11px;color:#60607a;letter-spacing:.1em">NIVEL</div>
-              <div style="font-size:32px;font-weight:900;color:#32D583">${nivel}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:11px;color:#60607a">XP TOTAL</div>
-              <div style="font-size:20px;font-weight:700;color:#f0f0f8">${xp.toLocaleString()}</div>
-            </div>
-          </div>
-          <div style="background:rgba(255,255,255,.06);border-radius:8px;height:8px;overflow:hidden">
-            <div style="background:linear-gradient(90deg,#32D583,#5AC8FA);height:100%;width:${pct}%;border-radius:8px;transition:width .5s"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#60607a">
-            <span>${xp % xpNext} XP</span><span>${xpNext} XP para nivel ${nivel+1}</span>
-          </div>
-        </div>
-        ${g.racha > 0 ? `
-        <div class="pf-info-box" style="border-color:rgba(255,210,63,.3)">
-          <ion-icon name="flame" style="color:#ffd23f;font-size:28px"></ion-icon>
-          <div><h4 style="color:#ffd23f">Racha: ${g.racha} días</h4><p>¡Sigue así! Cada día de actividad suma XP extra.</p></div>
-        </div>` : ''}
-        ${badges.length > 0 ? `
-        <div class="pf-section-title"><ion-icon name="medal"></ion-icon> BADGES DESBLOQUEADOS (${badges.length})</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px">
-          ${badges.map(b => `
-            <div style="background:#1a1a28;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 8px;text-align:center" title="${b.descripcion||b.id}">
-              <div style="font-size:26px">${b.emoji||'🏅'}</div>
-              <div style="font-size:10px;color:#a0a0b8;margin-top:4px;word-break:break-word">${b.nombre||b.id}</div>
-            </div>`).join('')}
-        </div>` : '<div class="pf-empty"><ion-icon name="medal-outline"></ion-icon><p>Aún no tienes badges. ¡Sube contenido y participa!</p></div>'}
-      </div>`;
-  } catch(e) {
-    el.innerHTML = '<div class="pf-empty"><ion-icon name="trophy-outline"></ion-icon><p>Logros no disponibles aún.</p></div>';
-    _logrosLoaded = false;
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
 // SEARCH AUTOCOMPLETE
 // ═══════════════════════════════════════════════════════════
 (function initAutocomplete() {

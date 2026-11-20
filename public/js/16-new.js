@@ -8,7 +8,10 @@
   const cuerpo = () => document.getElementById('ugn-cuerpo');
   let datos = null, pedido = null, pedidoEn = 0, filtro = 'todo';
 
-  const img = src => (/^https:\/\//.test(src || '') ? (typeof cldOpt === 'function' ? cldOpt(src, 'c_limit,w_720,q_auto,f_auto') : src) : '');
+  // Solo URLs https sin comillas, paréntesis ni espacios: van dentro de style="…url('…')" y ahí el
+  // escape HTML no basta (el navegador lo deshace antes de leer el CSS).
+  const urlSegura = src => /^https:\/\/[^\s'"()\\<>]+$/.test(src || '');
+  const img = src => { if (!urlSegura(src)) return ''; const u = typeof cldOpt === 'function' ? cldOpt(src, 'c_limit,w_720,q_auto,f_auto') : src; return urlSegura(u) ? u : ''; };
   const nf = n => { n = +n || 0; return n >= 1e6 ? (n / 1e6).toFixed(1).replace('.0', '') + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.0', '') + 'K' : String(n); };
   function hace(f) {
     const s = (Date.now() - new Date(f)) / 1000;

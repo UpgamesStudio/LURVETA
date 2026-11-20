@@ -120,36 +120,40 @@ function registrar(app, deps) {
             // Con un pase vigente cada paquete trae un 10% extra
             const yo = await Usuario.findOne({ usuario }).select('planHasta').lean();
             const bono = yo?.planHasta && new Date(yo.planHasta) > new Date() ? REPARTO.bonoPaquete(p.paquete.monedas, p.paquete.usd, BONO_PAQUETE) : 0;
-            const total = p.paquete.monedas + bono;
-            try { await LiveTx.create({ tipo: 'compra', usuario, monedas: total, bonoMonedas: bono, usd, ref, captureId, metodo, estado: 'completada' }); }
-            catch (e) { if (e.code !== 11000) throw e; const u = await Usuario.findOne({ usuario }).select('monedas').lean(); return { monedas: u?.monedas || 0, repetida: true }; }
-            const u = await Usuario.findOneAndUpdate({ usuario }, { $inc: { monedas: total } }, { new: true }).select('monedas').lean();
-            logger.info(`[tienda] @${usuario}: +${total} UpCoins${bono ? ` (incluye ${bono} de bono Premium)` : ''} (${metodo}, US$${usd})`);
-            avisar(usuario, 'Compra', `🪙 ¡Has adquirido ${total.toLocaleString('es-CO')} UpCoins!${bono ? ` (incluye ${bono} extra por ser Premium)` : ''} Úsalos en lives, NEXUS IA, Premium o para destacar tus publicaciones.`);
-            return { monedas: u?.monedas || 0, acreditadas: total, bono };
+            const e = await UC.entregarUnaVez(LiveTx, { tipo: 'compra', usuario, monedas: p.paquete.monedas + bono, bonoMonedas: bono, usd, ref, captureId, metodo, estado: 'completada' },
+                doc => Usuario.updateOne({ usuario, ...UC.filtroCompra(ref) }, { $inc: { monedas: doc.monedas }, $push: UC.pushCompra(ref) }));
+            const u = await Usuario.findOne({ usuario }).select('monedas').lean();
+            if (e.repetida) return { monedas: u?.monedas || 0, repetida: true };
+            const total = e.doc.monedas, b = e.doc.bonoMonedas || 0;   // los del registro (un reintento no recalcula el bono)
+            logger.info(`[tienda] @${usuario}: +${total} UpCoins${b ? ` (incluye ${b} de bono Premium)` : ''} (${metodo}, US$${usd})`);
+            avisar(usuario, 'Compra', `🪙 ¡Has adquirido ${total.toLocaleString('es-CO')} UpCoins!${b ? ` (incluye ${b} extra por ser Premium)` : ''} Úsalos en lives, NEXUS IA, Premium o para destacar tus publicaciones.`);
+            return { monedas: u?.monedas || 0, acreditadas: total, bono: b };
         }
         if (p.tipo === 'acceso') {
             const via = { paypal: 'tarjeta_paypal', tarjeta_mp: 'tarjeta_mp', upcoins: 'monedas' }[metodo] || 'tarjeta_mp';
             return acceso.entregarPagado({ usuario, juegoId: p.juegoId, ref, captureId, via, metodo });
         }
         if (p.tipo === 'ia') {
-            try { await LiveTx.create({ tipo: 'compra', usuario, monedas: p.paquete.monedas, usd, ref, captureId, metodo, planId: p.id, estado: 'completada' }); }
-            catch (e) { if (e.code !== 11000) throw e; return { repetida: true }; }
-            const u = await Usuario.findOneAndUpdate({ usuario }, { $inc: { iaCreditos: p.paquete.mensajes } }, { new: true }).select('iaCreditos').lean();
+            const e = await UC.entregarUnaVez(LiveTx, { tipo: 'compra', usuario, monedas: p.paquete.monedas, usd, ref, captureId, metodo, planId: p.id, estado: 'completada' },
+                () => Usuario.updateOne({ usuario, ...UC.filtroCompra(ref) }, { $inc: { iaCreditos: p.paquete.mensajes }, $push: UC.pushCompra(ref) }));
+            if (e.repetida) return { repetida: true };
+            const u = await Usuario.findOne({ usuario }).select('iaCreditos').lean();
             avisar(usuario, 'Compra', `🧠 Desbloqueaste ${p.paquete.mensajes} mensajes extra de NEXUS IA.`);
             return { iaCreditos: u?.iaCreditos || 0, mensajes: p.paquete.mensajes };
         }
         if (p.tipo === 'impulso') {
-            try { await LiveTx.create({ tipo: 'compra', usuario, monedas: p.monedas, usd, ref, captureId, metodo, juegoId: p.juegoId, planId: p.id, estado: 'completada' }); }
-            catch (e) { if (e.code !== 11000) throw e; return { repetida: true }; }
             // Suma los días desde el final de la promoción vigente (o desde ahora) y deja el nivel
             // pagado: si subes de nivel, el tiempo que quedaba también pasa al nivel nuevo.
             // UpCoins por día de la campaña: promedio ponderado entre lo que quedaba y lo nuevo
             const restaDias = { $divide: [{ $max: [0, { $subtract: [{ $ifNull: ['$destacadoHasta', '$$NOW'] }, '$$NOW'] }] }, 864e5] };
-            const j = await Juego.findOneAndUpdate({ _id: p.juegoId }, [{ $set: {
-                promoUCDia: { $divide: [{ $add: [{ $multiply: [restaDias, { $ifNull: ['$promoUCDia', 0] }] }, p.ucDia * p.dias] }, { $add: [restaDias, p.dias] }] },
-                destacadoHasta: { $add: [{ $max: ['$$NOW', { $ifNull: ['$destacadoHasta', '$$NOW'] }] }, p.dias * 24 * 3600e3] },
-            } }], { new: true }).select('title destacadoHasta promoUCDia').lean();
+            const e = await UC.entregarUnaVez(LiveTx, { tipo: 'compra', usuario, monedas: p.monedas, usd, ref, captureId, metodo, juegoId: p.juegoId, planId: p.id, estado: 'completada' },
+                () => Juego.updateOne({ _id: p.juegoId, ...UC.filtroCompra(ref) }, [{ $set: {
+                    promoUCDia: { $divide: [{ $add: [{ $multiply: [restaDias, { $ifNull: ['$promoUCDia', 0] }] }, p.ucDia * p.dias] }, { $add: [restaDias, p.dias] }] },
+                    destacadoHasta: { $add: [{ $max: ['$$NOW', { $ifNull: ['$destacadoHasta', '$$NOW'] }] }, p.dias * 24 * 3600e3] },
+                    comprasAplicadas: UC.marcaCompra(ref),
+                } }]));
+            if (e.repetida) return { repetida: true };
+            const j = await Juego.findById(p.juegoId).select('title destacadoHasta promoUCDia').lean();
             if (j) await Juego.updateOne({ _id: p.juegoId }, { $set: { promoNivel: Ranking.nivelDeUCDia(j.promoUCDia) } });
             limpiarCache?.();
             const peso = Math.round(Ranking.pesoDeUCDia(j?.promoUCDia || p.ucDia) * 100);
@@ -163,15 +167,17 @@ function registrar(app, deps) {
         const monedasPagadas = conUC ? p.plan.monedas : 0;
         const fondo = REPARTO.fondoPase({ usd, monedas: monedasPagadas, metodo, monedasRegalo: regalo });   // para los creadores que abra con el pase
         const quien = para || usuario;   // Premium regalado: lo recibe `para`, lo paga `usuario`
-        try { await LiveTx.create({ tipo: 'plan', usuario, destinatario: para, monedas: monedasPagadas, bonoMonedas: regalo, creadorUsd: fondo, plataformaUsd: Math.max(0, usd - fondo), usd, planId: p.plan.id, ref, captureId, metodo, estado: 'completada' }); }
-        catch (e) { if (e.code !== 11000) throw e; const u = await Usuario.findOne({ usuario: quien }).select('planId planHasta monedas').lean(); return { plan: u?.planId, hasta: u?.planHasta, monedas: u?.monedas || 0, repetida: true }; }
-        const u = await Usuario.findOneAndUpdate({ usuario: quien }, [{ $set: {
-            planId: p.plan.id,
-            planHasta: { $add: [{ $max: ['$$NOW', { $ifNull: ['$planHasta', '$$NOW'] }] }, p.plan.dias * 864e5] },
-            planAvisadoHasta: null,
-            monedas: { $add: [{ $ifNull: ['$monedas', 0] }, regalo] },
-            paseFondoUsd: { $add: [{ $ifNull: ['$paseFondoUsd', 0] }, fondo] },
-        } }], { new: true }).select('planId planHasta monedas').lean();
+        const e = await UC.entregarUnaVez(LiveTx, { tipo: 'plan', usuario, destinatario: para, monedas: monedasPagadas, bonoMonedas: regalo, creadorUsd: fondo, plataformaUsd: Math.max(0, usd - fondo), usd, planId: p.plan.id, ref, captureId, metodo, estado: 'completada' },
+            doc => Usuario.updateOne({ usuario: doc.destinatario || doc.usuario, ...UC.filtroCompra(ref) }, [{ $set: {
+                planId: p.plan.id,
+                planHasta: { $add: [{ $max: ['$$NOW', { $ifNull: ['$planHasta', '$$NOW'] }] }, p.plan.dias * 864e5] },
+                planAvisadoHasta: null,
+                monedas: { $add: [{ $ifNull: ['$monedas', 0] }, doc.bonoMonedas || 0] },
+                paseFondoUsd: { $add: [{ $ifNull: ['$paseFondoUsd', 0] }, doc.creadorUsd || 0] },
+                comprasAplicadas: UC.marcaCompra(ref),
+            } }]));
+        const u = await Usuario.findOne({ usuario: quien }).select('planId planHasta monedas').lean();
+        if (e.repetida) return { plan: u?.planId, hasta: u?.planHasta, monedas: u?.monedas || 0, repetida: true };
         olvidarPerfil(quien);   // la insignia ⭐ del chat aparece al instante
         // Más visibilidad: sus publicaciones suben en el inicio mientras dure Premium
         if (Juego && u?.planHasta) { Juego.updateMany({ usuario: quien }, { $set: { impulsoHasta: u.planHasta } }).then(() => limpiarCache?.()).catch(() => {}); }
@@ -332,7 +338,8 @@ function registrar(app, deps) {
             const orderID = String(req.body?.orderID || '');
             const ref = `paypal:${orderID}`;
             const previa = await LiveTx.findOne({ ref }).lean();
-            if (previa) { if (previa.usuario !== req.usuario) return err(res, 403, 'Esta orden no es tuya'); return ok(res, { repetida: true }); }
+            if (previa && previa.usuario !== req.usuario) return err(res, 403, 'Esta orden no es tuya');
+            if (previa && previa.acreditada !== false) return ok(res, { repetida: true });   // a medias: se termina abajo
             const { captura, referencia } = await paypal.capturar(orderID, { usuario: req.usuario, validarRef: r => !!parsear(r), usd: r => precioUsd(parsear(r), 'paypal') });
             const p = parsear(referencia);
             ok(res, await entregar(req.usuario, p, { ref, captureId: captura.id || '', metodo: 'paypal', usd: precioUsd(p, 'paypal') }));
@@ -379,26 +386,28 @@ function registrar(app, deps) {
 
     // Webhook: se consulta el pago a Mercado Pago con NUESTRO token, así que un
     // aviso falso no puede aprobar nada. Entrega pendientes y revierte reembolsos.
+    // Se responde DESPUÉS de procesar: si la base falla, 500 y Mercado Pago reintenta (antes respondía 200
+    // primero y un fallo pasajero dejaba un pago aprobado sin entregar). Entregar es idempotente (ref única).
     app.post('/pagos/mercadopago/webhook', async (req, res) => {
-        res.sendStatus(200);   // responder rápido: Mercado Pago reintenta si tarda
         try {
-            if (!mp.activo()) return;
+            if (!mp.activo()) return res.sendStatus(200);
             const tipo = req.body?.type || req.body?.topic || req.query.type || req.query.topic;
             const id = req.body?.data?.id || req.query['data.id'] || req.query.id;
-            if (tipo !== 'payment' || !/^\d{5,20}$/.test(String(id || ''))) return;
+            if (tipo !== 'payment' || !/^\d{5,20}$/.test(String(id || ''))) return res.sendStatus(200);
             const pago = await mp.obtener(id);
-            if (!pago) return;
+            if (!pago) return res.sendStatus(500);   // no se pudo consultar: que Mercado Pago reintente
             const [usuario, producto, montoRef, usdRef] = String(pago.referencia || '').split('|');
             const p = parsear(producto);
-            if (!usuario || !p) return;
+            if (!usuario || !p) return res.sendStatus(200);
             if (pago.status === 'approved') {
                 const v = montoMPValido(pago, { montoRef, usdRef, moneda: mp.estado().moneda, actual: () => ({ monto: mp.montoLocal(precioUsd(p, 'tarjeta_mp')), usd: precioUsd(p, 'tarjeta_mp') }) });
-                if (!v.ok) return logger.warn(`[tienda] MP ${id}: monto ${pago.monto} ${pago.moneda || ''} no coincide con ${p.id} (esperado ${v.esperado})`);
+                if (!v.ok) { logger.warn(`[tienda] MP ${id}: monto ${pago.monto} ${pago.moneda || ''} no coincide con ${p.id} (esperado ${v.esperado})`); return res.sendStatus(200); }
                 await entregar(usuario, p, { ref: `mp:${pago.id}`, captureId: `mp:${pago.id}`, metodo: 'tarjeta_mp', usd: v.usd });
             } else if (['refunded', 'charged_back', 'cancelled'].includes(pago.status)) {
                 await revertir(`mp:${pago.id}`, `Mercado Pago ${pago.status}`, pago.status === 'charged_back');   // reembolso propio (retracto) no restringe la cuenta
             }
-        } catch (e) { logger.error(`[tienda] webhook MP: ${e.message}`); }
+            res.sendStatus(200);
+        } catch (e) { logger.error(`[tienda] webhook MP: ${e.message}`); if (!res.headersSent) res.sendStatus(500); }
     });
 
     // ── Recordatorio de vencimiento del pase (2 días antes, uno por periodo) ──

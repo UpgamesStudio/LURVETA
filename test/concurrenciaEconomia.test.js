@@ -58,11 +58,18 @@ const silencio = { info() {}, warn() {}, error() {} };
         const Usuario = mongoose.model('Usuario', new mongoose.Schema({
             usuario: { type: String, unique: true }, saldo: { type: Number, default: 0 }, monedas: { type: Number, default: 0 },
             descargasTotales: { type: Number, default: 0 }, listaNegraAdmin: Boolean, solicitudPagoPendiente: Boolean,
-            retirosAplicados: { type: [String], default: undefined }, planHasta: Date,
+            // mismos campos (y select: false) que el esquema real de index.js
+            retirosAplicados: { type: [String], default: undefined, select: false }, comprasAplicadas: { type: [String], default: undefined, select: false },
+            planHasta: Date, planId: String, planAvisadoHasta: Date, paseFondoUsd: Number, iaCreditos: Number,
+            isVerificado: Boolean, verificadoNivel: Number, emailVerificado: Boolean, paypalEmail: String, cobro: mongoose.Schema.Types.Mixed,
         }));
         const Juego = mongoose.model('Juego', new mongoose.Schema({
             usuario: String, status: String, link: String, title: String, category: String, descargasEfectivas: { type: Number, default: 0 }, pagoPausado: Boolean,
+            destacadoHasta: Date, promoUCDia: Number, promoNivel: String, comprasAplicadas: { type: [String], default: undefined, select: false },
         }));
+        require('../rutas/live');   // crea el modelo real LiveTx (ref única)
+        const LiveTx = mongoose.model('LiveTx');
+        await LiveTx.init();
         DescargaIP.init().catch(() => {});   // el índice lo garantiza asegurarIndice (abajo)
 
         await test('migración: borra duplicados y deja el índice {juegoId, ip} ÚNICO', async () => {
@@ -81,14 +88,28 @@ const silencio = { info() {}, warn() {}, error() {} };
         app.set('trust proxy', true);   // la IP de cada petición sale de X-Forwarded-For
         app.use(express.json());
         const pasar = (req, res, next) => next();
-        require('../rutas/economia')({
+        const conUsuario = (req, res, next) => { req.usuario = req.headers['x-usuario']; req.usuario ? next() : res.status(401).json({ success: false }); };
+        const eco = require('../rutas/economia')({
             AUTHOR_PERCENTAGE: PARTE, CPM_VALUE: CPM, DescargaIP, EMAIL_NORMALIZE_OPTS: {}, JWT_SECRET: SECRETO, Juego,
             Limites: { permitir: async () => true, MIN: 60e3 }, MAX_DOWNLOADS_PER_IP_PER_DAY: MAX_IP, MIN_WITHDRAWAL: 10, Moderacion: {}, Pago, Referidos: {},
             StatsItems: { sumar() {} }, Usuario, app, body, calcularScoreRecomendacion: async () => {}, crearNotif() {},
             fraudDetector: { analyzeDownloadBehavior: async () => fraude, autoFlagUser: async (U, u) => { await U.updateOne({ usuario: u }, { $set: { listaNegraAdmin: true } }); return true; } },
             gamification: { onDescarga: async () => {}, onItemViral: async () => {} }, logger: silencio, mongoose,
-            recommendations: { invalidateItemCache() {} }, usuarioOpcional: () => null, validationResult, verificarAdmin: pasar, verificarToken: pasar,
+            recommendations: { invalidateItemCache() {} }, usuarioOpcional: () => null, validationResult, verificarAdmin: pasar, verificarToken: conUsuario,
         });
+        eco.vincularTarde({ cobros: { metodoDe: u => ({ tipo: 'paypal', resumen: 'PayPal · x', cifrado: 'c' }), esperaHasta: () => null }, live: { tieneIngresosLive: async () => true } });
+        // Tienda real (rutas/tienda.js) con Mercado Pago simulado: COP a 4.000 por dólar, cambiable en la prueba
+        const MP = require('../modulos/mercadopago');
+        const mpPagos = new Map();
+        const mpEnv = { MERCADOPAGO_ACCESS_TOKEN: 'APP_USR-x', MERCADOPAGO_PUBLIC_KEY: 'APP_USR-pk', MERCADOPAGO_TASA_USD: '4000' };
+        const mp = MP.crear({ env: mpEnv, transporte: async (m, ruta) => {
+            if (ruta === '/users/me') return { status: 200, data: { site_id: 'MCO' } };
+            const pg = mpPagos.get(ruta.split('/').pop());
+            return pg ? { status: 200, data: pg } : { status: 404, data: {} };
+        } });
+        await mp.verificar();
+        const Tienda = require('../rutas/tienda');
+        Tienda.registrar(app, { verificarToken: conUsuario, Usuario, LiveTx, Notificacion: null, paypal: { activo: () => false }, acceso: {}, logger: silencio, apiUrlSelf: '', Juego, mp });
         http = await new Promise(r => { const s = app.listen(0, '127.0.0.1', () => r(s)); });
         const url = `http://127.0.0.1:${http.address().port}/economia/validar-descarga`;
         const ticketPara = (juegoId, ip) => TicketPuente.emitir(SECRETO, String(juegoId), ip, Date.now() - TicketPuente.ESPERA_MS - 1000).ticket;
@@ -296,6 +317,120 @@ const silencio = { info() {}, warn() {}, error() {} };
             assert.strictEqual(montoMPValido({ monto: 4000, moneda: 'USD' }, { montoRef: '4000', usdRef: '1', moneda: 'COP', actual }).ok, false, 'otra moneda');
             assert.strictEqual(montoMPValido({ monto: 4500, moneda: 'COP' }, { montoRef: undefined, usdRef: undefined, moneda: 'COP', actual }).ok, true, 'referencia antigua: precio actual');
             assert.strictEqual(montoMPValido({ monto: 4000, moneda: 'COP' }, { montoRef: undefined, usdRef: undefined, moneda: 'COP', actual }).ok, false);
+        });
+
+        // ── Auditoría: carreras y entregas a medias encontradas después ──
+        const Limites = require('../modulos/limites');
+        const base = `http://127.0.0.1:${http.address().port}`;
+        const postJSON = (ruta, cuerpo, usuario) => fetch(base + ruta, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(usuario ? { 'x-usuario': usuario } : {}) }, body: JSON.stringify(cuerpo || {}) })
+            .then(async r => ({ s: r.status, d: await r.json().catch(() => null) }));
+
+        await test('Limites.permitir: 50 peticiones simultáneas no pasan del tope (antes leía y luego sumaba)', async () => {
+            const r = await Promise.all(Array.from({ length: 50 }, () => Limites.permitir('prueba:tope', [[Limites.MIN, 5]])));
+            assert.strictEqual(r.filter(Boolean).length, 5);
+            assert.strictEqual(await Limites.leer('prueba:tope', Limites.MIN), 5, 'las denegadas no quedan contadas');
+        });
+        await test('Limites.permitir con dos reglas: lo denegado se deshace en ambas', async () => {
+            const r = await Promise.all(Array.from({ length: 20 }, () => Limites.permitir('prueba:dos', [[Limites.MIN, 100], [Limites.HORA, 3]])));
+            assert.strictEqual(r.filter(Boolean).length, 3);
+            assert.strictEqual(await Limites.leer('prueba:dos', Limites.MIN), 3);
+            assert.strictEqual(await Limites.leer('prueba:dos', Limites.HORA), 3);
+        });
+        await test('Limites.reservar: 30 intentos de contraseña a la vez → solo 5 se prueban', async () => {
+            const r = await Promise.all(Array.from({ length: 30 }, () => Limites.reservar('prueba:clave', 15 * Limites.MIN, 5)));
+            assert.strictEqual(r.filter(Boolean).length, 5);
+        });
+
+        await test('exploit: pedir el retiro y gastar UpCoins ganados a la vez nunca deja un monto mayor que el saldo', async () => {
+            const N = 15;
+            // US$15 ganados: con o sin el gasto de US$5 queda por encima del mínimo (US$10), así el retiro siempre se pide
+            for (let i = 0; i < N; i++) await Usuario.create({ usuario: `ret${i}`, saldo: 15, isVerificado: true, verificadoNivel: 1, emailVerificado: true });
+            await Promise.all(Array.from({ length: N }, (_, i) => Promise.all([
+                postJSON('/economia/solicitar-pago', {}, `ret${i}`),
+                // el gasto llega escalonado (0–42 ms) para caer en distintos puntos de la solicitud
+                new Promise(r => setTimeout(r, i * 3)).then(() => UC.cobrar(Usuario, `ret${i}`, 250)),   // 250 UC = US$5 de lo ganado
+            ])));
+            for (let i = 0; i < N; i++) {
+                const u = await Usuario.findOne({ usuario: `ret${i}` }).lean(), p = await Pago.findOne({ usuario: `ret${i}` }).lean();
+                assert.ok(p, `ret${i}: el retiro se creó`);
+                assert.ok(p.monto <= u.saldo + 1e-9, `ret${i}: retiro de US$${p.monto} con solo US$${u.saldo} de saldo (el gasto ya salió de ahí)`);
+            }
+            assert.ok(await Pago.countDocuments({ usuario: /^ret/ }) > 0, 'al menos algunos retiros se crearon');
+        });
+
+        await test('retiro anulado tras verificar que no salió: el siguiente envío usa un lote NUEVO; reintentar uno incierto, el MISMO', async () => {
+            const p = await retiro('olga', 7);
+            const lotes = [];
+            const enviar = x => { lotes.push(Retiros.idLote(x)); return Promise.reject(Object.assign(new Error('timeout'), { definitivo: false })); };
+            await Retiros.procesar({ Pago, Usuario }, p._id, { enviar });
+            await Retiros.reconciliar({ Pago, Usuario }, p._id, 'reintentar', { enviar });
+            assert.strictEqual(lotes[0], lotes[1], 'reintento = mismo lote');
+            assert.strictEqual((await Retiros.reconciliar({ Pago, Usuario }, p._id, 'anular')).codigo, 200);
+            const ok2 = await Retiros.procesar({ Pago, Usuario }, p._id, { enviar: async x => { lotes.push(Retiros.idLote(x)); return { batchId: 'LOTEN1' }; } });
+            assert.strictEqual(ok2.codigo, 200);
+            assert.notStrictEqual(lotes[2], lotes[0], 'tras anular, lote nuevo');
+            assert.strictEqual(lotes[2], `${p._id}_1`);
+            assert.strictEqual(await saldo('olga'), 0);
+        });
+
+        await test('compra: si la suma al usuario falla a medias, el reintento la termina y nunca acredita dos veces', async () => {
+            await Usuario.create({ usuario: 'pia', monedas: 0 });
+            const datos = { tipo: 'compra', usuario: 'pia', monedas: 500, usd: 10, ref: 'mp:9990001', estado: 'completada' };
+            const aplicar = doc => Usuario.updateOne({ usuario: 'pia', ...UC.filtroCompra(datos.ref) }, { $inc: { monedas: doc.monedas }, $push: UC.pushCompra(datos.ref) });
+            await assert.rejects(UC.entregarUnaVez(LiveTx, datos, () => { throw new Error('la base se cayó'); }));
+            assert.strictEqual((await Usuario.findOne({ usuario: 'pia' }).lean()).monedas, 0);
+            const r = await Promise.all(Array.from({ length: 10 }, () => UC.entregarUnaVez(LiveTx, datos, aplicar)));
+            assert.strictEqual((await Usuario.findOne({ usuario: 'pia' }).lean()).monedas, 500, 'acreditada una sola vez');
+            assert.ok(r.some(x => !x.repetida));
+            assert.strictEqual((await LiveTx.findOne({ ref: datos.ref }).lean()).acreditada, true);
+            const otra = await UC.entregarUnaVez(LiveTx, { ...datos, usuario: 'intruso' }, aplicar);
+            assert.ok(otra.repetida, 'otra cuenta no puede reclamar la misma ref');
+        });
+        await test('compra registrada antes de este cambio (sin «acreditada»): se considera entregada, no se repite', async () => {
+            await Usuario.create({ usuario: 'quim', monedas: 300 });
+            await LiveTx.collection.insertOne({ tipo: 'compra', usuario: 'quim', monedas: 300, usd: 6, ref: 'paypal:VIEJA1', estado: 'completada', fecha: new Date() });
+            const r = await UC.entregarUnaVez(LiveTx, { tipo: 'compra', usuario: 'quim', monedas: 300, usd: 6, ref: 'paypal:VIEJA1' }, () => Usuario.updateOne({ usuario: 'quim' }, { $inc: { monedas: 300 } }));
+            assert.ok(r.repetida);
+            assert.strictEqual((await Usuario.findOne({ usuario: 'quim' }).lean()).monedas, 300);
+        });
+
+        // Webhook de Mercado Pago contra las rutas reales de la tienda
+        const webhook = id => fetch(`${base}/pagos/mercadopago/webhook`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'payment', data: { id } }) }).then(r => r.status);
+        await test('Mercado Pago aprobado TARDE con otra tasa: se entrega lo cobrado, una sola vez aunque el aviso se repita', async () => {
+            await Usuario.create({ usuario: 'rosa', monedas: 0 });
+            const p = Tienda.parsear('monedas:p500'), usd = Tienda.precioUsd(p, 'tarjeta_mp');
+            const cobrado = Math.ceil(usd * 4000 / 100) * 100;   // monto con la tasa del momento del pago
+            mpEnv.MERCADOPAGO_TASA_USD = '4400';                 // la tasa cambió antes de que el banco aprobara
+            mpPagos.set('55500011', { id: 55500011, status: 'approved', transaction_amount: cobrado, currency_id: 'COP', external_reference: `rosa|${p.id}|${cobrado}|${usd}` });
+            const estados = await Promise.all([webhook('55500011'), webhook('55500011'), webhook('55500011')]);
+            assert.deepStrictEqual(estados, [200, 200, 200]);
+            assert.strictEqual((await Usuario.findOne({ usuario: 'rosa' }).lean()).monedas, p.paquete.monedas);
+            mpEnv.MERCADOPAGO_TASA_USD = '4000';
+        });
+        await test('Mercado Pago: monto que no coincide con lo cobrado → no se entrega', async () => {
+            await Usuario.create({ usuario: 'saul', monedas: 0 });
+            const p = Tienda.parsear('monedas:p500'), usd = Tienda.precioUsd(p, 'tarjeta_mp');
+            mpPagos.set('55500012', { id: 55500012, status: 'approved', transaction_amount: 100, currency_id: 'COP', external_reference: `saul|${p.id}|${Math.ceil(usd * 4000 / 100) * 100}|${usd}` });
+            assert.strictEqual(await webhook('55500012'), 200);
+            assert.strictEqual((await Usuario.findOne({ usuario: 'saul' }).lean()).monedas, 0);
+        });
+        await test('Mercado Pago: si la base falla al entregar, responde 500 (Mercado Pago reintenta) y el reintento entrega una vez', async () => {
+            await Usuario.create({ usuario: 'tea', monedas: 0 });
+            const p = Tienda.parsear('monedas:p500'), usd = Tienda.precioUsd(p, 'tarjeta_mp'), cobrado = Math.ceil(usd * 4000 / 100) * 100;
+            mpPagos.set('55500013', { id: 55500013, status: 'approved', transaction_amount: cobrado, currency_id: 'COP', external_reference: `tea|${p.id}|${cobrado}|${usd}` });
+            const orig = Usuario.updateOne;
+            let fallar = true;
+            Usuario.updateOne = function (...a) { if (fallar && a[0]?.usuario === 'tea') { fallar = false; return Promise.reject(new Error('Mongo no responde')); } return orig.apply(this, a); };
+            try { assert.strictEqual(await webhook('55500013'), 500); }
+            finally { Usuario.updateOne = orig; }
+            assert.strictEqual((await Usuario.findOne({ usuario: 'tea' }).lean()).monedas, 0, 'a medias: aún sin entregar');
+            assert.strictEqual(await webhook('55500013'), 200);
+            assert.strictEqual(await webhook('55500013'), 200);
+            assert.strictEqual((await Usuario.findOne({ usuario: 'tea' }).lean()).monedas, p.paquete.monedas, 'entregada una vez');
+        });
+        await test('rutas de dinero exigen sesión (401 sin usuario)', async () => {
+            assert.strictEqual((await postJSON('/economia/solicitar-pago', {})).s, 401);
+            assert.strictEqual((await postJSON('/tienda/pagar', { producto: 'monedas:p500', metodo: 'upcoins', clave: 'abcdefgh1' })).s, 401);
         });
     } finally {
         http?.close();

@@ -126,7 +126,6 @@ function pfSwitchTab(tabName, el) {
   if(tabName === 'boveda') pfLoadBoveda();
   if(tabName === 'reportes') pfLoadReportes();
   if(tabName === 'pagos') pfLoadHistorialPagos();
-  if(tabName === 'logros') pfLoadLogros();
   if(tabName === 'colecciones') window.UGR?.colecciones(localStorage.getItem('user_admin') || '', document.getElementById('pf-colecciones'), { propio: true });
   if(tabName === 'economia') pfStartEcoPolling();
   else pfStopEcoPolling();

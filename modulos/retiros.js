@@ -33,6 +33,9 @@ function modelo(mongoose) {
         procesadoEn:   { type: Date },                     // cuándo se reclamó para pagar
         revision:      { type: String, default: '' },      // 'incierto' = resultado de PayPal desconocido
         payoutBatchId: { type: String, default: '' },
+        // Intento de PayPal: forma parte del sender_batch_id. Solo sube cuando un admin ANULA tras verificar
+        // que el dinero no salió (PayPal no acepta reusar un sender_batch_id ya creado, aunque terminara rechazado).
+        intentoPayout: { type: Number, default: 0 },
     }, { timestamps: true });
     return mongoose.model('Pago', s);
 }
@@ -89,6 +92,9 @@ async function procesar({ Pago, Usuario }, id, { enviar = null, notas = '', refe
     });
 }
 
+/** Identificador del lote de PayPal para este retiro: estable entre reintentos, nuevo solo tras una anulación verificada. */
+const idLote = pago => (pago.intentoPayout ? `${pago._id}_${pago.intentoPayout}` : String(pago._id));
+
 /** Retiros a medias: resultado incierto o `procesado` desde hace más de 10 min. */
 function enRevision(Pago, ahora = Date.now()) {
     return Pago.find({ estado: 'procesado', $or: [{ revision: 'incierto' }, { procesadoEn: { $lt: new Date(ahora - ATASCADO_MS) } }, { procesadoEn: { $exists: false } }] })
@@ -111,7 +117,7 @@ async function reconciliar({ Pago, Usuario }, id, accion, { enviar = null, consu
     if (accion === 'confirmar') return finalizar({ Pago, Usuario }, pago, { ...ref, ...nota('Reconciliado: el admin confirmó el envío') });
     if (accion === 'anular') {
         if (await yaDescontado(Usuario, pago)) return fallo(409, 'El saldo de este retiro ya se descontó: no se puede anular. Confírmalo.');
-        const r = await Pago.updateOne({ _id: id, estado: 'procesado' }, { $set: { estado: 'pendiente', revision: '' } });
+        const r = await Pago.updateOne({ _id: id, estado: 'procesado' }, { $set: { estado: 'pendiente', revision: '', payoutBatchId: '' }, $inc: { intentoPayout: 1 } });
         return r.modifiedCount ? { codigo: 200, anulado: true } : fallo(409, 'El pago cambió mientras tanto');
     }
     if (accion === 'consultar') {
@@ -134,4 +140,4 @@ async function reconciliar({ Pago, Usuario }, id, accion, { enviar = null, consu
     return fallo(400, 'Acción no válida');
 }
 
-module.exports = { modelo, procesar, reconciliar, enRevision, descontar, finalizar, ATASCADO_MS };
+module.exports = { modelo, procesar, reconciliar, enRevision, descontar, finalizar, idLote, ATASCADO_MS };

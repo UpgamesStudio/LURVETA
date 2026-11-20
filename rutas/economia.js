@@ -68,8 +68,9 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
             return res.json({ success: true, limiteAlcanzado: true, mensaje: "Has alcanzado el límite de descargas para hoy", link: juego.link });
         }
 
-        await Juego.findByIdAndUpdate(juegoId, { $inc: { descargasEfectivas: 1 } });
-        juego.descargasEfectivas = (juego.descargasEfectivas || 0) + 1;
+        // El total sale del propio $inc: con la suma local, dos descargas simultáneas repetían o saltaban un hito
+        const tras = await Juego.findByIdAndUpdate(juegoId, { $inc: { descargasEfectivas: 1 } }, { new: true }).select('descargasEfectivas').lean();
+        juego.descargasEfectivas = tras?.descargasEfectivas ?? (juego.descargasEfectivas || 0) + 1;
 
         // ⭐ Fire & forget — el like responde inmediatamente, score se actualiza en background
         calcularScoreRecomendacion(juegoId).catch(() => {});
@@ -230,15 +231,23 @@ app.post('/economia/solicitar-pago', verificarToken, async (req, res) => {
         const juegoElegible = await Juego.findOne({ usuario: usuario.usuario, category: { $ne: 'Video' }, descargasEfectivas: { $gt: 0 } }).select('_id').lean();
         if (!juegoElegible && !(await live.tieneIngresosLive(usuario.usuario))) return res.status(403).json({ success: false, error: "Aún no tienes ingresos por visualizaciones de publicidad ni por regalos en tus lives" });
 
-        // Reclamo atómico de la marca: un doble clic creaba dos solicitudes por el mismo saldo
-        const marcado = await Usuario.updateOne({ _id: usuario._id, solicitudPagoPendiente: { $ne: true } }, { $set: { solicitudPagoPendiente: true } });
-        if (!marcado.modifiedCount) return res.status(400).json({ success: false, error: "Ya tienes una solicitud de pago pendiente" });
-        const nuevoPago = new Pago({ usuario: usuario.usuario, monto: usuario.saldo, metodo: metodo.tipo, resumen: metodo.resumen, datosCobro: metodo.cifrado,
-            paypalEmail: metodo.tipo === 'paypal' ? (usuario.paypalEmail || '') : '', estado: 'pendiente' });
+        // Reclamo atómico de la marca, y el monto se lee EN la misma operación: un doble clic creaba dos
+        // solicitudes, y gastar UpCoins ganados entre la lectura y la marca dejaba un monto mayor que el saldo.
+        // Con la marca puesta, upcoins.cobrar ya no toca lo ganado, así que el monto queda fijo y cubierto.
+        const marcado = await Usuario.findOneAndUpdate({ _id: usuario._id, solicitudPagoPendiente: { $ne: true }, saldo: { $gte: MIN_WITHDRAWAL } },
+            { $set: { solicitudPagoPendiente: true } }, { new: true }).select('usuario saldo cobro paypalEmail').lean();
+        if (!marcado) {
+            const ahora = await Usuario.findById(usuario._id).select('saldo solicitudPagoPendiente').lean();
+            return res.status(400).json({ success: false, error: ahora?.solicitudPagoPendiente ? "Ya tienes una solicitud de pago pendiente" : `Necesitas al menos ${Math.round(MIN_WITHDRAWAL / 0.02)} UpCoins ganados (US$${MIN_WITHDRAWAL}) para retirar.` });
+        }
+        const monto = marcado.saldo;
+        const metodoFinal = cobros.metodoDe(marcado) || metodo;
+        const nuevoPago = new Pago({ usuario: usuario.usuario, monto, metodo: metodoFinal.tipo, resumen: metodoFinal.resumen, datosCobro: metodoFinal.cifrado,
+            paypalEmail: metodoFinal.tipo === 'paypal' ? (marcado.paypalEmail || '') : '', estado: 'pendiente' });
         try { await nuevoPago.save(); }
         catch (e) { await Usuario.updateOne({ _id: usuario._id }, { $set: { solicitudPagoPendiente: false } }); throw e; }
-        logger.info(`Solicitud de pago creada - @${usuario.usuario}, Monto: $${usuario.saldo.toFixed(2)}`);
-        res.json({ success: true, mensaje: `Solicitud enviada. Recibirás el dinero en ${metodo.resumen} cuando el administrador la procese (24-72 h hábiles).`, solicitud: { monto: usuario.saldo, metodo: metodo.tipo, resumen: metodo.resumen, fecha: nuevoPago.fecha } });
+        logger.info(`Solicitud de pago creada - @${usuario.usuario}, Monto: $${monto.toFixed(2)}`);
+        res.json({ success: true, mensaje: `Solicitud enviada. Recibirás el dinero en ${metodoFinal.resumen} cuando el administrador la procese (24-72 h hábiles).`, solicitud: { monto, metodo: metodoFinal.tipo, resumen: metodoFinal.resumen, fecha: nuevoPago.fecha } });
     } catch (error) {
         logger.error(`Error en solicitar-pago: ${error.message}`);
         res.status(500).json({ success: false, error: "Error al procesar solicitud de pago" });

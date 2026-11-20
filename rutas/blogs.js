@@ -908,12 +908,28 @@ function registrar(app, deps) {
     }
 
     // ── Monetización: pagar al creador por cada anuncio realmente visto ────────────────
-    const ticketsUsados = new Map();   // ticket → ms (cada ticket paga una sola vez)
+    // Cada ticket paga una sola vez: se marca en Mongo con _id único (atómico, compartido entre copias del
+    // servidor y a prueba de reinicios; caduca solo). El Map es solo el respaldo si la base no responde.
+    const ticketsUsados = new Map();
+    const colTickets = () => mongoose.connection.collection('blog_tickets_usados');
+    let indiceTickets = false;
+    async function usarTicket(ticket) {
+        const id = require('crypto').createHash('sha256').update(String(ticket)).digest('base64url');
+        try {
+            if (!indiceTickets) { indiceTickets = true; colTickets().createIndex({ expira: 1 }, { expireAfterSeconds: 0 }).catch(() => { indiceTickets = false; }); }
+            await colTickets().insertOne({ _id: id, expira: new Date(Date.now() + 2 * 3600e3) });
+            return true;
+        } catch (e) {
+            if (e.code === 11000) return false;
+            if (ticketsUsados.has(id)) return false;
+            if (ticketsUsados.size > 200000) ticketsUsados.clear();
+            ticketsUsados.set(id, Date.now());
+            return true;
+        }
+    }
     async function pagarAnuncio(blog, ticket, ip) {
         if (!blog.monetizar || blog.visibilidad !== 'publico' || blog.estado !== 'activo') return;
-        if (!Anuncios.verificar(JWT_SECRET, ticket, blog._id, ip).ok || ticketsUsados.has(ticket)) return;
-        if (ticketsUsados.size > 200000) ticketsUsados.clear();
-        ticketsUsados.set(ticket, Date.now());
+        if (!Anuncios.verificar(JWT_SECRET, ticket, blog._id, ip).ok || !(await usarTicket(ticket))) return;
         // Por persona: 3 anuncios pagados al día en un mismo blog y 25 entre todos los blogs
         if (!(await Limites.permitir(`blog-ad:${blog._id}:${ip}`, [[Limites.DIA, 3]])) || !(await Limites.permitir(`blog-ad-ip:${ip}`, [[Limites.DIA, 25]]))) return;
         const dia = new Date().toISOString().slice(0, 10);

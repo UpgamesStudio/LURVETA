@@ -140,7 +140,7 @@ app.get('/admin/finanzas/solicitudes-pendientes', verificarAdmin, async (req, re
 // Retiros: reclamo atómico, envío idempotente a PayPal y recuperación de pagos a medias (modulos/retiros.js)
 const Retiros = require('../modulos/retiros');
 const esAutomatico = p => config.FEATURES.ENABLE_AUTO_PAYMENTS && (p.metodo || 'paypal') === 'paypal' && !!p.paypalEmail;
-const enviarPayPal = p => paypalPayouts.enviarPayout({ email: p.paypalEmail, monto: p.monto, pagoId: String(p._id) });
+const enviarPayPal = p => paypalPayouts.enviarPayout({ email: p.paypalEmail, monto: p.monto, pagoId: Retiros.idLote(p) });
 const resumenPago = p => ({ usuario: p.usuario, monto: p.monto, paypalEmail: p.paypalEmail, fecha: p.fecha });
 
 app.post('/admin/finanzas/procesar-pago/:id', verificarAdmin, [param('id').isMongoId(), body('notas').optional().trim(), body('referencia').optional().trim().isLength({ max: 120 })], async (req, res) => {

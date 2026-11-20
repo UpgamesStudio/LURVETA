@@ -100,11 +100,9 @@ function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendE
             if (!u) return err(res, 404, 'Usuario no encontrado');
             // Máximo 5 intentos de contraseña cada 15 min (un token robado no sirve para adivinarla)
             const kI = `cobro-pass:${req.usuario}`;   // contador en Mongo: no se reinicia con un despliegue
-            if (await Limites.lleno(kI, 15 * Limites.MIN, 5)) return err(res, 429, 'Demasiados intentos. Espera 15 minutos.');
-            if (!req.body?.password || !(await bcrypt.compare(String(req.body.password), u.password || ''))) {
-                await Limites.sumar(kI, 15 * Limites.MIN);
-                return err(res, 401, 'La contraseña no es correcta');
-            }
+            // El intento se reserva ANTES de comparar: con «¿lleno? → probar → sumar» muchas peticiones a la vez probaban de más
+            if (!(await Limites.reservar(kI, 15 * Limites.MIN, 5))) return err(res, 429, 'Demasiados intentos. Espera 15 minutos.');
+            if (!req.body?.password || !(await bcrypt.compare(String(req.body.password), u.password || ''))) return err(res, 401, 'La contraseña no es correcta');
             await Limites.reiniciar(kI, 15 * Limites.MIN);   // acertó: se olvidan los fallos
             if (u.solicitudPagoPendiente) return err(res, 409, 'Tienes un retiro pendiente: espera a que se procese para cambiar el método de cobro');
             const { datos, resumen, paypalEmail } = validar(String(req.body.tipo || ''), req.body.datos || {});

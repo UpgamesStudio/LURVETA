@@ -51,10 +51,19 @@ async function leer(clave, ventanaMs) {
  * cupo, la cuenta en todas y devuelve true; si alguna está llena, no cuenta nada.
  */
 async function permitir(clave, reglas) {
-    const llenos = await Promise.all(reglas.map(([v, max]) => leer(clave, v).then(n => n >= max)));
-    if (llenos.some(Boolean)) return false;
-    await Promise.all(reglas.map(([v]) => sumar(clave, v)));
-    return true;
+    // Primero se suma (cada $inc es atómico y devuelve su propio puesto) y, si alguna regla quedó por
+    // encima del máximo, se deshace todo. Leer y luego sumar dejaba pasar a muchas peticiones simultáneas.
+    const totales = await Promise.all(reglas.map(([v]) => sumar(clave, v)));
+    if (totales.every((n, i) => n <= reglas[i][1])) return true;
+    await Promise.all(reglas.map(([v]) => sumar(clave, v, -1)));
+    return false;
+}
+
+/** Reserva un intento antes de hacerlo (p. ej. probar una contraseña): false si ya no quedan. Atómico. */
+async function reservar(clave, ventanaMs, max) {
+    if ((await sumar(clave, ventanaMs)) <= max) return true;
+    await sumar(clave, ventanaMs, -1);
+    return false;
 }
 
 /** ¿Ya se alcanzó el máximo? (para contar solo los fallos, p. ej. contraseñas) */
@@ -79,4 +88,4 @@ class MongoStore {
 }
 
 const MIN = 60000, HORA = 3600000, DIA = 864e5;
-module.exports = { sumar, leer, permitir, lleno, reiniciar, MongoStore, MIN, HORA, DIA };
+module.exports = { sumar, leer, permitir, reservar, lleno, reiniciar, MongoStore, MIN, HORA, DIA };

@@ -529,6 +529,7 @@ JuegoSchema.add({ imageOrigen: { type: String, default: '' }, portadaMigrada: { 
 // Visibilidad: impulsoHasta = el autor tiene Premium (sube en el inicio); destacadoHasta = lo
 // destacó pagando UpCoins (aparece arriba marcado como "Promocionado")
 JuegoSchema.add({ impulsoHasta: { type: Date, default: null }, destacadoHasta: { type: Date, default: null } });
+JuegoSchema.add({ comprasAplicadas: { type: [String], default: undefined, select: false } });   // refs de promociones ya aplicadas (entrega única, modulos/upcoins.js)
 // Nivel de la promoción pagada (estandar | plus | max): más UpCoins, más peso en el feed (upgames-ranking.js)
 JuegoSchema.add({ promoNivel: { type: String, default: null } });
 // UpCoins por día de la promoción vigente: cuanto más invierte el creador, más pesa (upgames-ranking.js)
@@ -600,7 +601,8 @@ const UsuarioSchema = new mongoose.Schema({
     descargasTotales:      { type: Number, default: 0, min: 0 },
     isVerificado:          { type: Boolean, default: false, index: true },
     solicitudPagoPendiente:{ type: Boolean, default: false },
-    retirosAplicados: { type: [String], default: undefined },   // ids de retiros ya descontados (idempotencia, modulos/retiros.js)
+    retirosAplicados: { type: [String], default: undefined, select: false },   // ids de retiros ya descontados (idempotencia, modulos/retiros.js)
+    comprasAplicadas: { type: [String], default: undefined, select: false },   // refs de compras ya entregadas (entrega única, modulos/upcoins.js)
     reputacion: { type: Number, default: 0 },
     listaSeguidores: [String],
     siguiendo:       [String],

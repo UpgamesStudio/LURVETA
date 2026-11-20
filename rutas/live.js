@@ -62,6 +62,7 @@ const TxSchema = new mongoose.Schema({
     metodo:       { type: String, default: '' },                   // tarjeta_mp | paypal | monedas | saldo | pase
     ref:          { type: String, required: true, unique: true },  // idempotencia (orden PayPal / clave del regalo)
     captureId:    { type: String, default: '', index: true },
+    acreditada:   { type: Boolean },                                // false = registrada pero aún sin entregar (modulos/upcoins.entregarUnaVez)
     estado:       { type: String, enum: ['completada', 'retenida', 'liberada', 'revertida'], default: 'completada' },
     liberarEn:    { type: Date, default: null },
     fecha:        { type: Date, default: Date.now, index: true },
@@ -573,21 +574,18 @@ function registrar(app, server, deps) {
             const orderID = String(req.body?.orderID || '');
             const ref = `paypal:${orderID}`;
             const previa = await LiveTx.findOne({ ref }).lean();
-            if (previa) {
-                if (previa.usuario !== req.usuario) return err(res, 403, 'Esta orden no es tuya');
+            if (previa && previa.usuario !== req.usuario) return err(res, 403, 'Esta orden no es tuya');
+            if (previa && previa.acreditada !== false) {   // ya entregada; si quedó a medias se sigue y se termina
                 const u = await Usuario.findOne({ usuario: req.usuario }).select('monedas').lean();
                 return ok(res, { monedas: u?.monedas || 0, acreditadas: previa.monedas, repetida: true });
             }
             const { captura, referencia } = await paypal.capturar(orderID, { usuario: req.usuario, validarRef: r => !!L.paquete(r), usd: r => L.paquete(r).usd });
             const p = L.paquete(referencia);
-            try {
-                await LiveTx.create({ tipo: 'compra', usuario: req.usuario, monedas: p.monedas, usd: p.usd, ref, captureId: captura.id || '', estado: 'completada' });
-            } catch (e) {
-                if (e.code !== 11000) throw e;
-                const u = await Usuario.findOne({ usuario: req.usuario }).select('monedas').lean();
-                return ok(res, { monedas: u?.monedas || 0, acreditadas: p.monedas, repetida: true });
-            }
-            const u = await Usuario.findOneAndUpdate({ usuario: req.usuario }, { $inc: { monedas: p.monedas } }, { new: true }).select('monedas').lean();
+            const UCm = require('../modulos/upcoins');
+            const e = await UCm.entregarUnaVez(LiveTx, { tipo: 'compra', usuario: req.usuario, monedas: p.monedas, usd: p.usd, ref, captureId: captura.id || '', estado: 'completada' },
+                doc => Usuario.updateOne({ usuario: req.usuario, ...UCm.filtroCompra(ref) }, { $inc: { monedas: doc.monedas }, $push: UCm.pushCompra(ref) }));
+            const u = await Usuario.findOne({ usuario: req.usuario }).select('monedas').lean();
+            if (e.repetida) return ok(res, { monedas: u?.monedas || 0, acreditadas: p.monedas, repetida: true });
             logger.info(`[live] Compra @${req.usuario}: ${p.monedas} monedas por $${p.usd} (orden ${orderID})`);
             ok(res, { monedas: u?.monedas || 0, acreditadas: p.monedas });
         } catch (e) {

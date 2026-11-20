@@ -68,4 +68,34 @@ async function migrar(Usuario, logger) {
     return r.modifiedCount;
 }
 
-module.exports = { UC_USD, saldoUC, cobrar, devolver, motivoSinSaldo, migrar };
+/**
+ * Entrega de una compra UNA sola vez, recuperable si el proceso cae a medias (sin transacciones de Mongo).
+ *
+ * Antes: crear el registro (LiveTx, ref única) y luego sumar al usuario. Si la suma fallaba o el servidor
+ * caía entre ambas, cada reintento chocaba con la ref única («repetida») y el comprador se quedaba sin lo
+ * pagado. Ahora el registro nace con `acreditada: false`; la actualización del destinatario lleva el filtro
+ * `comprasAplicadas: {$ne: ref}` y anota la ref (ver marcaCompra/pushCompra), y al final se marca
+ * `acreditada: true`. Un reintento termina lo que faltaba y nunca aplica dos veces.
+ * Registros anteriores a este cambio no tienen `acreditada`: se consideran ya entregados.
+ *
+ * aplicar(doc) recibe el registro guardado (usar sus valores, no recalcular) → resultado de la actualización.
+ * → { repetida, doc, r }  (repetida = no se aplicó nada en esta llamada)
+ */
+const MARCAS_COMPRA = 50;
+async function entregarUnaVez(LiveTx, datos, aplicar) {
+    let doc;
+    try { doc = (await LiveTx.create({ ...datos, acreditada: false })).toObject(); }
+    catch (e) { if (e.code !== 11000) throw e; doc = await LiveTx.findOne({ ref: datos.ref }).lean(); }
+    if (!doc || doc.usuario !== datos.usuario) return { repetida: true, ajena: !!doc };
+    if (doc.acreditada !== false || doc.estado === 'revertida') return { repetida: true, doc };
+    const r = await aplicar(doc);
+    await LiveTx.updateOne({ _id: doc._id }, { $set: { acreditada: true } });
+    return { repetida: false, doc, r };
+}
+/** Para updates normales: filtro + $push que anotan la ref en el destinatario. */
+const filtroCompra = ref => ({ comprasAplicadas: { $ne: ref } });
+const pushCompra = ref => ({ comprasAplicadas: { $each: [ref], $slice: -MARCAS_COMPRA } });
+/** Para updates con pipeline ($set): el mismo apunte de la ref. */
+const marcaCompra = ref => ({ $slice: [{ $concatArrays: [{ $ifNull: ['$comprasAplicadas', []] }, [ref]] }, -MARCAS_COMPRA] });
+
+module.exports = { UC_USD, saldoUC, cobrar, devolver, motivoSinSaldo, migrar, entregarUnaVez, filtroCompra, pushCompra, marcaCompra };
