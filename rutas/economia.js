@@ -243,7 +243,7 @@ app.post('/economia/solicitar-pago', verificarToken, async (req, res) => {
         const monto = marcado.saldo;
         const metodoFinal = cobros.metodoDe(marcado) || metodo;
         const nuevoPago = new Pago({ usuario: usuario.usuario, monto, metodo: metodoFinal.tipo, resumen: metodoFinal.resumen, datosCobro: metodoFinal.cifrado,
-            paypalEmail: metodoFinal.tipo === 'paypal' ? (marcado.paypalEmail || '') : '', estado: 'pendiente' });
+            paypalEmail: metodoFinal.tipo === 'paypal' ? (marcado.paypalEmail || '') : '', estado: 'pendiente', historial: [{ fecha: new Date(), accion: 'solicitado', por: usuario.usuario, detalle: metodoFinal.resumen }] });
         try { await nuevoPago.save(); }
         catch (e) { await Usuario.updateOne({ _id: usuario._id }, { $set: { solicitudPagoPendiente: false } }); throw e; }
         logger.info(`Solicitud de pago creada - @${usuario.usuario}, Monto: $${monto.toFixed(2)}`);

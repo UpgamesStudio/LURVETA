@@ -59,7 +59,7 @@ const silencio = { info() {}, warn() {}, error() {} };
             usuario: { type: String, unique: true }, saldo: { type: Number, default: 0 }, monedas: { type: Number, default: 0 },
             descargasTotales: { type: Number, default: 0 }, listaNegraAdmin: Boolean, solicitudPagoPendiente: Boolean,
             // mismos campos (y select: false) que el esquema real de index.js
-            retirosAplicados: { type: [String], default: undefined, select: false }, comprasAplicadas: { type: [String], default: undefined, select: false },
+            retirosAplicados: { type: [String], default: undefined, select: false }, comprasAplicadas: { type: [String], default: undefined, select: false }, retirosDevueltos: { type: [String], default: undefined, select: false },
             planHasta: Date, planId: String, planAvisadoHasta: Date, paseFondoUsd: Number, iaCreditos: Number,
             isVerificado: Boolean, verificadoNivel: Number, emailVerificado: Boolean, paypalEmail: String, cobro: mongoose.Schema.Types.Mixed,
         }));
@@ -431,6 +431,101 @@ const silencio = { info() {}, warn() {}, error() {} };
         await test('rutas de dinero exigen sesión (401 sin usuario)', async () => {
             assert.strictEqual((await postJSON('/economia/solicitar-pago', {})).s, 401);
             assert.strictEqual((await postJSON('/tienda/pagar', { producto: 'monedas:p500', metodo: 'upcoins', clave: 'abcdefgh1' })).s, 401);
+        });
+
+        // ── Incidencias de payouts de PayPal ya completados (devuelto, no reclamado, rechazado…) ──
+        const completado = async (u, monto, extra = {}) => {
+            await Usuario.create({ usuario: u, saldo: 0, cobro: { tipo: 'paypal', resumen: 'PayPal · n•••@x', cifrado: 'c' }, paypalEmail: `${u}@pp.test` });
+            return Pago.create({ usuario: u, monto, metodo: 'paypal', paypalEmail: `${u}@pp.test`, estado: 'completado', ...extra });
+        };
+        const metodo = { tipo: 'paypal', resumen: 'PayPal · nuevo', cifrado: 'c', paypalEmail: 'nuevo@pp.test' };
+
+        await test('webhook repetido (×5 a la vez): una sola incidencia y un solo apunte en el historial', async () => {
+            const p = await completado('ua', 20, { payoutBatchId: 'LOTEUA1' });
+            await Promise.all(Array.from({ length: 5 }, () => Retiros.registrarEstadoPayPal(Pago, { batchId: 'LOTEUA1' }, { item: 'UNCLAIMED', itemId: 'ITEMUA1' }, { fuente: 'webhook' })));
+            const d = await Pago.findById(p._id).lean();
+            assert.strictEqual(d.incidencia.tipo, 'no_reclamado'); assert.strictEqual(d.incidencia.estado, 'abierta');
+            assert.strictEqual(d.historial.filter(h => h.accion === 'paypal:UNCLAIMED').length, 1);
+            assert.strictEqual(d.historial.filter(h => h.accion === 'incidencia:abierta').length, 1);
+            assert.strictEqual(await saldo('ua'), 0, 'anotar nunca mueve dinero');
+        });
+        await test('NO RECLAMADO (resultado aún abierto): no se puede devolver el saldo ni reenviar', async () => {
+            const p = await Pago.findOne({ usuario: 'ua' });
+            for (const a of ['restaurar', 'reenviar']) assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, a, { confirmo: 20, metodo, por: 'adm' })).codigo, 409, a);
+            assert.strictEqual(await saldo('ua'), 0);
+            assert.strictEqual(await Pago.countDocuments({ usuario: 'ua' }), 1, 'no se creó un segundo pago');
+        });
+        await test('DEVUELTO: «devolver saldo» ×10 a la vez acredita una sola vez; repetir después → 409', async () => {
+            const p = await Pago.findOne({ usuario: 'ua' });
+            await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, { item: 'RETURNED', itemId: 'ITEMUA1' }, { fuente: 'consulta' });
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'restaurar', { confirmo: 19, por: 'adm' })).codigo, 400, 'confirmación con monto equivocado');
+            const r = await Promise.all(Array.from({ length: 10 }, () => Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'restaurar', { confirmo: 20, por: 'adm' })));
+            assert.ok(r.some(x => x.codigo === 200));
+            assert.strictEqual(await saldo('ua'), 20, 'acreditado una vez');
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'restaurar', { confirmo: 20 })).codigo, 409);
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'reenviar', { confirmo: 20, metodo })).codigo, 409, 'devolver y reenviar son exclusivos');
+            const d = await Pago.findById(p._id).lean();
+            assert.strictEqual(d.incidencia.estado, 'resuelta'); assert.strictEqual(d.incidencia.resolucion, 'saldo_devuelto'); assert.strictEqual(d.incidencia.resueltaPor, 'adm');
+        });
+        await test('FALLIDO → «reenviar» ×5 a la vez: un solo retiro nuevo, saldo devuelto una vez y pagarlo lo vuelve a descontar', async () => {
+            const p = await completado('ub', 15, { payoutBatchId: 'LOTEUB1' });
+            await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, { item: 'FAILED', error: 'RECEIVER_UNREGISTERED: cuenta inexistente' }, { fuente: 'barrido' });
+            const r = await Promise.all(Array.from({ length: 5 }, () => Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'reenviar', { confirmo: 15, metodo, por: 'adm' })));
+            assert.ok(r.some(x => x.codigo === 200), JSON.stringify(r.map(x => x.error || x.codigo)));
+            const nuevos = await Pago.find({ usuario: 'ub', estado: 'pendiente' }).lean();
+            assert.strictEqual(nuevos.length, 1, 'un solo retiro nuevo');
+            assert.strictEqual(nuevos[0].paypalEmail, 'nuevo@pp.test', 'usa el método de cobro actual');
+            let u = await Usuario.findOne({ usuario: 'ub' }).lean();
+            assert.strictEqual(u.saldo, 15); assert.strictEqual(u.solicitudPagoPendiente, true, 'el saldo queda reservado para el reenvío');
+            assert.strictEqual(await UC.cobrar(Usuario, 'ub', 100), null, 'no puede gastar lo que se va a reenviar');
+            assert.strictEqual((await Retiros.procesar({ Pago, Usuario }, nuevos[0]._id, {})).codigo, 200);
+            u = await Usuario.findOne({ usuario: 'ub' }).lean();
+            assert.strictEqual(u.saldo, 0); assert.strictEqual(u.solicitudPagoPendiente, false);
+        });
+        await test('reenviar con otro retiro ya pendiente → 409 y nada cambia; devolver el saldo sí funciona', async () => {
+            const p = await completado('uc', 12, { payoutBatchId: 'LOTEUC1' });
+            await Usuario.updateOne({ usuario: 'uc' }, { $set: { solicitudPagoPendiente: true } });
+            await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, { item: 'REFUNDED' }, {});
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'reenviar', { confirmo: 12, metodo })).codigo, 409);
+            assert.strictEqual(await saldo('uc'), 0);
+            assert.ok(!(await Pago.findById(p._id).lean()).incidencia.resolucion, 'el reclamo se deshizo');
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'restaurar', { confirmo: 12 })).codigo, 200);
+            assert.strictEqual(await saldo('uc'), 12);
+        });
+        await test('caída a medias al devolver el saldo: repetir termina sin acreditar dos veces', async () => {
+            const p = await completado('ud', 9, { payoutBatchId: 'LOTEUD1' });
+            await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, { item: 'REVERSED' }, {});
+            // pasos 1 y 2 hechos (reclamo + saldo), el 3 (cerrar) no
+            await Pago.updateOne({ _id: p._id }, { $set: { 'incidencia.resolucion': 'saldo_devuelto' } });
+            await Usuario.updateOne({ usuario: 'ud' }, { $inc: { saldo: 9 }, $push: { retirosDevueltos: String(p._id) } });
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'restaurar', { confirmo: 9 })).codigo, 200);
+            assert.strictEqual(await saldo('ud'), 9);
+            assert.strictEqual((await Pago.findById(p._id).lean()).incidencia.estado, 'resuelta');
+        });
+        await test('pago MANUAL devuelto por el banco: incidencia a mano con evidencia; sin evidencia no', async () => {
+            const p = await completado('ue', 30);
+            assert.strictEqual((await Retiros.abrirIncidencia(Pago, p._id, { tipo: 'devuelto', evidencia: 'corto', por: 'adm' })).codigo, 400);
+            assert.strictEqual((await Retiros.abrirIncidencia(Pago, p._id, { tipo: 'inventado', evidencia: 'Correo del banco del 20/11: transferencia devuelta', por: 'adm' })).codigo, 400);
+            assert.strictEqual((await Retiros.abrirIncidencia(Pago, p._id, { tipo: 'devuelto', evidencia: 'Correo del banco del 20/11: transferencia devuelta', por: 'adm' })).codigo, 200);
+            assert.strictEqual((await Retiros.abrirIncidencia(Pago, p._id, { tipo: 'devuelto', evidencia: 'Correo del banco del 20/11: transferencia devuelta', por: 'adm' })).codigo, 409, 'no se abre dos veces');
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'restaurar', { confirmo: 30, por: 'adm' })).codigo, 200);
+            assert.strictEqual(await saldo('ue'), 30);
+        });
+        await test('cerrar sin mover dinero exige explicación; un payout automático con PayPal en SUCCESS no admite incidencia manual de dinero', async () => {
+            const p = await completado('uf', 8, { payoutBatchId: 'LOTEUF1' });
+            await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, { item: 'SUCCESS' }, {});
+            assert.ok(!(await Pago.findById(p._id).lean()).incidencia, 'SUCCESS no abre incidencia');
+            await Retiros.abrirIncidencia(Pago, p._id, { tipo: 'devuelto', evidencia: 'El creador dice que no le llegó el dinero', por: 'adm' });
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'restaurar', { confirmo: 8 })).codigo, 409, 'PayPal dice SUCCESS: sin evidencia de devolución');
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'cerrar', { nota: 'ok' })).codigo, 400);
+            assert.strictEqual((await Retiros.resolverIncidencia({ Pago, Usuario }, p._id, 'cerrar', { nota: 'PayPal confirma que se cobró el 21/11', por: 'adm' })).codigo, 200);
+            assert.strictEqual(await saldo('uf'), 0);
+        });
+        await test('retiro en revisión (incierto): la consulta anota el estado de PayPal pero no abre incidencia ni lo reenvía', async () => {
+            const p = await retiro('ug', 6, { estado: 'procesado', revision: 'incierto', procesadoEn: new Date(), payoutBatchId: 'LOTEUG1' });
+            await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, { item: 'UNCLAIMED' }, {});
+            const d = await Pago.findById(p._id).lean();
+            assert.strictEqual(d.paypal.estado, 'UNCLAIMED'); assert.ok(!d.incidencia); assert.strictEqual(d.estado, 'procesado');
         });
     } finally {
         http?.close();

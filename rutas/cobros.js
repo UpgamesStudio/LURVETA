@@ -67,16 +67,17 @@ function validar(tipo, d = {}) {
     return { datos: { cuenta: valor, titular }, resumen: `Mercado Pago · ${esCel ? fin(valor) : enmEmail(valor)} · ${titular}` };
 }
 
+/** Método vigente del usuario (incluye el PayPal antiguo, guardado solo como email). */
+function metodoDe(u) {
+    if (u?.cobro?.tipo) return { tipo: u.cobro.tipo, resumen: u.cobro.resumen, cifrado: u.cobro.cifrado, actualizado: u.cobro.actualizado };
+    if (u?.paypalEmail) return { tipo: 'paypal', resumen: `PayPal · ${enmEmail(u.paypalEmail)}`, cifrado: cifrar({ email: u.paypalEmail }), actualizado: null };
+    return null;
+}
+
 function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendEmail, plantillaAviso }) {
     const ok = (res, d) => res.json({ success: true, ...d });
     const err = (res, code, error) => res.status(code).json({ success: false, error });
 
-    /** Método vigente del usuario (incluye el PayPal antiguo, guardado solo como email). */
-    function metodoDe(u) {
-        if (u?.cobro?.tipo) return { tipo: u.cobro.tipo, resumen: u.cobro.resumen, cifrado: u.cobro.cifrado, actualizado: u.cobro.actualizado };
-        if (u?.paypalEmail) return { tipo: 'paypal', resumen: `PayPal · ${enmEmail(u.paypalEmail)}`, cifrado: cifrar({ email: u.paypalEmail }), actualizado: null };
-        return null;
-    }
     /** Hasta cuándo están en espera los retiros tras cambiar el método (null si no hay espera). */
     const esperaHasta = u => {
         const t = u?.cobro?.esperaHasta ? new Date(u.cobro.esperaHasta) : null;
@@ -140,4 +141,4 @@ function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendE
     return { metodoDe, esperaHasta, TIPOS, validar, cifrar, descifrar };
 }
 
-module.exports = { registrar, validar, cifrar, descifrar, TIPOS };
+module.exports = { registrar, validar, cifrar, descifrar, metodoDe, TIPOS };

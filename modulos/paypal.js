@@ -131,15 +131,29 @@ function crear(config, getToken, { transporte } = {}) {
         throw fallo(msg, r.status >= 400 && r.status < 500 && !repetido);
     }
 
-    /** Estado de un lote ya creado: { estado, item } (SUCCESS, PENDING, PROCESSING, DENIED…). */
+    /**
+     * Estado REAL de un lote ya creado (GET /v1/payments/payouts/{id}). Cada retiro va en su propio
+     * lote con un solo ítem. → { estado (del lote), item (transaction_status del ítem: SUCCESS, UNCLAIMED,
+     * RETURNED, FAILED, BLOCKED, REFUNDED, REVERSED, ONHOLD, PENDING…), itemId, error, procesado }
+     */
     async function consultarPayout(batchId) {
         if (!/^[A-Z0-9]{5,40}$/.test(String(batchId || ''))) { const e = new Error('Lote no válido'); e.status = 400; throw e; }
         const r = await req('GET', `/v1/payments/payouts/${batchId}`);
         if (r.status !== 200) { const e = new Error(`PayPal no devolvió el lote (HTTP ${r.status})`); e.status = 502; throw e; }
-        return { estado: r.data?.batch_header?.batch_status || '', item: r.data?.items?.[0]?.transaction_status || '' };
+        const it = r.data?.items?.[0] || {};
+        return { estado: r.data?.batch_header?.batch_status || '', item: it.transaction_status || '', itemId: it.payout_item_id || '',
+            error: it.errors ? `${it.errors.name || ''}${it.errors.message ? ': ' + it.errors.message : ''}`.slice(0, 300) : '', procesado: it.time_processed || '' };
     }
 
-    return { activo, configurado, verificar, estado: () => ({ ...estado }), req, crearOrden, capturar, enviarPayout, consultarPayout };
+    /** Cancela un ítem NO RECLAMADO (UNCLAIMED): PayPal devuelve el dinero a la cuenta de UpGames. → mismo formato que consultarPayout. */
+    async function cancelarItemPayout(itemId) {
+        if (!/^[A-Z0-9]{5,40}$/.test(String(itemId || ''))) { const e = new Error('Ítem no válido'); e.status = 400; throw e; }
+        const r = await req('POST', `/v1/payments/payouts-item/${itemId}/cancel`, {});
+        if (r.status !== 200) { const e = new Error(`PayPal no canceló el ítem (HTTP ${r.status}): ${r.data?.message || r.data?.name || ''}`.trim()); e.status = 502; throw e; }
+        return { estado: '', item: r.data?.transaction_status || '', itemId: r.data?.payout_item_id || itemId, error: '', procesado: r.data?.time_processed || '' };
+    }
+
+    return { activo, configurado, verificar, estado: () => ({ ...estado }), req, crearOrden, capturar, enviarPayout, consultarPayout, cancelarItemPayout };
 }
 
 module.exports = { crear };

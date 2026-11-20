@@ -8,7 +8,7 @@
 <title>Panel Admin · UpGames</title>
 <link rel="icon" type="image/png" href="../public/icons/icon-192.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#04060B;--bg2:#080C15;
@@ -633,6 +633,121 @@ a{color:var(--g2)}
 .emp-bars .bar.cost{background:linear-gradient(180deg,#FFB84D,rgba(255,184,77,.25));box-shadow:none}
 .emp-x{display:flex;gap:10px;font-size:.66rem;color:var(--tx3);margin-top:5px}.emp-x span{flex:1;text-align:center}
 .emp-hint{font-size:.72rem;color:var(--tx3);margin:3px 0 0;line-height:1.35}
+
+/* ═══════════ ESPACIO DE TRABAJO (rediseño 2026-11) ═══════════
+   Capa final, escrita para el móvil primero (las reglas base son las del teléfono; las de escritorio van en
+   min-width). Misma identidad (verde → cian sobre oscuro) con menos brillo: lectura, jerarquía y espacios
+   consistentes (múltiplos de 4 px). No cambia el HTML de las secciones ni su lógica. */
+:root{--ff:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--ff-disp:'Manrope',system-ui,sans-serif;
+  --surface:#0B0F17;--surface2:#101521;--line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.13);--tx2:#A9B3C1;--tx3:#6E7887;
+  --r:14px;--r2:12px;--r3:10px;--sb:264px;--top:56px;--gap:12px}
+body{font-family:var(--ff);font-size:15px;letter-spacing:0}
+body::before{opacity:.45}body::after{display:none}
+.glass,.card{background:var(--surface);box-shadow:none;border:1px solid var(--line);backdrop-filter:none;-webkit-backdrop-filter:none}
+.card{border-radius:var(--r);padding:14px}
+.card:hover{border-color:var(--line2)}
+.ct{font-size:.92rem;font-weight:700}.cs{font-size:.78rem;color:var(--tx3)}
+.btn{border-radius:10px;font-weight:600}
+.btn.pri{box-shadow:none}.btn.pri:hover{box-shadow:none;transform:none;filter:brightness(1.06)}
+.chip.on{box-shadow:none}
+.tag{font-family:var(--ff);font-size:.68rem;font-weight:700;letter-spacing:0}
+.lbl{font-family:var(--ff);font-size:.72rem;letter-spacing:.02em;text-transform:none;font-weight:600}
+/* Acceso */
+.lg-t{font-family:var(--ff);letter-spacing:-.01em;text-transform:none;font-size:1.25rem}
+#lgBtn{font-family:var(--ff);text-transform:none;letter-spacing:0;font-size:.95rem}
+/* Barra superior: título con migas (área › sección) */
+.top{background:rgba(7,10,16,.86);gap:6px;padding:0 8px 0 4px}
+.top::after{display:none}
+.top-t{font-family:var(--ff);text-transform:none;letter-spacing:-.01em;font-size:1rem;font-weight:800;display:flex;flex-direction:column;line-height:1.15;min-width:0;flex:1}
+.top-t span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-g{font-size:.68rem;font-weight:600;color:var(--tx3);letter-spacing:.02em}
+.top .search{display:none;flex:1;margin:0}
+.top.buscando .search{display:block}.top.buscando .top-t,.top.buscando .q-btn{display:none}
+.top .live{display:none}
+.q-btn,.cmd-btn{display:inline-flex}
+/* Menú lateral (en el móvil es un cajón) */
+.side{background:#070A11;width:min(320px,88vw)}
+.side::after{display:none}
+.brand{font-family:var(--ff);letter-spacing:-.01em;text-transform:none;font-size:1rem;-webkit-text-fill-color:var(--tx);background:none}
+.brand small{font-family:var(--ff);letter-spacing:.04em;text-transform:uppercase;font-size:.62rem}
+.nav{padding:4px 10px 16px}
+.nav-buscar{position:sticky;top:0;z-index:2;background:#070A11;padding:4px 0 8px}
+.nav-buscar ion-icon{position:absolute;left:11px;top:15px;color:var(--tx3)}
+.nav-buscar input{width:100%;padding:9px 10px 9px 34px;border-radius:10px;border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--tx);font:inherit;font-size:.88rem}
+.nav-buscar input:focus{outline:none;border-color:rgba(57,255,136,.6)}
+.nav-g{display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;padding:8px 8px;border:0;border-radius:8px;background:none;cursor:pointer;
+  font-family:var(--ff);font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3)}
+.nav-g:hover{color:var(--tx2);background:rgba(255,255,255,.03)}
+.nav-g>ion-icon:first-child{font-size:1rem}
+.nav-g .g-chev{margin-left:auto;font-size:.9rem;transition:transform .2s}
+.nav-g.cer .g-chev{transform:rotate(-90deg)}
+.nav-g .g-n{margin-left:auto}.nav-g .g-n+.g-chev{margin-left:6px}
+.nav-g:not(.cer) .g-n{display:none!important}
+.nav-i{min-height:40px;padding:8px 10px 8px 12px;border-radius:10px;font-size:.9rem;font-weight:600;gap:10px}
+.nav-i.on{background:rgba(57,255,136,.09);border-color:transparent}
+.nav-i.on::before{left:-10px;top:10px;bottom:10px;box-shadow:none}
+.nav-i.on ion-icon{filter:none}
+.nbadge.hot{box-shadow:none;background:#FF5C7A}
+/* Contenido */
+.main{padding:16px 16px calc(96px + var(--safe-b))}
+.vh{align-items:flex-start;margin-bottom:16px;gap:10px}
+.vh h2{font-size:1.2rem;font-weight:800;letter-spacing:-.02em}
+.vh p{font-size:.86rem;color:var(--tx2);line-height:1.45;max-width:70ch}
+.vh>.btn,.vh>.row{flex:none}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:4px 0 10px}
+.sec-h h3{margin:0;font-size:.95rem;font-weight:800}.sec-h small{color:var(--ok);font-weight:700;font-size:.8rem}
+/* Pestañas y filtros: una fila que se desliza (no se amontonan en el teléfono) */
+.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;white-space:nowrap}
+.chip .cnt:not(:empty){display:inline-flex;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:999px;align-items:center;justify-content:center;font-size:.66rem;font-weight:800;background:#FF5C7A;color:#fff}
+.chip.on .cnt:not(:empty){background:rgba(3,17,9,.25);color:inherit}
+/* Panel de inicio */
+.alerts{grid-template-columns:1fr 1fr;gap:10px}
+.alert{border-left:3px solid transparent}
+.alert.al-on{border-left-color:var(--ac,var(--warn))}
+.eq-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:.86rem}
+.eq-l:first-child{border-top:0}
+.eq-l .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ok)}.eq-l .dot.bad{background:var(--bad)}
+/* Pagos: revisión e incidencias */
+.fin-c{margin-bottom:10px}
+.fin-c .kv{grid-template-columns:1fr 1fr;gap:8px 14px;margin:10px 0}
+.fin-c .kv>div{background:none;border:0;padding:0;min-width:0}
+.fin-c .kv small{font-size:.66rem;letter-spacing:.02em}
+.fin-c .kv span{font-size:.84rem;white-space:normal;word-break:break-word}
+.fin-c.fin-ab{border-left:3px solid var(--bad)}
+.fin-u{color:var(--g1);font-size:.98rem}
+.fin-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.fin-acts .btn{flex:1 1 auto;justify-content:center}
+.fin-espera{flex:1 1 100%}
+.fin-h{margin:6px 0 2px;font-size:.84rem}
+.fin-h summary{cursor:pointer;color:var(--tx2);font-weight:600;padding:4px 0}
+.fin-h ol{margin:6px 0 0;padding-left:18px;display:grid;gap:6px}
+.fin-row{flex-wrap:wrap}
+/* Barra inferior (móvil) */
+.bnav{background:rgba(7,10,16,.94)!important;border:1px solid var(--line)!important;border-radius:18px}
+.bn{font-size:.66rem}
+@media (min-width:600px){
+  .main{padding:20px 20px calc(96px + var(--safe-b))}
+  .alerts{grid-template-columns:repeat(3,1fr)}
+  .fin-acts .btn{flex:0 0 auto}
+}
+@media (min-width:901px){
+  :root{--top:60px}
+  .side{width:var(--sb)}
+  .top{padding:0 20px}
+  .top .search{display:block;max-width:420px}
+  .q-btn{display:none}
+  .top .live{display:inline-flex}
+  .top-t{flex:0 1 auto;flex-direction:row;align-items:baseline;gap:8px;font-size:1.05rem}
+  .top-g::after{content:'›';margin-left:8px;color:var(--tx3)}
+  .main{padding:24px 28px 48px;max-width:1360px}
+  .vh{flex-wrap:nowrap;align-items:flex-end}
+  .vh h2{font-size:1.45rem}
+  .alerts{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+  .chips{flex-wrap:wrap;overflow:visible}
+}
+@media (min-width:1400px){ .main{padding:28px 36px 48px} }
 </style>
 <script src="../public/upgames-errores.js?v=20261029i"></script>
 </head>
@@ -688,7 +803,9 @@ a{color:var(--g2)}
   <header class="top">
     <button class="btn icon ghost menu-btn" onclick="openMenu()" aria-label="Menú"><ion-icon name="menu-outline"></ion-icon></button>
     <div class="top-t" id="topT">Inicio</div>
-    <div class="search"><ion-icon name="search-outline"></ion-icon><input class="in" id="q" placeholder="Buscar…" oninput="debRender()" autocomplete="off"></div>
+    <div class="search"><ion-icon name="search-outline"></ion-icon><input class="in" id="q" placeholder="Filtrar esta sección…" oninput="debRender()" onblur="if(!this.value)document.querySelector('.top').classList.remove('buscando')" autocomplete="off" aria-label="Filtrar la sección actual"></div>
+    <button class="btn icon ghost q-btn" onclick="document.querySelector('.top').classList.add('buscando');$('q').focus()" aria-label="Filtrar"><ion-icon name="search-outline"></ion-icon></button>
+    <button class="btn icon ghost cmd-btn" onclick="cmdAbrir()" title="Ir a… (Ctrl K)" aria-label="Ir a una sección o acción"><ion-icon name="navigate-circle-outline"></ion-icon></button>
     <button class="btn icon ghost" onclick="ayudaDe(view)" title="¿Cómo funciona esta sección?" aria-label="Ayuda"><ion-icon name="help-circle-outline"></ion-icon></button>
     <span class="live" title="Se actualiza cada 30 s"><i></i><span id="liveT">En vivo</span></span>
     <button class="btn icon" onclick="sync(true)" title="Sincronizar"><ion-icon name="sync-outline" id="syncIco"></ion-icon></button>
@@ -702,8 +819,10 @@ a{color:var(--g2)}
       <div class="card dash-nx" id="dashNx"><div class="nx-av">✦</div><div class="grow"><div class="small" style="color:#c4b5fd;font-weight:700">Briefing de Nexus</div><p id="dashNxTxt">Nexus está revisando el panel…</p><div id="dashNxAct"></div>
         <button class="btn sm" style="margin-top:8px;border-color:rgba(167,139,250,.45);color:#d4c8ff" onclick="nxAbrir()">✦ Hablar con Nexus</button></div></div>
       <div class="card inf-aviso" id="dInfAviso" style="display:none"></div>
-      <p class="ct" style="margin:2px 0 8px">Por hacer</p>
+      <div class="sec-h"><h3>Requiere atención</h3><small id="dAlDia"></small></div>
       <div class="alerts" id="dAlerts"></div>
+      <div class="card" id="dEquipo" style="display:none;margin-bottom:14px"><div class="row" style="justify-content:space-between"><p class="ct" style="margin:0">Actividad reciente del equipo</p><button class="btn sm ghost" onclick="go('audit')">Ver auditoría <ion-icon name="chevron-forward"></ion-icon></button></div><div id="dEquipoL" style="margin-top:8px"></div></div>
+      <div class="sec-h"><h3>Plataforma ahora</h3></div>
       <div class="card vivo" id="dVivo">
         <div class="vivo-n"><span>🟢 En la página ahora</span><b id="vvN">—</b><small id="vvSub">Cargando la actividad en vivo…</small></div>
         <div class="vivo-g"><p class="ct" style="margin:0">Actividad en vivo</p><p class="cs" style="margin:0 0 8px">Últimos 60 minutos, minuto a minuto · se actualiza cada 15 s</p>
@@ -756,7 +875,7 @@ a{color:var(--g2)}
 
     <!-- ENTRADAS -->
     <section class="view" id="v-apro">
-      <div class="vh"><div><h2>Entradas</h2><p>Todo el contenido publicado</p></div>
+      <div class="vh"><div><h2>Publicaciones</h2><p>Todo el contenido publicado</p></div>
         <button class="btn sm" onclick="toggleBulk()"><ion-icon name="checkbox-outline"></ion-icon> Seleccionar</button></div>
       <div class="chips" id="itF" style="margin-bottom:12px">
         <button class="chip on" data-f="all">Todas</button><button class="chip" data-f="aprobado">Aprobadas</button>
@@ -789,7 +908,7 @@ a{color:var(--g2)}
     </section>
 
     <section class="view" id="v-blogs">
-      <div class="vh"><div><h2>Blogs</h2><p>Sitios creados por los usuarios en UpGames Blogs: reportados, en revisión y suspendidos</p></div>
+      <div class="vh"><div><h2>Blogs y NEW</h2><p>Sitios creados por los usuarios en UpGames Blogs: reportados, en revisión y suspendidos</p></div>
         <button class="btn sm" onclick="loadBlogs()"><ion-icon name="refresh-outline"></ion-icon> Recargar</button></div>
       <div class="row" id="blF" style="margin-bottom:12px;flex-wrap:wrap"><button class="chip on" data-f="">Por revisar</button><button class="chip" data-f="monetizados">Con publicidad</button><button class="chip" data-f="todos">Todos</button></div>
       <div class="list" id="blList"></div>
@@ -829,7 +948,7 @@ a{color:var(--g2)}
 
     <!-- ANUNCIOS -->
     <section class="view" id="v-anun">
-      <div class="vh"><div><h2>Anuncios</h2><p>Envía una notificación a la comunidad (aparece en la campana 🔔)</p></div></div>
+      <div class="vh"><div><h2>Anuncios y correo</h2><p>Envía una notificación a la comunidad (aparece en la campana 🔔)</p></div></div>
       <div class="card" style="max-width:640px">
         <div class="fg"><label class="lbl">Destinatarios</label>
           <div class="seg c2" id="anDest" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr))">
@@ -851,7 +970,7 @@ a{color:var(--g2)}
 
     <!-- ECONOMÍA -->
     <section class="view" id="v-econ">
-      <div class="vh"><div><h2>Economía</h2><p>UpCoins, ventas, Premium, NEXUS y publicaciones destacadas · 1 UC = US$<span id="ecUcv">0,02</span></p></div><button class="btn sm" onclick="loadEcon(true)"><ion-icon name="refresh-outline"></ion-icon> Actualizar</button></div>
+      <div class="vh"><div><h2>Economía y ventas</h2><p>UpCoins, ventas, Premium, NEXUS y publicaciones destacadas · 1 UC = US$<span id="ecUcv">0,02</span></p></div><button class="btn sm" onclick="loadEcon(true)"><ion-icon name="refresh-outline"></ion-icon> Actualizar</button></div>
       <div class="chips" id="ecF" style="margin-bottom:12px"><button class="chip" data-f="hoy">Últimas 24 h</button><button class="chip on" data-f="mes">30 días</button><button class="chip" data-f="total">Todo</button></div>
       <div class="kpis" id="ecKpis"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
       <div class="grid2" style="margin-bottom:14px">
@@ -871,7 +990,7 @@ a{color:var(--g2)}
 
     <!-- EXTRAS UC -->
     <section class="view" id="v-extras">
-      <div class="vh"><div><h2>Extras UC</h2><p>Usos extra de los UpCoins: activa o pausa cada uno, cambia precios, el catálogo de estilo y las misiones semanales</p></div>
+      <div class="vh"><div><h2>Tienda y misiones UC</h2><p>Usos extra de los UpCoins: activa o pausa cada uno, cambia precios, el catálogo de estilo y las misiones semanales</p></div>
         <div class="row" style="gap:8px"><button class="btn sm" onclick="loadExtras()"><ion-icon name="refresh-outline"></ion-icon> Recargar</button><button class="btn sm pri" onclick="guardarExtras()" id="xGuardar"><ion-icon name="save-outline"></ion-icon> Guardar cambios</button></div></div>
       <div class="kpis" id="xKpis"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
       <div class="grid2" style="margin-bottom:14px">
@@ -884,7 +1003,7 @@ a{color:var(--g2)}
 
     <!-- MODERACIÓN AUTOMÁTICA -->
     <section class="view" id="v-moder">
-      <div class="vh"><div><h2>Moderación IA</h2><p>Lo que las reglas y NEXUS quitaron solos: contenido sexual, odio, acoso, insultos y spam en comentarios, chat de lives, publicaciones y lives</p></div>
+      <div class="vh"><div><h2>Moderación y seguridad</h2><p>Lo que las reglas y NEXUS quitaron solos: contenido sexual, odio, acoso, insultos y spam en comentarios, chat de lives, publicaciones y lives</p></div>
         <button class="btn sm" onclick="loadModer()"><ion-icon name="refresh-outline"></ion-icon> Recargar</button></div>
       <div class="card" id="segCard" style="margin-bottom:14px;border-color:rgba(255,77,109,.45);overflow:auto">
         <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><div><p class="ct">🚨 Incidentes de seguridad · cero tolerancia</p>
@@ -903,8 +1022,9 @@ a{color:var(--g2)}
 
     <!-- PAGOS -->
     <section class="view" id="v-pays">
-      <div class="vh"><div><h2>Pagos</h2><p>Retiros de UpCoins ganados que piden los creadores (se paga el valor en dinero)</p></div><button class="btn sm" onclick="exportPagos()"><ion-icon name="download-outline"></ion-icon> Exportar historial</button></div>
-      <div class="chips" id="pF" style="margin-bottom:12px"><button class="chip on" data-f="pend">⏳ Pendientes</button><button class="chip" data-f="hist">📋 Historial</button></div>
+      <div class="vh"><div><h2>Pagos y retiros</h2><p>Retiros de UpCoins ganados que piden los creadores (se paga el valor en dinero)</p></div><button class="btn sm" onclick="exportPagos()"><ion-icon name="download-outline"></ion-icon> Exportar historial</button></div>
+      <div class="chips" id="pF" style="margin-bottom:12px" role="tablist"><button class="chip on" data-f="pend">⏳ Pendientes <span class="cnt" id="pfC-pend"></span></button><button class="chip" data-f="revi">🔎 En revisión <span class="cnt" id="pfC-revi"></span></button><button class="chip" data-f="inci">⚠️ Incidencias PayPal <span class="cnt" id="pfC-inci"></span></button><button class="chip" data-f="hist">📋 Historial</button></div>
+      <p class="small muted" id="pfAyuda" style="margin:-4px 0 12px"></p>
       <div class="list" id="payList"></div>
     </section>
 
@@ -970,7 +1090,7 @@ a{color:var(--g2)}
     </section>
 
     <section class="view" id="v-api">
-      <div class="vh"><div><h2>API Test</h2><p>Estado del servidor, base de datos, Nexus y consola de pruebas</p></div>
+      <div class="vh"><div><h2>Diagnóstico</h2><p>Estado del servidor, base de datos, Nexus y consola de pruebas</p></div>
         <button class="btn pri" onclick="runDiag()"><ion-icon name="pulse-outline"></ion-icon> Ejecutar diagnóstico</button></div>
       <div class="diag" id="diag"></div>
       <div class="card" style="margin-bottom:14px"><div class="row" style="justify-content:space-between;margin-bottom:6px"><div><p class="ct">🚨 Errores recientes</p><p class="cs" style="margin:0" id="erCs">Servidor y navegador de los usuarios · un error nuevo te avisa por correo</p></div>
@@ -994,7 +1114,7 @@ a{color:var(--g2)}
 
     <!-- EQUIPO -->
     <section class="view" id="v-equipo">
-      <div class="vh"><div><h2>Equipo</h2><p>Asigna a cada sub-administrador un rol exclusivo: solo verá y podrá usar su área.</p></div>
+      <div class="vh"><div><h2>Equipo y roles</h2><p>Asigna a cada sub-administrador un rol exclusivo: solo verá y podrá usar su área.</p></div>
         <button class="btn bad" id="eqEmerg" onclick="emergencia()"><ion-icon name="warning-outline"></ion-icon> Pausar a todo el equipo</button></div>
       <div class="card" style="margin-bottom:14px">
         <p class="ct" id="eqFormT">Modo de asignación</p><p class="cs">1 · Elige la persona &nbsp; 2 · Elige su rol exclusivo &nbsp; 3 · Asigna</p>
@@ -1124,6 +1244,7 @@ const API = (() => { try { const o = new URLSearchParams(location.search).get('a
 // ─────────── Estado ───────────
 const S = { token: null, admin: null, exp: 0 };
 let D = { items: [], users: [], comments: [], pagos: [], tarjetas: [] };
+let FIN = { revi: null, inci: null };   // retiros en revisión e incidencias de PayPal (sección Pagos)
 let dash = null, view = 'dash', bulk = false, sel = new Set();
 let EMP = null;   // tablero Empresa (solo el dueño)
 let itF = 'all', vF = 'all', uF = 'all', pF = 'pend', tF = 'all', itLimit = 60, uLimit = 60;
@@ -1272,76 +1393,93 @@ async function entrar() {
 function tickExp() { const r = S.exp - Date.now(); if (r <= 0) return logout('Tu sesión expiró. Vuelve a entrar.'); $('meExp').textContent = `Sesión: ${Math.floor(r / 3600e3)} h ${Math.floor(r % 3600e3 / 60e3)} min`; }
 
 // ─────────── Navegación ───────────
+// Arquitectura del panel: 6 áreas. Mismas secciones, ids, permisos y funciones de siempre; solo cambia el orden.
 const NAV = [
-  { g: 'General' }, { id: 'dash', ic: 'grid-outline', t: 'Inicio', perm: 'estadisticas' },
+  { g: 'Resumen', gi: 'speedometer-outline' }, { id: 'dash', ic: 'grid-outline', t: 'Inicio', perm: 'estadisticas' },
   { id: 'metr', ic: 'analytics-outline', t: 'Métricas', perm: 'estadisticas' },
   { id: 'emp', ic: 'business-outline', t: 'Empresa', perm: 'owner', b: () => (EMP?.alertas || []).filter(a => a.nivel === 'alta').length, hot: true },
   { id: 'inf', ic: 'document-attach-outline', t: 'Informes', perm: ['estadisticas', 'finanzas'] },
-  { id: 'ayuda', ic: 'help-circle-outline', t: 'Guía del panel', perm: null },
-  { g: 'Contenido' },
+  { g: 'Finanzas', gi: 'cash-outline' },
+  { id: 'pays', ic: 'wallet-outline', t: 'Pagos y retiros', perm: 'finanzas', b: () => D.pagos.length + (FIN.revi?.length || 0) + (FIN.inci || []).filter(x => x.incidencia?.estado === 'abierta').length, hot: true },
+  { id: 'econ', ic: 'diamond-outline', t: 'Economía y ventas', perm: ['finanzas', 'estadisticas'] },
+  { id: 'extras', ic: 'sparkles-outline', t: 'Tienda y misiones UC', perm: 'finanzas' },
+  { id: 'tarj', ic: 'card-outline', t: 'Tarjetas', perm: 'finanzas', b: () => D.tarjetas.length },
+  { g: 'Comunidad y moderación', gi: 'people-outline' },
+  { id: 'usrs', ic: 'people-outline', t: 'Usuarios', perm: ['usuarios', 'sanciones', 'finanzas'], b: () => D.users.length },
+  { id: 'reportes', ic: 'flag-outline', t: 'Reportes', perm: ['revision', 'contenido'], b: () => D.items.filter(i => i.reportes > 0).length, hot: true },
+  { id: 'comt', ic: 'chatbubbles-outline', t: 'Comentarios', perm: 'comentarios', b: () => D.comments.length },
+  { id: 'moder', ic: 'shield-half-outline', t: 'Moderación y seguridad', perm: ['comentarios', 'contenido', 'sanciones'] },
+  { id: 'anun', ic: 'megaphone-outline', t: 'Anuncios y correo', perm: 'anuncios' },
+  { g: 'Contenido', gi: 'albums-outline' },
   { id: 'revn', ic: 'alert-circle-outline', t: 'Revisión', perm: ['revision', 'contenido'], b: () => D.items.filter(enRev).length, hot: true },
-  { id: 'apro', ic: 'albums-outline', t: 'Entradas', perm: 'contenido', b: () => D.items.length },
+  { id: 'apro', ic: 'albums-outline', t: 'Publicaciones', perm: 'contenido', b: () => D.items.length },
   { id: 'vids', ic: 'videocam-outline', t: 'Videos', perm: 'contenido', b: () => D.items.filter(isVid).length },
   { id: 'sosp', ic: 'eye-outline', t: 'Verificación', perm: ['revision', 'contenido'], b: () => (D.sosp || []).length, hot: true },
-  { id: 'reportes', ic: 'flag-outline', t: 'Reportes', perm: ['revision', 'contenido'], b: () => D.items.filter(i => i.reportes > 0).length, hot: true },
-  { id: 'blogs', ic: 'globe-outline', t: 'Blogs', perm: ['revision', 'contenido', 'sanciones'], b: () => BL?.pendientes || 0, hot: true },
-  { id: 'comt', ic: 'chatbubbles-outline', t: 'Comentarios', perm: 'comentarios', b: () => D.comments.length },
-  { id: 'moder', ic: 'shield-half-outline', t: 'Moderación IA', perm: ['comentarios', 'contenido', 'sanciones'] },
+  { id: 'blogs', ic: 'globe-outline', t: 'Blogs y NEW', perm: ['revision', 'contenido', 'sanciones'], b: () => BL?.pendientes || 0, hot: true },
+  { g: 'Plataforma', gi: 'sparkles-outline' },
   { id: 'nxbus', ic: 'telescope-outline', t: 'Buscador Nexus', perm: ['revision', 'contenido', 'estadisticas'] },
-  { g: 'Comunidad' },
-  { id: 'usrs', ic: 'people-outline', t: 'Usuarios', perm: ['usuarios', 'sanciones', 'finanzas'], b: () => D.users.length },
-  { id: 'anun', ic: 'megaphone-outline', t: 'Anuncios', perm: 'anuncios' },
-  { g: 'Finanzas' },
-  { id: 'econ', ic: 'diamond-outline', t: 'Economía', perm: ['finanzas', 'estadisticas'] },
-  { id: 'extras', ic: 'sparkles-outline', t: 'Extras UC', perm: 'finanzas' },
-  { id: 'pays', ic: 'wallet-outline', t: 'Pagos', perm: 'finanzas', b: () => D.pagos.length, hot: true },
-  { id: 'tarj', ic: 'card-outline', t: 'Tarjetas', perm: 'finanzas', b: () => D.tarjetas.length },
-  { g: 'Sistema' },
-  { id: 'api', ic: 'pulse-outline', t: 'API Test', perm: 'sistema' },
-  { id: 'equipo', ic: 'shield-checkmark-outline', t: 'Equipo', perm: 'owner' },
+  { g: 'Sistema y seguridad', gi: 'server-outline' },
+  { id: 'api', ic: 'pulse-outline', t: 'Diagnóstico', perm: 'sistema' },
+  { id: 'equipo', ic: 'shield-checkmark-outline', t: 'Equipo y roles', perm: 'owner' },
   { id: 'audit', ic: 'document-text-outline', t: 'Auditoría', perm: 'owner' },
+  { id: 'ayuda', ic: 'help-circle-outline', t: 'Guía del panel', perm: null },
 ];
+const grupoDe = id => { let g = ''; for (const n of NAV) { if (n.g) g = n.g; else if (n.id === id) return g; } return ''; };
 function navOk(n) { return can(n.perm); }
 // Primera pantalla según el rol: su área principal, no una vista de apoyo
 function inicioDeRol() { return ['dash', 'revn', 'pays', 'comt', 'anun', 'api', 'apro', 'usrs'].find(id => navOk(NAV.find(n => n.id === id))) || 'dash'; }
 // grupos del menú plegables (se recuerda): por defecto abiertos solo General y Contenido
-let navCerr = new Set((() => { try { return JSON.parse(localStorage.getItem('ug_admin_nav') || 'null') || ['Comunidad', 'Finanzas', 'Sistema']; } catch (_) { return []; } })());
+let navCerr = new Set((() => { try { return JSON.parse(localStorage.getItem('ug_admin_nav2') || 'null') || ['Plataforma', 'Sistema y seguridad']; } catch (_) { return []; } })());
 function navPlegar(el) {
   const g = el.dataset.g, cer = !navCerr.has(g);
   cer ? navCerr.add(g) : navCerr.delete(g);
-  try { localStorage.setItem('ug_admin_nav', JSON.stringify([...navCerr])); } catch (_) {}
-  el.classList.toggle('cer', cer);
+  try { localStorage.setItem('ug_admin_nav2', JSON.stringify([...navCerr])); } catch (_) {}
+  el.classList.toggle('cer', cer); el.setAttribute('aria-expanded', String(!cer));
   document.querySelectorAll(`#nav .nav-i[data-g="${g}"]`).forEach(b => { b.style.display = cer ? 'none' : ''; });
 }
 function buildNav() {
-  let html = '', pend = null, grupo = '';
+  let html = `<div class="nav-buscar"><ion-icon name="search-outline"></ion-icon><input id="navQ" placeholder="Ir a una sección…" autocomplete="off" oninput="navFiltrar(this.value)" aria-label="Filtrar secciones"></div>`, pend = null, grupo = '';
   for (const n of NAV) {
-    if (n.g) { pend = n.g; continue; }
+    if (n.g) { pend = n; continue; }
     if (!navOk(n)) continue;
-    if (pend) { grupo = pend; html += `<div class="nav-g${navCerr.has(grupo) ? ' cer' : ''}" data-g="${grupo}" onclick="navPlegar(this)">${pend}</div>`; pend = null; }
+    if (pend) { grupo = pend.g; html += `<button type="button" class="nav-g${navCerr.has(grupo) ? ' cer' : ''}" data-g="${grupo}" aria-expanded="${!navCerr.has(grupo)}" onclick="navPlegar(this)"><ion-icon name="${pend.gi}"></ion-icon><span>${grupo}</span><span class="nbadge g-n" id="ng-${grupo.replace(/\W+/g, '')}" style="display:none"></span><ion-icon class="g-chev" name="chevron-down"></ion-icon></button>`; pend = null; }
     // (el número solo donde hay trabajo esperando: los totales de entradas o usuarios eran ruido)
     html += `<button class="nav-i" data-g="${grupo}" data-v="${n.id}" onclick="go('${n.id}')"${navCerr.has(grupo) ? ' style="display:none"' : ''}><ion-icon name="${n.ic}"></ion-icon>${n.t}${n.b && n.hot ? `<span class="nbadge" id="nb-${n.id}">0</span>` : ''}</button>`;
   }
   $('nav').innerHTML = html;
-  const prim = ['dash', 'revn', 'usrs', 'pays', 'econ', 'apro', 'reportes', 'comt', 'anun', 'tarj', 'api', 'equipo'].map(id => NAV.find(n => n.id === id)).filter(n => n && navOk(n)).slice(0, 4);
+  const prim = ['dash', 'pays', 'revn', 'usrs', 'econ', 'apro', 'reportes', 'comt', 'anun', 'tarj', 'api', 'equipo'].map(id => NAV.find(n => n.id === id)).filter(n => n && navOk(n)).slice(0, 4);
   $('bnav').innerHTML = prim.map(n => `<button class="bn" data-v="${n.id}" onclick="go('${n.id}')"><ion-icon name="${n.ic}"></ion-icon>${n.t}${n.b && n.hot ? `<span class="nbadge hot" id="bb-${n.id}" style="display:none">0</span>` : ''}</button>`).join('')
-    + `<button class="bn" onclick="openMenu()"><ion-icon name="ellipsis-horizontal-circle-outline"></ion-icon>Más</button>`;
+    + `<button class="bn" onclick="openMenu()" aria-label="Todas las secciones"><ion-icon name="apps-outline"></ion-icon>Menú</button>`;
   $('bnav').style.gridTemplateColumns = `repeat(${prim.length + 1},1fr)`;
 }
 function updBadges() {
+  const porGrupo = {}; let g = '';
   for (const n of NAV) {
+    if (n.g) { g = n.g; continue; }
     if (!n.b) continue;
     const v = n.b(), a = $('nb-' + n.id), b = $('bb-' + n.id);
     if (a) { a.textContent = v > 999 ? '999+' : v; a.classList.toggle('hot', !!n.hot && v > 0); }
     if (b) { b.textContent = v > 99 ? '99+' : v; b.style.display = v > 0 ? '' : 'none'; }
+    if (n.hot && navOk(n)) porGrupo[g] = (porGrupo[g] || 0) + (v || 0);
   }
+  // Grupo plegado: su título muestra el trabajo pendiente de dentro
+  for (const [grupo, v] of Object.entries(porGrupo)) { const el = $('ng-' + grupo.replace(/\W+/g, '')); if (el) { el.textContent = v > 99 ? '99+' : v; el.style.display = v > 0 ? '' : 'none'; el.classList.toggle('hot', v > 0); } }
+  if (typeof pfContar === 'function') pfContar();
+}
+function navFiltrar(q) {
+  const t = sinTildes(q.trim());
+  document.querySelectorAll('#nav .nav-i').forEach(b => { const ok = !t || sinTildes(b.textContent).includes(t) || sinTildes(b.dataset.g || '').includes(t); b.style.display = ok && (t || !navCerr.has(b.dataset.g)) ? '' : 'none'; });
+  document.querySelectorAll('#nav .nav-g').forEach(h => { h.style.display = !t || [...document.querySelectorAll(`#nav .nav-i[data-g="${h.dataset.g}"]`)].some(b => b.style.display !== 'none') ? '' : 'none'; });
 }
 function go(v) {
   const n = NAV.find(x => x.id === v); if (!n || !navOk(n)) v = inicioDeRol();
   view = v; if (bulk) toggleBulk(false);
   document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
   document.querySelectorAll('.nav-i,.bn').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  $('topT').textContent = NAV.find(x => x.id === v)?.t || 'Inicio';
+  const gr = grupoDe(v), tt = NAV.find(x => x.id === v)?.t || 'Inicio';
+  $('topT').innerHTML = `<small class="top-g">${esc(gr)}</small><span>${esc(tt)}</span>`;
+  document.title = `${tt} · Panel UpGames`;
+  if ($('navQ') && $('navQ').value) { $('navQ').value = ''; navFiltrar(''); }
   history.replaceState(null, '', '#' + v);
   closeMenu(); window.scrollTo({ top: 0 });
   if (v === 'inf') infIniciar();
@@ -1356,7 +1494,7 @@ function go(v) {
   if (v === 'anun') emailEstado();
   else if (v === 'audit') loadAudit();
   else if (v === 'api' && !$('diag').innerHTML) { runDiag(); runEndpoints(); loadErrores(); }
-  else if (v === 'pays' && pF === 'hist') loadHist();
+  else if (v === 'pays') pfIr(true);
   render();
 }
 function openMenu() { $('side').classList.add('open'); $('scrim').classList.add('on'); }
@@ -1367,7 +1505,7 @@ chips('itF', f => { itF = f; itLimit = 60; render(); });
 chips('vF', f => { vF = f; render(); });
 chips('uF', f => { uF = f; uLimit = 60; render(); });
 chips('tF', f => { tF = f; render(); });
-chips('pF', f => { pF = f; if (f === 'hist') loadHist(); else render(); });
+chips('pF', f => { pF = f; pfIr(); });
 
 let debT; function debRender() { clearTimeout(debT); debT = setTimeout(() => { itLimit = 60; uLimit = 60; render(); }, 180); }
 const qv = () => $('q').value.toLowerCase().trim();
@@ -1405,6 +1543,7 @@ async function sync(manual) {
     if (fallos.length) toast('⚠ No cargó: ' + fallos.join(', '), 'err');
     else if (manual) toast(`✓ Sincronizado · ${num(D.items.length)} entradas · ${num(D.users.length)} usuarios`);
     if (view === 'dash') { loadCharts(); loadVivo(); }
+    loadFin();
     loadEcon(view === 'econ');
     loadEmp(false);
   } finally { syncing = false; $('syncIco').style.animation = ''; }
@@ -1423,11 +1562,23 @@ function cpmCreador() { const v = Number(econ?.catalogo?.cpmUsd); return v > 0 ?
 function rDash() {
   const al = [];
   const rev = D.items.filter(enRev).length, rep = D.items.filter(i => i.reportes > 0).length;
-  if (can(['revision', 'contenido'])) al.push(['revn', 'alert-circle', rev, 'en revisión', rev ? 'var(--warn)' : 'var(--ok)']);
+  // Primero el dinero (retiros), luego el contenido y la comunidad. Lo que está en 0 se resume en una línea.
+  if (can('finanzas')) {
+    const inc = (FIN.inci || []).filter(x => x.incidencia?.estado === 'abierta').length, rv = FIN.revi?.length || 0;
+    al.push(['pays', 'warning', inc, 'incidencias de PayPal', inc ? 'var(--bad)' : 'var(--ok)', 'inci']);
+    al.push(['pays', 'help-buoy', rv, 'retiros en revisión', rv ? 'var(--bad)' : 'var(--ok)', 'revi']);
+    al.push(['pays', 'wallet', D.pagos.length, 'retiros por pagar', D.pagos.length ? 'var(--warn)' : 'var(--ok)', 'pend']);
+  }
+  if (can(['revision', 'contenido'])) al.push(['revn', 'alert-circle', rev, 'publicaciones en revisión', rev ? 'var(--warn)' : 'var(--ok)']);
   if (can(['revision', 'contenido'])) al.push(['reportes', 'flag', rep, 'con reportes', rep ? 'var(--bad)' : 'var(--ok)']);
-  if (can('finanzas')) al.push(['pays', 'wallet', D.pagos.length, 'pagos pendientes', D.pagos.length ? 'var(--warn)' : 'var(--ok)']);
+  if (can(['revision', 'contenido'])) { const n = (D.sosp || []).length; al.push(['sosp', 'eye', n, 'por verificar', n ? 'var(--warn)' : 'var(--ok)']); }
+  if (can(['revision', 'contenido', 'sanciones']) && BL) al.push(['blogs', 'globe', BL.pendientes || 0, 'blogs por revisar', BL.pendientes ? 'var(--warn)' : 'var(--ok)']);
   if (can(['usuarios', 'sanciones'])) { const s = D.users.filter(u => u.suspendido).length; al.push(['usrs', 'ban', s, 'cuentas suspendidas', s ? 'var(--org)' : 'var(--tx3)']); }
-  $('dAlerts').innerHTML = al.map(([v, ic, n, l, c]) => `<div class="card alert" onclick="go('${v}')"><div class="a-ic" style="background:color-mix(in srgb,${c} 16%,transparent);color:${c}"><ion-icon name="${ic}"></ion-icon></div><div><div class="a-n">${num(n)}</div><div class="a-l">${l}</div></div><ion-icon name="chevron-forward" style="margin-left:auto;color:var(--tx3)"></ion-icon></div>`).join('');
+  const conTrabajo = al.filter(a => a[2] > 0 && a[1] !== 'ban'), alDia = al.filter(a => !conTrabajo.includes(a));
+  $('dAlDia').textContent = conTrabajo.length ? '' : '✓ Todo al día';
+  const tarjetaAl = ([v, ic, n, l, c, sub]) => `<div class="card alert${n > 0 && ic !== 'ban' ? ' al-on' : ''}" style="--ac:${c}" role="button" tabindex="0" onclick="${sub ? `pF='${sub}';$('pF').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x.dataset.f==='${sub}'));` : ''}go('${v}')">`;
+  if (dashAuditT < Date.now() - 60e3 && can('owner')) { dashAuditT = Date.now(); loadDashEquipo(); }
+  $('dAlerts').innerHTML = [...conTrabajo, ...alDia].map(a => tarjetaAl(a) + (([v, ic, n, l, c]) => `<div class="a-ic" style="background:color-mix(in srgb,${c} 16%,transparent);color:${c}"><ion-icon name="${ic}"></ion-icon></div><div><div class="a-n">${num(n)}</div><div class="a-l">${l}</div></div><ion-icon name="chevron-forward" style="margin-left:auto;color:var(--tx3)"></ion-icon></div>`)(a)).join('');
   if (!dash) { $('dKpis').innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>'; return; }
   const d = dash;
   const k = (ic, c, v, l, det, cls = '') => `<div class="card kpi ${cls}" style="--kc:${c}"><div class="k-ic" style="background:color-mix(in srgb,${c} 15%,transparent);color:${c}"><ion-icon name="${ic}"></ion-icon></div><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-d">${det}</div></div>`;
@@ -1445,6 +1596,15 @@ function rDash() {
   const tbl = (rows, head) => rows?.length ? `<table class="tbl"><tr>${head}</tr>${rows}</table>` : '<div class="empty" style="padding:20px">Sin datos todavía</div>';
   $('dTop').innerHTML = tbl((d.topUploaders || []).map((u, i) => `<tr><td class="muted">${i + 1}</td><td style="color:var(--g1);font-weight:700">@${esc(u._id)}</td><td class="num">${num(u.totalDescargas)}</td><td class="num muted">${num(u.totalItems)}</td></tr>`).join(''), '<th>#</th><th>Creador</th><th class="num">Anuncios vistos</th><th class="num">Items</th>');
   $('dMas').innerHTML = tbl((d.itemsMasDescargados || []).map((j, i) => `<tr><td class="muted">${i + 1}</td><td class="ell">${esc(j.title)}</td><td class="muted">@${esc(j.usuario)}</td><td class="num">${num(j.descargasEfectivas)}</td></tr>`).join(''), '<th>#</th><th>Título</th><th>Por</th><th class="num">Anuncios vistos</th>');
+}
+
+// Actividad reciente del equipo (solo el dueño ve la auditoría): las últimas acciones que cambiaron algo
+let dashAuditT = 0;
+async function loadDashEquipo() {
+  try { const { ok, d } = await api('/admin/auditoria?limite=6&soloCambios=1'); if (!ok) return;
+    const logs = d.logs || []; $('dEquipo').style.display = logs.length ? '' : 'none';
+    $('dEquipoL').innerHTML = logs.map(l => `<div class="eq-l"><span class="dot ${l.estado >= 400 ? 'bad' : 'ok'}"></span><span class="grow"><b>@${esc(l.admin)}</b> ${esc(typeof descAccion === 'function' ? descAccion(l.accion) : l.accion)}${l.objetivo ? ` <span class="muted mono small">${esc(String(l.objetivo).slice(0, 24))}</span>` : ''}</span><span class="small muted">${ago(l.fecha)}</span></div>`).join('');
+  } catch (_) {}
 }
 
 // ── Guía de inicio: embudo anónimo (rutas/extrasUC.js → /admin/stats/guia) ──
@@ -1564,21 +1724,21 @@ const AYUDA = {
   emp: ['Empresa', 'La empresa completa en una pantalla (solo el dueño): cuánto entra, cuánto sale, cuánto se gana, cómo está el sistema y cómo crece.', ['<b>Resumen</b>: ingresos, costos, ganancia, caja, usuarios y las alertas que debes mirar ya.', '<b>Finanzas</b>: estado de resultados de 6 meses, costos por proveedor (los escribes tú: Railway, MongoDB, Resend, IA…), balance y proyección.', '<b>Operación</b>: servidor, errores, seguridad, fraude, trabajo pendiente y el <b>respaldo completo</b> de la base de datos.', '<b>Crecimiento</b>: ARPU, conversión a pago, churn de Premium, CAC, LTV y referidos, cada uno explicado.', '<b>Metas y parámetros</b>: el CPM que te paga la red publicitaria, las comisiones, la caja disponible y las metas del mes.'], 'Las cifras son devengadas (lo generado en el mes). Registra los costos cada mes y descarga un respaldo al menos una vez al mes.'],
   inf: ['Informes', 'El registro mensual de toda la actividad, para descargar y archivar.', ['Elige el mes y pulsa <b>Descargar Excel (CSV)</b>: se abre con doble clic en Excel o Google Sheets.', '<b>Imprimir / PDF</b> genera una versión para guardar como PDF.', 'Marca <b>Descargar solo cada mes</b> y el informe del mes cerrado se bajará la primera vez que entres al panel ese mes.', 'El día 1 el dueño recibe además un correo con el resumen.'], 'Los pagos solo aparecen si tienes permiso de finanzas; las acciones del equipo, solo para el dueño. Nunca incluye emails, IP ni datos de cobro.'],
   revn: ['Revisión', 'Publicaciones nuevas que esperan aprobación.', ['Abre cada una, comprueba que el enlace funciona y que el contenido es legítimo.', 'El botón <b>Nexus</b> da una recomendación de la IA antes de decidir.', 'Aprueba o rechaza. Con <b>Seleccionar</b> puedes hacerlo en bloque.'], 'Si no se aprueban en 2 días, el enlace se marca como caído. Las que llevan ⚡ pagaron revisión prioritaria: van primero.'],
-  apro: ['Entradas', 'Todo el contenido publicado.', ['Filtra por estado (aprobadas, pendientes, caídas, reportadas…).', 'Edita título, categoría o enlace, o cambia el estado del enlace.'], 'Usa el buscador de arriba para encontrar una publicación por título o creador.'],
+  apro: ['Publicaciones', 'Todo el contenido publicado.', ['Filtra por estado (aprobadas, pendientes, caídas, reportadas…).', 'Edita título, categoría o enlace, o cambia el estado del enlace.'], 'Usa el buscador de arriba para encontrar una publicación por título o creador.'],
   vids: ['Videos', 'Tutoriales, gameplays y reseñas de la comunidad.', ['Filtra por tipo y revisa los marcados «En revisión».'], ''],
   sosp: ['Verificación', 'Publicaciones con nombre de un juego comercial que no parecen un mod.', ['Siguen visibles, pero no generan pago al creador hasta que decidas.', 'Marca <b>Es un mod / legítimo</b> o retírala.'], 'Ante la duda, pide pruebas al creador antes de aprobar.'],
   reportes: ['Reportes', 'Contenido denunciado por la comunidad, de más a menos reportes.', ['Comprueba el motivo (enlace caído, versión vieja, malware).', 'Corrige el estado del enlace o retira la publicación; luego reinicia los reportes.'], 'Un reporte de malware se atiende antes que cualquier otra cosa.'],
   comt: ['Comentarios', 'Moderación de spam, insultos y enlaces sospechosos.', ['Borra lo que incumpla las normas.'], ''],
-  moder: ['Moderación IA', 'Lo que la IA ha ocultado o marcado automáticamente.', ['Revisa las decisiones y revierte las que sean un error.'], ''],
+  moder: ['Moderación y seguridad', 'Lo que la IA ha ocultado o marcado automáticamente.', ['Revisa las decisiones y revierte las que sean un error.'], ''],
   nxbus: ['Buscador Nexus', 'Descubre contenido que falta para proponerlo a la comunidad.', ['Escribe un tema y Nexus busca qué publicar.'], ''],
   usrs: ['Usuarios', 'Las cuentas de la comunidad.', ['Busca por usuario o email, abre el detalle y revisa su actividad.', 'Según tu permiso: suspender, ajustar saldo o verificar.'], 'Toda suspensión queda en la auditoría: escribe siempre el motivo.'],
-  anun: ['Anuncios', 'Mensajes del equipo para toda la comunidad.', ['Escribe el anuncio, elige a quién llega y envíalo.'], 'Revisa la ortografía: no se puede editar después de enviado.'],
-  econ: ['Economía', 'Ingresos, UpCoins y Premium.', ['Consulta ventas por periodo y el catálogo de precios.'], ''],
-  extras: ['Extras UC', 'Usos extra de los UpCoins (apoyos, revisión prioritaria, misiones).', ['Consulta el movimiento y los reembolsos.'], ''],
-  pays: ['Pagos', 'Solicitudes de cobro de los creadores.', ['Abre la solicitud, paga por el método indicado y márcala como <b>completada</b> con la referencia.', 'Si algo no cuadra, <b>recházala</b> con un motivo claro: el saldo vuelve al creador.'], 'Comprueba el monto dos veces antes de transferir. Cada pago queda registrado.'],
+  anun: ['Anuncios y correo', 'Mensajes del equipo para toda la comunidad.', ['Escribe el anuncio, elige a quién llega y envíalo.'], 'Revisa la ortografía: no se puede editar después de enviado.'],
+  econ: ['Economía y ventas', 'Ingresos, UpCoins y Premium.', ['Consulta ventas por periodo y el catálogo de precios.'], ''],
+  extras: ['Tienda y misiones UC', 'Usos extra de los UpCoins (apoyos, revisión prioritaria, misiones).', ['Consulta el movimiento y los reembolsos.'], ''],
+  pays: ['Pagos y retiros', 'Los retiros de los creadores, de la solicitud a la confirmación, y lo que sale mal después.', ['<b>Pendientes</b>: abre la solicitud, paga por el método indicado y márcala como pagada con la referencia. Si algo no cuadra, <b>recházala</b> con un motivo: el saldo vuelve al creador.', '<b>En revisión</b>: retiros que se enviaron pero PayPal no confirmó, o que quedaron a medias. <b>No los pagues otra vez</b>: «Consultar PayPal», o verifica tú y marca «sí llegó» / «no salió».', '<b>Incidencias PayPal</b>: payouts ya pagados que PayPal devolvió, rechazó, revirtió o que el creador no reclamó. Se detectan solos (consulta, revisión cada 6 h y webhook) o los reportas desde <b>Historial</b> con evidencia.', 'Para devolver el saldo o reenviar, PayPal tiene que confirmar que el dinero volvió (o, en un pago manual, tu evidencia). Un pago <b>no reclamado</b> primero se cancela en PayPal. Cada acción pide escribir el monto y queda en el historial y en la auditoría.'], 'Devolver el saldo y reenviar son excluyentes y se aplican una sola vez aunque se repitan.'],
   tarj: ['Tarjetas', 'Tarjetas de regalo y canjes.', ['Consulta las emitidas y su estado.'], ''],
-  api: ['API Test', 'Diagnóstico del servidor.', ['Comprueba que cada servicio responde.'], 'Solo para quien lleva el sistema.'],
-  equipo: ['Equipo', 'Quién trabaja en el panel y qué puede hacer (solo el dueño).', ['Da acceso por rol (revisor, moderador, tesorero…) o permiso a permiso.', 'Pausa un acceso o cierra sus sesiones si hace falta.'], 'Da a cada persona solo los permisos que necesita.'],
+  api: ['Diagnóstico', 'Diagnóstico del servidor.', ['Comprueba que cada servicio responde.'], 'Solo para quien lleva el sistema.'],
+  equipo: ['Equipo y roles', 'Quién trabaja en el panel y qué puede hacer (solo el dueño).', ['Da acceso por rol (revisor, moderador, tesorero…) o permiso a permiso.', 'Pausa un acceso o cierra sus sesiones si hace falta.'], 'Da a cada persona solo los permisos que necesita.'],
   audit: ['Auditoría', 'Registro de todo lo que hace el equipo (solo el dueño).', ['Filtra por persona y revisa los cambios.'], 'Se guarda 180 días; el informe mensual lo archiva más allá de ese plazo.'],
 };
 function ayPintar(foco) {
@@ -2620,7 +2780,9 @@ async function guardarExtras() {
 
 // ─────────── Pagos ───────────
 function rPays() {
+  pfContar();
   if (pF === 'hist') return;
+  if (pF === 'revi' || pF === 'inci') return rFin();
   const q = qv(), l = D.pagos.filter(p => !q || (p.usuario || '').toLowerCase().includes(q) || (p.paypalEmail || '').toLowerCase().includes(q) || (p.resumen || '').toLowerCase().includes(q));
   $('payList').innerHTML = l.length ? l.map(p => { const du = p.datosUsuario || {}, tj = D.tarjetas.filter(t => t.usuario === p.usuario && t.proposito !== 'pagos');
     return `<div class="card"><div class="pay-h"><div><div style="font-weight:800;color:var(--g1)">@${esc(p.usuario)} ${vNiv(du.verificadoNivel)}</div><div class="small muted">${fdate(p.fecha || p.createdAt)}</div></div><div class="pay-m">${money(p.monto)}<div class="small muted" style="font-weight:600;text-align:right">${ucFmt(ucDe(p.monto))}</div></div></div>
@@ -2636,7 +2798,7 @@ async function loadHist() {
   try { const { d } = await api('/admin/finanzas/historial-completo?limite=150');
     const h = d.historial || [];
     const tot = h.filter(x => x.estado === 'completado' || x.estado === 'procesado').reduce((a, x) => a + (x.monto || 0), 0);
-    $('payList').innerHTML = h.length ? `<div class="card small">Pagado en total: <b style="color:var(--ok)">${money(tot)}</b> · ${h.length} movimientos</div>` + h.map(p => `<div class="card row" style="padding:12px 14px"><span class="tag ${p.estado === 'rechazado' ? 't-bad' : p.estado === 'pendiente' ? 't-warn' : 't-ok'}">${esc(p.estado)}</span><div class="grow"><b style="color:var(--g1)">@${esc(p.usuario)}</b><div class="small muted">${fdate(p.fecha)} · ${esc(p.resumen || p.paypalEmail || '')}${p.notas ? ' · ' + esc(p.notas) : ''}</div></div><b style="color:var(--warn)">${money(p.monto)}</b></div>`).join('') : '<div class="empty">Sin historial</div>';
+    $('payList').innerHTML = h.length ? `<div class="card small">Pagado en total: <b style="color:var(--ok)">${money(tot)}</b> · ${h.length} movimientos</div>` + h.map(p => `<div class="card row fin-row" style="padding:12px 14px"><span class="tag ${p.estado === 'rechazado' ? 't-bad' : p.estado === 'pendiente' ? 't-warn' : 't-ok'}">${esc(p.estado)}</span><div class="grow"><b style="color:var(--g1)">@${esc(p.usuario)}</b><div class="small muted">${fdate(p.fecha)} · ${esc(p.resumen || p.paypalEmail || '')}${p.notas ? ' · ' + esc(p.notas) : ''}</div>${p.incidencia ? `<span class="tag ${p.incidencia.estado === 'abierta' ? 't-bad' : 't-ok'}" style="margin-top:4px">Incidencia: ${esc(INC_TIPO[p.incidencia.tipo] || p.incidencia.tipo)}${p.incidencia.estado === 'abierta' ? '' : ' · resuelta'}</span>` : ''}</div><b style="color:var(--warn)">${money(p.monto)}</b>${p.estado === 'completado' && !p.incidencia ? `<button class="btn sm ghost" title="Reportar incidencia (dinero devuelto o no recibido)" onclick="finReportar('${p._id}','${esc(p.usuario)}',${Number(p.monto) || 0})"><ion-icon name="warning-outline"></ion-icon></button>` : ''}</div>`).join('') : '<div class="empty">Sin historial</div>';
   } catch (_) {}
 }
 // Tasa USD→COP de Mercado Pago (solo orientativa para transferencias en pesos)
@@ -2655,6 +2817,123 @@ async function doPago(id) { const p = D.pagos.find(x => x._id === id); if (!p ||
 function rejPago(id) { const p = D.pagos.find(x => x._id === id); if (!p) return;
   txtModal({ t: 'Rechazar pago · @' + p.usuario, s: `${money(p.monto)} · el usuario podrá volver a solicitarlo.`, l: 'Motivo (lo verá el usuario)', ok: 'Rechazar', cls: 'btn bad',
     fn: async motivo => { const { d } = await api(`/admin/finanzas/rechazar-pago-admin/${id}`, { method: 'POST', body: { motivo } }); if (d.success) { D.pagos = D.pagos.filter(x => x._id !== id); cm('mTxt'); updBadges(); render(); toast('✗ Pago rechazado', 'warn'); } else toast(d.error || 'Error', 'err'); } }); }
+
+// ─────────── Pagos: en revisión (resultado incierto) e incidencias de PayPal ───────────
+// Reutiliza las rutas de modulos/retiros.js; el servidor valida todo (permiso «finanzas», monto exacto,
+// evidencia y que el dinero haya vuelto). Cada acción queda en la auditoría y en el historial del retiro.
+const PF_AYUDA = {
+  pend: 'Retiros pedidos por los creadores. «Marcar pagado» registra el envío (o lo hace por PayPal si los payouts automáticos están activos).',
+  revi: 'Retiros enviados cuyo resultado no se confirmó (PayPal no respondió) o que quedaron a medias. No los pagues otra vez: consulta PayPal o verifica y confirma/anula.',
+  inci: 'Payouts ya completados que PayPal devolvió, rechazó, revirtió o que el creador no reclamó. El saldo solo se devuelve con evidencia de que el dinero volvió, y una sola vez.',
+  hist: 'Todo lo pagado y rechazado. En un retiro completado puedes reportar una incidencia (p. ej. una transferencia manual que el banco devolvió).',
+};
+const PP_EST = { SUCCESS: ['Pagado', 't-ok'], UNCLAIMED: ['No reclamado', 't-warn'], RETURNED: ['Devuelto', 't-bad'], FAILED: ['Fallido', 't-bad'], BLOCKED: ['Bloqueado', 't-bad'],
+  REFUNDED: ['Reembolsado', 't-bad'], REVERSED: ['Revertido', 't-bad'], ONHOLD: ['Retenido por PayPal', 't-warn'], PENDING: ['Pendiente en PayPal', 't-info'], DENIED: ['Rechazado', 't-bad'] };
+const INC_TIPO = { devuelto: 'Devuelto', no_reclamado: 'No reclamado', fallido: 'Fallido', bloqueado: 'Bloqueado', reembolsado: 'Reembolsado', revertido: 'Revertido', retenido: 'Retenido', rechazado: 'Rechazado' };
+const INC_RES = { saldo_devuelto: 'Saldo devuelto al creador', reenviado: 'Reenviado (retiro nuevo)', cerrada: 'Cerrada sin mover dinero' };
+const ppTag = e => { const x = PP_EST[e]; return e ? `<span class="tag ${x ? x[1] : 't-info'}">PayPal: ${esc(x ? x[0] : e)}</span>` : ''; };
+const fhora = d => d ? new Date(d).toLocaleString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+function pfContar() {
+  const n = { pend: D.pagos.length, revi: FIN.revi?.length, inci: (FIN.inci || []).filter(x => x.incidencia?.estado === 'abierta').length };
+  for (const k in n) { const el = $('pfC-' + k); if (el) el.textContent = n[k] ? n[k] : ''; }
+}
+async function loadFin() {
+  if (!can('finanzas')) return;
+  const [r, i] = await Promise.all([api('/admin/finanzas/pagos-en-revision').catch(() => null), api('/admin/finanzas/incidencias').catch(() => null)]);
+  if (r?.ok) FIN.revi = r.d.pagos || [];
+  if (i?.ok) { FIN.inci = i.d.incidencias || []; FIN.auto = !!i.d.paypalAutomatico; }
+  pfContar(); updBadges();
+  if (view === 'pays' && (pF === 'revi' || pF === 'inci')) rFin();
+}
+function pfIr(entrar) {
+  $('pfAyuda').textContent = PF_AYUDA[pF] || '';
+  if (pF === 'hist') loadHist();
+  else if (pF === 'pend') render();
+  else { rFin(); if (entrar || !FIN[pF]) loadFin(); }
+}
+function finHist(p) {
+  const h = (p.historial || []).slice().reverse();
+  return h.length ? `<details class="fin-h"><summary>Historial (${h.length})</summary><ol>${h.map(e => `<li><span class="mono small muted">${fhora(e.fecha)}</span> <b>${esc(e.accion)}</b>${e.por ? ` · @${esc(e.por)}` : ''}${e.detalle ? `<div class="small muted">${esc(e.detalle)}</div>` : ''}</li>`).join('')}</ol></details>` : '';
+}
+function finKv(p, extra = '') {
+  const du = p.datosUsuario || {};
+  return `<div class="kv"><div><small>Monto</small><span class="mono">${money(p.monto)} USD</span></div><div><small>Solicitado</small><span>${fdate(p.fecha)}</span></div>
+    <div style="grid-column:1/-1"><small>Pagado a</small><span>${esc(p.resumen || p.paypalEmail || '—')}</span></div>
+    ${p.payoutBatchId ? `<div style="grid-column:1/-1"><small>Lote PayPal</small><span class="mono" style="cursor:pointer" onclick="cp(this.textContent)">${esc(p.payoutBatchId)}</span></div>` : ''}
+    ${p.paypal?.itemId ? `<div style="grid-column:1/-1"><small>Ítem PayPal</small><span class="mono">${esc(p.paypal.itemId)}</span></div>` : ''}
+    ${p.paypal?.actualizado ? `<div><small>PayPal actualizado</small><span>${fhora(p.paypal.actualizado)}</span></div><div><small>Fuente</small><span>${esc(p.paypal.fuente || '—')}</span></div>` : ''}
+    ${du.email ? `<div style="grid-column:1/-1"><small>Cuenta</small><span>${esc(du.email)}${du.metodoActual ? ' · cobro actual: ' + esc(du.metodoActual) : ''}</span></div>` : ''}${extra}</div>`;
+}
+function rFin() {
+  const el = $('payList'), q = qv();
+  const lista = (FIN[pF] || []).filter(p => !q || (p.usuario || '').toLowerCase().includes(q) || (p.payoutBatchId || '').toLowerCase().includes(q.toLowerCase()));
+  if (!FIN[pF]) { el.innerHTML = '<div class="skel"></div><div class="skel"></div>'; return; }
+  if (pF === 'revi') {
+    el.innerHTML = lista.length ? lista.map(p => `<div class="card fin-c"><div class="pay-h"><div><b class="fin-u">@${esc(p.usuario)}</b><div class="row" style="gap:6px;margin-top:4px">${p.revision === 'incierto' ? '<span class="tag t-warn">Resultado desconocido</span>' : '<span class="tag t-info">A medias</span>'}${ppTag(p.paypal?.estado)}</div></div><div class="pay-m">${money(p.monto)}</div></div>
+      ${finKv(p, `<div><small>Procesado</small><span>${fhora(p.procesadoEn)}</span></div>`)}${p.notas ? `<p class="small muted" style="margin:0 0 10px">${esc(p.notas)}</p>` : ''}${finHist(p)}
+      <div class="fin-acts">${p.payoutBatchId ? `<button class="btn sm info" onclick="finRecon('${p._id}','consultar')"><ion-icon name="search-outline"></ion-icon> Consultar PayPal</button>` : ''}
+        ${p.metodo === 'paypal' && p.paypalEmail ? `<button class="btn sm" onclick="finRecon('${p._id}','reintentar')" title="Mismo lote: PayPal no paga dos veces"><ion-icon name="refresh-outline"></ion-icon> Reintentar (mismo lote)</button>` : ''}
+        <button class="btn sm ok" onclick="finRecon('${p._id}','confirmar')"><ion-icon name="checkmark-done-outline"></ion-icon> Verifiqué: sí llegó</button>
+        <button class="btn sm bad" onclick="finRecon('${p._id}','anular')"><ion-icon name="arrow-undo-outline"></ion-icon> Verifiqué: no salió</button></div></div>`).join('')
+      : '<div class="empty"><ion-icon name="shield-checkmark-outline"></ion-icon>Ningún retiro en revisión</div>';
+    return;
+  }
+  const abiertas = lista.filter(p => p.incidencia?.estado === 'abierta'), cerradas = lista.filter(p => p.incidencia?.estado !== 'abierta');
+  const tarjeta = p => { const inc = p.incidencia || {}, ab = inc.estado === 'abierta';
+    return `<div class="card fin-c${ab ? ' fin-ab' : ''}"><div class="pay-h"><div><b class="fin-u">@${esc(p.usuario)}</b><div class="row" style="gap:6px;margin-top:4px"><span class="tag ${ab ? 't-bad' : 't-ok'}">${esc(INC_TIPO[inc.tipo] || inc.tipo)}${ab ? '' : ' · resuelta'}</span>${ppTag(p.paypal?.estado)}</div></div><div class="pay-m">${money(p.monto)}</div></div>
+      ${finKv(p, `<div><small>Detectada</small><span>${fhora(inc.abierta)}</span></div><div><small>Por</small><span>${esc(inc.fuente === 'admin' ? '@' + (inc.abiertaPor || 'admin') : inc.fuente || '—')}</span></div>`)}
+      ${inc.motivo ? `<p class="small" style="margin:0 0 6px"><b>Motivo:</b> ${esc(inc.motivo)}</p>` : ''}${p.paypal?.error ? `<p class="small" style="margin:0 0 6px"><b>PayPal:</b> ${esc(p.paypal.error)}</p>` : ''}${inc.evidencia ? `<p class="small" style="margin:0 0 6px"><b>Evidencia:</b> ${esc(inc.evidencia)}</p>` : ''}
+      ${!ab ? `<p class="small" style="margin:0 0 6px;color:var(--ok)"><b>${esc(INC_RES[inc.resolucion] || inc.resolucion)}</b> · @${esc(inc.resueltaPor || '—')} · ${fhora(inc.resueltaEn)}${inc.nota ? ' · ' + esc(inc.nota) : ''}${inc.reenvioPagoId ? ' · retiro nuevo en «Pendientes»' : ''}</p>` : ''}
+      ${finHist(p)}
+      ${ab ? `<div class="fin-acts">${p.payoutBatchId ? `<button class="btn sm info" onclick="finPP('${p._id}','paypal-estado')"><ion-icon name="search-outline"></ion-icon> Consultar PayPal</button>` : ''}
+        ${p.paypal?.estado === 'UNCLAIMED' ? `<button class="btn sm warn" onclick="finCancelar('${p._id}')"><ion-icon name="close-circle-outline"></ion-icon> Cancelar en PayPal</button>` : ''}
+        ${p.dineroDevuelto ? `<button class="btn sm ok" onclick="finResolver('${p._id}','restaurar')"><ion-icon name="wallet-outline"></ion-icon> Devolver al saldo</button><button class="btn sm info" onclick="finResolver('${p._id}','reenviar')"><ion-icon name="paper-plane-outline"></ion-icon> Reenviar</button>`
+          : `<span class="small muted fin-espera">${p.payoutBatchId ? 'El dinero aún no vuelve (o PayPal no lo confirma): no se puede devolver ni reenviar.' : ''}</span>`}
+        <button class="btn sm" onclick="finResolver('${p._id}','cerrar')"><ion-icon name="checkmark-outline"></ion-icon> Cerrar sin mover dinero</button></div>` : ''}</div>`; };
+  el.innerHTML = (abiertas.length ? abiertas.map(tarjeta).join('') : '<div class="empty"><ion-icon name="shield-checkmark-outline"></ion-icon>Sin incidencias abiertas</div>')
+    + (cerradas.length ? `<details class="mas"><summary>Resueltas <small>${cerradas.length}</small></summary>${cerradas.map(tarjeta).join('')}</details>` : '')
+    + `<p class="small muted" style="margin-top:12px">Detección: ${FIN.auto ? 'payouts automáticos activos: se revisan en PayPal cada 6 h y al consultar; también entran por el webhook si se suscriben los eventos PAYMENT.PAYOUTS-ITEM.*.' : 'los payouts automáticos están apagados: las incidencias se abren a mano desde «Historial» con la evidencia.'}</p>`;
+}
+const finLuego = async () => { await loadFin(); if (pF === 'pend') { await sync(); } };
+async function finRecon(id, accion) {
+  const p = (FIN.revi || []).find(x => x._id === id); if (!p) return;
+  const txt = { consultar: null, reintentar: `Reintentar el envío a @${p.usuario} con el MISMO lote de PayPal (no paga dos veces).`,
+    confirmar: `Confirma que VERIFICASTE en PayPal o en el banco que @${p.usuario} recibió ${money(p.monto)}. Se descontará de su saldo.`,
+    anular: `Confirma que VERIFICASTE que los ${money(p.monto)} NO salieron. El retiro vuelve a «Pendientes» y un próximo envío usará un lote nuevo.` }[accion];
+  const enviar = async (referencia, notas) => { const { ok, d } = await api(`/admin/finanzas/reconciliar-pago/${id}`, { method: 'POST', body: { accion, referencia, notas } });
+    toast(ok ? (d.sinCambios ? `PayPal: ${d.paypal?.estado || '—'} / ${d.paypal?.item || '—'} (sin cambios)` : '✓ Listo') : (d.error || 'Error'), ok ? '' : 'err'); await finLuego(); return ok; };
+  if (!txt) return enviar();
+  if (accion === 'reintentar') { if (confirm(txt)) enviar(); return; }
+  txtModal({ t: accion === 'confirmar' ? 'Confirmar que llegó' : 'Anular: no salió', s: txt, l: 'Nota o comprobante (queda en el historial)', ok: accion === 'confirmar' ? 'Confirmar' : 'Anular', cls: accion === 'confirmar' ? 'btn ok' : 'btn bad',
+    fn: async nota => { if (nota.length < 6) return toast('Escribe la evidencia (mín. 6 caracteres)', 'err'); if (await enviar(nota.slice(0, 120), nota)) cm('mTxt'); } });
+}
+async function finPP(id, ruta) { const { ok, d } = await api(`/admin/finanzas/pagos/${id}/${ruta}`, { method: 'POST' }); toast(ok ? `PayPal: ${d.paypal?.item || d.paypal?.estado || '—'}${d.incidenciaAbierta ? ' · incidencia abierta' : ''}` : (d.error || 'Error'), ok ? '' : 'err'); loadFin(); }
+function finCancelar(id) {
+  const p = (FIN.inci || []).find(x => x._id === id); if (!p) return;
+  txtModal({ t: 'Cancelar payout no reclamado · @' + p.usuario, s: `PayPal devolverá ${money(p.monto)} a la cuenta de UpGames. Después podrás devolver el saldo al creador o reenviarlo.`, l: 'Nota (opcional)', ok: 'Cancelar en PayPal', cls: 'btn bad',
+    numero: { l: `Escribe el monto exacto para confirmar (${p.monto})`, v: '' },
+    fn: async (_, monto) => { const { ok, d } = await api(`/admin/finanzas/pagos/${id}/paypal-cancelar`, { method: 'POST', body: { confirmo: monto } }); toast(ok ? `PayPal: ${d.paypal?.item || '—'}` : (d.error || 'Error'), ok ? '' : 'err'); if (ok) cm('mTxt'); loadFin(); } });
+}
+function finResolver(id, accion) {
+  const p = (FIN.inci || []).find(x => x._id === id); if (!p) return;
+  const du = p.datosUsuario || {};
+  const cfg = {
+    restaurar: { t: 'Devolver al saldo · @' + p.usuario, s: `Se suman ${money(p.monto)} a los UC ganados de @${p.usuario} (una sola vez). Podrá volver a pedir el retiro.`, ok: 'Devolver saldo', cls: 'btn ok' },
+    reenviar: { t: 'Reenviar · @' + p.usuario, s: `Se devuelve el saldo y se crea un retiro NUEVO de ${money(p.monto)} en «Pendientes» con su método de cobro actual (${du.metodoActual || 'sin método'}). Se paga por el flujo normal.`, ok: 'Crear reenvío', cls: 'btn info' },
+    cerrar: { t: 'Cerrar sin mover dinero · @' + p.usuario, s: 'Úsalo si el creador confirmó que recibió el dinero o PayPal lo completó después.', ok: 'Cerrar incidencia', cls: 'btn' },
+  }[accion];
+  txtModal({ ...cfg, l: accion === 'cerrar' ? 'Por qué se cierra (queda en el historial)' : 'Nota (opcional, queda en el historial)',
+    numero: accion === 'cerrar' ? null : { l: `Escribe el monto exacto para confirmar (${p.monto})`, v: '' },
+    fn: async (nota, monto) => { const { ok, d } = await api(`/admin/finanzas/pagos/${id}/resolver`, { method: 'POST', body: { accion, nota, confirmo: monto } });
+      if (!ok) return toast(d.error || 'Error', 'err'); cm('mTxt'); toast('✓ ' + (INC_RES[d.resolucion] || 'Listo')); await finLuego(); } });
+}
+function finReportar(id, usuario, monto) {
+  txtModal({ t: 'Reportar incidencia · @' + usuario, s: `Retiro completado de ${money(monto)}. Úsalo cuando el dinero volvió o no llegó (p. ej. una transferencia manual devuelta). No mueve dinero: después decides en «Incidencias».`,
+    l: 'Evidencia (comprobante, correo de PayPal o del banco…)', ok: 'Abrir incidencia', cls: 'btn warn',
+    fn: async evidencia => { const tipo = (prompt('Tipo: devuelto, no_reclamado, fallido, rechazado, revertido', 'devuelto') || '').trim();
+      const { ok, d } = await api(`/admin/finanzas/pagos/${id}/incidencia`, { method: 'POST', body: { tipo, evidencia } });
+      if (!ok) return toast(d.error || 'Error', 'err'); cm('mTxt'); toast('⚠️ Incidencia abierta'); FIN.inci = null; $('pF').querySelector('[data-f="inci"]').click(); } });
+}
 
 // ─────────── Tarjetas ───────────
 function rTarj() {
@@ -2963,7 +3242,7 @@ function descAccion(a) {
   const M = [[/^LOGIN$/, '🔑 Inició sesión'], [/^LOGIN pin/, '🗝️ Entró con la llave maestra'], [/^LOGIN denegado/, '🚷 Intento de acceso sin permiso'], [/^LOGOUT/, '👋 Cerró sesión'], [/^BLOQUEADO/, '⛔ Acción bloqueada'],
     [/equipo-emergencia/, '🚨 Pausa de emergencia del equipo'], [/\/pausa$/, '⏸ Pausó o reanudó a un miembro'], [/cerrar-sesiones/, '🔒 Cerró sesiones de un miembro'],
     [/PUT \/admin\/equipo/, '🛡️ Asignó un rol'], [/DELETE \/admin\/equipo/, '🛡️ Quitó a un miembro'], [/suspender/, '⛔ Suspensión de cuenta'], [/anuncio/, '📢 Envió un anuncio'],
-    [/ajustar-saldo|reset-saldo/, '💰 Ajustó UC ganados'], [/\/upcoins$/, '🪙 Ajustó UpCoins comprados'], [/\/premium$/, '⭐ Cambió un Premium'], [/finanzas\/extras/, '✨ Cambió los extras UC'], [/economia/, '📊 Vio la economía'], [/procesar-pago/, '✅ Marcó un pago'], [/rechazar-pago/, '✗ Rechazó un pago'], [/tarjetas/, '💳 Cambió una tarjeta'],
+    [/ajustar-saldo|reset-saldo/, '💰 Ajustó UC ganados'], [/\/upcoins$/, '🪙 Ajustó UpCoins comprados'], [/\/premium$/, '⭐ Cambió un Premium'], [/finanzas\/extras/, '✨ Cambió los extras UC'], [/economia/, '📊 Vio la economía'], [/procesar-pago/, '✅ Marcó un pago'], [/\/resolver$/, '💸 Resolvió una incidencia de pago'], [/finanzas\/pagos\/[^/]+\/incidencia$/, '⚠️ Abrió una incidencia de pago'], [/paypal-cancelar/, '✖ Canceló un payout no reclamado'], [/paypal-estado/, '🔎 Consultó un payout en PayPal'], [/reconciliar-pago/, '🔁 Concilió un retiro'], [/rechazar-pago/, '✗ Rechazó un pago'], [/tarjetas/, '💳 Cambió una tarjeta'],
     [/lista-negra/, '🚫 Lista negra'], [/notas/, '📝 Nota interna'], [/verificacion/, '🏅 Cambió verificación'], [/DELETE \/auth\/users/, '🗑 Eliminó una cuenta'], [/DELETE \/admin\/users\/.*\/items/, '🗑 Borró las publicaciones de un usuario'],
     [/bulk-action/, '☑️ Acción masiva'], [/reset-reports/, '🧹 Limpió reportes'], [/DELETE \/items/, '🗑 Eliminó una publicación'], [/\/admin\/items/, '✏️ Editó una publicación'], [/DELETE \/comentarios/, '💬 Eliminó un comentario'], [/cache/, '⚙️ Caché']];
   return (M.find(([r]) => r.test(a)) || [, '⚙️ ' + a])[1];

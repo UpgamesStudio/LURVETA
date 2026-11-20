@@ -24,6 +24,10 @@ const casos = [
     ['POST', '/admin/sistema/anuncio', ['anuncios']], ['GET', '/admin/sistema/diagnostico', ['sistema']],
     ['GET', '/admin/stats/dashboard', ['estadisticas']], ['GET', '/analytics/admin/funnel', ['estadisticas']],
     ['POST', '/admin/finanzas/procesar-pago/1', ['finanzas']], ['PUT', '/admin/users/ajustar-saldo/1', ['finanzas']],
+    // Incidencias de payouts de PayPal (solo quien tiene el permiso de finanzas)
+    ['GET', '/admin/finanzas/incidencias', ['finanzas']], ['GET', '/admin/finanzas/pagos/1', ['finanzas']], ['POST', '/admin/finanzas/pagos/1/resolver', ['finanzas']],
+    ['POST', '/admin/finanzas/pagos/1/paypal-estado', ['finanzas']], ['POST', '/admin/finanzas/pagos/1/paypal-cancelar', ['finanzas']], ['POST', '/admin/finanzas/pagos/1/incidencia', ['finanzas']],
+    ['GET', '/admin/finanzas/pagos-en-revision', ['finanzas']], ['POST', '/admin/finanzas/reconciliar-pago/1', ['finanzas']],
     ['PUT', '/admin/users/suspender/1', ['sanciones']], ['DELETE', '/auth/users/1', ['sanciones']], ['DELETE', '/admin/users/1/items', ['sanciones']],
     ['GET', '/auth/users', ['usuarios', 'sanciones', 'finanzas']], ['PUT', '/admin/users/lista-negra/1', ['usuarios']],
     ['PUT', '/auth/admin/verificacion/pepe', ['usuarios']], ['DELETE', '/comentarios/1', ['comentarios']],
@@ -39,6 +43,12 @@ test('Tesorero solo ve finanzas', () => {
     assert.ok(puede(t, 'POST', '/admin/finanzas/procesar-pago/1'));
     for (const [m, p] of [['GET', '/admin/items'], ['DELETE', '/comentarios/1'], ['GET', '/admin/stats/dashboard'], ['PUT', '/admin/users/suspender/1'], ['POST', '/admin/sistema/anuncio']])
         assert.ok(!puede(t, m, p), `${m} ${p}`);
+});
+test('Solo finanzas toca las incidencias de payouts (revisor, moderador y soporte no)', () => {
+    for (const rol of Object.keys(ROLES).filter(r => Array.isArray(ROLES[r].permisos))) {   // los roles sin lista fija (a medida) se prueban aparte
+        const tiene = ROLES[rol].permisos.includes('finanzas');
+        assert.strictEqual(puede(ROLES[rol].permisos, 'POST', '/admin/finanzas/pagos/1/resolver'), tiene, rol);
+    }
 });
 test('Revisor no puede borrar ni ver usuarios', () => {
     const r = ROLES.revisor.permisos;

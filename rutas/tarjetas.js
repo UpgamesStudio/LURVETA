@@ -151,7 +151,7 @@ app.post('/admin/finanzas/procesar-pago/:id', verificarAdmin, [param('id').isMon
         // Payouts automáticos solo existen para PayPal; Mercado Pago lo transfiere el admin
         const previo = await Pago.findById(id).select('metodo paypalEmail').lean();
         const automatico = !!previo && esAutomatico(previo);
-        const r = await Retiros.procesar({ Pago, Usuario }, id, { enviar: automatico ? enviarPayPal : null, notas: req.body.notas, referencia: req.body.referencia });
+        const r = await Retiros.procesar({ Pago, Usuario }, id, { enviar: automatico ? enviarPayPal : null, notas: req.body.notas, referencia: req.body.referencia, por: req.admin?.usuario || '' });
         if (r.codigo !== 200) {
             logger[r.incierto ? 'error' : 'warn'](`procesar-pago ${id}: ${r.error}`);
             const { codigo, ...resto } = r;
@@ -178,8 +178,9 @@ app.post('/admin/finanzas/reconciliar-pago/:id', verificarAdmin, [param('id').is
         const previo = await Pago.findById(req.params.id).select('metodo paypalEmail').lean();
         const automatico = !!previo && esAutomatico(previo);
         const r = await Retiros.reconciliar({ Pago, Usuario }, req.params.id, req.body.accion, {
-            enviar: automatico ? enviarPayPal : null, consultar: automatico ? b => paypalPayouts.consultarPayout(b) : null,
-            referencia: req.body.referencia, notas: req.body.notas,
+            enviar: automatico ? enviarPayPal : null,
+            consultar: automatico ? async b => { const r = await paypalPayouts.consultarPayout(b); await Retiros.registrarEstadoPayPal(Pago, { pagoId: req.params.id }, r, { fuente: 'consulta', por: quien(req) }); return r; } : null,
+            referencia: req.body.referencia, notas: req.body.notas, por: req.admin?.usuario || '',
         });
         const { codigo, pago, ...resto } = r;
         if (codigo !== 200) return res.status(codigo).json({ success: false, ...resto });
@@ -192,10 +193,109 @@ app.post('/admin/finanzas/reconciliar-pago/:id', verificarAdmin, [param('id').is
     }
 });
 
+// ── Incidencias de payouts ya completados: devueltos, no reclamados, fallidos, revertidos… ──
+// Detección con datos REALES de PayPal (consulta del lote, barrido periódico y webhook PAYMENT.PAYOUTS-ITEM.*);
+// el dinero solo se mueve con una acción de un admin, con evidencia y confirmando el monto (modulos/retiros.js).
+const quien = req => req.admin?.usuario || 'admin';
+const paypalListo = () => !!(config.PAYPAL_CLIENT_ID && config.PAYPAL_CLIENT_SECRET);
+const enviarRes = (res, r, extra = {}) => { const { codigo, ...resto } = r; res.status(codigo).json({ success: codigo === 200, ...resto, ...extra }); };
+const idValido = [param('id').isMongoId()];
+
+app.get('/admin/finanzas/incidencias', verificarAdmin, async (req, res) => {
+    try {
+        const lista = await Retiros.incidencias(Pago, { soloAbiertas: req.query.abiertas === '1' });
+        const users = await Usuario.find({ usuario: { $in: [...new Set(lista.map(p => p.usuario))] } }).select('usuario email paypalEmail cobro.resumen saldo solicitudPagoPendiente').lean();
+        const porU = Object.fromEntries(users.map(u => [u.usuario, { email: u.email, metodoActual: u.cobro?.resumen || (u.paypalEmail ? 'PayPal · ' + u.paypalEmail : ''), saldo: u.saldo || 0, retiroPendiente: !!u.solicitudPagoPendiente }]));
+        res.json({ success: true, incidencias: lista.map(p => ({ ...p, datosUsuario: porU[p.usuario] || {}, dineroDevuelto: Retiros.dineroDevuelto(p) })),
+            paypalAutomatico: !!config.FEATURES.ENABLE_AUTO_PAYMENTS && paypalListo() });
+    } catch (e) { logger.error(`incidencias: ${e.message}`); res.status(500).json({ success: false, error: 'Error al cargar' }); }
+});
+
+// Ficha de un retiro con su historial (para revisar antes de actuar)
+app.get('/admin/finanzas/pagos/:id', verificarAdmin, idValido, async (req, res) => {
+    if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'ID inválido' });
+    const p = await Pago.findById(req.params.id).select('-datosCobro').lean().catch(() => null);
+    if (!p) return res.status(404).json({ success: false, error: 'Pago no encontrado' });
+    res.json({ success: true, pago: { ...p, dineroDevuelto: Retiros.dineroDevuelto(p) } });
+});
+
+// Preguntar a PayPal el estado real del payout (solo anota; abre incidencia si es un problema)
+app.post('/admin/finanzas/pagos/:id/paypal-estado', verificarAdmin, idValido, async (req, res) => {
+    try {
+        if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'ID inválido' });
+        const p = await Pago.findById(req.params.id).select('payoutBatchId estado').lean();
+        if (!p) return res.status(404).json({ success: false, error: 'Pago no encontrado' });
+        if (!p.payoutBatchId) return res.status(409).json({ success: false, error: 'Este retiro no se pagó por PayPal automático: no hay lote que consultar. Si el dinero volvió, abre la incidencia con la evidencia.' });
+        if (!paypalListo()) return res.status(503).json({ success: false, error: 'PayPal no está configurado' });
+        const r = await paypalPayouts.consultarPayout(p.payoutBatchId);
+        const reg = await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, r, { fuente: 'consulta', por: quien(req) });
+        res.json({ success: true, paypal: r, ...reg });
+    } catch (e) { logger.error(`paypal-estado: ${e.message}`); res.status(e.status || 500).json({ success: false, error: e.status ? e.message : 'Error al consultar PayPal' }); }
+});
+
+// Cancelar un payout NO RECLAMADO: PayPal devuelve el dinero a UpGames (luego se puede devolver el saldo o reenviar)
+app.post('/admin/finanzas/pagos/:id/paypal-cancelar', verificarAdmin, idValido, async (req, res) => {
+    try {
+        if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'ID inválido' });
+        const p = await Pago.findById(req.params.id).select('monto paypal estado').lean();
+        if (!p) return res.status(404).json({ success: false, error: 'Pago no encontrado' });
+        if (p.paypal?.estado !== 'UNCLAIMED' || !p.paypal?.itemId) return res.status(409).json({ success: false, error: 'Solo se puede cancelar un payout que PayPal marca como NO RECLAMADO (consulta su estado primero)' });
+        if (Math.abs(Number(req.body?.confirmo) - p.monto) > 1e-6) return res.status(400).json({ success: false, error: `Para confirmar escribe el monto exacto: ${p.monto}` });
+        const r = await paypalPayouts.cancelarItemPayout(p.paypal.itemId);
+        const reg = await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, r, { fuente: 'cancelacion', por: quien(req) });
+        logger.warn(`[retiros] @${quien(req)} canceló en PayPal el payout no reclamado ${p._id} → ${r.item}`);
+        res.json({ success: true, paypal: r, ...reg });
+    } catch (e) { logger.error(`paypal-cancelar: ${e.message}`); res.status(e.status || 500).json({ success: false, error: e.status ? e.message : 'Error al cancelar en PayPal' }); }
+});
+
+// Abrir una incidencia a mano (p. ej. una transferencia manual que el banco devolvió)
+app.post('/admin/finanzas/pagos/:id/incidencia', verificarAdmin, [...idValido, body('tipo').isString(), body('evidencia').isString().isLength({ max: 600 })], async (req, res) => {
+    if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'Datos inválidos' });
+    try { enviarRes(res, await Retiros.abrirIncidencia(Pago, req.params.id, { tipo: req.body.tipo, evidencia: req.body.evidencia, por: quien(req) })); }
+    catch (e) { logger.error(`incidencia: ${e.message}`); res.status(500).json({ success: false, error: 'Error al abrir la incidencia' }); }
+});
+
+// Resolver: restaurar saldo · reenviar (retiro pendiente nuevo) · cerrar sin mover dinero
+app.post('/admin/finanzas/pagos/:id/resolver', verificarAdmin, [...idValido, body('accion').isIn(['restaurar', 'reenviar', 'cerrar']), body('nota').optional().isString().isLength({ max: 400 })], async (req, res) => {
+    if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'Datos inválidos' });
+    try {
+        let metodo = null;
+        if (req.body.accion === 'reenviar') {
+            const p = await Pago.findById(req.params.id).select('usuario').lean();
+            const u = p && await Usuario.findOne({ usuario: p.usuario }).select('cobro paypalEmail').lean();
+            const m = u && require('./cobros').metodoDe(u);
+            metodo = m ? { ...m, paypalEmail: u.paypalEmail || '' } : null;
+        }
+        const r = await Retiros.resolverIncidencia({ Pago, Usuario }, req.params.id, req.body.accion, { por: quien(req), nota: req.body.nota, confirmo: req.body.confirmo, metodo });
+        if (r.codigo === 200) logger.warn(`[retiros] @${quien(req)} resolvió la incidencia del retiro ${req.params.id}: ${r.resolucion}`);
+        enviarRes(res, r);
+    } catch (e) { logger.error(`resolver incidencia: ${e.message}`); res.status(500).json({ success: false, error: 'Error al resolver' }); }
+});
+
+// Barrido: cada 6 h revisa en PayPal los payouts automáticos recientes que aún pueden cambiar
+// (no reclamados, retenidos, pendientes o completados hace menos de 3 días). Solo anota estados.
+async function barridoPayPal() {
+    if (!config.FEATURES.ENABLE_AUTO_PAYMENTS || !paypalListo() || mongoose.connection.readyState !== 1) return;
+    try {
+        const ahora = Date.now();
+        const lista = await Pago.find({ estado: 'completado', payoutBatchId: { $nin: ['', null] }, fecha: { $gte: new Date(ahora - 45 * 864e5) },
+            $or: [{ 'paypal.estado': { $in: [null, '', 'PENDING', 'UNCLAIMED', 'ONHOLD', 'NEW', 'PROCESSING'] } }, { 'paypal.estado': 'SUCCESS', updatedAt: { $gte: new Date(ahora - 3 * 864e5) } }] })
+            .select('payoutBatchId').limit(40).lean();
+        let n = 0;
+        for (const p of lista) {
+            try { const r = await paypalPayouts.consultarPayout(p.payoutBatchId); if ((await Retiros.registrarEstadoPayPal(Pago, { pagoId: p._id }, r, { fuente: 'barrido' })).incidenciaAbierta) n++; }
+            catch (e) { logger.warn(`[retiros] barrido ${p._id}: ${e.message}`); }
+        }
+        if (n) logger.warn(`[retiros] Barrido de PayPal: ${n} incidencia(s) nueva(s) en payouts`);
+    } catch (e) { logger.warn(`[retiros] barrido: ${e.message}`); }
+}
+setTimeout(barridoPayPal, 5 * 60e3).unref();
+setInterval(barridoPayPal, 6 * 3600e3).unref();
+
 app.post('/admin/finanzas/rechazar-pago/:id', verificarAdmin, [param('id').isMongoId(), body('motivo').optional().trim()], async (req, res) => {
     try {
         const pago = await Pago.findOneAndUpdate({ _id: req.params.id, estado: 'pendiente' },
-            { $set: { estado: 'rechazado', notas: req.body.motivo || 'Rechazado por el administrador' } }, { new: true });
+            { $set: { estado: 'rechazado', notas: req.body.motivo || 'Rechazado por el administrador' }, $push: { historial: { $each: [{ fecha: new Date(), accion: 'rechazado', por: req.admin?.usuario || 'admin', detalle: String(req.body.motivo || '').slice(0, 300) }], $slice: -100 } } }, { new: true });
         if (!pago) {
             const existe = await Pago.exists({ _id: req.params.id });
             return res.status(existe ? 409 : 404).json({ success: false, error: existe ? "El pago ya fue procesado" : "Pago no encontrado" });

@@ -96,7 +96,7 @@ app.put('/admin/items/bulk-action', verificarAdmin, [body('ids').isArray({ min: 
 app.post('/admin/finanzas/rechazar-pago-admin/:id', verificarAdmin, [param('id').isMongoId(), body('motivo').optional().trim()], async (req, res) => {
     try {
         const pago = await Pago.findOneAndUpdate({ _id: req.params.id, estado: 'pendiente' },
-            { $set: { estado: 'rechazado', notas: req.body.motivo || 'Rechazado por el administrador' } }, { new: true });
+            { $set: { estado: 'rechazado', notas: req.body.motivo || 'Rechazado por el administrador' }, $push: { historial: { $each: [{ fecha: new Date(), accion: 'rechazado', por: req.admin?.usuario || 'admin', detalle: String(req.body.motivo || '').slice(0, 300) }], $slice: -100 } } }, { new: true });
         if (!pago) {
             const existe = await Pago.exists({ _id: req.params.id });
             return res.status(existe ? 409 : 404).json({ success: false, error: existe ? "El pago ya fue procesado" : "Pago no encontrado" });

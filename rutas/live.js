@@ -608,6 +608,21 @@ function registrar(app, server, deps) {
             });
             if (v.data?.verification_status !== 'SUCCESS') { logger.warn('[live] Webhook PayPal con firma inválida'); return res.sendStatus(400); }
             const ev = req.body || {};
+            // Payouts a creadores (eventos reales de PayPal Payouts). Solo se ANOTA el estado en el retiro y,
+            // si es un problema, se abre su incidencia para el panel: nunca se mueve dinero desde aquí.
+            // (Para recibirlos, suscribe estos eventos al mismo webhook en developer.paypal.com.)
+            if (/^PAYMENT\.PAYOUTS-ITEM\./.test(ev.event_type || '') || ev.event_type === 'PAYMENT.PAYOUTSBATCH.DENIED') {
+                const r = ev.resource || {};
+                const batchId = r.payout_batch_id || r.batch_header?.payout_batch_id;
+                if (batchId && /^[A-Z0-9]{5,40}$/.test(batchId)) {
+                    const info = ev.event_type === 'PAYMENT.PAYOUTSBATCH.DENIED' ? { estado: 'DENIED' }
+                        : { item: r.transaction_status || '', itemId: r.payout_item_id || '', procesado: r.time_processed || '',
+                            error: r.errors ? `${r.errors.name || ''}${r.errors.message ? ': ' + r.errors.message : ''}`.slice(0, 300) : '' };
+                    const reg = await require('../modulos/retiros').registrarEstadoPayPal(mongoose.model('Pago'), { batchId }, info, { fuente: 'webhook' });
+                    if (reg.incidenciaAbierta) logger.warn(`[retiros] PayPal ${ev.event_type}: incidencia abierta para el lote ${batchId}`);
+                }
+                return res.sendStatus(200);
+            }
             const tipos = ['PAYMENT.CAPTURE.REFUNDED', 'PAYMENT.CAPTURE.REVERSED', 'CUSTOMER.DISPUTE.CREATED'];
             if (!tipos.includes(ev.event_type)) return res.sendStatus(200);
             // Un reembolso que hace UpGames (p. ej. por retracto) anula la compra pero no castiga al usuario;

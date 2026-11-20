@@ -603,6 +603,7 @@ const UsuarioSchema = new mongoose.Schema({
     solicitudPagoPendiente:{ type: Boolean, default: false },
     retirosAplicados: { type: [String], default: undefined, select: false },   // ids de retiros ya descontados (idempotencia, modulos/retiros.js)
     comprasAplicadas: { type: [String], default: undefined, select: false },   // refs de compras ya entregadas (entrega única, modulos/upcoins.js)
+    retirosDevueltos: { type: [String], default: undefined, select: false },   // retiros devueltos al saldo tras una incidencia (una sola vez, modulos/retiros.js)
     reputacion: { type: Number, default: 0 },
     listaSeguidores: [String],
     siguiendo:       [String],
