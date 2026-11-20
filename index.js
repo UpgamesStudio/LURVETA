@@ -167,62 +167,8 @@ async function getPayPalAccessToken() {
     });
 }
 
-async function enviarPagoPayPal(paypalEmail, monto, pagoId) {
-    const baseUrl = config.PAYPAL_MODE === 'live'
-        ? 'api-m.paypal.com'
-        : 'api-m.sandbox.paypal.com';
-
-    const accessToken = await getPayPalAccessToken();
-
-    const payload = JSON.stringify({
-        sender_batch_header: {
-            sender_batch_id: `UPGAMES_${pagoId}_${Date.now()}`,
-            email_subject: '¡Tu pago de UpGames ha llegado!',
-            email_message: 'Has recibido un pago por tus ganancias de creador en UpGames. ¡Gracias por crear!'
-        },
-        items: [{
-            recipient_type: 'EMAIL',
-            amount: { value: monto.toFixed(2), currency: 'USD' },
-            receiver: paypalEmail,
-            note: `Retiro UpGames #${pagoId}`,
-            sender_item_id: `item_${pagoId}`
-        }]
-    });
-
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: baseUrl,
-            path: '/v1/payments/payouts',
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(payload)
-            }
-        };
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try {
-                    const parsed = JSON.parse(data);
-                    if (res.statusCode === 201) {
-                        resolve({
-                            batchId:     parsed.batch_header?.payout_batch_id || 'N/A',
-                            batchStatus: parsed.batch_header?.batch_status    || 'PENDING'
-                        });
-                    } else {
-                        const msg = parsed.message || parsed.error_description || JSON.stringify(parsed);
-                        reject(new Error(`PayPal Payout falló [HTTP ${res.statusCode}]: ${msg}`));
-                    }
-                } catch (e) { reject(e); }
-            });
-        });
-        req.on('error', reject);
-        req.write(payload);
-        req.end();
-    });
-}
+// Payouts a creadores: cliente compartido (timeout, lote idempotente por retiro). Ver modulos/paypal.js
+const paypalPayouts = require('./modulos/paypal').crear(config, getPayPalAccessToken);
 
 
 const app = express();
@@ -501,7 +447,7 @@ mongoose.connect(MONGODB_URI, config.MONGODB_OPTIONS)
         .then(() => J.updateMany({ motivoRechazo: { $regex: /\broms?\b/i } }, { $set: { motivoRechazo: MOTIVO } }))
         .catch(e => logger.warn(`[copias] ${e.message}`));
 })
-.then(() => { logger.info('MONGODB CONECTADO EXITOSAMENTE'); require('./modulos/upcoins').migrar(mongoose.model('Usuario'), logger).catch(e => logger.error(`[upcoins] migración: ${e.message}`)); })
+.then(() => { logger.info('MONGODB CONECTADO EXITOSAMENTE'); require('./modulos/upcoins').migrar(mongoose.model('Usuario'), logger).catch(e => logger.error(`[upcoins] migración: ${e.message}`)); require('./modulos/descargaIP').asegurarIndice(mongoose.model('DescargaIP'), logger).catch(e => logger.error(`[descargas] índice: ${e.message}`)); })
 .catch(err => {
     logger.error(`ERROR CONEXIÓN MONGODB: ${err.message}`);
     process.exit(1);
@@ -513,14 +459,7 @@ mongoose.connection.on('disconnected', () => {
 
 // ========== SCHEMAS ==========
 
-const DescargaIPSchema = new mongoose.Schema({
-    juegoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Juego', required: true },
-    ip:      { type: String, required: true },
-    contadorHoy: { type: Number, default: 1 },
-    fecha: { type: Date, default: Date.now, expires: 86400 }
-});
-DescargaIPSchema.index({ juegoId: 1, ip: 1 });
-const DescargaIP = mongoose.model('DescargaIP', DescargaIPSchema);
+const DescargaIP = require('./modulos/descargaIP').modelo(mongoose);   // tope diario por IP (índice único, conteo atómico)
 
 const ReporteSchema = new mongoose.Schema({
     juegoId:          { type: mongoose.Schema.Types.ObjectId, ref: 'Juego', required: true, index: true },
@@ -661,6 +600,7 @@ const UsuarioSchema = new mongoose.Schema({
     descargasTotales:      { type: Number, default: 0, min: 0 },
     isVerificado:          { type: Boolean, default: false, index: true },
     solicitudPagoPendiente:{ type: Boolean, default: false },
+    retirosAplicados: { type: [String], default: undefined },   // ids de retiros ya descontados (idempotencia, modulos/retiros.js)
     reputacion: { type: Number, default: 0 },
     listaSeguidores: [String],
     siguiendo:       [String],
@@ -731,19 +671,7 @@ UsuarioSchema.pre('save', function(next) {
 });
 const Usuario = mongoose.model('Usuario', UsuarioSchema);
 
-const PagoSchema = new mongoose.Schema({
-    usuario:    { type: String, required: true, index: true },
-    monto:      { type: Number, required: true, min: 0 },
-    paypalEmail:{ type: String, default: '' },
-    metodo:     { type: String, default: 'paypal' },   // paypal | mercadopago
-    resumen:    { type: String, default: '' },         // método enmascarado (lo ve el usuario)
-    datosCobro: { type: String, default: '' },         // datos completos cifrados (solo el admin al pagar)
-    referencia: { type: String, default: '' },         // comprobante de la transferencia
-    estado:     { type: String, enum: ['pendiente', 'procesado', 'completado', 'rechazado'], default: 'pendiente', index: true },
-    fecha:      { type: Date, default: Date.now },
-    notas:      { type: String, default: '' }
-}, { timestamps: true });
-const Pago = mongoose.model('Pago', PagoSchema);
+const Pago = require('./modulos/retiros').modelo(mongoose);   // retiros de creadores (estados y reconciliación en modulos/retiros.js)
 
 const CommentSchema = new mongoose.Schema({
     usuario: String,
@@ -1133,7 +1061,7 @@ const _economia = require('./rutas/economia')({ AUTHOR_PERCENTAGE, CPM_VALUE, De
 // ── TARJETAS ──────────────────────────────────────────────────────────────────
 
 // GET /economia/mis-tarjetas — listar tarjetas del usuario
-require('./rutas/tarjetas')({ Juego, Pago, Usuario, app, body, config, enviarPagoPayPal, gamification, logger, mongoose, param, validationResult, verificarAdmin, verificarToken });   // Tarjetas de pago guardadas y procesamiento de retiros (finanzas)
+require('./rutas/tarjetas')({ Juego, Pago, Usuario, app, body, config, paypalPayouts, gamification, logger, mongoose, param, validationResult, verificarAdmin, verificarToken });   // Tarjetas de pago guardadas y procesamiento de retiros (finanzas)
 
 // ==========================================
 // ⭐ AUTENTICACIÓN

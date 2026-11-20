@@ -8,6 +8,7 @@ module.exports = function economia({ AUTHOR_PERCENTAGE, CPM_VALUE, DescargaIP, E
 // Creadas en index.js después de registrar este módulo: llegan con vincularTarde()
 let cobros, live;
 const TicketPuente = require('../modulos/ticketPuente');
+const ContadorIP = require('../modulos/descargaIP');
 const AtribucionBlog = require('../modulos/blogs/atribucion');
 const { Blog, Entrada, BlogVista } = require('../modulos/blogs/modelos')(mongoose);
 // `via` = entrada de blog de la que llegó la persona (opcional). Se normaliza: cualquier otra cosa se ignora.
@@ -61,16 +62,10 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
             return res.json({ success: true, descargaContada: false, adBlockerDetectado: true, link: juego.link, mensaje: "Acceso permitido, pero con bloqueador de anuncios no hay visualización de publicidad y el autor no gana" });
         }
 
-        let registroIP = await DescargaIP.findOne({ juegoId, ip });
-        if (registroIP) {
-            if (registroIP.contadorHoy >= MAX_DOWNLOADS_PER_IP_PER_DAY) {
-                logger.warn(`Límite alcanzado - IP: ${ip}, Juego: ${juegoId}`);
-                return res.json({ success: true, limiteAlcanzado: true, mensaje: "Has alcanzado el límite de descargas para hoy", link: juego.link });
-            }
-            registroIP.contadorHoy += 1;
-            await registroIP.save();
-        } else {
-            await new DescargaIP({ juegoId, ip, contadorHoy: 1 }).save();
+        // Comprobar y sumar en una sola operación atómica (índice único): peticiones en paralelo no pasan del tope
+        if (!(await ContadorIP.contar(DescargaIP, juegoId, ip, MAX_DOWNLOADS_PER_IP_PER_DAY))) {
+            logger.warn(`Límite alcanzado - IP: ${ip}, Juego: ${juegoId}`);
+            return res.json({ success: true, limiteAlcanzado: true, mensaje: "Has alcanzado el límite de descargas para hoy", link: juego.link });
         }
 
         await Juego.findByIdAndUpdate(juegoId, { $inc: { descargasEfectivas: 1 } });
@@ -79,7 +74,9 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
         // ⭐ Fire & forget — el like responde inmediatamente, score se actualiza en background
         calcularScoreRecomendacion(juegoId).catch(() => {});
 
-        const autor = await Usuario.findOne({ usuario: juego.usuario });
+        const autor = await Usuario.findOne({ usuario: juego.usuario }).select('_id usuario listaNegraAdmin').lean();
+        // Saldo y contador SOLO con $inc: guardar el documento leído pisaba pagos y gastos hechos entre medias
+        const sumarAutor = ganancia => Usuario.updateOne({ _id: autor._id }, { $inc: { descargasTotales: 1, ...(ganancia > 0 ? { saldo: ganancia } : {}) } });
         if (!autor) {
             logger.warn(`Autor no encontrado: ${juego.usuario}`);
             return res.json({ success: true, descargaContada: true, link: juego.link, mensaje: "Descarga válida" });
@@ -87,12 +84,9 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
 
         if (autor.listaNegraAdmin) {
             logger.warn(`Usuario en lista negra: @${autor.usuario}`);
-            autor.descargasTotales = (autor.descargasTotales || 0) + 1;
-            await autor.save();
+            await sumarAutor(0);
             return res.json({ success: true, descargaContada: true, link: juego.link, descargasEfectivas: juego.descargasEfectivas, mensaje: "Descarga válida", warning: "Usuario bajo revisión - ganancia suspendida" });
         }
-
-        autor.descargasTotales = (autor.descargasTotales || 0) + 1;
 
         const ADMIN_USERS = (process.env.ADMIN_USERS || '').split(',').map(u => u.trim()).filter(Boolean);
 
@@ -102,12 +96,11 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
         // Posible juego comercial completo: los anuncios se muestran igual, pero el creador no cobra
         // mientras el equipo lo revisa (UpGames no saca beneficio directo de ese enlace)
         if (juego.pagoPausado) {
-            await autor.save();
+            await sumarAutor(0);
             StatsItems.sumar(juegoId, juego.usuario, { d: 1, g: 0 });
             return res.json({ success: true, descargaContada: true, link: juego.link, descargasEfectivas: juego.descargasEfectivas, mensaje: 'Descarga válida', pagoPausado: true });
         }
         gananciaGenerada = (CPM_VALUE * AUTHOR_PERCENTAGE) / 1000;
-        autor.saldo = (autor.saldo || 0) + gananciaGenerada;
         shouldAnalyzeFraud = !ADMIN_USERS.includes(autor.usuario);
         logger.info(`Ganancia generada - Autor: @${autor.usuario}, +$${gananciaGenerada.toFixed(4)} USD`);
 
@@ -119,15 +112,14 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
                 if (fraudAnalysis.autoFlag) {
                     const flagged = await fraudDetector.autoFlagUser(Usuario, autor.usuario, `Detección automática: ${fraudAnalysis.reasons.join(', ')}`);
                     if (flagged) {
-                        autor.saldo -= gananciaGenerada;
-                        gananciaGenerada = 0;
-                        logger.warn(`Usuario auto-marcado y ganancia revertida: @${autor.usuario}`);
+                        gananciaGenerada = 0;   // aún no se sumó: no hay nada que revertir
+                        logger.warn(`Usuario auto-marcado, ganancia no acreditada: @${autor.usuario}`);
                     }
                 }
             }
         }
 
-        await autor.save();
+        await sumarAutor(gananciaGenerada);
         StatsItems.sumar(juegoId, juego.usuario, { d: 1, g: gananciaGenerada });   // panel "Rendimiento por publicación"
 
         // UpGames Blogs: si la descarga llegó desde una entrada de blog, su dueño también gana (solo si esta descarga ya pagó al autor)

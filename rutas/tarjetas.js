@@ -5,7 +5,7 @@
  * la cola de solicitudes de retiro: procesar o rechazar pagos a los creadores.
  * Extraído de index.js: recibe sus dependencias explícitas (ver la llamada en index.js).
  */
-module.exports = function tarjetas({ Juego, Pago, Usuario, app, body, config, enviarPagoPayPal, gamification, logger, mongoose, param, validationResult, verificarAdmin, verificarToken }) {
+module.exports = function tarjetas({ Juego, Pago, Usuario, app, body, config, paypalPayouts, gamification, logger, mongoose, param, validationResult, verificarAdmin, verificarToken }) {
 app.get('/economia/mis-tarjetas', verificarToken, async (req, res) => {
     try {
         const usuario = await Usuario.findOne({ usuario: req.usuario }).select('tarjetas').lean();
@@ -129,58 +129,66 @@ app.get('/admin/finanzas/solicitudes-pendientes', verificarAdmin, async (req, re
         const usuarioMap = Object.fromEntries(usuariosData.map(u => [u.usuario, u]));
         const juegosMap  = Object.fromEntries(juegosAgg.map(j => [j._id, j.count]));
         const solicitudesEnriquecidas = solicitudes.map(s => ({ ...s, datosUsuario: { email: usuarioMap[s.usuario]?.email || '', verificadoNivel: usuarioMap[s.usuario]?.verificadoNivel || 0, isVerificado: usuarioMap[s.usuario]?.isVerificado || false, descargasTotales: usuarioMap[s.usuario]?.descargasTotales || 0, juegosElegibles: juegosMap[s.usuario] || 0 } }));
-        res.json({ success: true, solicitudes: solicitudesEnriquecidas, total: solicitudesEnriquecidas.length });
+        const enRevision = await Pago.countDocuments({ estado: 'procesado' }).catch(() => 0);   // a medias o inciertos: GET /admin/finanzas/pagos-en-revision
+        res.json({ success: true, solicitudes: solicitudesEnriquecidas, total: solicitudesEnriquecidas.length, enRevision });
     } catch (error) {
         logger.error(`Error en solicitudes-pendientes: ${error.message}`);
         res.status(500).json({ success: false, error: "Error al cargar solicitudes" });
     }
 });
 
+// Retiros: reclamo atómico, envío idempotente a PayPal y recuperación de pagos a medias (modulos/retiros.js)
+const Retiros = require('../modulos/retiros');
+const esAutomatico = p => config.FEATURES.ENABLE_AUTO_PAYMENTS && (p.metodo || 'paypal') === 'paypal' && !!p.paypalEmail;
+const enviarPayPal = p => paypalPayouts.enviarPayout({ email: p.paypalEmail, monto: p.monto, pagoId: String(p._id) });
+const resumenPago = p => ({ usuario: p.usuario, monto: p.monto, paypalEmail: p.paypalEmail, fecha: p.fecha });
+
 app.post('/admin/finanzas/procesar-pago/:id', verificarAdmin, [param('id').isMongoId(), body('notas').optional().trim(), body('referencia').optional().trim().isLength({ max: 120 })], async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res.status(400).json({ success: false, error: "ID inválido" });
         const { id } = req.params;
-        const { notas } = req.body;
-        // Reclamo atómico: dos clics o dos admins a la vez ya no pueden pagar dos veces
-        const pago = await Pago.findOneAndUpdate({ _id: id, estado: 'pendiente' }, { $set: { estado: 'procesado' } }, { new: true });
-        if (!pago) {
-            const existe = await Pago.exists({ _id: id });
-            return res.status(existe ? 409 : 404).json({ success: false, error: existe ? "Este pago ya fue procesado (o se está procesando)" : "Pago no encontrado" });
-        }
-
         // Payouts automáticos solo existen para PayPal; Mercado Pago lo transfiere el admin
-        const pagoAutomatico = config.FEATURES.ENABLE_AUTO_PAYMENTS && (pago.metodo || 'paypal') === 'paypal' && !!pago.paypalEmail;
-        let paypalBatchId = null;
-        let metodoProcesamiento = 'manual';
-
-        if (pagoAutomatico) {
-            try {
-                const resultado = await enviarPagoPayPal(pago.paypalEmail, pago.monto, id);
-                paypalBatchId = resultado.batchId;
-                metodoProcesamiento = `paypal_auto (batch: ${paypalBatchId})`;
-                logger.info(`PayPal Payout enviado - @${pago.usuario} → ${pago.paypalEmail} | $${pago.monto.toFixed(2)} | Batch: ${paypalBatchId}`);
-            } catch (paypalError) {
-                logger.error(`PayPal Payout falló para @${pago.usuario}: ${paypalError.message}`);
-                await Pago.updateOne({ _id: id, estado: 'procesado' }, { $set: { estado: 'pendiente' } });
-                return res.status(502).json({ success: false, error: `El pago no se pudo enviar vía PayPal: ${paypalError.message}`, detalle: 'El saldo del usuario NO fue modificado. Revisa las credenciales de PayPal o procesa manualmente.', paypalEmail: pago.paypalEmail, monto: pago.monto });
-            }
+        const previo = await Pago.findById(id).select('metodo paypalEmail').lean();
+        const automatico = !!previo && esAutomatico(previo);
+        const r = await Retiros.procesar({ Pago, Usuario }, id, { enviar: automatico ? enviarPayPal : null, notas: req.body.notas, referencia: req.body.referencia });
+        if (r.codigo !== 200) {
+            logger[r.incierto ? 'error' : 'warn'](`procesar-pago ${id}: ${r.error}`);
+            const { codigo, ...resto } = r;
+            return res.status(codigo).json({ success: false, ...resto });
         }
-
-        pago.estado = 'completado';
-        if (req.body.referencia) pago.referencia = String(req.body.referencia).slice(0, 120);
-        pago.notas = notas || (pagoAutomatico ? `Pago automático vía PayPal Payouts el ${new Date().toLocaleString('es-ES')}. Batch ID: ${paypalBatchId}` : `Pago procesado manualmente el ${new Date().toLocaleString('es-ES')}`);
-        await pago.save();
-
-        // Descuento atómico (otra descarga podía sumar saldo entre leer y guardar)
-        const r = await Usuario.updateOne({ usuario: pago.usuario }, [{ $set: { saldo: { $max: [0, { $subtract: ['$saldo', pago.monto] }] }, solicitudPagoPendiente: false } }]);
-        if (r.matchedCount) gamification.onPagoRecibido(pago.usuario, pago.monto).catch(() => {});
-
-        logger.info(`Pago procesado [${metodoProcesamiento}] - @${pago.usuario}, Monto: $${pago.monto.toFixed(2)}`);
-        res.json({ success: true, mensaje: pagoAutomatico ? `Pago enviado automáticamente vía PayPal a ${pago.paypalEmail}` : "Pago marcado como procesado manualmente", metodo: pagoAutomatico ? 'paypal_automatico' : 'manual', paypalBatchId: paypalBatchId || null, pago: { usuario: pago.usuario, monto: pago.monto, paypalEmail: pago.paypalEmail, fecha: pago.fecha } });
+        const pago = r.pago;
+        if (r.descontado) gamification.onPagoRecibido(pago.usuario, pago.monto).catch(() => {});
+        logger.info(`Pago procesado [${automatico ? `paypal_auto (batch: ${pago.payoutBatchId})` : 'manual'}] - @${pago.usuario}, Monto: $${pago.monto.toFixed(2)}`);
+        res.json({ success: true, mensaje: automatico ? `Pago enviado automáticamente vía PayPal a ${pago.paypalEmail}` : "Pago marcado como procesado manualmente", metodo: automatico ? 'paypal_automatico' : 'manual', paypalBatchId: pago.payoutBatchId || null, pago: resumenPago(pago) });
     } catch (error) {
         logger.error(`Error en procesar-pago: ${error.message}`);
         res.status(500).json({ success: false, error: "Error al procesar pago" });
+    }
+});
+
+// Pagos a medias o con resultado desconocido de PayPal: listar y reconciliar
+app.get('/admin/finanzas/pagos-en-revision', verificarAdmin, async (req, res) => {
+    try { const lista = await Retiros.enRevision(Pago); res.json({ success: true, pagos: lista, total: lista.length }); }
+    catch (e) { logger.error(`pagos-en-revision: ${e.message}`); res.status(500).json({ success: false, error: 'Error al cargar' }); }
+});
+app.post('/admin/finanzas/reconciliar-pago/:id', verificarAdmin, [param('id').isMongoId(), body('accion').isIn(['consultar', 'reintentar', 'confirmar', 'anular']), body('referencia').optional().trim().isLength({ max: 120 }), body('notas').optional().trim()], async (req, res) => {
+    try {
+        if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'Datos inválidos' });
+        const previo = await Pago.findById(req.params.id).select('metodo paypalEmail').lean();
+        const automatico = !!previo && esAutomatico(previo);
+        const r = await Retiros.reconciliar({ Pago, Usuario }, req.params.id, req.body.accion, {
+            enviar: automatico ? enviarPayPal : null, consultar: automatico ? b => paypalPayouts.consultarPayout(b) : null,
+            referencia: req.body.referencia, notas: req.body.notas,
+        });
+        const { codigo, pago, ...resto } = r;
+        if (codigo !== 200) return res.status(codigo).json({ success: false, ...resto });
+        if (r.descontado) gamification.onPagoRecibido(pago.usuario, pago.monto).catch(() => {});
+        logger.warn(`[retiros] reconciliar ${req.params.id} (${req.body.accion}) por @${req.admin?.usuario || '?'}: ${pago?.estado || (r.anulado ? 'pendiente' : 'sin cambios')}`);
+        res.json({ success: true, ...resto, ...(pago ? { estado: pago.estado, pago: resumenPago(pago) } : {}) });
+    } catch (e) {
+        logger.error(`reconciliar-pago: ${e.message}`);
+        res.status(e.status || 500).json({ success: false, error: e.status ? e.message : 'Error al reconciliar' });
     }
 });
 

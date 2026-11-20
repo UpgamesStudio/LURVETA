@@ -41,7 +41,8 @@ function crear(config, getToken, { transporte } = {}) {
 
     async function req(method, path, body, extraHeaders = {}) {
         if (transporte) return transporte(method, path, body, extraHeaders);   // tests
-        const token = await getToken();
+        let token;
+        try { token = await getToken(); } catch (e) { e.antesDeEnviar = true; throw e; }   // nada salió hacia PayPal
         const payload = body ? JSON.stringify(body) : '';
         return new Promise((resolve, reject) => {
             const r = https.request({
@@ -106,7 +107,39 @@ function crear(config, getToken, { transporte } = {}) {
         return { captura, referencia: pu.reference_id };
     }
 
-    return { activo, configurado, verificar, estado: () => ({ ...estado }), req, crearOrden, capturar };
+    /**
+     * Payout a un creador (PayPal Payouts). sender_batch_id ESTABLE por retiro: si se reintenta
+     * el mismo retiro, PayPal rechaza el lote repetido en vez de pagar dos veces.
+     * Errores: e.definitivo = true solo cuando es seguro que PayPal no creó el lote; en
+     * cualquier otro caso (timeout, red, 5xx, lote repetido) el resultado es DESCONOCIDO.
+     */
+    async function enviarPayout({ email, monto, pagoId }) {
+        const fallo = (msg, definitivo) => Object.assign(new Error(msg), { definitivo });
+        let r;
+        try {
+            r = await req('POST', '/v1/payments/payouts', {
+                sender_batch_header: { sender_batch_id: `UPGAMES_${pagoId}`, email_subject: '¡Tu pago de UpGames ha llegado!',
+                    email_message: 'Has recibido un pago por tus ganancias de creador en UpGames. ¡Gracias por crear!' },
+                items: [{ recipient_type: 'EMAIL', amount: { value: Number(monto).toFixed(2), currency: 'USD' }, receiver: email,
+                    note: `Retiro UpGames #${pagoId}`, sender_item_id: `item_${pagoId}` }],
+            });
+        } catch (e) { throw fallo(e.message, !!e.antesDeEnviar); }
+        if (r.status === 201) return { batchId: r.data?.batch_header?.payout_batch_id || '', batchStatus: r.data?.batch_header?.batch_status || 'PENDING' };
+        const texto = JSON.stringify(r.data || {});
+        const msg = `PayPal Payout falló [HTTP ${r.status}]: ${r.data?.message || r.data?.name || texto.slice(0, 200)}`;
+        const repetido = /DUPLICATE|already exists|sender_batch_id/i.test(texto);
+        throw fallo(msg, r.status >= 400 && r.status < 500 && !repetido);
+    }
+
+    /** Estado de un lote ya creado: { estado, item } (SUCCESS, PENDING, PROCESSING, DENIED…). */
+    async function consultarPayout(batchId) {
+        if (!/^[A-Z0-9]{5,40}$/.test(String(batchId || ''))) { const e = new Error('Lote no válido'); e.status = 400; throw e; }
+        const r = await req('GET', `/v1/payments/payouts/${batchId}`);
+        if (r.status !== 200) { const e = new Error(`PayPal no devolvió el lote (HTTP ${r.status})`); e.status = 502; throw e; }
+        return { estado: r.data?.batch_header?.batch_status || '', item: r.data?.items?.[0]?.transaction_status || '' };
+    }
+
+    return { activo, configurado, verificar, estado: () => ({ ...estado }), req, crearOrden, capturar, enviarPayout, consultarPayout };
 }
 
 module.exports = { crear };

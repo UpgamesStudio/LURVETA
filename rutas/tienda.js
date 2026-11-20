@@ -355,9 +355,11 @@ function registrar(app, deps) {
             const u = await Usuario.findOne({ usuario: req.usuario }).select('email listaNegraAdmin').lean();
             if (!u || u.listaNegraAdmin) return err(res, 403, 'Tu cuenta no puede hacer pagos');
             const usd = precioUsd(p, 'tarjeta_mp');
+            const monto = mp.montoLocal(usd);
             const pago = await mp.pagar({
-                formData: req.body?.formData, monto: mp.montoLocal(usd), descripcion: descripcion(p),
-                referencia: `${req.usuario}|${p.id}`, idempotencia: `ug-${req.usuario}-${clave}`.slice(0, 64),
+                formData: req.body?.formData, monto, descripcion: descripcion(p),
+                // El monto cobrado va en la referencia (la fija el servidor): el webhook valida contra él, no contra el precio de ese momento
+                referencia: `${req.usuario}|${p.id}|${monto}|${usd}`, idempotencia: `ug-${req.usuario}-${clave}`.slice(0, 64),
                 notificacion: notificacionMP(), email: u.email,
             });
             if (pago.status === 'approved') {
@@ -386,13 +388,13 @@ function registrar(app, deps) {
             if (tipo !== 'payment' || !/^\d{5,20}$/.test(String(id || ''))) return;
             const pago = await mp.obtener(id);
             if (!pago) return;
-            const [usuario, producto] = String(pago.referencia || '').split('|');
+            const [usuario, producto, montoRef, usdRef] = String(pago.referencia || '').split('|');
             const p = parsear(producto);
             if (!usuario || !p) return;
             if (pago.status === 'approved') {
-                // El monto cobrado debe coincidir con el precio actual del producto
-                if (Math.abs(pago.monto - mp.montoLocal(precioUsd(p, 'tarjeta_mp'))) > 1) return logger.warn(`[tienda] MP ${id}: monto ${pago.monto} no coincide con ${p.id}`);
-                await entregar(usuario, p, { ref: `mp:${pago.id}`, captureId: `mp:${pago.id}`, metodo: 'tarjeta_mp', usd: precioUsd(p, 'tarjeta_mp') });
+                const v = montoMPValido(pago, { montoRef, usdRef, moneda: mp.estado().moneda, actual: () => ({ monto: mp.montoLocal(precioUsd(p, 'tarjeta_mp')), usd: precioUsd(p, 'tarjeta_mp') }) });
+                if (!v.ok) return logger.warn(`[tienda] MP ${id}: monto ${pago.monto} ${pago.moneda || ''} no coincide con ${p.id} (esperado ${v.esperado})`);
+                await entregar(usuario, p, { ref: `mp:${pago.id}`, captureId: `mp:${pago.id}`, metodo: 'tarjeta_mp', usd: v.usd });
             } else if (['refunded', 'charged_back', 'cancelled'].includes(pago.status)) {
                 await revertir(`mp:${pago.id}`, `Mercado Pago ${pago.status}`, pago.status === 'charged_back');   // reembolso propio (retracto) no restringe la cuenta
             }
@@ -419,4 +421,19 @@ function registrar(app, deps) {
     return { PLANES, parsear, precioUsd, entregar, revertir, mp, metodos };
 }
 
-module.exports = { registrar, PLANES, BENEFICIOS_PASE, BONO_PAQUETE, PAQUETES_IA, IMPULSO, parsear, precioUsd, precioUC };
+/**
+ * Webhook de Mercado Pago: ¿el pago aprobado coincide con lo que cobró el servidor?
+ * El monto fijado al cobrar viaja en la referencia (la escribe el servidor, no el navegador):
+ * así un pago que el banco aprueba tarde no se pierde si cambió la tasa o el precio.
+ * Pagos anteriores sin monto en la referencia: se comparan con el precio actual (`actual()`).
+ */
+function montoMPValido(pago, { montoRef, usdRef, moneda, actual }) {
+    const fijado = parseFloat(montoRef), usdFijado = parseFloat(usdRef);
+    const conRef = Number.isFinite(fijado) && fijado > 0;
+    const hoy = conRef ? null : actual();
+    const esperado = conRef ? fijado : hoy.monto;
+    const ok = Math.abs(Number(pago.monto) - esperado) <= 1 && (!pago.moneda || !moneda || pago.moneda === moneda);
+    return { ok, esperado, usd: conRef && Number.isFinite(usdFijado) && usdFijado > 0 ? usdFijado : (hoy || actual()).usd };
+}
+
+module.exports = { registrar, montoMPValido, PLANES, BENEFICIOS_PASE, BONO_PAQUETE, PAQUETES_IA, IMPULSO, parsear, precioUsd, precioUC };
