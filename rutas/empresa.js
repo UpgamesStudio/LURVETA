@@ -16,7 +16,7 @@
  *
  * De dónde sale cada cifra:
  *   ventas con dinero y lo que ganan los creadores por ellas → live_transacciones (igual que Economía)
- *   publicidad → anuncios vistos (stats_items y blog_vistas) × CPM que la red publicitaria paga a UpGames
+ *   publicidad → anuncios vistos (stats_items y blog_vistas) × CPM que la red publicitaria paga a Lurveta
  *   pagos por publicidad a creadores → stats_items.g y blog_vistas.g/gd (lo que se les abona)
  *   comisiones de pasarela → estimadas: % + fijo por venta (configurable)
  *   el resto de costos → empresa_costos (los carga el dueño)
@@ -79,7 +79,7 @@ const METAS = {
 const METAS_ACUMULADAS = ['ingresosUsd', 'gananciaUsd', 'cuentasNuevas', 'visitantes'];
 
 const CONFIG_DEF = {
-    cpmBrutoUsd: 0,          // lo que la red publicitaria le paga a UpGames por 1.000 anuncios vistos
+    cpmBrutoUsd: 0,          // lo que la red publicitaria le paga a Lurveta por 1.000 anuncios vistos
     comisionPct: 5.4,        // pasarela (PayPal / Mercado Pago): porcentaje por venta
     comisionFijaUsd: 0.30,   // … más un fijo por venta
     cajaUsd: null,           // dinero disponible hoy (lo escribe el dueño)
@@ -290,7 +290,7 @@ const celda = v => {
 };
 const fila = (...c) => c.map(celda).join(';');
 function aCSV(t) {
-    const L = [fila('UPGAMES · ESTADO DE RESULTADOS (USD, devengado)'), fila('Generado', new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'), ''];
+    const L = [fila('LURVETA · ESTADO DE RESULTADOS (USD, devengado)'), fila('Generado', new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'), ''];
     const h = t.historia;
     L.push(fila('Concepto', ...h.map(m => m.nombre)));
     const lin = (n, f) => L.push(fila(n, ...h.map(m => f(m.pyg))));
@@ -490,7 +490,7 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger, 
             const t = await tablero(mes);
             if (req.query.formato === 'csv') {
                 res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-                res.setHeader('Content-Disposition', `attachment; filename="UpGames-resultados-${mes}.csv"`);
+                res.setHeader('Content-Disposition', `attachment; filename="Lurveta-resultados-${mes}.csv"`);
                 return res.send(aCSV(t));
             }
             ok(res, { empresa: t });
@@ -551,7 +551,7 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger, 
             const nombres = (await db().db.listCollections({}, { nameOnly: true }).toArray()).map(c => c.name).filter(n => !n.startsWith('system.')).sort();
             const fecha = new Date().toISOString().slice(0, 10);
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.setHeader('Content-Disposition', `attachment; filename="UpGames-respaldo-${fecha}.json"`);
+            res.setHeader('Content-Disposition', `attachment; filename="Lurveta-respaldo-${fecha}.json"`);
             res.setHeader('Cache-Control', 'no-store');
             await escribir(`{"generado":${JSON.stringify(new Date().toISOString())},"formato":"EJSON canónico · una lista por colección","colecciones":{`);
             for (let i = 0; i < nombres.length; i++) {

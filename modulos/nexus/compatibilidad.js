@@ -134,7 +134,7 @@ async function analizar(item, devRaw) {
     let r = { ...base, resumen: null, fuente: null };
     if (base.veredicto !== 'no_aplica' && llm.disponible()) {
         const d = base.dispositivo;
-        const ia = await llm.json(`Eres NEXUS, de UpGames. Le dices al usuario si una publicación le funcionará en su equipo.
+        const ia = await llm.json(`Eres NEXUS, de Lurveta. Le dices al usuario si una publicación le funcionará en su equipo.
 El VEREDICTO ya está calculado: no lo cambies. Escribe en español claro, cercano y concreto. Devuelve SOLO JSON:
 {"resumen":"1-2 frases para el usuario, nombrando su equipo si lo sabes","ajustes":["ajuste concreto 1","ajuste 2","ajuste 3"]}
 Ajustes: máximo 4, prácticos para ESTE juego/app y ESTE equipo (resolución, renderizador, drivers, FPS, ajustes del emulador). No inventes datos del juego que no estén abajo.`,

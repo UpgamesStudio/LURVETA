@@ -32,7 +32,7 @@ function registrar(app, deps) {
     const { verificarToken, verificarAdmin, Usuario, Juego, LiveTx, Notificacion, logger } = deps;
     const ok = (res, d) => res.json({ success: true, ...d });
     const err = (res, code, error, extra) => res.status(code).json({ success: false, error, ...extra });
-    const avisar = (destinatario, itemTitle, mensaje, itemId = '') => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'UpGames', itemTitle, itemId, mensaje, leida: false, fecha: new Date() }).catch(() => {});
+    const avisar = (destinatario, itemTitle, mensaje, itemId = '') => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'Lurveta', itemTitle, itemId, mensaje, leida: false, fecha: new Date() }).catch(() => {});
     const totalUC = async u => Math.floor(UC.saldoUC(await Usuario.findOne({ usuario: u }).select('monedas saldo solicitudPagoPendiente').lean() || {}).total);
 
     /** Cobra `costo` UC con un registro idempotente. Devuelve [status, cuerpo]. */
@@ -193,8 +193,8 @@ function registrar(app, deps) {
             ok(res, { apoyado: monto, upcoins: await totalUC(req.usuario) });
         } catch (e) { logger.error(`[extras] apoyar: ${e.message}`); err(res, 500, 'No se pudo enviar tu apoyo'); }
     });
-    // ── Apoyar a un blog de UpGames Blogs (mismas reglas que apoyar una publicación) ──
-    // Desde el blog (sin scripts) un botón abre UpGames, donde el visitante tiene su sesión y sus UpCoins.
+    // ── Apoyar a un blog de Lurveta Blogs (mismas reglas que apoyar una publicación) ──
+    // Desde el blog (sin scripts) un botón abre Lurveta, donde el visitante tiene su sesión y sus UpCoins.
     app.post('/blogs-apoyo/:blogId', verificarToken, async (req, res) => {
         try {
             const c = await X.config();

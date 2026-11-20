@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Graba el video «Cómo publicar tu proyecto en UpGames» cuadro a cuadro (1920×1080) y le mezcla música y efectos.
+ * Graba el video «Cómo publicar tu proyecto en Lurveta» cuadro a cuadro (1920×1080) y le mezcla música y efectos.
  *   node render.js                     → upgames-publicar.mp4 (60 fps, con audio)
  *   FPS=30 node render.js              → otra cadencia
  *   PREVIEW="2,6.5,13" node render.js  → solo esos instantes como PNG (prev-XX.XX.png)

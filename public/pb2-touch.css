@@ -1,4 +1,4 @@
-/* ============ PLAZMA BURST 2 — Controles táctiles estilo GAMEPAD (UpGames) ============ */
+/* ============ PLAZMA BURST 2 — Controles táctiles estilo GAMEPAD (Lurveta) ============ */
 #pb2t-root,#pb2t-root *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:none}
 #pb2t-root{position:fixed;inset:0;z-index:2147483000;pointer-events:none;
   font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}

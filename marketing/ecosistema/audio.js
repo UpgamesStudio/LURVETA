@@ -1,5 +1,5 @@
 /**
- * Sonido del video «Todo UpGames»: la pista del usuario (Darksynth · «Chants Of Concrete») + efectos limpios sintetizados aquí.
+ * Sonido del video «Todo Lurveta»: la pista del usuario (Darksynth · «Chants Of Concrete») + efectos limpios sintetizados aquí.
  * El ritmo de la pista es de 100 BPM y su caída cae en el segundo 38,45; el video arranca en el 24,05 para que la caída
  * coincida con el segundo 14,4 del video (cada tiempo = 0,6 s). Los efectos son cortos y «de cristal» (campanitas,
  * pops y barridos suaves, sin ruido áspero) y se mezclan por debajo de la música.

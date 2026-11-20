@@ -1,12 +1,12 @@
 /* ══════════════════════════════════════════════════════════════════
-   UpGames · Pagos — un componente para todos los cobros.
+   Lurveta · Pagos — un componente para todos los cobros.
    Métodos, en este orden:
      1. 💳 Tarjeta de crédito o débito — Mercado Pago (Card Payment Brick);
         si Mercado Pago no está activo, el botón de tarjeta de PayPal.
      2. PayPal.
      3. UpCoins (los comprados y los ganados como creador: una sola moneda).
    Los formularios de tarjeta los dibujan Mercado Pago / PayPal: los datos de la
-   tarjeta nunca pasan por UpGames.
+   tarjeta nunca pasan por Lurveta.
    Uso:
      UGPagos.pagar(el, { producto: 'plan:pase30', alExito })
      UGPagos.tienda(el, { alComprar })        // paquetes de UpCoins
@@ -195,7 +195,7 @@
         <div data-ugp="tarjeta" class="ugp-mp"><div class="ugp-load"></div></div>
       </div>` : `<p class="ugp-msg warn">${esc(MOTIVOS[c.pagos] || MOTIVOS.sin_configurar)}</p>`) : ''}
       ${conDinero && m.paypal && m.tarjeta === 'mercadopago' ? '<div class="ugp-or">o</div><div data-ugp="paypal"></div>' : ''}
-      ${conDinero && m.tarjeta ? `<p class="ugp-safe">🔒 Pago cifrado. ${m.tarjeta === 'mercadopago' ? 'Mercado Pago' : 'PayPal'} procesa tu tarjeta: UpGames nunca ve ni guarda sus datos.</p>` : ''}
+      ${conDinero && m.tarjeta ? `<p class="ugp-safe">🔒 Pago cifrado. ${m.tarjeta === 'mercadopago' ? 'Mercado Pago' : 'PayPal'} procesa tu tarjeta: Lurveta nunca ve ni guarda sus datos.</p>` : ''}
       ${!conDinero && ucs.total < precioUC ? `<button type="button" class="ugp-alt" data-ugp="recargar"><span class="e">➕</span><span>Conseguir UpCoins<small>Desde US$1,29 con tarjeta o PayPal</small></span></button>` : ''}
     </div>`;
 
@@ -275,7 +275,7 @@
       <div class="ugp-bal"><div><small>Tus UpCoins</small><br><b data-ugp="bal">🪙 ${fmt(Math.floor(est.upcoins?.total ?? est.monedas))}</b></div><small style="text-align:right">${aviso || `1 UpCoin = US$0,02<br>úsalos en lives, NEXUS, Premium y más`}</small></div>
       <div class="ugp-packs">${c.paquetes.map(p => `<button type="button" class="ugp-pack" data-p="${esc(p.id)}">${p.extra ? `<span class="x">${esc(p.extra)}</span>` : ''}<div class="m">🪙 ${fmt(p.monedas)}</div><div class="u">US$${p.usd.toFixed(2)}</div></button>`).join('')}</div>
       <div data-ugp="pago"><p class="ugp-msg">Elige un paquete para pagar con tarjeta o PayPal.${est.plan ? ` <b style="color:#FFC83D">Por ser Premium recibes +${Math.round((c.bonoPaquete || 0.1) * 100)}% de UpCoins extra.</b>` : ''}</p></div>
-      <p class="ugp-safe">Los UpCoins comprados se usan dentro de UpGames y no se cambian por dinero (los que ganas como creador sí se pueden retirar). Si no los usas, puedes retractarte en 5 días hábiles. <a href="./terminos_condiciones.html#pagos" target="_blank" style="color:#32D583">Términos</a></p>
+      <p class="ugp-safe">Los UpCoins comprados se usan dentro de Lurveta y no se cambian por dinero (los que ganas como creador sí se pueden retirar). Si no los usas, puedes retractarte en 5 días hábiles. <a href="./terminos_condiciones.html#pagos" target="_blank" style="color:#32D583">Términos</a></p>
     </div>`;
     el.querySelectorAll('.ugp-pack').forEach(b => b.onclick = () => {
       el.querySelectorAll('.ugp-pack').forEach(x => x.classList.toggle('on', x === b));

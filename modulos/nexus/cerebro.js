@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════════
- *  nexus/cerebro.js — El asistente Nexus de UpGames
+ *  nexus/cerebro.js — El asistente Nexus de Lurveta
  *
  *  responder() da una respuesta al usuario:
  *    1. El modelo (Groq) decide qué herramientas usar: busca en el
@@ -20,7 +20,7 @@ const MAX_RONDAS = 4;
 function sistema({ usuario, contexto, gustos }) {
     const hoy = new Date().toISOString().slice(0, 10);
     const lineas = [
-        'Eres NEXUS, la inteligencia artificial nativa de UpGames: una biblioteca donde la comunidad comparte juegos indie, mods, apps, software, herramientas y videos, y los creadores ganan dinero por las visualizaciones de publicidad de sus publicaciones (no por descargas).',
+        'Eres NEXUS, la inteligencia artificial nativa de Lurveta: una biblioteca donde la comunidad comparte juegos indie, mods, apps, software, herramientas y videos, y los creadores ganan dinero por las visualizaciones de publicidad de sus publicaciones (no por descargas).',
         'Personalidad: cercana, clara y con energía; hablas en el idioma del usuario (normalmente español), tuteas, vas al grano. Respuestas cortas (2-6 frases o una lista breve). Puedes usar **negrita** y listas con "- ". Nada de tablas ni HTML.',
         'REGLAS:',
         '- Usa las herramientas para cualquier dato: contenidos, cifras, saldo, reglas. NUNCA inventes contenidos, autores, ids, cifras ni funciones de la app.',
@@ -121,7 +121,7 @@ async function modoBasico(p, ej) {
         const c = await ej.mi_cuenta();
         if (c.error) return `${reglas}\n\nInicia sesión y te digo exactamente cuánto llevas y qué te falta.`;
         await ej.proponer_accion({ tipo: 'ir_a', valor: 'economia', etiqueta: 'Abrir Economía' });
-        return `Tienes **${Math.floor(c.upcoins_ganados_retirables).toLocaleString('es')} UpCoins ganados** (≈ US$${c.equivalente_usd}, retirables) y ${Math.floor(c.upcoins_comprados).toLocaleString('es')} UpCoins comprados (solo para usar en UpGames), con ${c.descargas_totales} descargas en total.\n${c.puede_retirar ? '¡Ya puedes solicitar tu retiro desde Economía!' : `Para retirar te falta: ${c.le_falta.join('; ')}.`}`;
+        return `Tienes **${Math.floor(c.upcoins_ganados_retirables).toLocaleString('es')} UpCoins ganados** (≈ US$${c.equivalente_usd}, retirables) y ${Math.floor(c.upcoins_comprados).toLocaleString('es')} UpCoins comprados (solo para usar en Lurveta), con ${c.descargas_totales} descargas en total.\n${c.puede_retirar ? '¡Ya puedes solicitar tu retiro desde Economía!' : `Para retirar te falta: ${c.le_falta.join('; ')}.`}`;
     }
     if (/mis (publicaciones|mods|aportes|juegos)|c[oó]mo van/.test(m)) {
         const r = await ej.mis_publicaciones({});
@@ -134,7 +134,7 @@ async function modoBasico(p, ej) {
         if (re.test(m)) return (await ej.reglas_upgames({ tema })).texto;
     const consulta = m.replace(/[¿?¡!.,]/g, ' ').replace(/\b(recomi[eé]ndame|recomienda|busco|buscar|quiero|algo|de|del|para|un|una|unos|unas|el|la|los|las|me|hay|tienes|dame|juegos?|mods?)\b/g, ' ').replace(/\s+/g, ' ').trim();
     let r = consulta.length >= 3 ? await ej.buscar_contenido({ consulta, limite: 5 }) : null;
-    if (r?.resultados?.length) { await ej.mostrar_contenido({ ids: r.resultados.map(x => x.id) }); return `Esto encontré en UpGames:\n${lista(r.resultados)}`; }
+    if (r?.resultados?.length) { await ej.mostrar_contenido({ ids: r.resultados.map(x => x.id) }); return `Esto encontré en Lurveta:\n${lista(r.resultados)}`; }
     r = await ej.recomendar_para_mi({ limite: 5 });
     await ej.mostrar_contenido({ ids: r.resultados.map(x => x.id) });
     return `${consulta.length >= 3 ? `No encontré nada para "${consulta}". ` : ''}Te dejo lo más interesante ahora mismo:\n${lista(r.resultados)}`;

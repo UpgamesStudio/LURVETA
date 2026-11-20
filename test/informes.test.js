@@ -40,7 +40,7 @@ const informe = (extra = {}) => ({
 
 test('CSV: secciones, separador, comillas y cambio porcentual', () => {
     const csv = aCSV(informe());
-    assert.ok(csv.startsWith('﻿UPGAMES · INFORME MENSUAL DE ACTIVIDAD'));
+    assert.ok(csv.startsWith('﻿LURVETA · INFORME MENSUAL DE ACTIVIDAD'));
     assert.ok(csv.includes('Mes;octubre de 2026'));
     assert.ok(csv.includes('Visitantes;1500;1000;50'));
     assert.ok(csv.includes('Cuentas nuevas;3;0;\r\n'));               // sin mes anterior no hay porcentaje

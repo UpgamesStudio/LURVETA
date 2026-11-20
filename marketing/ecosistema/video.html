@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>UpGames · Todo en un solo lugar</title>
+<title>Lurveta · Todo en un solo lugar</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=block" rel="stylesheet">
 <style>
-/* Liquid glass de UpGames (nuevo diseño): cristal esmerilado con borde de escarcha, luz superior y barrido especular;
+/* Liquid glass de Lurveta (nuevo diseño): cristal esmerilado con borde de escarcha, luz superior y barrido especular;
    verde → cian → violeta sobre azul profundo. Las pantallas de los teléfonos son capturas REALES de la app. */
 :root { --g: #39FF88; --cy: #5CE1FF; --vi: #8F7BFF; --bg: #04070D; --tx: #F2F6FC; --tx2: #A9B4C6; --tx3: #6B7689;
   --au: linear-gradient(115deg, #39FF88 0%, #4DF0C8 45%, #5CE1FF 100%); --esc: rgba(186,215,247,.2); }
@@ -58,7 +58,7 @@ html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--
   <div id="malla"></div>
   <div id="escenas"></div>
   <div id="vin"></div><div id="destello"></div>
-  <div id="nota">Interfaz real de UpGames · contenido y cifras de demostración · upgames.games</div>
+  <div id="nota">Interfaz real de Lurveta · contenido y cifras de demostración · upgames.games</div>
 </div>
 <script>
 'use strict';
@@ -201,9 +201,9 @@ escena(36.0, 43.2, r => {
 }, (t, r, c) => { actTexto(c, t, 36.2); pop(c.tar, t, 37.3, { dy: 60 }); c.cpm.textContent = 'US$ ' + (1.5 * en(t, 37.8, 1.4, E.out)).toFixed(2).replace('.', ',');
   pop(c.niv, t, 39.4, { dy: 60 }); pop(c.ret, t, 40.9, { dy: 60 }); trans(r, t, 36.0, 43.2); });
 
-/* ═══ 6 · UpGames Blogs (43,2 – 50,4) ═══ */
+/* ═══ 6 · Lurveta Blogs (43,2 – 50,4) ═══ */
 escena(43.2, 50.4, r => {
-  const c = texto(r, '05 · UpGames Blogs', 'Tu propio sitio web. [En minutos.]', 'Escribe con bloques, deja que Nexus arme el borrador, conecta tu dominio y gana con tu blog.', [['Editor por bloques', ''], ['Nexus escritor', 'c'], ['Dominio propio', 'v'], ['Comentarios', '']], 'left:110px;width:700px');
+  const c = texto(r, '05 · Lurveta Blogs', 'Tu propio sitio web. [En minutos.]', 'Escribe con bloques, deja que Nexus arme el borrador, conecta tu dominio y gana con tu blog.', [['Editor por bloques', ''], ['Nexus escritor', 'c'], ['Dominio propio', 'v'], ['Comentarios', '']], 'left:110px;width:700px');
   const tl = [['blog-neon', 1330, 540, -6, 0, 1], ['blog-cristal', 1650, 560, 12, 4, 0]].map(([n, x, y, ry, rz], i) => { const o = telefono(r, [[0, n]], 'z-index:' + (4 - i)); o.x = x; o.y = y; o.ry = ry; o.rz = rz; return o; });
   const bq = glass(r, `<div style="padding:20px 28px;display:flex;align-items:center;gap:16px"><b style="font-size:26px">✦ Nexus escribe el borrador</b></div>`, 'left:130px;top:930px;width:540px;height:96px;border-radius:999px');
   sfx(43.3, 'whoosh', .6); sfx(44.2, 'pop', .7); sfx(44.9, 'pop', .7); sfx(45.6, 'glass', .7, 5); sfx(47.0, 'swish', .6); sfx(48.2, 'notif', .6);
@@ -216,7 +216,7 @@ escena(43.2, 50.4, r => {
 escena(50.4, 55.2, r => {
   const k = $('div', 'abs kick', '06 · Comunidad', r, 'left:0;right:0;top:110px;text-align:center'); k.style.letterSpacing = '.34em';
   const h = pal(r, 'Una comunidad [viva.]', 'abs tit', 'left:0;right:0;top:165px;text-align:center;font-size:96px');
-  const T = [['chat', '#5CE1FF', 'Chat privado', 'Entre seguidores mutuos'], ['grupo', '#8F7BFF', 'Grupos y comunidades', 'Con espacios +18 solo adultos'], ['estrella', '#FFD23F', 'Reseñas y colecciones', 'Estrellas y listas públicas'], ['campana', '#39FF88', 'Notificaciones', 'Avisos y push de tus creadores'], ['gente', '#FF7BD5', 'Referidos', 'Invita y ganan los dos'], ['juego', '#5CE1FF', 'Juegos propios', 'UpGames RACING y Studio']];
+  const T = [['chat', '#5CE1FF', 'Chat privado', 'Entre seguidores mutuos'], ['grupo', '#8F7BFF', 'Grupos y comunidades', 'Con espacios +18 solo adultos'], ['estrella', '#FFD23F', 'Reseñas y colecciones', 'Estrellas y listas públicas'], ['campana', '#39FF88', 'Notificaciones', 'Avisos y push de tus creadores'], ['gente', '#FF7BD5', 'Referidos', 'Invita y ganan los dos'], ['juego', '#5CE1FF', 'Juegos propios', 'Lurveta RACING y Studio']];
   const cards = T.map(([ic, col, ti, sb], i) => glass(r, `<div style="padding:32px 34px">${ico(ic, col)}<div style="font-size:33px;font-weight:700;letter-spacing:-.02em;margin-top:22px">${ti}</div><div style="font-size:23px;color:var(--tx2);margin-top:6px">${sb}</div></div>`, `left:${150 + (i % 3) * 560}px;top:${360 + Math.floor(i / 3) * 310}px;width:520px;height:270px`));
   sfx(50.5, 'whoosh', .5); [51.0, 51.4, 51.8, 52.2, 52.6, 53.0].forEach((t, i) => sfx(t, i % 2 ? 'pop' : 'glass', .5, i));
   return { k, h, cards };

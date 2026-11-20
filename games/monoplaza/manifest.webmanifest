@@ -1,7 +1,7 @@
 {
-  "name": "UpGames RACING · Simulador de carreras",
+  "name": "Lurveta RACING · Simulador de carreras",
   "short_name": "RACING",
-  "description": "Simulador de monoplazas con físicas reales para el celular. UpGames.",
+  "description": "Simulador de monoplazas con físicas reales para el celular. Lurveta.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",

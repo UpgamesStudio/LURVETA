@@ -1,4 +1,4 @@
-// UpGames Blogs · bloque «Redes y contacto»: lo que escribe el creador → enlace final, y su validación y render
+// Lurveta Blogs · bloque «Redes y contacto»: lo que escribe el creador → enlace final, y su validación y render
 'use strict';
 const assert = require('assert');
 const R = require('../public/upgames-redes');

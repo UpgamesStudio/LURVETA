@@ -1,5 +1,5 @@
 /**
- * UpGames Live — transmisiones en vivo, chat en tiempo real, monedas y regalos.
+ * Lurveta Live — transmisiones en vivo, chat en tiempo real, monedas y regalos.
  *
  * El video NUNCA pasa por este servidor: en modo 'p2p' viaja navegador→navegador
  * (aquí solo se reenvía la señalización WebRTC) y en modo 'mediamtx' lo sirve un
@@ -443,7 +443,7 @@ function registrar(app, server, deps) {
             if (v?.sexual && v.confianza >= 0.8) {
                 await finalizar(l._id, 'El live se cerró por contenido sexual (moderación automática)');
                 Moderacion.registrar({ tipo: 'live', usuario: req.usuario, categoria: 'sexual', motivo: v.motivo, fuente: 'NEXUS visión', texto: l.titulo, ref: l._id, accion: 'live cerrado' });
-                Notificacion.create({ destinatario: req.usuario, tipo: 'sistema', emisor: 'UpGames', itemTitle: 'Revisión', mensaje: '🚫 Cerramos tu live porque se detectó contenido sexual. Repetirlo puede suspender tu cuenta.', leida: false, fecha: new Date() }).catch(() => {});
+                Notificacion.create({ destinatario: req.usuario, tipo: 'sistema', emisor: 'Lurveta', itemTitle: 'Revisión', mensaje: '🚫 Cerramos tu live porque se detectó contenido sexual. Repetirlo puede suspender tu cuenta.', leida: false, fecha: new Date() }).catch(() => {});
                 logger.warn(`[moderacion] live ${l._id} de @${req.usuario} cerrado: ${v.motivo}`);
                 return ok(res, { revisado: true, cerrado: true });
             }
@@ -563,7 +563,7 @@ function registrar(app, server, deps) {
             if (!ppActivo()) return err(res, 503, 'Los pagos aún no están disponibles');
             const p = L.paquete(req.body?.paquete);
             if (!p) return err(res, 400, 'Paquete no válido');
-            const orderID = await paypal.crearOrden({ usuario: req.usuario, referencia: p.id, usd: p.usd, descripcion: `${p.monedas} monedas UpGames` });
+            const orderID = await paypal.crearOrden({ usuario: req.usuario, referencia: p.id, usd: p.usd, descripcion: `${p.monedas} monedas Lurveta` });
             ok(res, { orderID });
         } catch (e) { logger.error(`[live] orden: ${e.message} ${e.detalle || ''}`); err(res, e.status || 500, e.status ? e.message : 'No se pudo crear la orden'); }
     });
@@ -625,7 +625,7 @@ function registrar(app, server, deps) {
             }
             const tipos = ['PAYMENT.CAPTURE.REFUNDED', 'PAYMENT.CAPTURE.REVERSED', 'CUSTOMER.DISPUTE.CREATED'];
             if (!tipos.includes(ev.event_type)) return res.sendStatus(200);
-            // Un reembolso que hace UpGames (p. ej. por retracto) anula la compra pero no castiga al usuario;
+            // Un reembolso que hace Lurveta (p. ej. por retracto) anula la compra pero no castiga al usuario;
             // un contracargo o una disputa abierta por el banco sí restringen la cuenta.
             const sancionar = ev.event_type !== 'PAYMENT.CAPTURE.REFUNDED';
             const r = ev.resource || {};

@@ -1,5 +1,5 @@
 /**
- * UpGames Blogs · temas
+ * Lurveta Blogs · temas
  *
  * Un tema es un juego de colores, tipografías y un par de decisiones de diseño. Todos
  * comparten la misma plantilla (modulos/blogs/render.js), así un blog puede cambiar de
@@ -24,7 +24,7 @@ const FUENTES = {
 // v: variables CSS · titulos: fuente de títulos por defecto · portada: 'rejilla' | 'lista' · oscuro: para theme-color
 const TEMAS = {
     neon: {
-        nombre: 'Neón', descripcion: 'El estilo de UpGames: oscuro, verde neón y cristal.', oscuro: true, titulos: 'orbitron', portada: 'rejilla',
+        nombre: 'Neón', descripcion: 'El estilo de Lurveta: oscuro, verde neón y cristal.', oscuro: true, titulos: 'orbitron', portada: 'rejilla',
         v: { bg: '#05080F', bg2: '#0B1019', tarjeta: 'rgba(255,255,255,.045)', borde: 'rgba(255,255,255,.09)', txt: '#F4F5F7', txt2: '#A3A8B6', acento: '#39FF88', acento2: '#5CE1FF', sobreAcento: '#04160B', radio: '18px',
              fondo: 'radial-gradient(48% 38% at 88% -4%, rgba(57,255,136,.16), transparent 70%), radial-gradient(42% 34% at 4% 8%, rgba(92,225,255,.11), transparent 70%), radial-gradient(50% 40% at 50% 112%, rgba(143,123,255,.16), transparent 70%)' },
     },

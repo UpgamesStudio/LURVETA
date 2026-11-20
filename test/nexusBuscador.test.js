@@ -59,7 +59,7 @@ function fetchFalso(log = []) {
         assert.ok(c.length >= 2 && c.length <= 3);
         assert.ok(c.some(x => /apk|PC game port|emulator/.test(x)));
     });
-    await test('marca lo que ya está en UpGames y no confunde títulos distintos', () => {
+    await test('marca lo que ya está en Lurveta y no confunde títulos distintos', () => {
         const cat = [{ id: '1', titulo: 'GTA San Andreas mod', categoria: 'Mod', p: new Set(B.palabras('GTA San Andreas mod')) }, { id: '2', titulo: 'Silent Hill 2', categoria: 'Juego', p: new Set(B.palabras('Silent Hill 2')) }];
         assert.strictEqual(B.coincidenciaUpGames({ titulo: 'GTA San Andreas port Android' }, cat)?.id, '1');
         assert.strictEqual(B.coincidenciaUpGames({ titulo: 'Mejor emulador PS2 Android' }, cat), null);
@@ -74,7 +74,7 @@ function fetchFalso(log = []) {
         const tt = r.resultados.find(x => x.fuente === 'tiktok');
         assert.ok(tt && tt.autor === '@portmaster' && tt.miniatura.startsWith('https://'), 'TikTok enriquecido');
         assert.ok(!tt.url.includes('is_from_webapp'), 'sin parámetros de rastreo');
-        assert.ok(tt.enUpGames && tt.enUpGames.id === 'j1', 'detecta que ya está en UpGames');
+        assert.ok(tt.enUpGames && tt.enUpGames.id === 'j1', 'detecta que ya está en Lurveta');
         assert.ok(r.resultados.some(x => x.fuente === 'reddit'));
         assert.ok(r.porFuente.youtube.ok && r.porFuente.reddit.ok && r.porFuente.tiktok.ok);
         assert.ok(log.some(u => u.includes('site%3Atiktok.com') || u.includes('site:tiktok.com')), 'TikTok se busca con site:');

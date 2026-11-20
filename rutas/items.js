@@ -138,7 +138,7 @@ const LINKS_PERMITIDOS = ['mediafire.com', 'mega.nz', 'mega.co.nz', 'drive.googl
     'gofile.io', 'onedrive.live.com', 'icloud.com', 'proton.me', 'pcloud.com',
     'pixeldrain.com', '1fichier.com', 'qiwi.gg', 'krakenfiles.com', 'dropbox.com',
     'github.com', 'github.io', 'sto.romsfast.com', 'clarodrive.com',
-    // descargas oficiales de UpGames (APK de UpGames RACING): solo este servidor, no todo railway.app
+    // descargas oficiales de Lurveta (APK de Lurveta RACING): solo este servidor, no todo railway.app
     'upgames-production.up.railway.app'];
 
 // Devuelve null si el enlace es válido o un mensaje de error si no.
@@ -157,7 +157,7 @@ function errorLinkPublicacion(link, category) {
 const CAMPOS_PUBLICACION = ['title', 'description', 'link', 'image', 'images', 'category', 'videoType', 'extraData', 'featuredItemId', 'tags', 'guiaInstalacion', 'tutorialId'];
 
 // Guía de instalación (opcional, la escribe quien publica): texto paso a paso y/o un video
-// tutorial que el mismo autor ya publicó en UpGames. UpGames no la redacta: solo la muestra.
+// tutorial que el mismo autor ya publicó en Lurveta. Lurveta no la redacta: solo la muestra.
 const GUIA_MAX = 3000;
 async function sanearGuia(datos, usuario) {
     if (datos.guiaInstalacion !== undefined) datos.guiaInstalacion = String(datos.guiaInstalacion || '').replace(/\r\n/g, '\n').trim().slice(0, GUIA_MAX);
@@ -167,7 +167,7 @@ async function sanearGuia(datos, usuario) {
         else if (!mongoose.Types.ObjectId.isValid(id)) return 'El tutorial elegido no es válido';
         else {
             const v = await Juego.findOne({ _id: id, usuario, category: 'Video', status: { $in: ['aprobado', 'pendiente', 'pending'] } }).select('_id').lean();
-            if (!v) return 'El tutorial debe ser un video tuyo publicado en UpGames';
+            if (!v) return 'El tutorial debe ser un video tuyo publicado en Lurveta';
             datos.tutorialId = id;
         }
     }
@@ -302,7 +302,7 @@ app.post("/items/add", [verificarToken, body('title').notEmpty().trim().isLength
 
         logger.info(`Nuevo item agregado: ${nuevoJuego.title} por @${nuevoJuego.usuario}`);
         res.status(201).json({ success: true, ok: true, item: nuevoJuego, id: nuevoJuego._id, sospecha: sospechaN || null });
-        if (sospechaN) crearNotif({ destinatario: req.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(nuevoJuego._id), itemTitle: 'Revisión', itemImage: nuevoJuego.image || '', mensaje: Sospecha.mensajeCreador(nuevoJuego.title, sospechaN.juego) });
+        if (sospechaN) crearNotif({ destinatario: req.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(nuevoJuego._id), itemTitle: 'Revisión', itemImage: nuevoJuego.image || '', mensaje: Sospecha.mensajeCreador(nuevoJuego.title, sospechaN.juego) });
         paginasSeoPronto();   // su página para Google y WhatsApp en minutos, no al día siguiente
         moderarPublicacion(nuevoJuego._id);   // NEXUS revisa texto y portada; si es sexual la quita sola
 
@@ -329,7 +329,7 @@ app.put("/items/:id", verificarToken, [
         if (!item) return res.status(404).json({ success: false, error: "Publicación no encontrada" });
         if (item.usuario !== req.usuario) return res.status(403).json({ success: false, error: "No tienes permiso para editar esta publicación" });
         if (esCategoriaRom(item.category) && (req.body.category === undefined || esCategoriaRom(req.body.category)))
-            return res.status(400).json({ success: false, error: 'Esa categoría ya no existe en UpGames. Para volver a publicarla, elige otra categoría (Juego, Mod, App…).', code: 'SIN_ROMS' });
+            return res.status(400).json({ success: false, error: 'Esa categoría ya no existe en Lurveta. Para volver a publicarla, elige otra categoría (Juego, Mod, App…).', code: 'SIN_ROMS' });
         const updates = {};
         CAMPOS_PUBLICACION.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
         if (Object.keys(updates).length === 0) return res.status(400).json({ success: false, error: "No se enviaron campos para actualizar" });
@@ -368,7 +368,7 @@ app.put("/items/:id", verificarToken, [
             const sN = aprobadoEquipo ? null : Sospecha.evaluar({ title: tituloN, category: catN, serie: updates.serie ?? item.serie });
             if (sN && !item.pagoPausado) {
                 updates.pagoPausado = true; updates.sospecha = { ...sN, desde: new Date(), titulo: tituloN };
-                crearNotif({ destinatario: item.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(item._id), itemTitle: 'Revisión', itemImage: item.image || '', mensaje: Sospecha.mensajeCreador(tituloN, sN.juego) });
+                crearNotif({ destinatario: item.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(item._id), itemTitle: 'Revisión', itemImage: item.image || '', mensaje: Sospecha.mensajeCreador(tituloN, sN.juego) });
             } else if (!sN && item.pagoPausado && !manual && !aprobadoEquipo) { updates.pagoPausado = false; updates.sospecha = null; }
         }
         const legalE = ContenidoLegal.revisar({ title: updates.title ?? item.title, description: updates.description ?? item.description });
@@ -502,7 +502,7 @@ app.post('/items/describir', verificarToken, async (req, res) => {
         if (!(await Limites.permitir(`describir:${req.usuario}`, [[Limites.HORA, 10]]))) return res.status(429).json({ success: false, error: 'Ya pediste varias descripciones. Intenta en un rato.' });
         const base = Plantillas.plantilla(cat);
         const extras = Object.entries(req.body?.extras || {}).filter(([k, v]) => typeof v === 'string' && v.trim()).slice(0, 8).map(([k, v]) => `${k}: ${v.slice(0, 80)}`).join('\n');
-        const r = await nexusLLM.json(`Eres NEXUS, el asistente de UpGames. Escribe la descripción de una publicación de la categoría "${cat}" en español neutro, clara y útil.
+        const r = await nexusLLM.json(`Eres NEXUS, el asistente de Lurveta. Escribe la descripción de una publicación de la categoría "${cat}" en español neutro, clara y útil.
 Usa EXACTAMENTE esta estructura (mismos títulos con emoji y viñetas) y llénala:
 ${base}
 Reglas: no inventes requisitos, versiones, tamaños ni datos técnicos que no conozcas con certeza: en esos casos escribe "(complétalo)". No prometas nada ilegal ni "gratis/full/crack". Máximo 900 caracteres.

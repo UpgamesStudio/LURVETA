@@ -93,7 +93,7 @@ function permisoRequerido(method, path) {
     if (/^\/(admin\/users|auth\/users|auth\/admin|admin\/fraud|admin\/nexus)/.test(path)) return ['usuarios'];
     if (/^\/comentarios/.test(path)) return ['comentarios'];
     if (/^\/admin\/moderacion/.test(path)) return ['comentarios', 'contenido', 'sanciones'];
-    if (/^\/admin\/blogs/.test(path)) return method === 'GET' ? ['revision', 'contenido', 'sanciones'] : ['contenido', 'sanciones'];   // UpGames Blogs: reportados y suspensiones
+    if (/^\/admin\/blogs/.test(path)) return method === 'GET' ? ['revision', 'contenido', 'sanciones'] : ['contenido', 'sanciones'];   // Lurveta Blogs: reportados y suspensiones
     if (/^\/admin\/seguridad/.test(path)) return ['sanciones'];   // incidentes de cero tolerancia (datos personales para autoridades)
     if (method === 'DELETE' && /^\/items\//.test(path)) return ['contenido'];
     if (/^\/(admin\/items|items\/|admin\/links)/.test(path)) return ['revision', 'contenido'];
@@ -402,8 +402,8 @@ function registrar(app, { Usuario, Juego, Comentario, Notificacion, Pago, JWT_SE
             await u.save();
             olvidarRol(u.usuario);
             const rn = ROLES[rol].nombre;
-            Notificacion.create({ destinatario: u.usuario, tipo: 'sistema', emisor: 'UpGames', itemTitle: 'Equipo',
-                mensaje: escHtml(nuevo ? `🛡️ Ahora formas parte del equipo de UpGames como ${rn}. Entra al panel con tu email y contraseña.` : `🛡️ Tu rol en el panel cambió a: ${rn}`) }).catch(() => {});
+            Notificacion.create({ destinatario: u.usuario, tipo: 'sistema', emisor: 'Lurveta', itemTitle: 'Equipo',
+                mensaje: escHtml(nuevo ? `🛡️ Ahora formas parte del equipo de Lurveta como ${rn}. Entra al panel con tu email y contraseña.` : `🛡️ Tu rol en el panel cambió a: ${rn}`) }).catch(() => {});
             res.json({ success: true, usuario: u.usuario, rol, rolNombre: rn, permisos, hasta });
         } catch (e) { res.status(500).json({ success: false, error: e.message }); }
     });
@@ -502,7 +502,7 @@ function registrar(app, { Usuario, Juego, Comentario, Notificacion, Pago, JWT_SE
                 nombres = (await Usuario.find({ ...q, suspendido: { $ne: true } }).select('usuario').lean()).map(u => u.usuario);
             }
             const texto = '📢 ' + escHtml(mensaje);
-            const docs = nombres.map(d => ({ destinatario: d, tipo: 'sistema', emisor: 'UpGames', itemTitle: 'Anuncio', mensaje: texto, leida: false, fecha: new Date() }));
+            const docs = nombres.map(d => ({ destinatario: d, tipo: 'sistema', emisor: 'Lurveta', itemTitle: 'Anuncio', mensaje: texto, leida: false, fecha: new Date() }));
             for (let i = 0; i < docs.length; i += 1000) await Notificacion.insertMany(docs.slice(i, i + 1000), { ordered: false });
             res.json({ success: true, enviados: docs.length });
         } catch (e) { res.status(500).json({ success: false, error: e.message }); }
@@ -525,7 +525,7 @@ function registrar(app, { Usuario, Juego, Comentario, Notificacion, Pago, JWT_SE
             medir(async () => {
                 const p = await nexusLLM.ping();
                 if (!p.ok) throw new Error(p.error || 'Groq no responde');
-                return { status: p.status, motor: 'Groq (nativo en UpGames)', modelos: p.modelosDisponibles, uso: nexusLLM.estado() };
+                return { status: p.status, motor: 'Groq (nativo en Lurveta)', modelos: p.modelosDisponibles, uso: nexusLLM.estado() };
             }),
         ]);
         const mem = process.memoryUsage();

@@ -93,7 +93,7 @@ async function interpretar(q, { conIA = true } = {}) {
     const reglas = porReglas(consulta);
     let r = { filtros: reglas, fuente: null };
     if (conIA && esFrase(consulta) && llm.disponible()) {
-        const ia = await llm.json(`Eres NEXUS, el buscador de UpGames (juegos, mods, apps, software, herramientas, optimizaciones y videos).
+        const ia = await llm.json(`Eres NEXUS, el buscador de Lurveta (juegos, mods, apps, software, herramientas, optimizaciones y videos).
 Convierte lo que escribe el usuario en filtros. Devuelve SOLO JSON:
 {"categoria": ${JSON.stringify(CATEGORIAS)} o null, "plataforma": ${JSON.stringify(PLATAFORMAS)} o null, "terminos": ["..."], "ramMaxGB": número o null, "tamanoMaxGB": número o null, "orden": ${JSON.stringify(ORDENES)}, "explicacion": "frase corta de lo que entendiste"}
 Reglas:

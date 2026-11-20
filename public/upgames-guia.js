@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Cómo aprender a usar UpGames (UGG)
+   Lurveta · Cómo aprender a usar Lurveta (UGG)
    Reemplaza al tutorial de 54 pasos que bloqueaba la pantalla:
    1) Guía de inicio: lista corta de primeros pasos con "Llévame"; se marca sola.
    2) Pistas: una burbuja pequeña la PRIMERA vez que llegas a algo (no bloquea).
@@ -55,7 +55,7 @@
     { id: 'abrir', ic: '📦', t: 'Abre una publicación', d: 'Mira el detalle y cómo descargar.', ir: PASOS_INV[1].ir },
     { id: 'favorito', ic: '❤️', t: 'Guarda un favorito', d: 'Abre una publicación y toca "Favorito".', ir: () => { irInicio(); setTimeout(() => pista('.game-tile', 'Abre una publicación y toca ❤️ Favorito', 'guia'), 350); } },
     { id: 'seguir', ic: '👥', t: 'Sigue a un creador', d: 'Te avisamos cuando publique o esté en vivo.', ir: () => { irInicio(); setTimeout(() => pista('.game-tile', 'Abre una publicación, toca el nombre del creador y luego "Seguir"', 'guia'), 350); } },
-    { id: 'nexus', ic: '✦', t: 'Pregúntale algo a NEXUS', d: 'Recomendaciones, dudas y ayuda para publicar.', ir: () => { irInicio(); window.nexusPreguntar ? window.nexusPreguntar('¿Qué puedo hacer en UpGames?') : window.nxToggle?.(); } },
+    { id: 'nexus', ic: '✦', t: 'Pregúntale algo a NEXUS', d: 'Recomendaciones, dudas y ayuda para publicar.', ir: () => { irInicio(); window.nexusPreguntar ? window.nexusPreguntar('¿Qué puedo hacer en Lurveta?') : window.nxToggle?.(); } },
     { id: 'live', ic: '🔴', t: 'Mira un live', d: 'Gameplay en directo con chat y regalos.', ir: () => { location.href = './live.html'; } },
     { id: 'upcoins', ic: '🪙', t: 'Conoce tus UpCoins', d: 'Misiones, estilo del perfil y Premium.', ir: () => { window.switchTab?.('economia'); window.ecoSec?.('ganar'); setTimeout(() => pista('#ugx-hub', 'Aquí reclamas misiones y usas tus UpCoins', 'guia'), 900); } },
     { id: 'publicar', ic: '☁️', t: 'Publica tu primer contenido', d: 'Gana 75 UpCoins (US$1,50) por cada 1.000 visualizaciones de publicidad.', ir: () => window.switchTab?.('upload') },
@@ -145,7 +145,7 @@
   /** Tras aceptar la bienvenida: presenta la guía y el menú, sin bloquear. */
   function bienvenida() {
     pintarFab();
-    setTimeout(() => pista('#tut-fab', 'Tu guía de inicio está aquí: unos pocos pasos para aprovechar UpGames. Tócala cuando quieras', 'guia-fab'), 600);
+    setTimeout(() => pista('#tut-fab', 'Tu guía de inicio está aquí: unos pocos pasos para aprovechar Lurveta. Tócala cuando quieras', 'guia-fab'), 600);
     setTimeout(() => pista('#hdr-orb', 'Menú rápido: avisos, lives, subir contenido, Premium y soporte', 'orbe'), 26000);
   }
 
@@ -162,10 +162,10 @@
     ['🛡️', 'Normas y moderación', ['NEXUS revisa comentarios, chat, publicaciones y lives de forma automática.', 'El contenido sexual se elimina sin aviso previo y cierra el live; el odio, el acoso, los insultos y el spam no se publican.', 'Si crees que fue un error, escríbenos desde Soporte.']],
     ['📥', 'Descargar', ['Abre una publicación y toca "Obtener link".', 'Pasas por la página puente: espera 30 s y toca "Obtener enlace". La publicidad que ves ahí es lo que le paga al creador (no se paga por descargar ni por ver la publicación).', 'Con Premium te saltas la espera y los anuncios en todas las publicaciones.', 'Si un enlace no funciona, toca "Reportar" en el detalle.']],
     ['☁️', 'Publicar y ganar', ['Ve a Perfil → Crear publicación: título, categoría, portada y un enlace de una plataforma permitida (MediaFire, MEGA, Drive…).', 'NEXUS revisa tu publicación y el equipo la aprueba antes de salir en el inicio. Con la revisión prioritaria pasa al frente de la fila.', 'Ganas 75 UpCoins (US$1,50) por cada 1.000 visualizaciones de publicidad en la página puente (no se paga por descargas ni por vistas), más el 50 % de regalos, Super Chats y apoyos.', 'Retira desde 500 UC ganados (US$10) con PayPal o Mercado Pago. Necesitas verificación (100 seguidores) y email verificado.']],
-    ['🪙', 'UpCoins y Premium', ['1 UpCoin = US$0,02. Recárgalos con tarjeta o PayPal en Economía.', 'Úsalos en regalos y Super Chat en lives, apoyos, NEXUS, Premium, destacar tu publicación y el estilo de tu perfil.', 'Lo que ganas como creador se retira como dinero; lo que compras o te regalan se usa dentro de UpGames.', 'Premium: sin anuncios ni espera, NEXUS ilimitado y más visibilidad. Es prepago: no hay cobros automáticos.']],
+    ['🪙', 'UpCoins y Premium', ['1 UpCoin = US$0,02. Recárgalos con tarjeta o PayPal en Economía.', 'Úsalos en regalos y Super Chat en lives, apoyos, NEXUS, Premium, destacar tu publicación y el estilo de tu perfil.', 'Lo que ganas como creador se retira como dinero; lo que compras o te regalan se usa dentro de Lurveta.', 'Premium: sin anuncios ni espera, NEXUS ilimitado y más visibilidad. Es prepago: no hay cobros automáticos.']],
     ['🎯', 'Misiones y estilo', ['Cada semana tienes misiones (comentar, seguir creadores, mirar un live…) que dan UpCoins de regalo o insignias.', 'Reclámalas en Economía → Usa tus UpCoins (necesitas el email verificado). Se reinician cada lunes.', 'En Perfil → Editar perfil → Estilo ✨ compras marcos animados, color del nombre, fondos e insignias: se ven en tus publicaciones, comentarios y lives, y son tuyos para siempre.']],
     ['🔴', 'Lives', ['Toca el menú rápido (arriba a la derecha) → En vivo.', 'Para transmitir: comparte tu pantalla desde el PC o usa la cámara del móvil.', 'Los espectadores chatean, dan likes, envían regalos y Super Chats; tú recibes el 25 %.']],
-    ['✦', 'NEXUS IA', ['El asistente de UpGames: recomienda contenido real, resuelve dudas y te ayuda a publicar.', '10 mensajes gratis al día; más con UpCoins o ilimitado con Premium.', 'Si no sabe algo, te lo dice: no inventa títulos.']],
+    ['✦', 'NEXUS IA', ['El asistente de Lurveta: recomienda contenido real, resuelve dudas y te ayuda a publicar.', '10 mensajes gratis al día; más con UpCoins o ilimitado con Premium.', 'Si no sabe algo, te lo dice: no inventa títulos.']],
     ['🔐', 'Cuenta y seguridad', ['Verifica tu email desde el aviso del inicio o en Ajustes.', 'Cambia avatar, portada, bio, nombre y contraseña en Perfil → Editar perfil.', 'Activa las notificaciones push desde la campana → Ajustes.', 'Reporta abuso o contenido ilegal con "Reportar" o escribiendo a soporte.']],
   ];
   function ayuda() {
@@ -175,7 +175,7 @@
       <input class="ugx-in" id="ugg-buscar" placeholder="Busca: retirar, publicar, Premium, live…" autocomplete="off" style="margin:14px 0 10px">
       <div id="ugg-temas">${GUIAS.map(([ic, t, l], i) => `<details class="ugg-tema" data-txt="${esc((t + ' ' + l.join(' ')).toLowerCase())}"${i ? '' : ''}><summary>${ic} ${esc(t)}</summary><ul>${l.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>`).join('')}</div>
       <p class="ugx-sub" id="ugg-nada" hidden>No encontramos eso en las guías. Pregúntale a NEXUS 👇</p>
-      <div class="ugg-acc"><button type="button" class="ugx-btn" id="ugg-nexus">✦ Preguntar a NEXUS</button><button type="button" class="ugx-btn sec" id="ugg-tour">⏱ Recorrido de 1 min</button><button type="button" class="ugx-btn sec" id="ugg-soporte">✉️ Soporte</button>${window.ugAbrirBienvenida ? '<button type="button" class="ugx-btn sec" id="ugg-descubre">✦ Descubre UpGames</button>' : ''}</div>`;
+      <div class="ugg-acc"><button type="button" class="ugx-btn" id="ugg-nexus">✦ Preguntar a NEXUS</button><button type="button" class="ugx-btn sec" id="ugg-tour">⏱ Recorrido de 1 min</button><button type="button" class="ugx-btn sec" id="ugg-soporte">✉️ Soporte</button>${window.ugAbrirBienvenida ? '<button type="button" class="ugx-btn sec" id="ugg-descubre">✦ Descubre Lurveta</button>' : ''}</div>`;
     const b = window.UGX?.hoja ? window.UGX.hoja('❔ Ayuda', html) : null;
     if (!b) return;
     b.querySelectorAll('[data-ir]').forEach(x => x.onclick = () => { enviar(x.dataset.ir, 'llevame'); window.UGX.cerrarHoja(); setTimeout(() => p.find(y => y.id === x.dataset.ir)?.ir(), 260); });
@@ -185,7 +185,7 @@
       b.querySelectorAll('.ugg-tema').forEach(d => { const m = !v || coincide(d.dataset.txt, v); d.hidden = !m; if (m) vis++; d.open = !!v && m; });
       b.querySelector('#ugg-nada').hidden = vis > 0;
     };
-    b.querySelector('#ugg-nexus').onclick = () => { const v = q.value.trim(); window.UGX.cerrarHoja(); irInicio(); setTimeout(() => window.nexusPreguntar ? window.nexusPreguntar(v || '¿Cómo funciona UpGames?') : window.nxToggle?.(), 260); };
+    b.querySelector('#ugg-nexus').onclick = () => { const v = q.value.trim(); window.UGX.cerrarHoja(); irInicio(); setTimeout(() => window.nexusPreguntar ? window.nexusPreguntar(v || '¿Cómo funciona Lurveta?') : window.nxToggle?.(), 260); };
     b.querySelector('#ugg-tour').onclick = () => { window.UGX.cerrarHoja(); setTimeout(() => window.startTutorial?.(), 260); };
     b.querySelector('#ugg-soporte').onclick = () => window.handleMail?.();
     const d = b.querySelector('#ugg-descubre'); if (d) d.onclick = () => { window.UGX.cerrarHoja(); setTimeout(() => window.ugAbrirBienvenida(), 260); };

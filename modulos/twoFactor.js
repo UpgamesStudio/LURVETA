@@ -1,5 +1,5 @@
 // ========================================
-// 🔐 AUTENTICACIÓN DE 2 FACTORES (2FA) - UPGAMES
+// 🔐 AUTENTICACIÓN DE 2 FACTORES (2FA) - LURVETA
 // ========================================
 //
 // Implementación TOTP (Time-based One-Time Password) compatible con:
@@ -141,7 +141,7 @@ function verificarTOTP(secret, token, windowSize = 1) {
  * Genera un secret aleatorio + URL otpauth para QR.
  * NO lo activa todavía: hay que verificarlo primero con un token.
  */
-async function iniciarSetup(usuario, emailOrLabel, appName = 'UpGames') {
+async function iniciarSetup(usuario, emailOrLabel, appName = 'Lurveta') {
     // Generar secret aleatorio de 20 bytes (160 bits, RFC recomienda ≥128)
     const secretBuffer = crypto.randomBytes(20);
     const secretBase32 = base32Encode(secretBuffer);

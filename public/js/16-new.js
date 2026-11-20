@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// NEW — lecturas de la comunidad (entradas de UpGames Blogs)
+// NEW — lecturas de la comunidad (entradas de Lurveta Blogs)
 // Datos: GET /blogs/descubrir (rutas/blogs.js · modulos/blogs/descubrir.js).
 // Cada entrada es una tarjeta suelta (portada, título, resumen, creador, fecha,
 // lecturas y comentarios); al tocarla se abre el artículo completo en su blog.

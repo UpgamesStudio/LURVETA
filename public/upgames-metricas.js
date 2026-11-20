@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Métricas anónimas de producto
+   Lurveta · Métricas anónimas de producto
    Un id aleatorio por navegador (ug_vid). Sin IP, sin cuenta, sin datos
    personales. Si el navegador pide "No rastrear", no se envía nada.
    Eventos: visita · busqueda (con cuántos resultados) · ficha · descarga · registro

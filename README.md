@@ -1,7 +1,7 @@
-# UpGames
+# Lurveta
 La primera plataforma de su especie en el mundo 
 
-## En vivo (UpGames Live)
+## En vivo (Lurveta Live)
 
 Transmisiones de gameplay con chat en tiempo real, regalos y monedas. Página: `public/live.html`. Backend: `rutas/live.js`. Reglas de la economía: `modulos/live.js`.
 
@@ -29,12 +29,12 @@ El estado de las salas vive en memoria, así que el backend debe correr con **un
 
 `public/upgames-musica.js` reproduce de fondo las pistas de `public/audio/` (Infraction, música sin copyright), una distinta en cada sesión, normalizadas a −16 LUFS con ffmpeg (`loudnorm=I=-16:TP=-1.5:LRA=11`). El usuario la silencia o ajusta el volumen desde el botón flotante; se baja sola cuando suena un video. Para añadir una canción: normalízala igual, cópiala a `public/audio/` y agrégala a `PISTAS`.
 
-## UpGames Blogs
+## Lurveta Blogs
 
 Cada creador puede armar su sitio desde `public/blog.html`: elige un tema, escribe entradas y páginas con un editor por bloques y publica. Backend: `rutas/blogs.js`. Lógica: `modulos/blogs/` (`validar.js`, `render.js`, `temas.js`, `modelos.js`).
 
 - **Dirección gratis:** `https://<servidor>/b/<direccion>/`.
-- **Dominio propio:** en Ajustes → Dominio propio, el creador crea un `CNAME` hacia UpGames y un `TXT` de verificación (`_upgames.<su dominio>`). Verificado el TXT, el servidor sirve el blog cuando la petición llega con ese `Host`.
+- **Dominio propio:** en Ajustes → Dominio propio, el creador crea un `CNAME` hacia Lurveta y un `TXT` de verificación (`_upgames.<su dominio>`). Verificado el TXT, el servidor sirve el blog cuando la petición llega con ese `Host`.
 - **Monetización opcional:** en Ingresos el creador decide si su blog lleva publicidad. El anuncio va en un marco aislado (`/_anuncio`); se paga cuando estuvo 10 s a la vista, sin bloqueador y con ticket firmado (`modulos/blogs/anuncios.js`), hasta 3 veces al día por visitante y blog.
 - **Panel admin → Blogs:** blogs reportados o en revisión; se reactivan o se suspenden (`GET /admin/blogs`, `PUT /admin/blogs/:id/estado`).
 - **Descargas que genera una entrada:** el botón del bloque «Descarga» abre la página puente con `via=<id de la entrada>`. El `via` va firmado dentro del ticket de la página puente, así que no se puede añadir ni cambiar después. Si esa descarga cuenta para el autor del juego (ticket, espera, sin bloqueador, tope por IP, sin pago pausado), el dueño del blog también gana `BLOGS_DESCARGA_CPM` por cada 1.000, **aunque tenga la publicidad apagada**. Sale del margen de la plataforma: el autor cobra igual. No cobra por sus propios juegos, ni con el blog suspendido/oculto de revisión, ni en lista negra, y hay un tope diario por blog (`BLOGS_DESCARGAS_MAX_DIA`). Lógica: `modulos/blogs/atribucion.js`.

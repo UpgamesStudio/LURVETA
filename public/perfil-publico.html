@@ -4,25 +4,25 @@
     <meta charset="UTF-8">
 
     <!-- ╔══════════════════════════════════════════════╗
-         ║  UpGames · SEO & Social Sharing              ║
+         ║  Lurveta · SEO & Social Sharing              ║
          ╚══════════════════════════════════════════════╝ -->
-    <meta name="description" content="Perfil de un creador en UpGames, el ecosistema digital para gamers, creadores y desarrolladores independientes: sus juegos, mods, apps, videos y publicaciones.">
+    <meta name="description" content="Perfil de un creador en Lurveta, el ecosistema digital para gamers, creadores y desarrolladores independientes: sus juegos, mods, apps, videos y publicaciones.">
     <link rel="icon" type="image/png" sizes="96x96" href="./icons/icon-96.png?v=2">
     <!-- Open Graph (el JS de la página sobreescribe dinámicamente og:title/description con el nombre real del usuario) -->
     <meta property="og:type"        content="profile">
-    <meta property="og:site_name"   content="UpGames">
-    <meta property="og:title"       content="Perfil — UpGames">
-    <meta property="og:description" content="Perfil de un creador en UpGames, el ecosistema digital para gamers, creadores y desarrolladores independientes: sus juegos, mods, apps, videos y publicaciones.">
+    <meta property="og:site_name"   content="Lurveta">
+    <meta property="og:title"       content="Perfil — Lurveta">
+    <meta property="og:description" content="Perfil de un creador en Lurveta, el ecosistema digital para gamers, creadores y desarrolladores independientes: sus juegos, mods, apps, videos y publicaciones.">
     <meta property="og:image"       content="https://upgames.games/public/og-upgames.jpg">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <!-- Twitter Card -->
     <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="Perfil — UpGames">
+    <meta name="twitter:title"       content="Perfil — Lurveta">
     <meta name="twitter:image"       content="https://upgames.games/public/og-upgames.jpg">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0A0B0F">
-    <title>Perfil de Usuario — UpGames</title>
+    <title>Perfil de Usuario — Lurveta</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="./upgames-estilo.css?v=20261106d">
 <link rel="stylesheet" href="upgames-cyber.css?v=20261112a">
@@ -204,7 +204,7 @@ a { text-decoration: none; color: inherit; }
     </style>
 
     <!-- ╔══════════════════════════════════════════════╗
-         ║  UpGames · Configuración Centralizada        ║
+         ║  Lurveta · Configuración Centralizada        ║
          ║  Edita SOLO este bloque para cambiar URLs    ║
          ╚══════════════════════════════════════════════╝ -->
     <script>
@@ -214,10 +214,10 @@ a { text-decoration: none; color: inherit; }
     </script>
 <link rel="manifest" href="./manifest.json?v=3">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=2">
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=3">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="UpGames">
+<meta name="apple-mobile-web-app-title" content="Lurveta">
 <script src="./upgames-pwa.js?v=20261120a" defer></script>
 <script src="./upgames-extras.js?v=20261108a"></script>
 <script src="./upgames-social.js?v=20261029i"></script>
@@ -406,7 +406,7 @@ a { text-decoration: none; color: inherit; }
         }
         async function compartirPerfil() {
             const url = location.href.split('#')[0];
-            try { if (navigator.share) { await navigator.share({ title: `@${usuarioViendo} en UpGames`, url }); return; } }
+            try { if (navigator.share) { await navigator.share({ title: `@${usuarioViendo} en Lurveta`, url }); return; } }
             catch (e) { if (e && e.name === 'AbortError') return; }
             try { await navigator.clipboard.writeText(url); alert('🔗 Enlace del perfil copiado'); }
             catch (_) { prompt('Copia el enlace del perfil:', url); }
@@ -543,9 +543,9 @@ a { text-decoration: none; color: inherit; }
                 bioEl.textContent = user.bio || ''; bioEl.hidden = !user.bio;
                 // SEO: título y descripción propios de cada creador
                 try {
-                    document.title = `@${user.usuario || usuarioViendo} — Juegos, mods y apps | UpGames`;
+                    document.title = `@${user.usuario || usuarioViendo} — Juegos, mods y apps | Lurveta`;
                     const md = document.querySelector('meta[name="description"]');
-                    if (md) md.setAttribute('content', `Publicaciones de @${user.usuario || usuarioViendo} en UpGames${user.bio ? ': ' + String(user.bio).slice(0, 120) : ''}. Descarga gratis y síguelo para no perderte nada.`);
+                    if (md) md.setAttribute('content', `Publicaciones de @${user.usuario || usuarioViendo} en Lurveta${user.bio ? ': ' + String(user.bio).slice(0, 120) : ''}. Descarga gratis y síguelo para no perderte nada.`);
                     let c = document.querySelector('link[rel="canonical"]');
                     if (!c) { c = document.createElement('link'); c.rel = 'canonical'; document.head.appendChild(c); }
                     c.href = `https://upgames.games/public/perfil-publico.html?usuario=${encodeURIComponent(user.usuario || usuarioViendo)}`;
@@ -840,7 +840,7 @@ a { text-decoration: none; color: inherit; }
 
         // ✅ INICIALIZAR
         document.addEventListener('DOMContentLoaded', () => {
-            // Volver: a la página anterior si vino de UpGames; si llegó por un enlace externo, a la biblioteca
+            // Volver: a la página anterior si vino de Lurveta; si llegó por un enlace externo, a la biblioteca
             document.getElementById('btn-volver')?.addEventListener('click', e => {
                 try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (_) {}
             });

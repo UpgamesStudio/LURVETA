@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════════
- *  rutas/nexus.js — API de Nexus (nativa de UpGames)
+ *  rutas/nexus.js — API de Nexus (nativa de Lurveta)
  *
  *  GET    /nexus/status        ¿la IA está lista?
  *  POST   /nexus/chat          { mensaje, historial?, contexto? } → respuesta

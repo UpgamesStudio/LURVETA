@@ -4,7 +4,7 @@ import { mascaraDesdeImagen, mascaraDePlano, limpiarMascara, relieveDesdeMascara
 import * as ia from './ia.js';
 import { importar } from '../archivo/proyecto.js';
 
-// IA en la nube (servidor de UpGames → TRELLIS). La web comparte la sesión de upgames.games.
+// IA en la nube (servidor de Lurveta → TRELLIS). La web comparte la sesión de upgames.games.
 const API = new URLSearchParams(location.search).get('api')?.match(/^http:\/\/(localhost|127\.0\.0\.1):\d+$/)?.[0] || 'https://upgames-production.up.railway.app';
 function tokenUpGames() {
   try { const t = localStorage.getItem('token') || localStorage.getItem('apexgp.token'); return t && t.length > 20 && t !== 'null' ? t : null; } catch { return null; }
@@ -32,7 +32,7 @@ export function instalarDialogoFoto({ alCrear, aviso }) {
   const ayuda = () => {
     const ia = usaIA();
     $('fotoAyuda').textContent = n === 4
-      ? 'IA generativa en la nube (TRELLIS): de 1 a 4 fotos del mismo objeto (mejor con fondo limpio y desde varios lados) → un modelo completo de 360° con textura, en 1 o 2 minutos. Necesita tu sesión de UpGames; las fotos se envían al servicio de IA (Hugging Face).'
+      ? 'IA generativa en la nube (TRELLIS): de 1 a 4 fotos del mismo objeto (mejor con fondo limpio y desde varios lados) → un modelo completo de 360° con textura, en 1 o 2 minutos. Necesita tu sesión de Lurveta; las fotos se envían al servicio de IA (Hugging Face).'
       : n === 3
       ? 'Vistas sin perspectiva del mismo objeto, como los planos de Blender (vista ortográfica): lado con el frente a la izquierda, frente, arriba con el largo en horizontal y, si la tienes, atrás. Se talla el volumen que encaja con todas y se pinta con cada vista. Es el modo para coches y objetos con planos.'
       : n === 1
@@ -168,7 +168,7 @@ export function instalarDialogoFoto({ alCrear, aviso }) {
       const est = await fetch(`${API}/studio/ia3d/estado`).then((r) => r.json()).catch(() => ({}));
       if (!est.disponible) { aviso('La IA en la nube aún no está activada en el servidor (falta la clave HF_TOKEN).'); return; }
       const t = tokenUpGames();
-      if (!t) { aviso('Inicia sesión en UpGames (upgames.games) para usar la IA en la nube.'); return; }
+      if (!t) { aviso('Inicia sesión en Lurveta (upgames.games) para usar la IA en la nube.'); return; }
       const cab = { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' };
       const datos = fotos.filter(valida).map((f) => { const c = document.createElement('canvas'); c.width = f.img.width; c.height = f.img.height; c.getContext('2d').putImageData(f.img, 0, 0); return c.toDataURL('image/png'); });
       const r = await fetch(`${API}/studio/ia3d`, { method: 'POST', headers: cab, body: JSON.stringify({ fotos: datos }) }).then((x) => x.json());
@@ -327,7 +327,7 @@ function desdePlanos(fotos, detalle, monoplaza, pintar) {
                      : new THREE.MeshStandardMaterial({ color: 0xc4c8cf, roughness: 0.45, metalness: 0.05 });
   const cuerpo = mallaFinal(geo, mat, monoplaza ? 'carroceria' : 'Planos');
   if (!monoplaza || !r.ruedas.length) return cuerpo;
-  // las ruedas, como piezas aparte con los nombres que entiende UpGames RACING
+  // las ruedas, como piezas aparte con los nombres que entiende Lurveta RACING
   const piezas = [cuerpo];
   for (const w of r.ruedas) {
     const g = geometriaRueda(w.radio * ALTO_MODELO, w.ancho * ALTO_MODELO);

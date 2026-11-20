@@ -290,7 +290,7 @@ app.post('/chat/mensaje/:id/reportar', verificarToken, async (req, res) => {
         } else {
             Moderacion.registrar({ tipo: 'chat', usuario: m.de, categoria: ['sexual', 'odio', 'acoso', 'spam', 'estafa'].includes(motivo) ? motivo : 'otro', motivo: `Reporte de @${req.usuario} en chat privado`, fuente: 'reporte', texto: m.texto, ref: String(m._id), accion: 'reportado' });
         }
-        res.json({ success: true, mensaje: 'Gracias. El reporte llegó al equipo de UpGames.' });
+        res.json({ success: true, mensaje: 'Gracias. El reporte llegó al equipo de Lurveta.' });
     } catch (err) { res.status(500).json({ success: false, error: 'No se pudo reportar' }); }
 });
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Captura pantallas de la interfaz REAL de UpGames para el video «Todo UpGames» (biblioteca, carrusel, ficha, feed de videos, NEXUS,
- * perfil y UpGames Blogs) en un móvil (412×915 a 2×). El CONTENIDO es de demostración: un catálogo inventado con portadas propias
+ * Captura pantallas de la interfaz REAL de Lurveta para el video «Todo Lurveta» (biblioteca, carrusel, ficha, feed de videos, NEXUS,
+ * perfil y Lurveta Blogs) en un móvil (412×915 a 2×). El CONTENIDO es de demostración: un catálogo inventado con portadas propias
  * (portadas.js); no se lee nada de producción ni se muestran juegos comerciales. Las guarda en img/. Uso: node capturar.js [nombre…]
  */
 'use strict';

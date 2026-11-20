@@ -1,5 +1,5 @@
 /**
- * UpGames Studio · IA en la nube (mejora 9): de 1 a 4 fotos a un modelo 3D completo (360°) con
+ * Lurveta Studio · IA en la nube (mejora 9): de 1 a 4 fotos a un modelo 3D completo (360°) con
  * TRELLIS (Microsoft, licencia MIT) en un Space de Hugging Face, por su API de Gradio, sin
  * dependencias nuevas. Necesita HF_TOKEN (cuenta de Hugging Face; la cuota de GPU es la de esa
  * cuenta). Opcional: STUDIO_IA_SPACE (por defecto trellis-community/TRELLIS).

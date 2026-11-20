@@ -1,4 +1,4 @@
-// UpGames RACING: arranque, menús, bucle de juego, render y HUD.
+// Lurveta RACING: arranque, menús, bucle de juego, render y HUD.
 
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -1680,7 +1680,7 @@ function procesarEventos() {
       const k = sesion.participantes.indexOf(e.p);
       // día de calor: le pasan agua al piloto mientras cambian las ruedas
       if (e.trabajo) e.trabajo.bebida = escenario?.hora === 'dia' && (sesion.clima?.lluvia || 0) < 0.05;
-      gestorBoxes.empezar(k, e.p.coche, modelos[k], { color: e.p.equipo.base, texto: e.p.equipo.corto === 'UPG' ? 'UPGAMES' : e.p.equipo.nombre.split(' ')[0].toUpperCase(), compuesto: e.p.paradaInfo?.compuesto, duracion: e.duracion, morro: e.morro, trabajo: e.trabajo, ligero: !e.p.jugador });
+      gestorBoxes.empezar(k, e.p.coche, modelos[k], { color: e.p.equipo.base, texto: e.p.equipo.corto === 'LUR' ? 'LURVETA' : e.p.equipo.nombre.split(' ')[0].toUpperCase(), compuesto: e.p.paradaInfo?.compuesto, duracion: e.duracion, morro: e.morro, trabajo: e.trabajo, ligero: !e.p.jugador });
       if (e.p.jugador) paradaJugador = { t0: performance.now(), duracion: e.duracion, k };
       if (e.p.jugador) radio.decir('Gatos arriba. Ruedas fuera…', { clave: 'gatos', cada: 10 });
       if (e.p.jugador) { mensaje('PARADA EN BOXES', ['Neumáticos', e.morro && 'morro nuevo', e.trabajo?.susp && 'suspensión', e.trabajo?.alaDel && !e.morro && 'flap del alerón'].filter(Boolean).join(', '), 2); estadoRadio.avisoDesg = false; }
@@ -2376,7 +2376,7 @@ function celebrar(p) {
   if (calidad >= 1) {
     const sg = sesion._garajeDe(p), mg = c.muestra(sg), i = mg.i, d = c.semiAncho[i] + c.pit.muroA + 0.7;
     for (let k = 0; k < (calidad >= 2 ? 8 : 5); k++) {
-      const per = new Persona({ color: p.equipo.base, texto: p.equipo.corto === 'UPG' ? 'UPGAMES' : p.equipo.nombre.split(' ')[0].toUpperCase(), numero: 70 + k, rol: k % 3 === 2 ? 'ingeniero' : 'mecanico', calidad });
+      const per = new Persona({ color: p.equipo.base, texto: p.equipo.corto === 'LUR' ? 'LURVETA' : p.equipo.nombre.split(' ')[0].toUpperCase(), numero: 70 + k, rol: k % 3 === 2 ? 'ingeniero' : 'mecanico', calidad });
       const s = sg - 6 + k * 1.6, mk = c.muestra(s);
       per.raiz.position.set(mk.x - mk.tz * d, mk.y, mk.z + mk.tx * d);
       per.raiz.rotation.y = -Math.atan2(mk.tz, mk.tx) + Math.PI / 2;          // de cara a la pista
@@ -2528,7 +2528,7 @@ function prepararEquipo(p) {
   if (!p.box || k < 0) return;
   const c = circuito, sB = p.box.sBox, d = c.dCarrilPit(sB) + 2.2, m = c.muestra(sB);
   gestorBoxes.preparar(k, {
-    color: p.equipo.base, texto: p.equipo.corto === 'UPG' ? 'UPGAMES' : p.equipo.nombre.split(' ')[0].toUpperCase(), compuesto: p.solicitudBox, ligero: !p.jugador,
+    color: p.equipo.base, texto: p.equipo.corto === 'LUR' ? 'LURVETA' : p.equipo.nombre.split(' ')[0].toUpperCase(), compuesto: p.solicitudBox, ligero: !p.jugador,
     posicion: { x: m.x - m.tz * d, y: m.y, z: m.z + m.tx * d, psi: Math.atan2(m.tz, m.tx) },
   });
 }
@@ -2602,7 +2602,7 @@ $('#bBox').addEventListener('click', () => entrada.eventos.push('box'));
 $('#bBox').addEventListener('touchstart', (e) => { e.preventDefault(); entrada.eventos.push('box'); }, { passive: false });
 addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'x' && !e.repeat) entrada.eventos.push('box'); });
 
-// --- Cuenta de UpGames ---------------------------------------------------------------
+// --- Cuenta de Lurveta ---------------------------------------------------------------
 function pintarCuenta() {
   const u = cuenta.usuario();
   const dentro = cuenta.conectado();
@@ -2640,7 +2640,7 @@ async function refrescarPerfil() {
 }
 function actualizarCuentaMenu() {
   const u = cuenta.usuario();
-  $('#cuentaMenu').innerHTML = cuenta.conectado() ? `👤 <b>@${u || 'piloto'}</b> · <b style="color:#ffd23f">${perfilApex.upcoins ?? '…'}</b> UpCoins` : '<a href="#" id="lnkEntrar" style="color:#9fd3ff">Inicia sesión con UpGames</a>';
+  $('#cuentaMenu').innerHTML = cuenta.conectado() ? `👤 <b>@${u || 'piloto'}</b> · <b style="color:#ffd23f">${perfilApex.upcoins ?? '…'}</b> UpCoins` : '<a href="#" id="lnkEntrar" style="color:#9fd3ff">Inicia sesión con Lurveta</a>';
   const l = $('#lnkEntrar'); if (l) l.onclick = (e) => { e.preventDefault(); pantallaPrevia = 'menu'; mostrar('cuenta'); };
 }
 
@@ -2689,7 +2689,7 @@ function pintarGaraje() {
   $('#tabCasco').classList.toggle('oculto', tabGaraje !== 'casco');
   $('#tabMonoplaza').classList.toggle('oculto', tabGaraje !== 'monoplaza');
   const eqSel = equipado.equipo || 0;
-  $('#tabMonoplaza').innerHTML = '<p class="nota" style="text-align:left">Elige tu equipo. Todos rinden igual; cambia la librea, el garaje y tu compañero. Con <b>UpGames Racing</b> llevas tu propio diseño.</p>' +
+  $('#tabMonoplaza').innerHTML = '<p class="nota" style="text-align:left">Elige tu equipo. Todos rinden igual; cambia la librea, el garaje y tu compañero. Con <b>Lurveta Racing</b> llevas tu propio diseño.</p>' +
     (CAT.id === 'gt' ? '<h3>Carrocería</h3><div class="rejilla carros">' + FORMAS_GT.map(f => `<div class="ficha carro ${(equipado.forma || '') === f ? 'sel' : ''}" data-forma="${f}">${siluetaSVG(f, EQUIPOS[eqSel].base)}<b>${NOMBRES_FORMA[f]}</b><small>${DESC_FORMA[f]}</small></div>`).join('') + `<div class="ficha carro ${equipado.forma ? '' : 'sel'}" data-forma=""><b>La del equipo</b><small>Cada equipo trae la suya</small></div></div><h3>Equipo</h3>` : '') + '<div class="rejilla">' +
     EQUIPOS.map((eq, k) => `<div class="ficha coche ${eqSel === k ? 'sel' : ''}" data-equipo="${k}"><i class="muestra" style="background:linear-gradient(135deg, ${eq.base} 0 55%, ${eq.acento} 55% 75%, ${eq.tercero || '#fff'} 75%)"></i>${eq.nombre}<span class="precio libre">${eqSel === k ? 'TU COCHE' : k === 0 ? 'TU DISEÑO' : 'GRATIS'}</span></div>`).join('') + '</div>';
   document.querySelectorAll('#garaje [data-equipo]').forEach(b => b.onclick = () => { equipado.equipo = +b.dataset.equipo; aplicarEquipado(); });
@@ -2758,7 +2758,7 @@ function aplicarEquipado() {
 }
 
 async function comprar(id, despues) {
-  if (!cuenta.conectado()) { avisoG('Inicia sesión con tu cuenta de UpGames para comprar con UpCoins.'); pantallaPrevia = 'garaje'; mostrar('cuenta'); return; }
+  if (!cuenta.conectado()) { avisoG('Inicia sesión con tu cuenta de Lurveta para comprar con UpCoins.'); pantallaPrevia = 'garaje'; mostrar('cuenta'); return; }
   avisoG('Comprando…');
   try {
     const d = await cuenta.comprar(id);
@@ -2814,7 +2814,7 @@ let salaActual = null, carreraRed = null, tEnvio = 0;
 async function abrirMulti(buscarYa = false) {
   mostrar('multi');
   pintarOpcMulti();
-  $('#mEstado').textContent = 'Conectando con el servidor de UpGames…';
+  $('#mEstado').textContent = 'Conectando con el servidor de Lurveta…';
   try {
     await multi.conectar();
     $('#mEstado').innerHTML = `Conectado${cuenta.conectado() ? ` como <b>@${cuenta.usuario()}</b>` : ' como invitado (inicia sesión para usar tu nombre y tus mejoras)'} · ping ${Math.round(multi.latencia || 0)} ms`;
@@ -2968,8 +2968,8 @@ $('#bSalaListo').addEventListener('click', () => { const j = salaActual?.jugador
 $('#bSalaEmpezar').addEventListener('click', async () => { const r = await multi.iniciar(); if (!r?.ok) $('#salaInfo').textContent = r?.error || 'No se pudo empezar'; });
 $('#bSalaSalir').addEventListener('click', () => { if (espectando) multi.dejarEspectar(); multi.salir(); espectando = false; salaActual = null; abrirMulti(); });
 $('#bSalaCompartir').addEventListener('click', async () => {
-  const t = `¡Corre contra mí en UpGames RACING! Código de sala: ${salaActual?.codigo} · https://upgames.games/games/monoplaza/`;
-  try { if (navigator.share) await navigator.share({ title: 'UpGames RACING', text: t }); else { await navigator.clipboard.writeText(t); $('#salaInfo').textContent = 'Código copiado'; } } catch { /* cancelado */ }
+  const t = `¡Corre contra mí en Lurveta RACING! Código de sala: ${salaActual?.codigo} · https://upgames.games/games/monoplaza/`;
+  try { if (navigator.share) await navigator.share({ title: 'Lurveta RACING', text: t }); else { await navigator.clipboard.writeText(t); $('#salaInfo').textContent = 'Código copiado'; } } catch { /* cancelado */ }
 });
 
 // el servidor da la salida: todos arrancan la carrera a la vez con el mismo semáforo
@@ -3469,7 +3469,7 @@ async function exportarVideo() {
     await enc.flush();
     if (fallo) throw fallo;
     muxer.finalize();
-    const nombre = `UpGames-RACING-1080p60-${Date.now()}.mp4`;
+    const nombre = `Lurveta-RACING-1080p60-${Date.now()}.mp4`;
     await guardarArchivo(new Blob([muxer.target.buffer], { type: 'video/mp4' }), nombre);
     mensajeRepe('Vídeo exportado: ' + nombre);
   } catch (e) { console.warn('exportar', e); mensajeRepe('No se pudo exportar el vídeo'); }
@@ -3619,8 +3619,8 @@ function guardarFoto() {
     // marca de agua
     const h = Math.max(18, cv.height * 0.035);
     x.font = `900 italic ${h}px system-ui, Arial`; x.textBaseline = 'bottom'; x.textAlign = 'right';
-    x.fillStyle = 'rgba(0,0,0,.45)'; x.fillText('UpGames RACING · UPGAMES', cv.width - h * 0.6 + 2, cv.height - h * 0.5 + 2);
-    x.fillStyle = '#fff'; x.fillText('UpGames RACING · UPGAMES', cv.width - h * 0.6, cv.height - h * 0.5);
+    x.fillStyle = 'rgba(0,0,0,.45)'; x.fillText('Lurveta RACING · LURVETA', cv.width - h * 0.6 + 2, cv.height - h * 0.5 + 2);
+    x.fillStyle = '#fff'; x.fillText('Lurveta RACING · LURVETA', cv.width - h * 0.6, cv.height - h * 0.5);
     cv.toBlob(b => { guardarArchivo(b, `upgames-racing-${circuito.id}-${Date.now()}.png`).catch(e => console.warn('foto', e)); }, 'image/png');
   } catch (e) { console.warn('foto', e); }
   const f = $('#flash'); f.classList.add('on'); setTimeout(() => f.classList.remove('on'), 60);
@@ -3906,7 +3906,7 @@ async function pintarRankings() {
   $('#rkLista').innerHTML = '<p class="nota">Cargando…</p>';
   try {
     if (rk.tab === 'mundial') {
-      $('#rkInfo').innerHTML = `Puntos del Campeonato de UpGames RACING en todo el mundo: cada carrera de campeonato suma (25-18-15-12-10-8-6-4-2-1, más en difícil y extremo). ${TXT_PREMIOS}`;
+      $('#rkInfo').innerHTML = `Puntos del Campeonato de Lurveta RACING en todo el mundo: cada carrera de campeonato suma (25-18-15-12-10-8-6-4-2-1, más en difícil y extremo). ${TXT_PREMIOS}`;
       const d = await cuenta.rankingMundial(rk.periodo);
       const yo = cuenta.usuario();
       $('#rkLista').innerHTML = d.filas.length ? d.filas.map(f => `${f.pos === 6 && rk.periodo === 'semana' ? '<div class="corte">FIN DE LOS PREMIOS</div>' : ''}<div class="fila-q ${f.usuario === yo ? 'yo' : ''}"><b>${f.pos}</b><span>@${String(f.usuario).replace(/</g, '')} <small style="color:var(--tenue)">${f.carreras} carr.${f.victorias ? ` · 🏆${f.victorias}` : ''}</small></span><span>${f.puntos} pts</span><span>${MEDALLA(f.pos, rk.periodo === 'semana')}</span></div>`).join('') : '<p class="nota">Nadie ha puntuado esta semana. ¡Corre el campeonato y ponte primero!</p>';
@@ -3934,7 +3934,7 @@ $('#bRkFantasma').addEventListener('click', async () => {
 
 // Fantasma de un amigo: su mejor vuelta en este circuito (de la semana o de siempre)
 $('#bRkAmigo').addEventListener('click', async () => {
-  const u = (prompt('Nombre de usuario de tu amigo en UpGames (sin @):') || '').trim().replace(/^@/, '');
+  const u = (prompt('Nombre de usuario de tu amigo en Lurveta (sin @):') || '').trim().replace(/^@/, '');
   if (!u) return;
   try {
     const d = await cuenta.fantasmaRecord(rk.circuito, rk.periodo, u);
@@ -3948,12 +3948,12 @@ $('#bRkAmigo').addEventListener('click', async () => {
 $('#bRetar').addEventListener('click', async () => {
   const f = fantasmaGuardado;
   if (!f?.puntos?.length) { mensaje('SIN VUELTA', 'Haz primero una vuelta válida en contrarreloj', 2); return; }
-  if (!cuenta.conectado()) { mensaje('INICIA SESIÓN', 'Necesitas tu cuenta UpGames para crear retos', 2); return; }
+  if (!cuenta.conectado()) { mensaje('INICIA SESIÓN', 'Necesitas tu cuenta Lurveta para crear retos', 2); return; }
   try {
     const d = await cuenta.crearReto({ circuito: circuito.id, tiempo: f.tiempo, fantasma: fantasmaAServidor(f) });
     const url = `https://upgames.games/games/monoplaza/?reto=${d.id}`;
-    const txt = `¿Me ganas? ${fmt(d.tiempo)} en ${circuito.def.corto} · UpGames RACING`;
-    if (navigator.share) await navigator.share({ title: 'Reto UpGames RACING', text: txt, url }).catch(() => {});
+    const txt = `¿Me ganas? ${fmt(d.tiempo)} en ${circuito.def.corto} · Lurveta RACING`;
+    if (navigator.share) await navigator.share({ title: 'Reto Lurveta RACING', text: txt, url }).catch(() => {});
     else { await navigator.clipboard?.writeText(`${txt} ${url}`).catch(() => {}); }
     mensaje('RETO CREADO', navigator.share ? 'Compártelo con tus amigos' : 'Enlace copiado: pégalo a tus amigos', 2.5);
   } catch (e) { mensaje('NO SE PUDO CREAR EL RETO', e.message || '', 2.5); }
@@ -3974,7 +3974,7 @@ async function abrirReto(id) {
 window.apexDebug = { get pilotosFuera() { return pilotosFuera; }, celebrar: (p) => celebrar(p || sesion.jugador), get grabadora() { return grabadora; }, get sesion() { return sesion; }, get sonido() { return sonido; }, get renderer() { return renderer; }, get escenario() { return escenario; }, get camara() { return camara; }, circuito: () => circuito, multi, get modelos() { return modelos; }, cargarCircuito, get qActual() { return qActual; }, get temporada() { return temporada; }, get repe() { return repe; }, terminarTandaQ, radio };
 actualizarCuentaMenu();
 refrescarPerfil().then(actualizarCuentaMenu);
-// enlace estable al APK (servido por el servidor de UpGames); dentro de la app no hace falta
+// enlace estable al APK (servido por el servidor de Lurveta); dentro de la app no hace falta
 if (window.Capacitor) $('#lnkApk').remove(); else $('#lnkApk').href = API + '/apexgp/apk';
 
 // --- Arranque -----------------------------------------------------------------------
@@ -4062,9 +4062,9 @@ async function compartirCircuitoEd() {
   if (!edActual || !ED.revisar(edActual).ok) { $('#edEstado').innerHTML += '<br><b style="color:#ff6b6b">El circuito tiene errores: corrígelos para compartirlo</b>'; return; }
   edActual.nombre = ED.limpiarNombre($('#edNombre').value);
   const codigo = ED.codificar(edActual);
-  const t = `Corre en mi circuito «${edActual.nombre}» en UpGames RACING. Ábrelo en Crear circuito → Importar código:\n${codigo}`;
+  const t = `Corre en mi circuito «${edActual.nombre}» en Lurveta RACING. Ábrelo en Crear circuito → Importar código:\n${codigo}`;
   try {
-    if (navigator.share) await navigator.share({ title: 'Circuito UpGames RACING', text: t });
+    if (navigator.share) await navigator.share({ title: 'Circuito Lurveta RACING', text: t });
     else { await navigator.clipboard.writeText(codigo); $('#edEstado').innerHTML += '<br>Código copiado al portapapeles'; }
   } catch { prompt('Copia este código y compártelo:', codigo); }
 }
@@ -4424,7 +4424,7 @@ function abrirProgreso() {
   pintarNube();
 }
 
-// ─── Guardado en la nube (cuenta de UpGames) ──────────────────────────────────────────
+// ─── Guardado en la nube (cuenta de Lurveta) ──────────────────────────────────────────
 const CLAVES_NUBE = [CLAVE, 'apexgp.campeonato', 'apexgp.trayectoria', 'apexgp.escuela', 'apexgp.circuitos', CLAVE_PROG];
 function datosLocales() { const o = {}; for (const k of CLAVES_NUBE) { const v = localStorage.getItem(k); if (v != null) o[k] = v; } return o; }
 let tSubida = 0;
@@ -4445,7 +4445,7 @@ async function recuperarNube() {
 }
 function pintarNube() {
   const el = $('#prNube'); if (!el) return;
-  if (!cuenta.conectado()) { el.innerHTML = '☁️ Inicia sesión con tu cuenta de UpGames para guardar tu progreso en la nube y seguir en otro dispositivo.'; return; }
+  if (!cuenta.conectado()) { el.innerHTML = '☁️ Inicia sesión con tu cuenta de Lurveta para guardar tu progreso en la nube y seguir en otro dispositivo.'; return; }
   const t = +localStorage.getItem('apexgp.nube') || 0;
   el.innerHTML = `☁️ Guardado en la nube${t ? ` · última copia ${new Date(t).toLocaleString()}` : ' · aún sin copia'} <button class="btn mini" id="nubeSubir">Subir ahora</button> <button class="btn mini" id="nubeBajar">Recuperar</button>`;
   $('#nubeSubir').onclick = () => subirNube(true);

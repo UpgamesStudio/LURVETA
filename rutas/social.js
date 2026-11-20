@@ -111,7 +111,7 @@ function registrar(app, deps) {
                 mensaje: `${'★'.repeat(estrellas)}${'☆'.repeat(5 - estrellas)} @${req.usuario} reseñó "${String(item.title).slice(0, 60)}"${funciono === false ? ' · dice que NO le funcionó' : ''}` });
             // Muchos "no funcionó": aviso al creador una vez al cruzar el umbral (5 votos y más de la mitad)
             if (funciono === false && antes?.funciono !== false && sum.no >= 5 && sum.no > sum.si && sum.no === Math.max(5, sum.si + 1))
-                crearNotif({ destinatario: item.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: id, itemTitle: item.title, mensaje: `⚠️ Varias personas dicen que "${String(item.title).slice(0, 60)}" no les funcionó. Revisa el enlace o la descripción.` });
+                crearNotif({ destinatario: item.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: id, itemTitle: item.title, mensaje: `⚠️ Varias personas dicen que "${String(item.title).slice(0, 60)}" no les funcionó. Revisa el enlace o la descripción.` });
         } catch (e) {
             if (e.code === 11000) return err(res, 409, 'Ya dejaste una reseña: inténtalo otra vez para editarla');
             logger.error(`[resenas] ${e.message}`); err(res, 500, 'No se pudo guardar tu reseña');

@@ -1,7 +1,7 @@
 {
-  "name": "UpGames Studio · Modelado 3D",
+  "name": "Lurveta Studio · Modelado 3D",
   "short_name": "UpStudio",
-  "description": "Modela en 3D desde el celular o crea modelos a partir de fotos. UpGames.",
+  "description": "Modela en 3D desde el celular o crea modelos a partir de fotos. Lurveta.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",

@@ -261,8 +261,8 @@ function texturaMono(col) {
   for (let y = 4; y < 256; y += 8) { x.fillStyle = '#9aa0a6'; x.fillRect(252, y, 8, 3); }
   // parches de patrocinadores
   const parche = (px, py, w, h, fondo, texto, color) => { x.fillStyle = fondo; x.fillRect(px, py, w, h); x.fillStyle = color; x.font = `900 italic ${h * 0.62}px Arial`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(texto, px + w / 2, py + h / 2 + 1); };
-  parche(40, 44, 170, 50, 'rgba(255,255,255,0.95)', 'UPGAMES', '#0d47ff');
-  parche(302, 44, 170, 50, 'rgba(255,255,255,0.95)', 'UPGAMES', '#0d47ff');
+  parche(40, 44, 170, 50, 'rgba(255,255,255,0.95)', 'LURVETA', '#0d47ff');
+  parche(302, 44, 170, 50, 'rgba(255,255,255,0.95)', 'LURVETA', '#0d47ff');
   parche(60, 164, 130, 34, '#0b0b14', 'NEXUS IA', '#00e5ff');
   parche(322, 164, 130, 34, '#0b0b14', 'RACING', '#ffd23f');
   x.fillStyle = '#ffffff'; x.font = '700 22px Arial'; x.textAlign = 'center'; x.fillText('upgames.games', 256, 228);
@@ -394,7 +394,7 @@ function texturaFrontalVolante() {
   }
   // logotipo y tornillos de la placa
   x.fillStyle = '#ffffff'; x.font = `900 ${Math.round(0.0075 * esc)}px Arial, sans-serif`;
-  x.fillText('UPGAMES', px(0), py(-0.083));
+  x.fillText('LURVETA', px(0), py(-0.083));
   x.fillStyle = '#8d939c';
   for (const [y, z] of [[0.072, -0.11], [0.072, 0.11], [-0.07, -0.072], [-0.07, 0.072], [0.03, -0.068], [0.03, 0.068]]) { x.beginPath(); x.arc(px(z), py(y), 5, 0, Math.PI * 2); x.fill(); }
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
@@ -1379,6 +1379,6 @@ export function dibujarPlantilla(tam = 2048) {
   x.fillText('LADO DERECHO · morro a la derecha →', tam * 0.02, tam * 0.52);
   x.fillText('← morro a la izquierda · LADO IZQUIERDO', tam * 0.02, tam * 0.77);
   x.font = `600 ${tam / 70}px Arial`; x.fillStyle = 'rgba(255,255,255,0.5)';
-  x.fillText('UpGames RACING · plantilla de librea · pinta sobre las piezas y sube la imagen (cuadrada) en el Garaje', tam * 0.02, tam * 0.985);
+  x.fillText('Lurveta RACING · plantilla de librea · pinta sobre las piezas y sube la imagen (cuadrada) en el Garaje', tam * 0.02, tam * 0.985);
   return cv;
 }

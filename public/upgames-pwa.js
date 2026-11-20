@@ -1,5 +1,5 @@
 // ========================================
-// 📲 PWA REGISTRATION - UPGAMES
+// 📲 PWA REGISTRATION - LURVETA
 // ========================================
 //
 // Script para:
@@ -94,7 +94,7 @@
     });
 
     window.addEventListener('appinstalled', () => {
-        console.log('[PWA] UpGames instalado como app');
+        console.log('[PWA] Lurveta instalado como app');
         deferredInstallPrompt = null;
         // Ocultar botón si estaba visible
         const btn = document.getElementById('upgames-install-btn');
@@ -110,8 +110,8 @@
         prompt.innerHTML = `
             <div class="ug-install-backdrop"></div>
             <div class="ug-install-card">
-                <img class="ug-install-icon" src="${new URL("icons/icon-192.png?v=2", BASE).href}" alt="" width="72" height="72">
-                <h3>Instala UpGames</h3>
+                <img class="ug-install-icon" src="${new URL("icons/icon-192.png?v=3", BASE).href}" alt="" width="72" height="72">
+                <h3>Instala Lurveta</h3>
                 <p>Ábrelo desde tu pantalla de inicio, a pantalla completa y más rápido.</p>
                 <div class="ug-install-actions">
                     <button class="ug-install-btn-primary" id="ug-install-yes">Instalar</button>
@@ -196,7 +196,7 @@
         prompt.id = 'upgames-update-prompt';
         prompt.innerHTML = `
             <div class="ug-update-bar">
-                <span>🎉 Hay una nueva versión de UpGames disponible</span>
+                <span>🎉 Hay una nueva versión de Lurveta disponible</span>
                 <div class="ug-update-btns">
                     <button class="ug-update-yes">Actualizar</button>
                     <button class="ug-update-no">Después</button>

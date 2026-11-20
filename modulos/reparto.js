@@ -1,8 +1,8 @@
 /**
- * Reparto del dinero entre UpGames y los creadores: ÚNICA fuente de verdad.
+ * Reparto del dinero entre Lurveta y los creadores: ÚNICA fuente de verdad.
  *
  * Regla: en cada venta el creador recibe como máximo el 50 % de lo que paga el
- * comprador y UpGames al menos el 50 % (con eso se pagan las pasarelas, el servidor
+ * comprador y Lurveta al menos el 50 % (con eso se pagan las pasarelas, el servidor
  * y la operación). Los porcentajes se pueden ajustar con variables de entorno,
  * pero nunca por encima del tope.
  *
@@ -24,14 +24,14 @@ const parte = (v, d) => Math.min(TOPE_CREADOR, Math.max(0, num(v, d)));
 
 const MONEDA_USD = 0.02;   // 1 UpCoin
 
-// Compatibilidad: LIVE_COMISION era la parte de UpGames en los regalos
+// Compatibilidad: LIVE_COMISION era la parte de Lurveta en los regalos
 const REGALO_CREADOR = process.env.LIVE_PARTE_CREADOR != null ? parte(process.env.LIVE_PARTE_CREADOR, 0.5)
     : process.env.LIVE_COMISION != null ? parte(1 - num(process.env.LIVE_COMISION, 0.5), 0.5) : 0.5;
 const ACCESO_CREADOR = parte(process.env.ACCESO_CREADOR, 0.25);
 const PASE_CREADOR = parte(process.env.PASE_PARTE_CREADOR, 0.25);
 const PASE_POR_APERTURA = Math.max(0, Math.min(0.05, num(process.env.PASE_CREADOR_USD, 0.01)));
 
-/** Lo mínimo que UpGames cobra por una moneda (paquete más grande + 10 % del pase). */
+/** Lo mínimo que Lurveta cobra por una moneda (paquete más grande + 10 % del pase). */
 const VALOR_MONEDA_MIN = 54.99 / 3300;
 
 

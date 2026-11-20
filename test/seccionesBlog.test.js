@@ -1,4 +1,4 @@
-// UpGames Blogs · secciones de landing (héroe, columnas, precios, testimonios, CTA), inicio como landing y Nexus asistente
+// Lurveta Blogs · secciones de landing (héroe, columnas, precios, testimonios, CTA), inicio como landing y Nexus asistente
 'use strict';
 const assert = require('assert');
 const V = require('../modulos/blogs/validar');

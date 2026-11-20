@@ -38,7 +38,7 @@ Como los enteros no se acaban, los sistemas tampoco, y como es determinista **to
 
 **Historia**: la Señal (bitácora con capítulos que se desbloquean al viajar, escanear, hackear y acercarse a ella).
 
-**Online** (`js/red.js`, servidor `rutas/upstar.js`): con cuenta de UpGames se ven los demás jugadores del sector, los descubrimientos (planetas, especies, ruinas) se registran para todos con el nombre del primero que los encuentra, las bases plantadas se ven en el planeta y la partida se guarda en la nube.
+**Online** (`js/red.js`, servidor `rutas/upstar.js`): con cuenta de Lurveta se ven los demás jugadores del sector, los descubrimientos (planetas, especies, ruinas) se registran para todos con el nombre del primero que los encuentra, las bases plantadas se ven en el planeta y la partida se guarda en la nube.
 
 **Sonido** (`js/audio.js`): todo generado por código: motor, viento según la atmósfera, música ambiental distinta en cada planeta (acordes a partir de su semilla) y efectos.
 
@@ -50,7 +50,7 @@ Como los enteros no se acaban, los sistemas tampoco, y como es determinista **to
 2. **Fase 2** ✅: a pie, escáner, criaturas, clima, estación, facciones, combate, anillos, mapa galáctico, salto dirigido, daños, sonido, online, descubrimientos, bases, guardado en la nube y la Señal.
 3. **Siguiente**: interiores de las ciudades, más tipos de criaturas y comportamientos (manadas, depredadores), cuevas, más capítulos de la Señal, misiones entre jugadores.
 3. **Vida**: criaturas por piezas (cuerpo, patas, cabeza, colores, comportamiento) generadas por semilla de cada zona; plantas y rocas variadas por bioma; clima (tormentas de neón, lluvia ácida).
-4. **Online**: Socket.IO como en UpGames RACING; ver a otros jugadores, nombrar descubrimientos (el primero que los registra), chat. Cuentas de UpGames.
+4. **Online**: Socket.IO como en Lurveta RACING; ver a otros jugadores, nombrar descubrimientos (el primero que los registra), chat. Cuentas de Lurveta.
 5. **Juego**: recursos y mejoras de nave, bases, misiones, mapa galáctico y saltos entre sistemas por la red de sectores, estaciones espaciales y comercio.
 6. **App Android** con Capacitor (como `apps/apex-gp-android`).
 

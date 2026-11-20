@@ -159,7 +159,7 @@ async function reconciliar({ Pago, Usuario }, id, accion, { enviar = null, consu
 // Estados reales de un ítem de PayPal Payouts (transaction_status).
 const TIPO = { FAILED: 'fallido', RETURNED: 'devuelto', UNCLAIMED: 'no_reclamado', BLOCKED: 'bloqueado', REFUNDED: 'reembolsado',
     REVERSED: 'revertido', ONHOLD: 'retenido', DENIED: 'rechazado' };
-// El dinero está de vuelta en la cuenta de UpGames: solo entonces se puede devolver el saldo o reenviar
+// El dinero está de vuelta en la cuenta de Lurveta: solo entonces se puede devolver el saldo o reenviar
 const DINERO_DEVUELTO = new Set(['FAILED', 'RETURNED', 'BLOCKED', 'REFUNDED', 'REVERSED', 'DENIED']);
 const MARCAS_DEV = 50;
 const evento = (accion, por, detalle = '') => ({ fecha: new Date(), accion, por: String(por || 'sistema').slice(0, 40), detalle: String(detalle).slice(0, 400) });

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Nexus en la barra de búsqueda + "¿Funciona en mi celular?"
+   Lurveta · Nexus en la barra de búsqueda + "¿Funciona en mi celular?"
    ───────────────────────────────────────────────────────────────
    1) Barra: si escribes una frase ("juegos de carreras que corran en
       3 GB de RAM") Nexus la convierte en filtros y busca en TODO el

@@ -1,4 +1,4 @@
-// Acortador de anuncios (Cuty): mismo enlace que su script de página completa, y nunca para enlaces de UpGames
+// Acortador de anuncios (Cuty): mismo enlace que su script de página completa, y nunca para enlaces de Lurveta
 'use strict';
 const assert = require('assert');
 const C = require('../public/upgames-cuty');

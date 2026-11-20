@@ -108,7 +108,7 @@ async function moderarPublicacion(id) {
         }
         if (!motivo) return;
         await Juego.updateOne({ _id: id }, { $set: { status: 'rechazado', motivoRechazo: `Moderación automática: ${motivo}` } });
-        crearNotif({ destinatario: j.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(id), itemTitle: 'Revisión', itemImage: '', mensaje: `🚫 Quitamos "${String(j.title).slice(0, 60)}" porque ${motivo}. Revisa las normas de la comunidad.` });
+        crearNotif({ destinatario: j.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(id), itemTitle: 'Revisión', itemImage: '', mensaje: `🚫 Quitamos "${String(j.title).slice(0, 60)}" porque ${motivo}. Revisa las normas de la comunidad.` });
         Moderacion.registrar({ tipo: 'publicacion', usuario: j.usuario, categoria, motivo, fuente, texto: j.title, ref: id, accion: 'rechazada', sinIncidente: fuente === 'NEXUS visión' });
         recommendations.invalidateTrending?.();
         logger.warn(`[moderacion] publicación ${id} de @${j.usuario} rechazada: ${motivo}`);
@@ -219,7 +219,7 @@ app.use(express.json({ limit: '25mb' }));
 const esCategoriaRom = c => /^\s*roms?\s*$/i.test(String(c ?? ''));
 app.use((req, res, next) => {
     if ((req.method === 'POST' || req.method === 'PUT') && /^\/(admin\/)?items(\/|$)/.test(req.path) && req.body && esCategoriaRom(req.body.category))
-        return res.status(400).json({ success: false, error: 'Esa categoría ya no existe en UpGames. Elige otra categoría.', code: 'SIN_ROMS' });
+        return res.status(400).json({ success: false, error: 'Esa categoría ya no existe en Lurveta. Elige otra categoría.', code: 'SIN_ROMS' });
     next();
 });
 app.use(require('./modulos/sinEnlace').middleware({ usuarioOpcional: req => usuarioOpcional(req) }));
@@ -308,7 +308,7 @@ app.use('/auth/register', authLimiter);
 app.use('/items/add', createLimiter);
 app.use('/economia/validar-descarga', downloadValidationLimiter);
 app.use(generalLimiter);
-// UpGames Blogs con dominio propio: en el dominio de un creador TODAS las rutas son de su blog,
+// Lurveta Blogs con dominio propio: en el dominio de un creador TODAS las rutas son de su blog,
 // así que se decide aquí, por el encabezado Host, antes que cualquier otra ruta (rutas/blogs.js)
 let blogsPorHost = null;
 app.use((req, res, next) => blogsPorHost ? blogsPorHost(req, res, next) : next());
@@ -383,7 +383,7 @@ function emailVerifTemplate(usuario, link) {
       <div style="padding:32px 28px">
         <h2 style="font-size:20px;margin:0 0 12px;font-weight:700">Hola, @${usuario} 👋</h2>
         <p style="color:#a0a0b8;line-height:1.6;margin:0 0 24px">
-          Gracias por registrarte en UpGames. Confirma tu email para activar tu cuenta y empezar a publicar, descargar y ganar dinero.
+          Gracias por registrarte en Lurveta. Confirma tu email para activar tu cuenta y empezar a publicar, descargar y ganar dinero.
         </p>
         <div style="text-align:center;margin:28px 0">
           <a href="${link}" style="display:inline-block;padding:14px 32px;background:#5EFF43;color:#000;font-weight:800;font-size:15px;border-radius:8px;text-decoration:none;letter-spacing:.02em">
@@ -420,10 +420,10 @@ function emailResetTemplate(usuario, link, codigo) {
       <div style="padding:32px 28px">
         <h2 style="font-size:20px;margin:0 0 12px;font-weight:700">Hola, @${usuario} 🔐</h2>
         <p style="color:#a0a0b8;line-height:1.6;margin:0 0 24px">
-          Recibimos una solicitud para restablecer tu contraseña. ${codigo ? 'Escribe este código en la página de UpGames:' : 'Haz clic en el botón de abajo para crear una nueva.'}
+          Recibimos una solicitud para restablecer tu contraseña. ${codigo ? 'Escribe este código en la página de Lurveta:' : 'Haz clic en el botón de abajo para crear una nueva.'}
         </p>
         ${codigo ? `<div style="text-align:center;margin:8px 0 22px"><div style="display:inline-block;padding:16px 26px;background:#12121c;border:1px solid rgba(94,255,67,.35);border-radius:12px;font-size:34px;font-weight:900;letter-spacing:10px;color:#5EFF43;font-family:'Courier New',monospace">${codigo}</div>
-          <p style="color:#60607a;font-size:12px;margin:10px 0 0">El código vence en <strong>15 minutos</strong>. Nunca lo compartas: nadie de UpGames te lo pedirá.</p></div>
+          <p style="color:#60607a;font-size:12px;margin:10px 0 0">El código vence en <strong>15 minutos</strong>. Nunca lo compartas: nadie de Lurveta te lo pedirá.</p></div>
         <p style="color:#a0a0b8;line-height:1.6;margin:0 0 8px;text-align:center;font-size:13px">¿Prefieres un clic? También puedes usar el botón:</p>` : ''}
         <div style="text-align:center;margin:28px 0">
           <a href="${link}" style="display:inline-block;padding:14px 32px;background:#5EFF43;color:#000;font-weight:800;font-size:15px;border-radius:8px;text-decoration:none;letter-spacing:.02em">
@@ -441,7 +441,7 @@ mongoose.connect(MONGODB_URI, config.MONGODB_OPTIONS)
 // Las publicaciones que quedaban en la antigua categoría de copias de consola se retiran del catálogo (no se borran:
 // su dueño puede pasarlas a otra categoría). El motivo que ve el autor no nombra esa palabra (también se corrige en las ya retiradas).
 .then(() => {
-    const J = mongoose.model('Juego'), MOTIVO = 'Esta categoría se eliminó de UpGames. Si tu publicación no es una copia de un juego de consola, edítala y elige otra categoría.';
+    const J = mongoose.model('Juego'), MOTIVO = 'Esta categoría se eliminó de Lurveta. Si tu publicación no es una copia de un juego de consola, edítala y elige otra categoría.';
     J.updateMany({ category: { $regex: /^roms?$/i }, status: { $ne: 'rechazado' } }, { $set: { status: 'rechazado', motivoRechazo: MOTIVO } })
         .then(r => { if (r.modifiedCount) logger.info(`[copias] ${r.modifiedCount} publicaciones retiradas del catálogo`); })
         .then(() => J.updateMany({ motivoRechazo: { $regex: /\broms?\b/i } }, { $set: { motivoRechazo: MOTIVO } }))
@@ -543,7 +543,7 @@ JuegoSchema.add({ pagoPausado: { type: Boolean, default: false }, sospecha: { ty
     declaracion: { type: mongoose.Schema.Types.Mixed, default: null } });
 // Revisión diaria de enlaces: cuándo se comprobó y desde cuándo parece caído
 JuegoSchema.add({ enlaceRevisado: { type: Date, default: null }, enlaceMuertoDesde: { type: Date, default: null } });
-// Guía de instalación opcional escrita por el autor (texto) y/o un video tutorial suyo en UpGames
+// Guía de instalación opcional escrita por el autor (texto) y/o un video tutorial suyo en Lurveta
 JuegoSchema.add({ guiaInstalacion: { type: String, default: '', maxlength: 3000 }, tutorialId: { type: String, default: '' } });
 JuegoSchema.add({ prioridadDesde: { type: Date, default: null }, prioridadReembolso: { type: Boolean, default: false } });
 const Juego = mongoose.model('Juego', JuegoSchema);
@@ -878,7 +878,7 @@ app.post('/auth/resend-verification', [body('email').isEmail().normalizeEmail(EM
         const verifToken = crypto.randomBytes(32).toString('hex');
         await Usuario.updateOne({ _id: usuario._id }, { $set: { emailVerifToken: verifToken, emailVerifExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) } });
         const verifLink = `${API_URL_SELF}/auth/verify-email/${verifToken}`;
-        await sendEmail({ to: email, subject: '✅ Verifica tu email en UpGames', html: emailVerifTemplate(usuario.usuario, verifLink) });
+        await sendEmail({ to: email, subject: '✅ Verifica tu email en Lurveta', html: emailVerifTemplate(usuario.usuario, verifLink) });
         res.json({ success: true, mensaje: 'Si el email existe y no está verificado, recibirás el link.' });
     } catch (err) {
         logger.error(`Error reenviando verificación: ${err.message}`);
@@ -903,7 +903,7 @@ app.post('/auth/email-reenviar', verificarToken, async (req, res) => {
         if (usuario.emailVerificado) return res.json({ success: true, yaVerificado: true });
         const verifToken = crypto.randomBytes(32).toString('hex');
         await Usuario.updateOne({ _id: usuario._id }, { $set: { emailVerifToken: verifToken, emailVerifExpires: new Date(ahora + 24 * 60 * 60 * 1000) } });
-        const enviado = await sendEmail({ to: usuario.email, subject: '✅ Verifica tu email en UpGames', html: emailVerifTemplate(usuario.usuario, `${API_URL_SELF}/auth/verify-email/${verifToken}`) });
+        const enviado = await sendEmail({ to: usuario.email, subject: '✅ Verifica tu email en Lurveta', html: emailVerifTemplate(usuario.usuario, `${API_URL_SELF}/auth/verify-email/${verifToken}`) });
         if (!enviado) return res.status(503).json({ success: false, error: 'No pudimos enviar el correo ahora mismo. Inténtalo en unos minutos.' });
         await Promise.all([Limites.sumar(kR, 2 * Limites.MIN), Limites.sumar(kR, Limites.DIA)]);
         res.json({ success: true, email: enmascarar(usuario.email) });
@@ -928,7 +928,7 @@ app.post('/auth/forgot-password', [body('email').isEmail().normalizeEmail(EMAIL_
         await Usuario.updateOne({ _id: usuario._id }, { $set: { resetPasswordToken: resetToken, resetPasswordExpires: new Date(Date.now() + 60 * 60 * 1000),
             resetCodigoHash: hashCodigo(usuario._id, codigo), resetCodigoExpires: new Date(Date.now() + 15 * 60 * 1000), resetCodigoIntentos: 0 } });
         const resetLink = `${APP_URL}?reset_token=${resetToken}`;
-        await sendEmail({ to: email, subject: `🔑 ${codigo} es tu código para restablecer la contraseña de UpGames`, html: emailResetTemplate(usuario.usuario, resetLink, codigo) });
+        await sendEmail({ to: email, subject: `🔑 ${codigo} es tu código para restablecer la contraseña de Lurveta`, html: emailResetTemplate(usuario.usuario, resetLink, codigo) });
         logger.info(`Reset de contraseña solicitado: @${usuario.usuario}`);
         res.json({ success: true, mensaje: 'Si el email está registrado, recibirás un link para restablecer tu contraseña.' });
     } catch (err) {
@@ -1004,7 +1004,7 @@ CeroTolerancia.configurar({
             push.alCrear(dest.map(d => ({ destinatario: d, emisor: 'NEXUS', tipo: 'sistema', itemTitle: '🚨 Incidente de seguridad', mensaje: `@${inc.usuario} · ${cat}` })));
         }
         const para = (process.env.ALERTAS_EMAIL || process.env.OWNER_EMAIL || '').split(',')[0].trim();
-        if (para) Promise.resolve(sendEmail({ to: para, subject: `🚨 UpGames · Incidente de seguridad: ${cat}`,
+        if (para) Promise.resolve(sendEmail({ to: para, subject: `🚨 Lurveta · Incidente de seguridad: ${cat}`,
             html: `<div style="font-family:system-ui,sans-serif;max-width:600px"><h2>🚨 Incidente de seguridad</h2><p><b>Usuario:</b> @${escH(inc.usuario)}<br><b>Categoría:</b> ${escH(cat)}<br><b>Dónde:</b> ${escH(inc.donde)}<br><b>Detectado por:</b> ${escH(inc.fuente)}${inc.confianza != null ? ` (${Math.round(inc.confianza * 100)} %)` : ''}<br><b>Cuenta restringida:</b> ${inc.restringida ? 'sí' : 'no'}</p><p>El contenido ya se bloqueó. La evidencia y el expediente completo (correo, IPs, cobros y pagos) están en el panel admin → Moderación → Incidentes, listos para entregarlos a las autoridades.</p></div>` })).catch(() => {});
     },
 });
@@ -1035,7 +1035,7 @@ app.get('/admin/seguridad/incidentes/:id/expediente', verificarAdmin, async (req
             Juego.find({ usuario: x.usuario }).select('title link category status createdAt').sort({ createdAt: -1 }).limit(100).lean(),
         ]);
         logger.warn(`[cero-tolerancia] expediente de @${x.usuario} generado por @${req.admin?.usuario || '?'}`);
-        res.json({ success: true, generado: new Date(), plataforma: 'UPGAMES · upgames.games · upgames.games.up@gmail.com', incidente: incidenteVista(x, true),
+        res.json({ success: true, generado: new Date(), plataforma: 'LURVETA · upgames.games · upgames.games.up@gmail.com', incidente: incidenteVista(x, true),
             cuentaActual: { ...actual, datosCobroCompletos: cobro }, otrosIncidentes: otros, historial: { mensajesPrivados: mensajes, publicaciones } });
     } catch (e) { logger.error(`admin/seguridad expediente: ${e.message}`); res.status(500).json({ success: false, error: 'No se pudo generar' }); }
 });
@@ -1207,7 +1207,7 @@ require('./rutas/busqueda')({ app, logger, nexusMemoria, searchModule, usuarioOp
 const nexusPublish = require('./modulos/nexusPublish');
 nexusPublish.registrar(app, { Juego, logger, soloHosting: true });   // la Nexus externa ya no publica: solo se sirven los proyectos existentes
 
-// ========== NEXUS: la IA nativa de UpGames (Groq, misma BD y servidor) ==========
+// ========== NEXUS: la IA nativa de Lurveta (Groq, misma BD y servidor) ==========
 require('./rutas/nexus').registrar(app, {
     verificarToken, usuarioOpcional, logger, config, LINKS_PERMITIDOS,
     Juego, Usuario, Favorito, series, search: searchModule, recommendations,
@@ -1227,9 +1227,9 @@ const live = require('./rutas/live').registrar(app, server, {
     verificarToken, verificarAdmin, Usuario, Notificacion, logger, config, JWT_SECRET,
     estaSuspendido: u => adminPanel.estaSuspendido(u), getPayPalAccessToken,
 });
-// UpGames RACING (games/monoplaza): mejoras y cosméticos con UpCoins y salas multijugador (Socket.IO /apexgp)
+// Lurveta RACING (games/monoplaza): mejoras y cosméticos con UpCoins y salas multijugador (Socket.IO /apexgp)
 require('./rutas/apexgp').registrar(app, { verificarToken, Usuario, LiveTx: live.LiveTx, io: live.io, logger, JWT_SECRET, estaSuspendido: u => adminPanel.estaSuspendido(u) });
-// UpGames Studio: IA en la nube (fotos → modelo 3D completo con TRELLIS; necesita HF_TOKEN)
+// Lurveta Studio: IA en la nube (fotos → modelo 3D completo con TRELLIS; necesita HF_TOKEN)
 require('./rutas/studio').registrar(app, { verificarToken, logger });
 
 // UPSTAR (games/upstar): descubrimientos, bases, partida en la nube y jugadores en el sector (Socket.IO /upstar)
@@ -1264,7 +1264,7 @@ app.get('/admin/sistema/email', verificarAdmin, async (req, res) => res.json({ s
 app.post('/admin/sistema/email-prueba', verificarAdmin, async (req, res) => {
     const para = String(req.body?.para || '').trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(para)) return res.status(400).json({ success: false, error: 'Escribe un email válido' });
-    const ok = await sendEmail({ to: para, subject: '✅ Prueba de correo de UpGames', html: emailAvisoTemplate('equipo', 'Si lees esto, los correos de UpGames (verificación de email, recuperar contraseña y avisos) ya funcionan.') });
+    const ok = await sendEmail({ to: para, subject: '✅ Prueba de correo de Lurveta', html: emailAvisoTemplate('equipo', 'Si lees esto, los correos de Lurveta (verificación de email, recuperar contraseña y avisos) ya funcionan.') });
     res.status(ok ? 200 : 502).json({ success: ok, ...correo.estado(), error: ok ? undefined : (correo.estado().detalle || 'No se pudo enviar') });
 });
 // Métodos de cobro de los creadores: PayPal o Mercado Pago (cifrados)
@@ -1280,7 +1280,7 @@ _economia.vincularTarde({ cobros, live });   // rutas/economia.js usa estas depe
 const { paginasSeoPronto } = require('./rutas/seo')({ Juego, Seo, Usuario, app, cacheado, gameDetector, logger, memCache });   // SEO: sitemap y datos de páginas estáticas
 _items.vincularTarde({ paginasSeoPronto });   // rutas/items.js usa estas dependencias, creadas después de registrar el módulo
 
-// UpGames Blogs: el creador arma su sitio (temas, entradas, páginas) y se sirve en /b/<direccion> o en su dominio
+// Lurveta Blogs: el creador arma su sitio (temas, entradas, páginas) y se sirve en /b/<direccion> o en su dominio
 blogsPorHost = require('./rutas/blogs').registrar(app, { verificarToken, verificarAdmin, Usuario, Juego, Limites, Moderacion, CeroTolerancia, fraudDetector, logger, mongoose, APP_URL, API_URL_SELF, JWT_SECRET, Comentario, Notificacion, crearNotif, gamification }).porHost;
 
 // ========== MANEJO DE ERRORES ==========

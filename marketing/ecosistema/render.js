@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Graba el video «Todo UpGames» cuadro a cuadro (1920×1080, 60 fps) en paralelo y le mezcla la música y los efectos.
+ * Graba el video «Todo Lurveta» cuadro a cuadro (1920×1080, 60 fps) en paralelo y le mezcla la música y los efectos.
  *   node render.js [salida.mp4]            graba todo (≈ 8 min con 4 núcleos)
  *   FPS=30 WORKERS=2 node render.js        otra cadencia / otros procesos
  *   PREVIEW="2,14.6,40" node render.js     solo esos instantes como PNG (prev-XX.XX.png)

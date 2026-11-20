@@ -1,5 +1,5 @@
 /**
- * Tests de UpGames Studio (games/studio): pila de deshacer y fotos → malla 3D.
+ * Tests de Lurveta Studio (games/studio): pila de deshacer y fotos → malla 3D.
  * Autónomo: `node test/studio.test.mjs` (o `npm test`).
  */
 import assert from 'assert';
@@ -48,7 +48,7 @@ function esCerrada(idx) {
   return true;
 }
 
-console.log('UpGames Studio');
+console.log('Lurveta Studio');
 
 test('deshacer y rehacer en orden; un comando nuevo borra el futuro', () => {
   const v = [];

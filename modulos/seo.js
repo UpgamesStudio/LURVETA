@@ -5,7 +5,7 @@
  * no lo indexa. Cada día una acción de GitHub (.github/workflows/sitemap.yml) baja la
  * lista de /seo/paginas.json y escribe public/p/<slug>-<id>.html con el título, la imagen,
  * la descripción y los datos estructurados ya listos en el HTML. El botón lleva a la
- * publicación real dentro de UpGames.
+ * publicación real dentro de Lurveta.
  *
  * Lo usan el backend (URL en el sitemap) y scripts/generar-paginas.js (plantilla).
  */
@@ -54,7 +54,7 @@ function tarjeta(it) {
         'c_fill,g_auto,w_1200,h_630', 'e_gradient_fade:40,y_-0.6,b_rgb:07080c',
         `l_text:Arial_60_bold:${encTxt(recorta(it.title, 64))},co_white,c_fit,w_1080`, 'fl_layer_apply,g_south_west,x_60,y_120',
         `l_text:Arial_32_bold:${encTxt(linea2)},co_rgb:32D583`, 'fl_layer_apply,g_south_west,x_60,y_62',
-        'l_text:Arial_30_bold:UPGAMES,co_rgb:32D583,b_rgb:07080c,bo_14px_solid_rgb:07080c', 'fl_layer_apply,g_north_east,x_40,y_36',
+        'l_text:Arial_30_bold:LURVETA,co_rgb:32D583,b_rgb:07080c,bo_14px_solid_rgb:07080c', 'fl_layer_apply,g_north_east,x_40,y_36',
         'q_auto:good,f_jpg',
     ];
     return m[1] + m[2] + capas.join('/') + '/' + m[3];
@@ -66,15 +66,15 @@ function pagina(it, grupo, op = {}) {
     it = filtrarPublicacion(it);   // (el nombre del archivo/URL sigue saliendo del título guardado: no se rompen enlaces)
     const url = urlPagina(it), app = `${INICIO}?id=${it.id}`;
     const cat = CAT[it.category] || it.category || 'Contenido';
-    const desc = String(it.description || `${cat} compartido por @${it.usuario} en UpGames.`).replace(/\s+/g, ' ').trim();
+    const desc = String(it.description || `${cat} compartido por @${it.usuario} en Lurveta.`).replace(/\s+/g, ' ').trim();
     const corta = desc.slice(0, 158) + (desc.length > 158 ? '…' : '');
     const img = tarjeta(it) || (esImg(it.image) ? it.image.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_jpg/') : `${SITIO}/og-upgames.jpg`);
     const esVideo = it.category === 'Video';
-    // Ficha informativa: UpGames indexa metadatos, no aloja archivos (el título no promete "Descargar")
-    const titulo = `${it.title} — ${esVideo ? 'Video' : cat} en UpGames`;
+    // Ficha informativa: Lurveta indexa metadatos, no aloja archivos (el título no promete "Descargar")
+    const titulo = `${it.title} — ${esVideo ? 'Video' : cat} en Lurveta`;
     const vistas = (it.vistas || 0) + (esVideo ? it.descargas || 0 : 0);   // videos antiguos guardaban sus vistas en descargas
     const { capturas, youtube } = medios(it.images, it.image);
-    const video = esVideo && esVideoCloud(it.video) ? it.video : '';   // el video subido a UpGames (categoría Video)
+    const video = esVideo && esVideoCloud(it.video) ? it.video : '';   // el video subido a Lurveta (categoría Video)
     const rel = (op.relacionados || []).filter(r => r && r.id !== it.id).slice(0, 6).map(r => ({ ...filtrarPublicacion(r), url: urlPagina(r) }));   // URL con el título guardado (es el nombre del archivo)
     const autor = op.perfil && usuarioValido(it.usuario) ? `../u/${it.usuario}.html` : `../perfil-publico.html?usuario=${encodeURIComponent(it.usuario)}`;
     const ld = esVideo ? {
@@ -88,7 +88,7 @@ function pagina(it, grupo, op = {}) {
         ...(capturas.length ? { screenshot: capturas } : {}),
     };
     const migas = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'UpGames', item: 'https://upgames.games/' },
+        { '@type': 'ListItem', position: 1, name: 'Lurveta', item: 'https://upgames.games/' },
         // Nivel intermedio solo si es una página real (su juego o tema); la portada no filtra por ?cat=
         ...(grupo ? [{ '@type': 'ListItem', position: 2, name: grupo.titulo, item: urlGrupo(grupo) }] : []),
         { '@type': 'ListItem', position: grupo ? 3 : 2, name: it.title, item: url }] };
@@ -99,10 +99,10 @@ function pagina(it, grupo, op = {}) {
 <title>${esc(titulo)}</title>
 <meta name="description" content="${esc(corta)}">
 <link rel="canonical" href="${esc(url)}">
-<meta property="og:type" content="${esVideo ? 'video.other' : 'website'}"><meta property="og:site_name" content="UpGames">
+<meta property="og:type" content="${esVideo ? 'video.other' : 'website'}"><meta property="og:site_name" content="Lurveta">
 <meta property="og:title" content="${esc(it.title)}"><meta property="og:description" content="${esc(corta)}">
 <meta property="og:url" content="${esc(url)}"><meta property="og:image" content="${esc(img)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="${esc(it.title)} en UpGames">
+<meta property="og:image:alt" content="${esc(it.title)} en Lurveta">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(it.title)}"><meta name="twitter:image" content="${esc(img)}">
 <meta name="theme-color" content="#07080c"><link rel="icon" href="../icons/icon-96.png?v=2">
 <script type="application/ld+json">${json(ld)}</script>
@@ -131,28 +131,28 @@ ${video ? `<video controls preload="none" playsinline src="${esc(video)}"${esImg
 <h1>${esc(it.title)}</h1>
 <div class="meta">Publicado por <a href="${esc(autor)}">@${esc(it.usuario)}</a> · ${esc(new Date(it.fecha).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }))}</div>
 <div class="st"><span>${esVideo ? `👁️ ${vistas.toLocaleString('es-CO')} vistas` : `⬇️ ${Number(it.descargas || 0).toLocaleString('es-CO')} descargas`}</span><span>❤️ ${Number(it.likes || 0).toLocaleString('es-CO')}</span></div>
-<a class="btn" href="${esc(app)}">${esVideo ? '▶ Ver el video en UpGames' : 'Ver la ficha completa en UpGames'}</a>
+<a class="btn" href="${esc(app)}">${esVideo ? '▶ Ver el video en Lurveta' : 'Ver la ficha completa en Lurveta'}</a>
 <p class="desc">${esc(desc.slice(0, 3000))}</p>
 ${youtube.length ? `<h2>${youtube.length > 1 ? 'Videos' : 'Video'}</h2>\n${youtube.map((id, i) => `<div class="yt"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/${id}" title="${esc(it.title)}${youtube.length > 1 ? ` · video ${i + 1}` : ''}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`).join('\n')}` : ''}
 ${capturas.length ? `<h2>Capturas</h2>\n<div class="gal">${capturas.map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(cldAncho(u, 480))}" alt="Captura ${i + 1} de ${esc(it.title)}" width="480" height="270"></a>`).join('')}</div>` : ''}
 ${grupo ? `<p><a href="../j/${esc(grupo.slug)}.html">Ver más: ${esc(grupo.titulo)} →</a></p>` : ''}
 </div></article>
 ${rel.length ? `<h2>También te puede interesar</h2>\n<nav class="rel" aria-label="Publicaciones relacionadas">${rel.map(r => `<a href="${esc(r.url)}">${esImg(r.image) ? `<img loading="lazy" src="${esc(r.image.replace('/upload/', '/upload/w_160,h_100,c_fill,q_auto,f_auto/'))}" alt="" width="72" height="48">` : ''}<span><b>${esc(r.title)}</b><small>${esc(CAT[r.category] || r.category || '')} · @${esc(r.usuario)}</small></span></a>`).join('')}</nav>` : ''}
-<p class="pie"><a href="../../">UpGames</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes · <a href="../terminos_condiciones.html">Términos</a></p>
+<p class="pie"><a href="../../">Lurveta</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes · <a href="../terminos_condiciones.html">Términos</a></p>
 </div></body></html>
 `;
 }
 
 // ── Perfiles de creadores: public/u/<usuario>.html ───────────────
 // perfil-publico.html arma todo en el navegador: WhatsApp, Facebook y Google veían
-// "Perfil de Usuario — UpGames". Esta página trae nombre, bio, foto y sus publicaciones.
+// "Perfil de Usuario — Lurveta". Esta página trae nombre, bio, foto y sus publicaciones.
 const usuarioValido = u => /^[a-z0-9_]{3,20}$/.test(String(u || ''));
 const urlPerfil = u => `${SITIO}/u/${u}.html`;
 const fmt = n => Number(n || 0).toLocaleString('es-CO');
 function paginaPerfil(p) {
     const url = urlPerfil(p.usuario), app = `${SITIO}/perfil-publico.html?usuario=${encodeURIComponent(p.usuario)}`;
     const bio = String(p.bio || '').replace(/\s+/g, ' ').trim();
-    const desc = (bio ? bio.slice(0, 120) + ' · ' : '') + `Creador en UpGames: ${fmt(p.publicaciones)} publicaciones y ${fmt(p.descargas)} descargas. Juegos, mods, apps y contenido de @${p.usuario}.`;
+    const desc = (bio ? bio.slice(0, 120) + ' · ' : '') + `Creador en Lurveta: ${fmt(p.publicaciones)} publicaciones y ${fmt(p.descargas)} descargas. Juegos, mods, apps y contenido de @${p.usuario}.`;
     const corta = desc.slice(0, 158) + (desc.length > 158 ? '…' : '');
     const avatar = esImg(p.avatar) ? p.avatar.replace('/upload/', '/upload/w_400,h_400,c_fill,g_face,q_auto,f_jpg/') : '';
     const og = esImg(p.banner) ? p.banner.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_jpg/') : avatar || `${SITIO}/og-upgames.jpg`;
@@ -163,13 +163,13 @@ function paginaPerfil(p) {
     return `<!doctype html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>@${esc(p.usuario)} — Creador en UpGames</title>
+<title>@${esc(p.usuario)} — Creador en Lurveta</title>
 <meta name="description" content="${esc(corta)}">
 <link rel="canonical" href="${esc(url)}">
-<meta property="og:type" content="profile"><meta property="og:site_name" content="UpGames"><meta property="profile:username" content="${esc(p.usuario)}">
-<meta property="og:title" content="@${esc(p.usuario)} en UpGames"><meta property="og:description" content="${esc(corta)}">
+<meta property="og:type" content="profile"><meta property="og:site_name" content="Lurveta"><meta property="profile:username" content="${esc(p.usuario)}">
+<meta property="og:title" content="@${esc(p.usuario)} en Lurveta"><meta property="og:description" content="${esc(corta)}">
 <meta property="og:url" content="${esc(url)}"><meta property="og:image" content="${esc(og)}">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="@${esc(p.usuario)} en UpGames"><meta name="twitter:image" content="${esc(og)}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="@${esc(p.usuario)} en Lurveta"><meta name="twitter:image" content="${esc(og)}">
 <meta name="theme-color" content="#07080c"><link rel="icon" href="../icons/icon-96.png?v=2">
 <script type="application/ld+json">${json(ld)}</script>
 <style>
@@ -191,9 +191,9 @@ h1{margin:12px 0 4px;font-size:1.4rem}.st{display:flex;gap:18px;color:#c9ced8;fo
 <h1>@${esc(p.usuario)}</h1>
 <div class="st"><span><b>${fmt(p.publicaciones)}</b> publicaciones</span><span><b>${fmt(p.seguidores)}</b> seguidores</span><span><b>${fmt(p.descargas)}</b> descargas</span></div>
 ${bio ? `<p class="bio">${esc(bio.slice(0, 600))}</p>` : ''}
-<a class="btn" href="${esc(app)}">Ver el perfil completo en UpGames</a>
+<a class="btn" href="${esc(app)}">Ver el perfil completo en Lurveta</a>
 ${items.length ? `<div class="g">${items.map(it => `<a href="${esc(urlPagina(it))}">${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/w_300,h_300,c_fill,q_auto,f_auto/'))}" alt="" loading="lazy">` : ''}<span>${esc(it.title)}</span></a>`).join('')}</div>` : ''}
-<p class="pie"><a href="../../">UpGames</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes</p>
+<p class="pie"><a href="../../">Lurveta</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes</p>
 </div></body></html>
 `;
 }
@@ -203,7 +203,7 @@ ${items.length ? `<div class="g">${items.map(it => `<a href="${esc(urlPagina(it)
 // que una publicación suelta no capta. Juego: detectado por gameDetector (backend → it.juego).
 const TEMAS = [
     { slug: 'juegos-para-winlator', titulo: 'Juegos y mods para Winlator', h1: 'Juegos y mods para Winlator (PC en Android)',
-      intro: 'Juegos de PC adaptados, configuraciones y mods de rendimiento para jugar en Android con Winlator, compartidos por la comunidad de UpGames.',
+      intro: 'Juegos de PC adaptados, configuraciones y mods de rendimiento para jugar en Android con Winlator, compartidos por la comunidad de Lurveta.',
       es: it => /winlator/i.test(`${it.title} ${it.description}`) },
     { slug: 'juegos-para-gamehub', titulo: 'Juegos y configuraciones para GameHub', h1: 'Juegos y configuraciones para GameHub',
       intro: 'Configuraciones, juegos y mods probados en GameHub para jugar títulos de PC en tu Android.',
@@ -225,7 +225,7 @@ function grupos(items) {
     const out = [];
     for (const [juego, lista] of porJuego) if (lista.length >= MIN_JUEGO) out.push({
         slug: 'mods-de-' + slug(juego), juego, titulo: `Mods y juegos de ${juego}`, h1: `${juego}: mods, versiones y ajustes`,
-        intro: `Todo lo de ${juego} en UpGames: mods de rendimiento, versiones para Android y PC, parches y configuraciones compartidas por la comunidad.`, items: lista });
+        intro: `Todo lo de ${juego} en Lurveta: mods de rendimiento, versiones para Android y PC, parches y configuraciones compartidas por la comunidad.`, items: lista });
     for (const t of TEMAS) { const lista = items.filter(it => it.category !== 'Video' && t.es(it)); if (lista.length >= MIN_TEMA) out.push({ ...t, es: undefined, items: lista }); }
     out.forEach(g => g.items.sort((a, b) => (b.descargas || 0) - (a.descargas || 0)));
     return out;
@@ -240,17 +240,17 @@ function paginaGrupo(g, todos) {
     const ld = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: g.titulo, description: desc, url,
         mainEntity: { '@type': 'ItemList', numberOfItems: lista.length, itemListElement: lista.map((it, i) => ({ '@type': 'ListItem', position: i + 1, url: urlPagina(it), name: it.title })) } };
     const migas = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'UpGames', item: 'https://upgames.games/' },
+        { '@type': 'ListItem', position: 1, name: 'Lurveta', item: 'https://upgames.games/' },
         { '@type': 'ListItem', position: 2, name: g.titulo, item: url }] };
     const otros = (todos || []).filter(x => x.slug !== g.slug).slice(0, 12);
     return `<!doctype html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(g.titulo)} — descarga gratis | UpGames</title>
+<title>${esc(g.titulo)} — descarga gratis | Lurveta</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${esc(url)}">
-<meta property="og:type" content="website"><meta property="og:site_name" content="UpGames">
-<meta property="og:title" content="${esc(g.titulo)} | UpGames"><meta property="og:description" content="${esc(desc)}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Lurveta">
+<meta property="og:title" content="${esc(g.titulo)} | Lurveta"><meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${esc(url)}"><meta property="og:image" content="${esc(og)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(g.titulo)}"><meta name="twitter:image" content="${esc(og)}">
 <meta name="theme-color" content="#07080c"><link rel="icon" href="../icons/icon-96.png?v=2">
@@ -275,9 +275,9 @@ h1{margin:6px 0 6px;font-size:1.7rem;line-height:1.2}.intro{color:#c9ced8;margin
 <p class="intro">${esc(g.intro)}</p>
 <div class="st">${fmt(g.items.length)} publicaciones · ${fmt(total)} descargas</div>
 <div class="g">${lista.map(it => `<a class="c" href="${esc(urlPagina(it))}">${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/c_fill,g_auto,w_480,h_300,q_auto,f_auto/'))}" alt="${esc(it.title)}" loading="lazy" width="480" height="300">` : '<span class="ph"></span>'}<b>${esc(it.title)}</b><small>${esc(CAT[it.category] || it.category || '')} · @${esc(it.usuario)} · ⬇️ ${fmt(it.descargas)}</small></a>`).join('')}</div>
-<a class="btn" href="../../">Explorar más en UpGames</a>
+<a class="btn" href="../../">Explorar más en Lurveta</a>
 ${otros.length ? `<div class="mas">${otros.map(o => `<a href="${esc(o.slug)}.html">${esc(o.titulo)}</a>`).join('')}</div>` : ''}
-<p class="pie"><a href="../../">UpGames</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes · <a href="../terminos_condiciones.html">Términos</a></p>
+<p class="pie"><a href="../../">Lurveta</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes · <a href="../terminos_condiciones.html">Términos</a></p>
 </div></body></html>
 `;
 }
@@ -293,7 +293,7 @@ function enlacesPortada({ grupos: gs = [], items = [], perfiles = [] } = {}) {
     const recientes = items.slice().sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || ''))).slice(0, 12).map(it => li(rel(urlPagina(it)), recorta(it.title, 60)));
     const creadores = perfiles.filter(p => usuarioValido(p.usuario)).sort((a, b) => (b.descargas || 0) - (a.descargas || 0)).slice(0, 12).map(p => li(rel(urlPerfil(p.usuario)), '@' + p.usuario));
     return [
-        lista('Secciones', [li('/public/live.html', 'En vivo'), li('/public/blogs-guia.html', 'Guía de UpGames Blogs'), li('/public/blog.html', 'Crea tu blog')]),
+        lista('Secciones', [li('/public/live.html', 'En vivo'), li('/public/blogs-guia.html', 'Guía de Lurveta Blogs'), li('/public/blog.html', 'Crea tu blog')]),
         lista('Juegos y temas', temas), lista('Publicaciones recientes', recientes), lista('Creadores', creadores),
     ].filter(Boolean).join('\n');
 }

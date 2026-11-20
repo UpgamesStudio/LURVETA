@@ -1,5 +1,5 @@
 /**
- * Tests de las reglas de UpGames Live (modulos/live.js): reparto de regalos,
+ * Tests de las reglas de Lurveta Live (modulos/live.js): reparto de regalos,
  * paquetes, claves de transmisión, auth de MediaMTX y limpieza del chat.
  * Autónomo: `node test/live.test.js` (o `npm test`).
  */

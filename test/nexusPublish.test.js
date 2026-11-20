@@ -1,5 +1,5 @@
 /**
- * Tests del puente Nexus↔UpGames (modulos/nexusPublish.js).
+ * Tests del puente Nexus↔Lurveta (modulos/nexusPublish.js).
  * Autónomo: `node test/nexusPublish.test.js` (o `npm test`).
  * Prueba las funciones puras críticas de seguridad y presentación.
  */

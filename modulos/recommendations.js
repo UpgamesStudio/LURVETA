@@ -1,5 +1,5 @@
 // ========================================
-// 🧠 SISTEMA DE RECOMENDACIONES AVANZADO - UPGAMES
+// 🧠 SISTEMA DE RECOMENDACIONES AVANZADO - LURVETA
 // ========================================
 //
 // Mejora el sistema actual (scoreBase + likesCount) con:

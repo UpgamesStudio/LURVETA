@@ -95,7 +95,7 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
         let shouldAnalyzeFraud = false;
 
         // Posible juego comercial completo: los anuncios se muestran igual, pero el creador no cobra
-        // mientras el equipo lo revisa (UpGames no saca beneficio directo de ese enlace)
+        // mientras el equipo lo revisa (Lurveta no saca beneficio directo de ese enlace)
         if (juego.pagoPausado) {
             await sumarAutor(0);
             StatsItems.sumar(juegoId, juego.usuario, { d: 1, g: 0 });
@@ -123,7 +123,7 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
         await sumarAutor(gananciaGenerada);
         StatsItems.sumar(juegoId, juego.usuario, { d: 1, g: gananciaGenerada });   // panel "Rendimiento por publicación"
 
-        // UpGames Blogs: si la descarga llegó desde una entrada de blog, su dueño también gana (solo si esta descarga ya pagó al autor)
+        // Lurveta Blogs: si la descarga llegó desde una entrada de blog, su dueño también gana (solo si esta descarga ya pagó al autor)
         if (via && gananciaGenerada > 0) {
             try {
                 const atrib = await AtribucionBlog.resolver({ Blog, Entrada }, via, juegoId, juego.usuario);
@@ -138,7 +138,7 @@ app.post('/economia/validar-descarga', [body('juegoId').isMongoId()], async (req
         // Hitos de descargas: avisa al autor (gamificación + notificación)
         if ([10, 50, 100, 500, 1000, 5000].includes(juego.descargasEfectivas)) {
             crearNotif({
-                destinatario: juego.usuario, tipo: 'logro', emisor: 'UpGames',
+                destinatario: juego.usuario, tipo: 'logro', emisor: 'Lurveta',
                 itemId: juegoId, itemTitle: juego.title, itemImage: juego.image || '',
                 mensaje: `🎉 ¡"${juego.title}" alcanzó ${juego.descargasEfectivas} descargas!`
             });

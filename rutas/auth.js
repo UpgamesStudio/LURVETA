@@ -89,7 +89,7 @@ app.post('/auth/register', [
         }
 
         const verifLink = `${API_URL_SELF}/auth/verify-email/${verifToken}`;
-        sendEmail({ to: email, subject: '✅ Verifica tu email en UpGames', html: emailVerifTemplate(usuario, verifLink) }).catch(() => {});
+        sendEmail({ to: email, subject: '✅ Verifica tu email en Lurveta', html: emailVerifTemplate(usuario, verifLink) }).catch(() => {});
 
         const token = firmarToken(nuevoUsuario);
         res.status(201).json({ success: true, ok: true, token, usuario: nuevoUsuario.usuario, email: nuevoUsuario.email, emailVerificado: false, mensaje: 'Cuenta creada. Revisa tu email para verificar tu cuenta.', datosUsuario: { usuario: nuevoUsuario.usuario, email: nuevoUsuario.email, verificadoNivel: nuevoUsuario.verificadoNivel, isVerificado: nuevoUsuario.isVerificado, emailVerificado: false } });

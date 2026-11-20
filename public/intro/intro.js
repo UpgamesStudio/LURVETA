@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Intro «Entrar a la red»
+   Lurveta · Intro «Entrar a la red»
    ───────────────────────────────────────────────────────────────
    Animación en tiempo real (Canvas 2D con proyección 3D propia y
    resplandor por reducción de resolución). render(t) es una función
@@ -9,7 +9,7 @@
 
    Guion (voz en 8 frases, separadas por tramos de animación):
      0.5   logo · se apaga y parpadea · arranque del sistema
-     8.0   «Bienvenido a UpGames»
+     8.0   «Bienvenido a Lurveta»
     10.3   la red se enciende: rejilla, muros de luz
     16.2   «Estás a punto de entrar a un nuevo mundo digital»  → portal
     24.5   túnel de datos (la música sube)
@@ -20,7 +20,7 @@
     52.6   «Crea tu comunidad»  → red de personas
     56.3   «Obtén tu primera monetización…»  → UpCoins
     60.4   ascenso
-    64.5   «Esto es UpGames»  → logo en el golpe 65.45
+    64.5   «Esto es Lurveta»  → logo en el golpe 65.45
 ═══════════════════════════════════════════════════════════════ */
 'use strict';
 (function () {
@@ -559,7 +559,7 @@
     dom.url = $('#url'); dom.lema = $('#lema'); dom.entrar = $('#entrar');
   };
 
-  const BOOT = ['> UPGAMES.NET  ·  INICIANDO ENLACE', '> SINCRONIZANDO IDENTIDAD ........ OK', '> ACCESO CONCEDIDO'];
+  const BOOT = ['> LURVETA  ·  INICIANDO ENLACE', '> SINCRONIZANDO IDENTIDAD ........ OK', '> ACCESO CONCEDIDO'];
 
   const actualizarDom = t => {
     // Logo inicial: golpe, brillo y fallo de energía

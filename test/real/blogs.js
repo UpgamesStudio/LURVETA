@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * UpGames Blogs de extremo a extremo: el servidor REAL (index.js) contra MongoDB real (en memoria).
+ * Lurveta Blogs de extremo a extremo: el servidor REAL (index.js) contra MongoDB real (en memoria).
  * Crea cuentas, blogs, entradas, comentarios y comprueba Premium, avisos a seguidores, el bloque
  * de descarga, la CSP del marco de comentarios y que el botón «Comprar» ya no existe.
  * Uso: node test/real/blogs.js   (necesita: cd test/real && npm install)
@@ -57,11 +57,11 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   const html2 = await (await fetch(`${A}/b/kale-mods/e/${ent.slug}?x=1`)).text();
   prueba('página de la entrada responde 200', pag.status === 200, pag.status);
   prueba('marco de comentarios en la página', html.includes('/public/blog-comentarios.html?e=' + ent.id), html.slice(0, 100));
-  prueba('CSP permite el marco de UpGames', /frame-src[^;]*https:\/\/upgames\.games/.test(csp), csp);
+  prueba('CSP permite el marco de Lurveta', /frame-src[^;]*https:\/\/upgames\.games/.test(csp), csp);
   prueba('bloque Descarga → página puente', /puente\.html\?id=/.test(html2), '');
-  prueba('«Hecho con UpGames» en blog gratis', html.includes('Hecho con'));
+  prueba('«Hecho con Lurveta» en blog gratis', html.includes('Hecho con'));
   const vipHtml = await (await fetch(`${A}/b/vip-blog/`)).text();
-  prueba('Premium: sin «Hecho con UpGames» y con tema Cristal', !vipHtml.includes('Hecho con') && vipHtml.includes('#7C5CFF'));
+  prueba('Premium: sin «Hecho con Lurveta» y con tema Cristal', !vipHtml.includes('Hecho con') && vipHtml.includes('#7C5CFF'));
 
   console.log('Comentarios');
   r = await api(`/blogs/comentarios/${ent.id}`, { m: 'POST', u: 'lena', body: { texto: '¡Corre perfecto en mi celular!' } });

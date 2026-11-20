@@ -1,6 +1,6 @@
-# Video SaaS · UpGames para desarrolladores independientes
+# Video SaaS · Lurveta para desarrolladores independientes
 
-Animación publicitaria estilo **SaaS motion graphics** con la identidad NEO de UpGames (verde → cian → violeta, cristal, Orbitron / Space Grotesk / JetBrains Mono). Horizontal **1920×1080 a 60 fps**, 40 s, con música y efectos de sonido. Sin locución: el mensaje va en texto cinético, así sirve con o sin sonido.
+Animación publicitaria estilo **SaaS motion graphics** con la identidad NEO de Lurveta (verde → cian → violeta, cristal, Orbitron / Space Grotesk / JetBrains Mono). Horizontal **1920×1080 a 60 fps**, 40 s, con música y efectos de sonido. Sin locución: el mensaje va en texto cinético, así sirve con o sin sonido.
 
 ## Cómo grabarlo
 
@@ -25,7 +25,7 @@ Vista previa en Chrome: `video.html?play` (tiempo real) o `video.html?t=20.6` (u
 | Tiempo | Mensaje | Qué se ve |
 |---|---|---|
 | 0:00 | Creaste algo increíble. Pero nadie lo ve. | Texto en grises sobre fondo apagado; «0 vistas · 0 seguidores · $0»; todo se encoge a un punto |
-| 0:04.7 | **UpGames** — La mejor plataforma del mundo para desarrolladores independientes | Caída de la música: logo con ondas de choque, el fondo se enciende |
+| 0:04.7 | **Lurveta** — La mejor plataforma del mundo para desarrolladores independientes | Caída de la música: logo con ondas de choque, el fondo se enciende |
 | 0:09 | Tu vitrina, lista en minutos. | La web en un navegador 3D; las tarjetas entran; el cursor pulsa PUBLICAR y aparece «Tu juego ya está en línea» |
 | 0:15.5 | No pagamos por ~~descargas~~. Pagamos por cada anuncio visto. | Tarjeta «Tu tarifa de creador»: sube hasta **US$1,50 por cada 1.000 visualizaciones de publicidad**, contador de anuncios vistos y +75 UpCoins |
 | 0:23.2 | Todo lo que un creador indie necesita. | Seis tarjetas: Nexus IA, lives con regalos (25 %), estadísticas reales, comunidad, UpCoins y Premium, retiros |

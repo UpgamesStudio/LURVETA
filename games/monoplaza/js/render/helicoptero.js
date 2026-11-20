@@ -1,4 +1,4 @@
-// Helicóptero de la tele (UPGAMES TV): sigue al líder desde el aire con el morro inclinado,
+// Helicóptero de la tele (LURVETA TV): sigue al líder desde el aire con el morro inclinado,
 // se ladea en los giros y el rotor gira con su disco borroso. Sin líder, sobrevuela el circuito.
 
 import * as THREE from 'three';
@@ -7,7 +7,7 @@ function texturaRotulo() {
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128;
   const x = cv.getContext('2d');
   x.fillStyle = '#0d47ff'; x.font = '900 italic 70px Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillText('UPGAMES', 200, 64);
+  x.fillText('LURVETA', 200, 64);
   x.fillStyle = '#e8202a'; x.font = '900 italic 60px Arial, sans-serif'; x.fillText('TV', 430, 66);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return t;

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>UpGames Blogs · Tu sitio web en minutos</title>
+<title>Lurveta Blogs · Tu sitio web en minutos</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;700;800&family=JetBrains+Mono:wght@400;500;700&display=block" rel="stylesheet">
 <style>
 /* Lenguaje: galería clara (papel cálido + tinta + un solo índigo) con bloques pastel y cristal.
@@ -149,10 +149,10 @@ escena(3.7, 10.7, r => {
 escena(10.3, 16.0, r => {
   const k = $('div', 'abs kick', '02 · Nexus escritor', r, 'left:140px;top:150px');
   const h = pal(r, 'Nexus escribe {el borrador.}', 'abs tit', 'left:140px;top:205px;font-size:92px;width:760px');
-  const p = $('div', 'abs', 'Elige un juego de UpGames y pide una reseña, una guía o una noticia. Tú la completas con tu experiencia.', r, 'left:140px;top:520px;width:640px;font-size:30px;line-height:1.45;color:var(--ink2);font-weight:400');
+  const p = $('div', 'abs', 'Elige un juego de Lurveta y pide una reseña, una guía o una noticia. Tú la completas con tu experiencia.', r, 'left:140px;top:520px;width:640px;font-size:30px;line-height:1.45;color:var(--ink2);font-weight:400');
   const hoja = $('div', 'abs vidrio', `
     <div style="display:flex;align-items:center;gap:22px;padding:34px 38px 0"><div class="arte" style="width:104px;height:104px;background:${arte(1)}"><svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">${forma(1)}</svg></div>
-      <div><div class="mono" style="font-size:17px;letter-spacing:.14em;color:var(--ind)">PUBLICACIÓN DE UPGAMES</div><div style="font-size:34px;font-weight:700;letter-spacing:-.03em;margin-top:6px">Mod de rendimiento · Android</div></div></div>
+      <div><div class="mono" style="font-size:17px;letter-spacing:.14em;color:var(--ind)">PUBLICACIÓN DE LURVETA</div><div style="font-size:34px;font-weight:700;letter-spacing:-.03em;margin-top:6px">Mod de rendimiento · Android</div></div></div>
     <div style="display:flex;gap:12px;padding:26px 38px 0"><span id="s1" class="chip" style="padding:11px 22px;font-size:22px;background:var(--lilac)">Reseña</span><span class="chip" style="padding:11px 22px;font-size:22px;background:rgba(11,11,16,.05)">Guía</span><span class="chip" style="padding:11px 22px;font-size:22px;background:rgba(11,11,16,.05)">Noticia</span><span style="flex:1"></span><span id="bn" class="pill i" style="padding:12px 26px;font-size:22px">✦ Escribir borrador</span></div>
     <div id="out" style="position:absolute;left:38px;right:38px;top:286px;bottom:34px;border-radius:24px;background:rgba(255,255,255,.85);box-shadow:inset 0 0 0 1.5px var(--linea);padding:28px 32px;overflow:hidden"></div>`, r, 'left:960px;top:150px;width:860px;height:780px');
   const out = hoja.querySelector('#out');
@@ -181,14 +181,14 @@ escena(15.7, 21.7, r => {
   const h = pal(r, 'Elige cómo {se ve.}', 'abs tit', 'left:0;right:0;top:170px;text-align:center;font-size:104px');
   const mkMini = (x, nombre, css, cab, tar, pie, premium) => {
     const m = $('div', 'mini', `<div class="cab" style="${cab}"><span style="width:26px;height:26px;border-radius:9px;background:currentColor;opacity:.9"></span>${nombre}</div>
-      <div class="tl" style="width:62%;height:26px;margin-top:20px;background:currentColor;opacity:.9"></div><div class="tl" style="width:42%;background:currentColor;opacity:.35"></div>${tar}<div class="pie" style="${pie}">${premium ? '' : 'HECHO CON UPGAMES'}</div>`, r, `left:${x}px;top:340px;${css}`);
+      <div class="tl" style="width:62%;height:26px;margin-top:20px;background:currentColor;opacity:.9"></div><div class="tl" style="width:42%;background:currentColor;opacity:.35"></div>${tar}<div class="pie" style="${pie}">${premium ? '' : 'HECHO CON LURVETA'}</div>`, r, `left:${x}px;top:340px;${css}`);
     return m;
   };
   const neon = mkMini(150, 'kale.blog', 'background:#05080F;color:#F4F5F7', 'border-bottom:1px solid rgba(255,255,255,.08)', `<div class="tar" style="left:26px;top:200px;width:226px;height:250px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(57,255,136,.35)"></div><div class="tar" style="left:268px;top:200px;width:226px;height:250px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)"></div><div class="tar" style="left:26px;top:470px;width:468px;height:70px;background:#39FF88"></div>`, 'color:#8b93a3', false);
   const cris = mkMini(700, 'kale.blog', 'background:radial-gradient(60% 40% at 50% 0%,rgba(124,92,255,.5),transparent 70%),#05060F;color:#E6EEFB', 'box-shadow:inset 0 -1px 0 rgba(186,215,247,.16)', `<div class="tar" style="left:26px;top:200px;width:226px;height:250px;background:rgba(186,214,247,.07);box-shadow:inset 0 0 0 1px rgba(186,215,247,.2),inset 0 1px 0 rgba(216,236,248,.3);backdrop-filter:blur(10px)"></div><div class="tar" style="left:268px;top:200px;width:226px;height:250px;background:rgba(186,214,247,.07);box-shadow:inset 0 0 0 1px rgba(186,215,247,.2),inset 0 1px 0 rgba(216,236,248,.3)"></div><div class="tar" style="left:26px;top:470px;width:468px;height:70px;border-radius:99px;background:#7C5CFF"></div>`, 'color:#9DA7BA', true);
   const lien = mkMini(1250, 'kale.blog', 'background:#fff;color:#0A0A0A', 'border-bottom:1px solid rgba(0,0,0,.08)', `<div class="tar" style="left:26px;top:200px;width:226px;height:250px;background:#C4BAFF"></div><div class="tar" style="left:268px;top:200px;width:226px;height:250px;background:#E4FF97"></div><div class="tar" style="left:26px;top:470px;width:468px;height:70px;border-radius:99px;background:#4D49FC"></div>`, 'color:#595959', true);
   const rot = [['Neón', 'Gratis'], ['Cristal', 'Premium'], ['Lienzo', 'Premium']].map(([n, e], i) => $('div', 'abs', `<b style="font-size:34px;letter-spacing:-.02em">${n}</b> <span class="pill ${i ? 'i' : ''}" style="padding:7px 16px;font-size:18px;margin-left:10px">${e}</span>`, r, `left:${150 + i * 550}px;top:0;width:520px;text-align:center`));
-  const franja = $('div', 'abs pill', '<span class="ind">★</span> Sin «Hecho con UpGames» · Hasta 10 blogs · Temas exclusivos', r, 'left:0;right:0;margin:0 auto;width:max-content;top:962px;font-size:25px');
+  const franja = $('div', 'abs pill', '<span class="ind">★</span> Sin «Hecho con Lurveta» · Hasta 10 blogs · Temas exclusivos', r, 'left:0;right:0;margin:0 auto;width:max-content;top:962px;font-size:25px');
   sfx(15.9, 'whoosh', .6); sfx(17.1, 'nota', .8, 1); sfx(17.9, 'nota', .8, 3); sfx(18.8, 'nota', .9, 5); sfx(19.8, 'sello', .8);
   return { k, h, minis: [neon, cris, lien], rot, franja };
 }, (t, r, c) => {
@@ -205,11 +205,11 @@ escena(15.7, 21.7, r => {
 escena(21.3, 26.9, r => {
   const k = $('div', 'abs kick', '04 · Comunidad', r, 'left:140px;top:150px');
   const h = pal(r, 'Tus lectores {responden.}', 'abs tit', 'left:140px;top:205px;font-size:92px;width:760px');
-  const p = $('div', 'abs', 'Comentarios con las cuentas y la moderación de UpGames. Y tus seguidores se enteran al instante.', r, 'left:140px;top:520px;width:640px;font-size:30px;line-height:1.45;color:var(--ink2);font-weight:400');
+  const p = $('div', 'abs', 'Comentarios con las cuentas y la moderación de Lurveta. Y tus seguidores se enteran al instante.', r, 'left:140px;top:520px;width:640px;font-size:30px;line-height:1.45;color:var(--ink2);font-weight:400');
   const C = [['L', 'var(--blush)', '@lena', '¡Corre perfecto en mi Redmi! Gracias 🙌', 960, 300], ['K', 'var(--aqua)', '@kio', '¿Funciona con 3 GB de RAM?', 1040, 480], ['C', 'var(--lilac)', '@kale', 'Sí, con la configuración del paso 3.', 960, 660]].map(([l, col, who, tx, x, y]) =>
     $('div', 'abs', `<div class="av" style="background:${col}">${l}</div><div><div class="mono" style="font-size:17px;letter-spacing:.1em;color:var(--ink2);margin-bottom:6px">${who}</div><div class="burb" style="background:#fff;box-shadow:inset 0 0 0 1.5px var(--linea);padding:18px 24px;font-size:26px">${tx}</div></div>`, r, `left:${x}px;top:${y}px;display:flex;gap:18px;align-items:flex-end;width:780px`));
   const push = $('div', 'abs vidrio', `<div style="display:flex;gap:20px;align-items:center;padding:26px 30px"><div class="av" style="background:var(--ind);color:#fff;border-radius:18px"><svg viewBox="0 0 24 24" style="width:34px;height:34px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M6 9a6 6 0 0112 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9M10 20a2 2 0 004 0"/></svg></div>
-    <div><div class="mono" style="font-size:16px;letter-spacing:.12em;color:var(--ind)">UPGAMES · AHORA</div><div style="font-size:27px;font-weight:700;letter-spacing:-.02em;margin-top:4px">@kale publicó en su blog</div><div class="mut" style="font-size:22px;margin-top:2px">Reseña: mi mod favorito</div></div></div>`, r, 'left:1060px;top:90px;width:720px');
+    <div><div class="mono" style="font-size:16px;letter-spacing:.12em;color:var(--ind)">LURVETA · AHORA</div><div style="font-size:27px;font-weight:700;letter-spacing:-.02em;margin-top:4px">@kale publicó en su blog</div><div class="mut" style="font-size:22px;margin-top:2px">Reseña: mi mod favorito</div></div></div>`, r, 'left:1060px;top:90px;width:720px');
   const seg = $('div', 'abs pill', '<span class="ind">●</span> <b id="nseg" style="font-variant-numeric:tabular-nums">0</b> seguidores avisados', r, 'left:1140px;top:880px;font-size:26px');
   sfx(21.5, 'whoosh', .6); sfx(22.3, 'pop', .8); sfx(23.1, 'pop2', .8); sfx(23.9, 'pop', .8); sfx(24.6, 'notif', 1); sfx(25.0, 'contador', .5);
   return { k, h, p, C, push, seg, ns: seg.querySelector('#nseg') };
@@ -245,7 +245,7 @@ escena(26.5, 31.7, r => {
 /* ═══ 7 · Cierre (31,3 – 36) ═══ */
 escena(31.3, DUR + 1, r => {
   const logo = $('img', 'abs', null, r, 'left:610px;top:130px;width:700px;filter:drop-shadow(0 20px 40px rgba(60,40,160,.25))'); logo.src = 'logo.png';
-  const t1 = pal(r, 'UpGames [Blogs.]', 'abs tit', 'left:0;right:0;top:390px;text-align:center;font-size:150px');
+  const t1 = pal(r, 'Lurveta [Blogs.]', 'abs tit', 'left:0;right:0;top:390px;text-align:center;font-size:150px');
   const t2 = pal(r, 'Tu sitio web en {minutos.} Gratis.', 'abs tit', 'left:0;right:0;top:590px;text-align:center;font-size:72px;font-weight:300');
   const url = $('div', 'abs pill mono', '<span class="ind">●</span><span id="u"></span><span id="c" class="ind">▍</span>', r, 'left:0;right:0;margin:0 auto;width:max-content;top:760px;font-size:36px;padding:20px 40px');
   const boton = $('div', 'abs pill i', 'Crear mi blog', r, 'left:0;right:0;margin:0 auto;width:max-content;top:880px;font-size:32px;padding:22px 56px');

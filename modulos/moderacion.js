@@ -69,13 +69,13 @@ function reglas(texto, tipo = 'comentario') {
     return { bloquear: false, categoria: 'ok', dudoso: LEVES.test(t) };
 }
 
-const SISTEMA = `Eres el moderador automático de UpGames (comunidad de videojuegos, mods, apps, videos y lives; mayoría hispanohablante, hay jóvenes).
+const SISTEMA = `Eres el moderador automático de Lurveta (comunidad de videojuegos, mods, apps, videos y lives; mayoría hispanohablante, hay jóvenes).
 Clasifica el texto. Categorías:
 - "sexual": contenido sexual explícito, pornografía, desnudos, ofrecer packs/OnlyFans, insinuaciones sexuales a otros.
 - "odio": ataques por raza, origen, religión, género u orientación.
 - "acoso": amenazas, incitar a hacerse daño, acoso a una persona.
 - "insulto": insultos dirigidos a otra persona o al creador.
-- "spam": publicidad, estafas, enlaces o contactos para sacar a la gente de UpGames, texto repetido sin sentido.
+- "spam": publicidad, estafas, enlaces o contactos para sacar a la gente de Lurveta, texto repetido sin sentido.
 - "ok": todo lo demás. Las groserías como muletilla o entusiasmo ("está de puta madre", "qué mierda de jugada tan buena") son "ok". Hablar de juegos con violencia ficticia es "ok". Críticas educadas son "ok".
 Responde SOLO JSON: {"categoria":"ok|sexual|odio|acoso|insulto|spam","confianza":0.0-1.0,"motivo":"frase corta en español"}`;
 
@@ -91,7 +91,7 @@ const debeQuitar = v => !!v && QUITAR[v.categoria] != null && v.confianza >= QUI
 
 // ── Visión (portadas y fotogramas) ───────────────────────────────────────────
 const MODELOS_VISION = (process.env.NEXUS_VISION_MODELOS || 'meta-llama/llama-4-scout-17b-16e-instruct,meta-llama/llama-4-maverick-17b-128e-instruct').split(',').map(s => s.trim()).filter(Boolean);
-const SISTEMA_VISION = `Eres el moderador de imágenes de UpGames. Mira la imagen y responde SOLO JSON:
+const SISTEMA_VISION = `Eres el moderador de imágenes de Lurveta. Mira la imagen y responde SOLO JSON:
 {"sexual":true|false,"confianza":0.0-1.0,"motivo":"frase corta"}
 "sexual" = desnudez, genitales, actos sexuales, pornografía o poses sexuales explícitas (también dibujos/hentai). Ropa de baño normal, besos o violencia de videojuegos NO son sexuales.`;
 /** img: URL https o data:image/jpeg;base64 → { sexual, confianza, motivo } | null */

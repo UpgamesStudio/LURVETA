@@ -2,7 +2,7 @@
   "name": "upgames-studio-android",
   "version": "1.0.0",
   "private": true,
-  "description": "UpGames Studio empaquetado como app Android (Capacitor). El juego vive en games/studio.",
+  "description": "Lurveta Studio empaquetado como app Android (Capacitor). El juego vive en games/studio.",
   "type": "module",
   "scripts": {
     "copiar": "node copiar-web.mjs",

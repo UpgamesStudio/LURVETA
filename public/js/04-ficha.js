@@ -12,7 +12,7 @@ function ugMeta(attr, key, val) {
 // ── La ficha es una «página» con su propia entrada en el historial ──
 // Abrir una publicación agrega ?id=… al historial (pushState): el botón «atrás» del móvil la cierra
 // y el enlace se puede copiar y compartir. Un enlace compartido que se abre directo deja el inicio
-// detrás, así «atrás» vuelve al catálogo en lugar de salir de UpGames.
+// detrás, así «atrás» vuelve al catálogo en lugar de salir de Lurveta.
 let ugFichaPorAtras = false, ugFichaVolviendo = false;
 function ugFichaEnHistorial(id) {
   const u = new URL(location.href);
@@ -54,12 +54,12 @@ function ugSeo(item) {
     const slug = String(item.title || 'publicacion').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '') || 'publicacion';
     const estatica = (!item.status || item.status === 'aprobado') && item.createdAt && Date.now() - new Date(item.createdAt) > UG_PAGINA_LISTA_MS;
     const url = estatica ? `https://upgames.games/public/p/${slug}-${item._id}.html` : `${UG_SEO_BASE.url}?id=${item._id}`;
-    const desc = String(item.description || `${item.category || 'Contenido'} compartido por @${item.usuario} en UpGames.`).replace(/\s+/g, ' ').slice(0, 160);
+    const desc = String(item.description || `${item.category || 'Contenido'} compartido por @${item.usuario} en Lurveta.`).replace(/\s+/g, ' ').slice(0, 160);
     const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://upgames.games/public/og-upgames.jpg');
-    document.title = `${item.title} — ${item.category || 'Descargar'} | UpGames`;
+    document.title = `${item.title} — ${item.category || 'Descargar'} | Lurveta`;
     canon.href = url;
     ugMeta('name', 'description', desc);
-    ugMeta('property', 'og:title', `${item.title} | UpGames`); ugMeta('property', 'og:description', desc);
+    ugMeta('property', 'og:title', `${item.title} | Lurveta`); ugMeta('property', 'og:description', desc);
     ugMeta('property', 'og:image', img); ugMeta('property', 'og:url', url); ugMeta('property', 'og:type', 'website');
     ugMeta('name', 'twitter:card', 'summary_large_image');
     const tipo = item.category === 'Video' ? 'VideoObject' : (item.category === 'Juego' ? 'VideoGame' : 'SoftwareApplication');
@@ -263,8 +263,8 @@ function openDetail(item) {
   window.UGUX?.guiaDetalle(item);
   const askBtn = document.getElementById('ds-btn-nexus');
   if (askBtn) askBtn.onclick = () => nexusPreguntar(item.category === 'Video'
-    ? `Cuéntame sobre el video "${item.title}" de @${item.usuario} y qué contenido relacionado hay en UpGames.`
-    : `¿Qué es "${item.title}" (${catLabel(item.category)}) de @${item.usuario}? ¿Cómo lo instalo y qué necesito? ¿Hay algo parecido en UpGames?`);
+    ? `Cuéntame sobre el video "${item.title}" de @${item.usuario} y qué contenido relacionado hay en Lurveta.`
+    : `¿Qué es "${item.title}" (${catLabel(item.category)}) de @${item.usuario}? ¿Cómo lo instalo y qué necesito? ¿Hay algo parecido en Lurveta?`);
 
   // ── Entrada destacada (solo para videos) ───────────────
   const featEl = document.getElementById('ds-featured-entry');

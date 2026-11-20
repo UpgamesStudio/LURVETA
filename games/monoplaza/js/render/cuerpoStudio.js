@@ -1,4 +1,4 @@
-// Cuerpo de los personajes hecho en UpGames Studio (plantilla «Piloto», pose de reposo): una sola
+// Cuerpo de los personajes hecho en Lurveta Studio (plantilla «Piloto», pose de reposo): una sola
 // malla suave con mono, franjas, guantes y botas, con pesos de piel para el esqueleto de Persona.
 // Se genera con games/studio/tools/cuerpo-juego.html y se guarda en modelos/cuerpo-personaje.json.
 import * as THREE from 'three';

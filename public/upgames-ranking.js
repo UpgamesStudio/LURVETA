@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Cómo ordena Nexus el feed (una sola fórmula para el
+   Lurveta · Cómo ordena Nexus el feed (una sola fórmula para el
    servidor y la web: index.js la usa con require(), el navegador
    como window.UGRank).
 

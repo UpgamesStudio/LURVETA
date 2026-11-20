@@ -1,4 +1,4 @@
-// UpGames Blogs · fase 3: SEO por página (título para Google, ocultar de Google)
+// Lurveta Blogs · fase 3: SEO por página (título para Google, ocultar de Google)
 'use strict';
 const assert = require('assert');
 const R = require('../modulos/blogs/render');

@@ -1,5 +1,5 @@
 // ========================================
-// 👥 SOCIAL FEED & REFERRALS - UPGAMES
+// 👥 SOCIAL FEED & REFERRALS - LURVETA
 // ========================================
 //
 // Extiende el sistema social existente (listaSeguidores/siguiendo):

@@ -28,7 +28,7 @@ app.post('/admin/items/:id/sospecha', [verificarAdmin, param('id').isMongoId()],
         if (!it) return res.status(404).json({ success: false, error: 'No encontrada' });
         const sosp = { ...(it.sospecha || {}), revision: d, revisadoPor: req.admin?.usuario || req.admin?.email || 'admin', revisadoEn: new Date(), titulo: it.title };
         await Juego.updateOne({ _id: it._id }, { $set: { pagoPausado: d !== 'ok', sospecha: sosp } });
-        crearNotif({ destinatario: it.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(it._id), itemTitle: 'Revisión', itemImage: it.image || '',
+        crearNotif({ destinatario: it.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(it._id), itemTitle: 'Revisión', itemImage: it.image || '',
             mensaje: d === 'ok' ? `✅ Revisamos "${String(it.title).slice(0, 70)}": todo en orden. Vuelve a generar UpCoins con cada descarga.`
                 : `❌ Revisamos "${String(it.title).slice(0, 70)}" y parece un juego comercial completo: seguirá sin generar UpCoins. Si es un mod o configuración, edita el título y la descripción para dejarlo claro.` });
         res.json({ success: true });

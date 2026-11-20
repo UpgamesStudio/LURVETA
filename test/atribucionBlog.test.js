@@ -1,5 +1,5 @@
 /**
- * Atribución de descargas a UpGames Blogs: ticket con `via` y reglas de la entrada. `node test/atribucionBlog.test.js`
+ * Atribución de descargas a Lurveta Blogs: ticket con `via` y reglas de la entrada. `node test/atribucionBlog.test.js`
  */
 'use strict';
 const assert = require('assert');

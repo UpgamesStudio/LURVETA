@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════
-   UpGames Live — directorio, reproductor, chat, regalos y estudio.
+   Lurveta Live — directorio, reproductor, chat, regalos y estudio.
    Video:  'p2p'      → WebRTC directo del creador a cada espectador
            'mediamtx' → servidor de medios (HLS para ver, WHIP/OBS para emitir)
    ══════════════════════════════════════════════════════════════════ */
@@ -85,7 +85,7 @@ if (TOKEN) { $('btn-coins').hidden = false; $('btn-coins').onclick = () => abrir
 /* ══════════════ 1) Directorio ══════════════ */
 async function vistaDirectorio() {
   $('btn-golive').hidden = false;
-  document.title = 'En vivo · UpGames';
+  document.title = 'En vivo · Lurveta';
   app.innerHTML = `
     <section class="dir-hero">
       <div><h1>🔴 En vivo ahora</h1><p>Gameplays en directo de la comunidad. Mira, chatea y apoya con regalos.</p></div>
@@ -351,7 +351,7 @@ async function vistaEspectador(usuario) {
   try { await cargarConfig(); canal = await api(`/live/canal/${encodeURIComponent(usuario)}`); }
   catch (e) { app.innerHTML = `<div class="empty glass" style="margin-top:20px"><div class="big">😕</div><h2>${esc(e.message)}</h2><p></p><a class="btn btn-ghost" href="./live.html">Ver otros lives</a></div>`; return; }
   const c = canal.creador;
-  document.title = `@${c.usuario} · En vivo · UpGames`;
+  document.title = `@${c.usuario} · En vivo · Lurveta`;
 
   if (!canal.live) {
     app.innerHTML = `<div class="empty glass" style="margin-top:20px"><div class="off-av">${avatar(c.usuario, c.avatar)}</div>
@@ -452,7 +452,7 @@ async function vistaEspectador(usuario) {
   pw.onclick = e => { if (e.target === video && !inm.activo) pw.classList.toggle('show-ctrls'); };
   $('b-share').onclick = async () => {
     const url = location.href.split('#')[0];
-    try { if (navigator.share) await navigator.share({ title: `@${c.usuario} está en vivo en UpGames`, text: L0.titulo, url }); else { await navigator.clipboard.writeText(url); toast('Enlace copiado'); } } catch (_) {}
+    try { if (navigator.share) await navigator.share({ title: `@${c.usuario} está en vivo en Lurveta`, text: L0.titulo, url }); else { await navigator.clipboard.writeText(url); toast('Enlace copiado'); } } catch (_) {}
   };
   const reloj = setInterval(() => { const t = $('v-t'); if (t) t.textContent = dur(Date.now() - inicio); }, 1000);
   cleanup.push(() => clearInterval(reloj));
@@ -582,7 +582,7 @@ const CATEGORIAS = ['Acción', 'Shooter', 'Battle Royale', 'RPG', 'Mundo abierto
 async function vistaEstudio() {
   if (!TOKEN) return irLogin();
   $('btn-golive').hidden = true;
-  document.title = 'Estudio · En vivo · UpGames';
+  document.title = 'Estudio · En vivo · Lurveta';
   await cargarConfig();
   const prov = CFG.proveedor;
   const puedePantalla = !!navigator.mediaDevices?.getDisplayMedia;
@@ -693,7 +693,7 @@ async function vistaEstudio() {
     box.innerHTML = '<div class="note">Cargando tu clave…</div>';
     try {
       const k = await api('/live/mi-clave');
-      box.innerHTML = `<div class="note">Configura OBS en <b>Ajustes → Emisión → Personalizado</b> con estos datos. Al pulsar “Iniciar transmisión” en OBS tu live aparece solo en UpGames.</div>
+      box.innerHTML = `<div class="note">Configura OBS en <b>Ajustes → Emisión → Personalizado</b> con estos datos. Al pulsar “Iniciar transmisión” en OBS tu live aparece solo en Lurveta.</div>
         <div class="field"><label>Servidor</label><div class="keybox"><input readonly value="${esc(k.servidor || 'No configurado')}"><button class="btn btn-ghost" data-copy="${esc(k.servidor || '')}">Copiar</button></div></div>
         <div class="field"><label>Clave de transmisión (privada)</label><div class="keybox"><input readonly type="password" id="obs-k" value="${esc(k.streamKey)}"><button class="btn btn-ghost" id="obs-ver">Ver</button><button class="btn btn-ghost" data-copy="${esc(k.streamKey)}">Copiar</button></div></div>
         <button class="btn btn-ghost" id="obs-reg" style="width:100%"><ion-icon name="refresh"></ion-icon> Regenerar clave</button>
@@ -1106,7 +1106,7 @@ async function vistaEstudio() {
   };
   $('b-share-l').onclick = async () => {
     const url = new URL(`./live.html?u=${encodeURIComponent(ME)}`, location.href).href;
-    try { if (navigator.share) await navigator.share({ title: '¡Estoy en vivo en UpGames!', url }); else { await navigator.clipboard.writeText(url); toast('Enlace copiado'); } } catch (_) {}
+    try { if (navigator.share) await navigator.share({ title: '¡Estoy en vivo en Lurveta!', url }); else { await navigator.clipboard.writeText(url); toast('Enlace copiado'); } } catch (_) {}
   };
   $('b-end').onclick = () => { if (confirm('¿Terminar el live? Tus espectadores verán que finalizó.')) terminar(); };
   // Promover el live: sube en el directorio y en "En vivo ahora" de la biblioteca (rutas/extrasUC.js)
@@ -1142,7 +1142,7 @@ async function vistaEstudio() {
         <div class="kpi glass money"><b>🪙 ${(ganado / (CFG?.monedaUsd || 0.02)).toLocaleString('es-CO', { maximumFractionDigits: 1 })}</b><small>UpCoins ganados</small></div>
       </div>
       <div class="rep-box" id="rep-box" hidden></div>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost" href="/">Volver a UpGames</a><a class="btn btn-live" href="./live.html?estudio=1">Nuevo live</a></div></div>`;
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost" href="/">Volver a Lurveta</a><a class="btn btn-live" href="./live.html?estudio=1">Nuevo live</a></div></div>`;
     if (repeticion) pintarRepeticion(repeticion, liveRep);
   }
   function pintarRepeticion(rep, liveRep) {

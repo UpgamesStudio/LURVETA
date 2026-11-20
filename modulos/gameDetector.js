@@ -1,5 +1,5 @@
 /**
- * SISTEMA DE DETECCIÓN AUTOMÁTICA DE JUEGOS — UpGames
+ * SISTEMA DE DETECCIÓN AUTOMÁTICA DE JUEGOS — Lurveta
  * Detecta cuando se publica contenido de un juego conocido
  * y guarda el link de compra oficial en extraData.detectedGame
  */

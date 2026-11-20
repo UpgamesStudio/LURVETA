@@ -1,6 +1,6 @@
-# UpGames Blogs
+# Lurveta Blogs
 
-Herramienta para que cualquier usuario cree su sitio o blog desde UpGames. **UpGames presta el medio** (editor, alojamiento y entrega de páginas); **el creador es el editor único y responsable** de su contenido. Guía pública para usuarios: `public/blogs-guia.html`. Marco legal: Términos v8.0 §10B (blogs) y §08B (programa de impulso), Privacidad v4.1 §2.6 y §2.7.
+Herramienta para que cualquier usuario cree su sitio o blog desde Lurveta. **Lurveta presta el medio** (editor, alojamiento y entrega de páginas); **el creador es el editor único y responsable** de su contenido. Guía pública para usuarios: `public/blogs-guia.html`. Marco legal: Términos v8.0 §10B (blogs) y §08B (programa de impulso), Privacidad v4.1 §2.6 y §2.7.
 
 ## Piezas
 
@@ -24,10 +24,10 @@ Herramienta para que cualquier usuario cree su sitio o blog desde UpGames. **UpG
 - **Aceptación de términos:** `POST /blogs` exige `aceptaTerminos: true` y guarda `terminos: { version, fecha, ip }` en el blog (constancia de que el creador asumió la responsabilidad). Versión actual: `TERMINOS_BLOGS` en `rutas/blogs.js`.
 - **Moderación:** reglas antes de publicar (texto y enlaces: sin acortadores, IP sueltas ni dominios disfrazados) y NEXUS en segundo plano, que devuelve a borrador lo claramente inaceptable.
 - **Aviso a seguidores:** después de la revisión de NEXUS, una notificación `nueva_entrada` (con push) por seguidor; una sola vez por entrada (`Entrada.avisada`) y máximo 3 al día por blog.
-- **Bloque Descarga:** solo publicaciones aprobadas de UpGames; el botón lleva a `puente.html?id=…` (espera, anuncios y ticket), así cuenta al CPM normal del **dueño de la publicación**.
+- **Bloque Descarga:** solo publicaciones aprobadas de Lurveta; el botón lleva a `puente.html?id=…` (espera, anuncios y ticket), así cuenta al CPM normal del **dueño de la publicación**.
 - **Comentarios:** `GET/POST /blogs/comentarios/:eid` y `DELETE /blogs/comentarios/:eid/:cid` (borra el autor o el dueño del blog). Se guardan en `Comentario` con `itemId = blog:<entradaId>` y pasan por Cero Tolerancia, reglas de moderación, límites y revisión de NEXUS.
 - **Nexus escritor:** `POST /blogs/nexus/escribir` (`juegoId`, `tipo`: reseña | guía | noticia, `nota`). Límites: 6/hora y 20/día por usuario, 30/min en total. La salida pasa por `limpiarBloques`; la imagen, la tarjeta y la descarga se agregan por código. Sin clave de Groq responde 503.
-- **Premium:** sin «Hecho con UpGames», 10 blogs (3 gratis) y temas `cristal` y `lienzo`. Si vence, el tema exclusivo se muestra con el tema por defecto.
+- **Premium:** sin «Hecho con Lurveta», 10 blogs (3 gratis) y temas `cristal` y `lienzo`. Si vence, el tema exclusivo se muestra con el tema por defecto.
 - **Monetización (opcional):** marco aislado con ticket firmado (blog + hora + huella de IP), pago por anuncio visto ≥10 s, límites 3/día por blog y 25/día en total por IP, anti-fraude. Tarifa: `BLOGS_CPM` (US$ por 1.000).
 
 ## Datos personales (resumen de Privacidad §2.6)

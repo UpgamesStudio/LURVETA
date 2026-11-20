@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Reseñas con estrellas y colecciones (UGR)
+   Lurveta · Reseñas con estrellas y colecciones (UGR)
    Servidor: rutas/social.js. Usa la hoja y el api de upgames-extras.js (UGX).
      UGR.resenas(item)            sección de reseñas en el detalle (biblioteca)
      UGR.estrellasTile(item)      "★ 4,6" para las tarjetas del catálogo
@@ -156,7 +156,7 @@
       <div class="ugrs-grid">${c.items.map((i, k) => `<a class="ugrs-it" href="/?id=${esc(i._id)}" data-it="${k}"><span class="ugrs-it-img"><img src="${esc(cld(i.image, 'c_fill,g_auto,w_300,h_300,q_auto,f_auto'))}" alt="" loading="lazy" onerror="this.onerror=null;this.src=window.UG_PH||''"></span><b>${esc(i.title)}</b><small>${esc(i.category || '')}${i.resenas?.n ? ` · ★ ${dec(i.resenas.promedio)}` : ''}</small></a>`).join('') || '<p class="ugrs-vacio">Esta colección está vacía.</p>'}</div>`, b => {
       b.querySelector('[data-editar]')?.addEventListener('click', () => editar(c.id, alCambiar));
       b.querySelector('[data-compartir]').onclick = async () => {
-        try { if (navigator.share) await navigator.share({ title: c.titulo, text: `Colección "${c.titulo}" de @${c.usuario} en UpGames`, url: enlace }); else { await navigator.clipboard.writeText(enlace); aviso('Enlace copiado', 'success'); } } catch (_) {}
+        try { if (navigator.share) await navigator.share({ title: c.titulo, text: `Colección "${c.titulo}" de @${c.usuario} en Lurveta`, url: enlace }); else { await navigator.clipboard.writeText(enlace); aviso('Enlace copiado', 'success'); } } catch (_) {}
       };
       // En la biblioteca se abre el detalle sin salir de la página
       b.querySelectorAll('[data-it]').forEach(a => a.addEventListener('click', ev => {

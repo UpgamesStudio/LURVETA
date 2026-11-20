@@ -62,7 +62,7 @@ async function alVerificar(Usuario, nuevo, { crearNotif, logger } = {}) {
             await tx(inv.usuario, pInv, `referido:${inv.usuario}:${nuevo}`);
             crearNotif?.({ destinatario: inv.usuario, tipo: 'sistema', emisor: nuevo, itemTitle: 'Referidos', mensaje: `🎉 @${nuevo} se unió con tu invitación: ganaste ${pInv} UpCoins` });
         }
-        if (pNuevo > 0) crearNotif?.({ destinatario: nuevo, tipo: 'sistema', emisor: 'UpGames', itemTitle: 'Referidos', mensaje: `🎁 Bienvenido: por llegar invitado por @${r.referidoPor} recibiste ${pNuevo} UpCoins` });
+        if (pNuevo > 0) crearNotif?.({ destinatario: nuevo, tipo: 'sistema', emisor: 'Lurveta', itemTitle: 'Referidos', mensaje: `🎁 Bienvenido: por llegar invitado por @${r.referidoPor} recibiste ${pNuevo} UpCoins` });
         logger?.info(`[referidos] @${nuevo} verificó (invitó @${r.referidoPor}) · invitador ${pagaInv ? '+' + pInv : 'sin pago'} · invitado +${pNuevo}`);
         return { invitador: r.referidoPor, pagaInv };
     } catch (e) { logger?.warn(`[referidos] ${e.message}`); return null; }

@@ -274,7 +274,7 @@ function pfGetUniversalWidget() {
         const msg = String(error.message || error.statusText || error || 'Error');
         // El plan de almacenamiento rechaza archivos más pesados que su tope: explicar qué hacer
         const tope = /exceeds maximum|too large|maximum allowed/i.test(msg);
-        if(pfWidgetCallback) pfWidgetCallback({ error: tope ? 'Ese archivo pesa más de lo que hoy acepta la nube de UpGames (100 MB por video). Comprímelo (p. ej. a 720p) o súbelo a YouTube y pega el enlace.' : msg });
+        if(pfWidgetCallback) pfWidgetCallback({ error: tope ? 'Ese archivo pesa más de lo que hoy acepta la nube de Lurveta (100 MB por video). Comprímelo (p. ej. a 720p) o súbelo a YouTube y pega el enlace.' : msg });
         return;
       }
       if(result.event === 'progress' && pfWidgetCallback) {

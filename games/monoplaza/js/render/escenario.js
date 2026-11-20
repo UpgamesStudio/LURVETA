@@ -791,8 +791,8 @@ function portico(scene, c, m0, ang, hw) {
     }
     luces.push(col);
   }
-  // banderola UPGAMES
-  const cartel = new THREE.Mesh(new THREE.PlaneGeometry(ancho * 0.8, 1.0), new THREE.MeshStandardMaterial({ map: TX.texturaCartel('UPGAMES', '#0d47ff', '#ffffff'), roughness: 0.6 }));
+  // banderola LURVETA
+  const cartel = new THREE.Mesh(new THREE.PlaneGeometry(ancho * 0.8, 1.0), new THREE.MeshStandardMaterial({ map: TX.texturaCartel('LURVETA', '#0d47ff', '#ffffff'), roughness: 0.6 }));
   cartel.rotation.y = -Math.PI / 2; cartel.position.set(-0.51, 7.2, 0);
   g.add(cartel);
   g.position.set(m0.x, m0.y, m0.z);
@@ -897,7 +897,7 @@ function grada(scene, c, s0, largo, lado, matGrada, matTecho, matBase, { publico
       esc.position.set(x, (0.95 + f * 0.9) / 2, -lado * (-f * 1.6)); g.add(esc);
     }
     // banda publicitaria en el borde del techo
-    grada.matBanda ??= new THREE.MeshStandardMaterial({ map: (() => { const t = TX.texturaMuro('UPGAMES'); t.repeat.set(3, 1); return t; })(), roughness: 0.6 });
+    grada.matBanda ??= new THREE.MeshStandardMaterial({ map: (() => { const t = TX.texturaMuro('LURVETA'); t.repeat.set(3, 1); return t; })(), roughness: 0.6 });
     const banda = new THREE.Mesh(new THREE.BoxGeometry(L, 1.1, 0.15), grada.matBanda);
     banda.position.set(0, altoT - 0.75, lado * (filas * 0.8) - lado * fondoT / 2); g.add(banda);
     g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.fijo = true; } });
@@ -917,7 +917,7 @@ function puente(scene, c, s, matBase, terreno = null) {
   const g = new THREE.Group();
   const tablero = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.0, ancho), matBase);
   tablero.position.y = 8; g.add(tablero);
-  const tex = TX.texturaMuro('UPGAMES');
+  const tex = TX.texturaMuro('LURVETA');
   tex.repeat.set(2, 1);
   for (const sg of [-1, 1]) {
     const banda = new THREE.Mesh(new THREE.PlaneGeometry(ancho, 2.2), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6 }));
@@ -1193,7 +1193,7 @@ function montanas(scene, terreno) {
 }
 
 // ─── Calle de boxes: carril, muro, líneas del limitador, garajes y su equipo ───
-const nombreEquipos = ['UpGames Racing', 'Rosso Vulcano', 'Silver Arrowhead', 'Nightbull', 'Papaya Speed', 'Verde Andino', 'Alpine Blue', 'Kraken GP', 'Halcón Dorado', 'Polar Racing', 'Tormenta Roja'];
+const nombreEquipos = ['Lurveta Racing', 'Rosso Vulcano', 'Silver Arrowhead', 'Nightbull', 'Papaya Speed', 'Verde Andino', 'Alpine Blue', 'Kraken GP', 'Halcón Dorado', 'Polar Racing', 'Tormenta Roja'];
 const coloresEquipos = ['#0d47ff', '#c4061a', '#b9c2c9', '#14204a', '#ff7a00', '#0b6b4f', '#1060d0', '#1b1b1f', '#f2f2f2', '#e8f4ff', '#5a0b1e'];
 
 function calleBoxes(scene, c, m, res) {
@@ -1308,18 +1308,18 @@ function fusionarEntreGrupos(scene, grupos, filtro = () => true) {
 // coche que sigue el helicóptero de la tele (lo actualiza el bucle del juego)
 export const tv = { foco: null };
 
-// ─── Publicidad de UpGames por todo el circuito ───────────────────────────────
+// ─── Publicidad de Lurveta por todo el circuito ───────────────────────────────
 const LEMAS = [
-  ['UPGAMES', 'La primera plataforma de su especie', '#0d47ff', '#ffffff'],
+  ['LURVETA', 'La primera plataforma de su especie', '#0d47ff', '#ffffff'],
   ['UPCOINS', 'Mejora tu monoplaza en el Garaje', '#111318', '#ffd23f'],
-  ['UPGAMES LIVE', 'Transmite tus carreras', '#e8202a', '#ffffff'],
-  ['NEXUS IA', 'El cerebro de UpGames', '#0b0b14', '#00e5ff'],
+  ['LURVETA LIVE', 'Transmite tus carreras', '#e8202a', '#ffffff'],
+  ['NEXUS IA', 'El cerebro de Lurveta', '#0b0b14', '#00e5ff'],
   ['upgames.games', 'Juegos, mods y apps', '#ffffff', '#0d47ff'],
-  ['UpGames RACING', 'Corre contra 21 pilotos en línea', '#ff7a00', '#111111'],
-  ['UPGAMES STORE', 'Mods, apps y juegos para tu móvil', '#0b0b14', '#ffd23f'],
-  ['UPGAMES TV', 'Las carreras en directo', '#f2f4f8', '#e8202a'],
-  ['JUEGA EN UPGAMES', 'Gratis · sin descargas · upgames.games', '#16a34a', '#ffffff'],
-  ['NEXUS IA', 'Tu asistente dentro de UpGames', '#3b0aa8', '#ffffff'],
+  ['Lurveta RACING', 'Corre contra 21 pilotos en línea', '#ff7a00', '#111111'],
+  ['LURVETA STORE', 'Mods, apps y juegos para tu móvil', '#0b0b14', '#ffd23f'],
+  ['LURVETA TV', 'Las carreras en directo', '#f2f4f8', '#e8202a'],
+  ['JUEGA EN LURVETA', 'Gratis · sin descargas · upgames.games', '#16a34a', '#ffffff'],
+  ['NEXUS IA', 'Tu asistente dentro de Lurveta', '#3b0aa8', '#ffffff'],
 ];
 
 function texturaValla(lema) {
@@ -1379,7 +1379,7 @@ function publicidad(scene, c, terreno, calidad) {
     scene.add(g);
   }
   // logotipos pintados en la hierba de las escapatorias y en la recta
-  const texLogo = texturaLogoSuelo('UPGAMES', 'rgba(255,255,255,0.85)');
+  const texLogo = texturaLogoSuelo('LURVETA', 'rgba(255,255,255,0.85)');
   const matLogo = new THREE.MeshStandardMaterial({ map: texLogo, transparent: true, roughness: 0.8, polygonOffset: true, polygonOffsetFactor: -4, depthWrite: false });
   const ponerLogo = (s, d, largo) => {
     const m = c.muestra(s), i = m.i;
@@ -1396,7 +1396,7 @@ function publicidad(scene, c, terreno, calidad) {
     if (hueco > 12 && !(lado > 0 && c.enZonaPit[i])) ponerLogo(cv.s + 40, lado * (c.semiAncho[i] + 4 + (hueco - 6) / 2), Math.min(14, hueco * 1.4));
   }
   ponerLogo(150, 0, 12);                       // sobre el asfalto de la recta, como en la parrilla real
-  // dirigible de UpGames dando vueltas sobre el circuito
+  // dirigible de Lurveta dando vueltas sobre el circuito
   if (calidad >= 1) {
     const cx = terreno.x0 + terreno.ancho / 2, cz = terreno.z0 + terreno.alto / 2;
     const zep = new THREE.Group();
@@ -1404,7 +1404,7 @@ function publicidad(scene, c, terreno, calidad) {
     const x = cv.getContext('2d'); x.fillStyle = '#f4f6fa'; x.fillRect(0, 0, 1024, 256);
     x.fillStyle = '#0d47ff'; x.fillRect(0, 96, 1024, 64);
     x.fillStyle = '#0d47ff'; x.font = '900 italic 90px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText('UPGAMES', 256, 60); x.fillText('UPGAMES', 768, 60);
+    x.fillText('LURVETA', 256, 60); x.fillText('LURVETA', 768, 60);
     x.fillStyle = '#ffffff'; x.font = '800 44px Arial'; x.fillText('upgames.games', 256, 128); x.fillText('upgames.games', 768, 128);
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
     const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16), new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 }));

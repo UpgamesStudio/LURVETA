@@ -3,7 +3,7 @@
    TOKENS & RESET
 ═══════════════════════════════════════════ */
 :root {
-  /* Paleta UpGames · Liquid Glass (v5) — limpia, sobria, menos "gamer" */
+  /* Paleta Lurveta · Liquid Glass (v5) — limpia, sobria, menos "gamer" */
   --g: #32D583;
   --g-rgb: 50,213,131;
   --g-dim: rgba(var(--g-rgb),.12);

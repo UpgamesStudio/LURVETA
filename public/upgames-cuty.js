@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Acortador de anuncios (Cuty.io)
+   Lurveta · Acortador de anuncios (Cuty.io)
 
    El enlace final de una descarga pasa por Cuty (anuncios que pagan a
-   UpGames) salvo con Premium o cuando viene de un blog sin monetizar.
+   Lurveta) salvo con Premium o cuando viene de un blog sin monetizar.
    Genera el mismo enlace que su script de página completa (cdn.cuty.io/fps.js:
    https://cuty.io/fps?token=…&data=base64(rot13(url))), pero solo para el
    botón de descarga, sin cargar un script de terceros que reescriba la página.
@@ -15,7 +15,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   const TOKEN = '8e33fae42bd0348823959f775';
-  // Nunca se acortan enlaces de UpGames (descargas oficiales, la propia web) ni los que ya son de Cuty
+  // Nunca se acortan enlaces de Lurveta (descargas oficiales, la propia web) ni los que ya son de Cuty
   const PROPIOS = /(^|\.)(upgames\.games|up\.railway\.app|cuty\.io|cuttty\.com)$/i;
 
   const rot13 = s => s.replace(/[a-z]/gi, c => String.fromCharCode(c.charCodeAt(0) + (c.toLowerCase() < 'n' ? 13 : -13)));
@@ -23,7 +23,7 @@
     ? btoa(String.fromCharCode(...new TextEncoder().encode(s)))
     : Buffer.from(s, 'utf8').toString('base64');
 
-  /** ¿Se puede acortar? Solo enlaces http(s) válidos que no son de UpGames ni de Cuty. */
+  /** ¿Se puede acortar? Solo enlaces http(s) válidos que no son de Lurveta ni de Cuty. */
   function aplica(url) {
     try { const u = new URL(url); return /^https?:$/.test(u.protocol) && !PROPIOS.test(u.hostname); } catch (_) { return false; }
   }

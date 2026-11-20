@@ -116,7 +116,7 @@ test('CSV del estado de resultados', () => {
     const p = E.calcularPyG({ ventas: [{ producto: 'premium', dinero: true, n: 1, usd: 9.5, creador: 0 }], costos: [{ categoria: 'servidor', usd: 5 }], cfg });
     const csv = E.aCSV({ nombre: 'octubre de 2026', historia: [{ nombre: 'septiembre de 2026', pyg: E.calcularPyG({ cfg }) }, { nombre: 'octubre de 2026', pyg: p }],
         costos: [{ categoria: 'servidor', concepto: '=HYPERLINK("x")', usd: 5, recurrente: true }] });
-    assert.ok(csv.startsWith('﻿UPGAMES'));
+    assert.ok(csv.startsWith('﻿LURVETA'));
     assert.ok(csv.includes('Concepto;septiembre de 2026;octubre de 2026'));
     assert.ok(csv.includes('Ventas con dinero;0;9,5'));
     assert.ok(csv.includes('Servidor (Railway);0;-5'));

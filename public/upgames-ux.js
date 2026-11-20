@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Experiencia de la portada y de la ficha
+   Lurveta · Experiencia de la portada y de la ficha
    ───────────────────────────────────────────────────────────────
    • Filas en la portada: "Más descargados esta semana", "Nuevos",
      "Recomendados para ti" y "Del blog de los creadores" (scroll horizontal), antes del catálogo completo.
    • Guía de instalación: la escribe QUIEN PUBLICA (texto paso a paso
-     y/o un video tutorial suyo ya publicado en UpGames). UpGames no la
+     y/o un video tutorial suyo ya publicado en Lurveta). Lurveta no la
      redacta: solo la muestra en la ficha bajo "Cómo instalarlo".
    • La altura real de la cabecera se publica en --hdr-h (en móvil el
      buscador baja a su propia fila y la cabecera crece).
@@ -110,7 +110,7 @@
   try { localStorage.removeItem('ug_historial'); } catch (_) {}
   addEventListener('ug:detalle', e => { elegir(buscarItem(e.detail), 'v'); });
 
-  // ── Blogs de los creadores: lo último publicado en UpGames Blogs (se pide una vez por visita) ──
+  // ── Blogs de los creadores: lo último publicado en Lurveta Blogs (se pide una vez por visita) ──
   let blogsRecientes = null, blogsPedido = null;
   const miniBlog = u => String(u || '').replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\/(?:w_|c_))/, '$1f_auto,q_auto,w_480,c_limit/');
   function filaBlogs() {
@@ -179,7 +179,7 @@
   window.UGMatiz = id => matiz(id);
 
   // Solo entran publicaciones cuya portada carga de verdad: una imagen rota (enlace externo caído,
-  // hotlink bloqueado…) nunca se ve como el marcador gris «UpGames» en el carrusel.
+  // hotlink bloqueado…) nunca se ve como el marcador gris «Lurveta» en el carrusel.
   const portadaOk = new Map();   // src → true | false
   function comprobarPortada(src) {
     if (portadaOk.has(src)) return Promise.resolve(portadaOk.get(src));
@@ -332,8 +332,8 @@
     const p = zona.dataset.guia;
     zona.innerHTML = `
       <div class="ugx-gf-h"><ion-icon name="construct-outline"></ion-icon><b>Guía de instalación</b><small>opcional · la escribes tú</small></div>
-      <p class="ugx-gf-ayuda">Quienes descargan se pierden al instalar (Winlator, GameHub, OBB, parches…). Explícalo con tus palabras o enlaza un video tuyo ya publicado en UpGames.</p>
-      <label class="pf-label" for="${p}-tutorial">Video tutorial (tuyo, publicado en UpGames)</label>
+      <p class="ugx-gf-ayuda">Quienes descargan se pierden al instalar (Winlator, GameHub, OBB, parches…). Explícalo con tus palabras o enlaza un video tuyo ya publicado en Lurveta.</p>
+      <label class="pf-label" for="${p}-tutorial">Video tutorial (tuyo, publicado en Lurveta)</label>
       <select id="${p}-tutorial" class="pf-input ugx-gf-sel"><option value="">— Sin video tutorial —</option></select>
       <small class="ugx-gf-nota" id="${p}-tutorial-nota"></small>
       <label class="pf-label" for="${p}-guia" style="margin-top:12px">Pasos de instalación</label>

@@ -203,7 +203,7 @@ app.put("/admin/items/:id", verificarAdmin, [
         // Avisar al autor cuando su publicación se rechaza (antes desaparecía sin explicación)
         if (updates.status === 'rechazado' && antes?.status !== 'rechazado') {
             const motivo = updates.motivoRechazo ? `: ${updates.motivoRechazo}` : '. Revisa las normas de publicación y vuelve a intentarlo.';
-            Notificacion.create({ destinatario: item.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: item._id.toString(), itemTitle: 'Revisión',
+            Notificacion.create({ destinatario: item.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: item._id.toString(), itemTitle: 'Revisión',
                 mensaje: `❌ Tu publicación “${String(item.title).replace(/[<>&"']/g, '')}” no fue aprobada${motivo.replace(/[<>&"']/g, '')}` }).catch(() => {});
         }
         logger.info(`ADMIN: Item ${item._id} actualizado`);

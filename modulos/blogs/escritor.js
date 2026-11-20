@@ -1,5 +1,5 @@
 /**
- * UpGames Blogs · Nexus escritor
+ * Lurveta Blogs · Nexus escritor
  *
  * «Escríbeme una reseña de este juego»: Nexus recibe los datos de la publicación y devuelve el
  * borrador de una entrada ya armada con bloques (no HTML). Lo que devuelve el modelo NUNCA se
@@ -15,7 +15,7 @@ const TIPOS = {
     noticia: 'una NOTICIA breve: titular, lo más importante y por qué le interesa a la comunidad',
 };
 
-const SISTEMA = `Eres Nexus, el asistente de escritura de UpGames Blogs. Escribes borradores en español para blogs de videojuegos, mods y apps.
+const SISTEMA = `Eres Nexus, el asistente de escritura de Lurveta Blogs. Escribes borradores en español para blogs de videojuegos, mods y apps.
 Devuelves SOLO un objeto JSON con esta forma:
 {"titulo":"…","resumen":"1-2 frases","etiquetas":["…"],"bloques":[…]}
 Cada bloque es UNO de estos (sin HTML; en los textos se permite **negrita**, *cursiva*, listas con "- " y numeradas con "1. "):
@@ -33,7 +33,7 @@ Reglas:
 function pedido(j, tipo, nota) {
     const ex = j.extraData && typeof j.extraData === 'object' ? Object.fromEntries(Object.entries(j.extraData).filter(([k, v]) => k !== 'detectedGame' && typeof v !== 'object' && String(v).length < 120).slice(0, 12)) : {};
     return `Escribe ${TIPOS[tipo] || TIPOS.resena}.
-Publicación de UpGames:
+Publicación de Lurveta:
 - Nombre: ${String(j.title || '').slice(0, 140)}
 - Categoría: ${String(j.category || '—').slice(0, 40)}
 - Etiquetas: ${(j.tags || []).slice(0, 10).join(', ') || '—'}
@@ -94,7 +94,7 @@ const EJEMPLO_LANDING = `{"titulo":"Estudio de tatuajes Tinta Viva","resumen":"T
 {"tipo":"faq","items":[{"p":"¿Duele mucho?","r":"Depende de la zona. Te recomendamos la mejor ubicación para tu primera vez y hacemos pausas cuando lo necesites."},{"p":"¿Cuánto cuesta?","r":"Depende del tamaño y el detalle. En la valoración gratis te damos el precio exacto, sin compromiso."},{"p":"¿Cómo reservo?","r":"Escríbenos por WhatsApp con tu idea y una foto de referencia; te proponemos fecha y hora."}]},
 {"tipo":"cta","titulo":"¿Listo para tu próximo tatuaje?","texto":"Cuéntanos tu idea hoy y te respondemos en minutos.","bTexto":"Escribir por WhatsApp","bUrl":"","fondo":"acento"}]}`;
 
-const SISTEMA_LANDING = `Eres Nexus, el asistente de UpGames Blogs. Diseñas landing pages profesionales para personas que no saben programar.
+const SISTEMA_LANDING = `Eres Nexus, el asistente de Lurveta Blogs. Diseñas landing pages profesionales para personas que no saben programar.
 ${ESTILO_PRO}
 Devuelves SOLO un JSON: {"titulo":"nombre corto de la página","resumen":"meta descripción de 140-155 caracteres con beneficio y llamada a la acción","bloques":[…]}
 ${FORMA_SECCIONES}
@@ -109,7 +109,7 @@ Alterna los fondos para separar las secciones (nunca dos seguidas con el mismo f
 Ejemplo de NIVEL esperado (otro negocio; no lo copies, úsalo como referencia de calidad):
 ${EJEMPLO_LANDING}`;
 
-const SISTEMA_SECCION = `Eres Nexus, el asistente de UpGames Blogs. Escribes el contenido de UNA sección de una página web, con calidad profesional.
+const SISTEMA_SECCION = `Eres Nexus, el asistente de Lurveta Blogs. Escribes el contenido de UNA sección de una página web, con calidad profesional.
 ${ESTILO_PRO}
 Devuelves SOLO un JSON con el bloque pedido (sin "fondo"), con esta forma:
 ${FORMA_SECCIONES}
@@ -123,16 +123,16 @@ const ACCIONES_TEXTO = {
     ortografia: 'Corrige SOLO ortografía, tildes, mayúsculas y puntuación. No cambies palabras, estilo ni orden.',
     cercano: 'Reescríbelo con un tono cercano, cálido y natural, como si se lo explicaras a un amigo, sin perder profesionalidad.',
 };
-const SISTEMA_TEXTO = `Eres Nexus, el editor de textos de UpGames Blogs: escribes con la calidad de un redactor profesional.
+const SISTEMA_TEXTO = `Eres Nexus, el editor de textos de Lurveta Blogs: escribes con la calidad de un redactor profesional.
 Reescribes el texto que te pasan según la instrucción. Devuelves SOLO un JSON: {"texto":"…"}.
 Reglas: conserva el idioma original y el formato (**negrita**, *cursiva*, listas con "- " o "1. ", enlaces [texto](https://…) y párrafos separados por una línea en blanco). Mantén los [corchetes] que ya existan. No añadas saludos, comentarios, títulos ni datos inventados.`;
 
-const SISTEMA_SEO = `Eres Nexus, especialista SEO de UpGames Blogs. Con el título y el texto de una página propones:
+const SISTEMA_SEO = `Eres Nexus, especialista SEO de Lurveta Blogs. Con el título y el texto de una página propones:
 {"titulo":"título SEO de 45-60 caracteres: palabra clave principal al inicio + beneficio o lugar; sin mayúsculas sostenidas ni clickbait","resumen":"meta descripción de 140-155 caracteres: qué ofrece, para quién y una llamada a la acción","etiquetas":["3 a 6 palabras clave cortas en minúscula, las que buscaría la gente"]}
 Devuelves SOLO ese JSON, en el idioma del texto. Fiel al contenido: no inventes datos, precios ni lugares.`;
 
 // Kit de marca: Nexus propone paletas (colores en hex de 6 dígitos y letras de la lista disponible)
-const SISTEMA_COLORES = fuentes => `Eres Nexus, director de arte de UpGames Blogs. Propones 3 identidades visuales distintas para una marca.
+const SISTEMA_COLORES = fuentes => `Eres Nexus, director de arte de Lurveta Blogs. Propones 3 identidades visuales distintas para una marca.
 Devuelves SOLO un JSON: {"paletas":[{"nombre":"nombre evocador de 1-3 palabras","porque":"1 frase de por qué encaja con la marca","acento":"#RRGGBB","acento2":"#RRGGBB","fuente":"id de letra para títulos","fuenteTexto":"id de letra para el texto"}]}
 Reglas: el color principal ("acento") debe leerse bien sobre el fondo del tema (en tema oscuro, colores vivos o claros; en tema claro, colores con buen contraste, no pasteles). "acento2" combina con el principal para degradados. Evita los clichés obvios si hay opciones mejores. Letras disponibles (usa SOLO estos id): ${fuentes}. El texto debe ser muy legible (manrope, inter, poppins, montserrat o lora).`;
 

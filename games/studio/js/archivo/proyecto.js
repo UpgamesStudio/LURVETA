@@ -55,7 +55,7 @@ export function escenaADatos(escena) {
 }
 
 export function datosAObjetos(d) {
-  if (d.formato !== 'upgames-studio') throw new Error('No es un proyecto de UpGames Studio');
+  if (d.formato !== 'upgames-studio') throw new Error('No es un proyecto de Lurveta Studio');
   return d.objetos.map((x) => {
     const m = new THREE.Mesh(new THREE.BufferGeometry(), datosAMaterial(x.material));
     m.name = x.nombre; m.visible = x.visible; m.uuid = x.uuid || m.uuid;

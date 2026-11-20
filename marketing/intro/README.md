@@ -2,7 +2,7 @@
 
 > En la web conviven dos animaciones: esta intro (primera visita de cada dispositivo) y, después, la bienvenida animada con los términos (`public/js/11-bienvenida.js`), que espera a que la intro se cierre para empezar.
 
-Intro de UpGames: la sensación de **conectarse a la red y entrar a un mundo digital nuevo** (rejilla de luz, muros de luz que corren por el suelo, túnel de datos, ciudad de neón) con la identidad de UpGames: verde neón, blanco y negro, con un acento menta frío.
+Intro de Lurveta: la sensación de **conectarse a la red y entrar a un mundo digital nuevo** (rejilla de luz, muros de luz que corren por el suelo, túnel de datos, ciudad de neón) con la identidad de Lurveta: verde neón, blanco y negro, con un acento menta frío.
 
 Dura 71,5 s y tiene botón **SALTAR**. La locución va en 8 frases separadas por tramos largos de animación (un 5 % más pausada que la grabación original).
 
@@ -36,10 +36,10 @@ La música (*Toxic Love*, libre de derechos, 123 BPM) tiene 30 s de ambiente y s
 
 | Tiempo | Voz | Animación |
 |---|---|---|
-| 0:00.5 | — | **¡Pum!** Logo UpGames con onda de choque y destello |
+| 0:00.5 | — | **¡Pum!** Logo Lurveta con onda de choque y destello |
 | 0:03.6 | — | El logo falla como un tubo de neón, parpadea y se apaga |
 | 0:06.2 | — | Negro; texto de arranque: INICIANDO ENLACE · ACCESO CONCEDIDO |
-| 0:08.0 | «Bienvenido a UpGames» | Una línea de luz parte la pantalla y se abre; aparece el logo |
+| 0:08.0 | «Bienvenido a Lurveta» | Una línea de luz parte la pantalla y se abre; aparece el logo |
 | 0:10.3 | — | La red se enciende desde el centro; muros de luz cruzan el suelo |
 | 0:16.2 | «Estás a punto de entrar a un nuevo mundo digital» | Un portal de anillos aparece en el horizonte |
 | 0:19.5 | — | La cámara acelera hacia el portal; CONECTANDO 0 → 100 % |
@@ -51,6 +51,6 @@ La música (*Toxic Love*, libre de derechos, 123 BPM) tiene 30 s de ambiente y s
 | 0:52.6 | «Crea tu comunidad» | Constelación de personas conectándose; +1.280 miembros |
 | 0:56.3 | «Obtén tu primera monetización y empieza a crear tu comunidad» | Monedas UC cayendo en espiral a una plataforma; la red la rodea |
 | 1:00.4 | — | Ascenso vertical sobre la ciudad |
-| 1:04.5 | «Esto es UpGames» | Las luces convergen al centro y el logo estalla en el golpe; upgames.games, botón ENTRAR |
+| 1:04.5 | «Esto es Lurveta» | Las luces convergen al centro y el logo estalla en el golpe; upgames.games, botón ENTRAR |
 
 Las cifras que aparecen son ilustrativas.

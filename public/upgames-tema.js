@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Temas visuales
+   Lurveta · Temas visuales
    ───────────────────────────────────────────────────────────────
    Se carga en <head>, ANTES de pintar, para que no parpadee:
      • <html data-tema="cyber"> por defecto (localStorage 'ug_tema').

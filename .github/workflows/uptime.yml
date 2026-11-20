@@ -42,7 +42,7 @@ jobs:
           WEB: ${{ steps.chequeo.outputs.web }}
         with:
           script: |
-            const titulo = '🔴 UpGames caído (monitor automático)';
+            const titulo = '🔴 Lurveta caído (monitor automático)';
             const caido = process.env.API.startsWith('caida') || process.env.WEB.startsWith('caida');
             const { data: abiertos } = await github.rest.issues.listForRepo({ owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'caida', per_page: 5 });
             const hora = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });

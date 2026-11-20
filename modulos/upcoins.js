@@ -1,8 +1,8 @@
 /**
- * UpCoins (UC): la única moneda de UpGames. 1 UC = US$0,02 (50 UC = US$1).
+ * UpCoins (UC): la única moneda de Lurveta. 1 UC = US$0,02 (50 UC = US$1).
  *
  * Un usuario tiene UpCoins de dos orígenes, que en la app se ven como un solo total:
- *   - comprados o de regalo → campo `monedas` (en UC). Se gastan dentro de UpGames,
+ *   - comprados o de regalo → campo `monedas` (en UC). Se gastan dentro de Lurveta,
  *     pero NO se retiran como dinero (evita lavado con tarjetas robadas y contracargos).
  *   - ganados como creador → campo `saldo` (en USD, con decimales exactos). Se gastan
  *     igual y además se pueden retirar como dinero real.

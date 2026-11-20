@@ -79,7 +79,7 @@ function equipamiento() {
 // Neumático completo (goma + llanta), opcionalmente con su manta calentadora
 function ruedaSuelta(color, compuesto, conManta) {
   const e = equipamiento(), g = new THREE.Group();
-  // el neumático «Up Games» de ese compuesto (el mismo que llevan los coches)
+  // el neumático «Lurveta» de ese compuesto (el mismo que llevan los coches)
   g.add(ruedaMontada(compuesto, 0.36, 0.36));
   if (conManta) {
     const cv = document.createElement('canvas'); cv.width = 256; cv.height = 64;

@@ -1,5 +1,5 @@
 /**
- * UpGames Blogs · atribución de descargas.
+ * Lurveta Blogs · atribución de descargas.
  *
  * Cuando alguien llega a la página puente desde el botón «Descargar» de una entrada de blog, la descarga
  * (si cuenta para el autor del juego) también paga al dueño del blog: BLOGS_DESCARGA_CPM US$ por 1.000.

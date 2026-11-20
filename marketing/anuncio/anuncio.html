@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>UpGames · Anuncio</title>
+<title>Lurveta · Anuncio</title>
 <!--
-  Anuncio publicitario de UpGames (vertical 1080×1920, 30 fps, sin audio).
+  Anuncio publicitario de Lurveta (vertical 1080×1920, 30 fps, sin audio).
   Todo se calcula en render(t) a partir del tiempo: cada fotograma es exacto y
   render.js lo graba cuadro a cuadro con ffmpeg. Abre este archivo en Chrome y
   añade ?t=12.5 para ver un instante, o ?play para verlo en tiempo real.
@@ -110,7 +110,7 @@ const T = {   // sincronizado con la locución (ElevenLabs, 81,5 s)
   s2: 7.2,    // "¿O eres creador…" 7.44
   s3: 14.3,   // "Sabemos que publicar…" 14.46
   s4: 23.4,   // "Y si te dijera…" 23.54
-  s5: 30.95,  // "¡Eso es UpGames!" 31.10
+  s5: 30.95,  // "¡Eso es Lurveta!" 31.10
   s6: 38.2,   // "Olvídate…" 38.32
   s7: 42.75,  // "Aquí tienes…" 42.88
   s8: 49.55,  // "Monetiza…" 49.68
@@ -190,7 +190,7 @@ function cabeceraUI(pant) { return h('div', 'ui-hdr', '<div class="ui-logo"><b>U
 const bg = document.getElementById('bg'), bctx = bg.getContext('2d');
 const estrellas = (() => { const r = rng(7); return Array.from({ length: 140 }, () => [r() * 1080, r() * 1100, r() * 1.8 + .4, r()]); })();
 function fondo(t, tono) {
-  // tono: 0 = gris (problema), 1 = verde (UpGames)
+  // tono: 0 = gris (problema), 1 = verde (Lurveta)
   const W = 1080, H = 1920;
   const g = bctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#03060C'); g.addColorStop(.55, '#06101F'); g.addColorStop(1, '#03060C');
@@ -316,11 +316,11 @@ function esc4(t) {
   pon(e4s, { y: lerp(200, 0, P(lt, 6.0, 6.7, E.out5)), s: lerp(.7, 1, P(lt, 6.0, 6.7, E.back)), o: P(lt, 6.0, 6.3) });
 }
 
-/* ════════════════ ESCENA 5: ¡Eso es UPGAMES! ════════════════ */
+/* ════════════════ ESCENA 5: ¡Eso es LURVETA! ════════════════ */
 const e5 = capa(12);
 const e5rayos = h('div', 'c', '', e5); Object.assign(e5rayos.style, { width: '2200px', height: '2200px', background: 'repeating-conic-gradient(from 0deg, rgba(57,255,136,.10) 0deg 6deg, transparent 6deg 18deg)', borderRadius: '50%', WebkitMaskImage: 'radial-gradient(circle, #000 20%, transparent 65%)' });
 const e5logo = h('div', 'c orb', '', e5); e5logo.style.whiteSpace = 'nowrap'; e5logo.style.fontSize = '176px';
-const LOGO = 'UPGAMES'; const e5letras = LOGO.split('').map((ch, i) => { const s = h('span', '', ch, e5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 2) s.className = 'glow'; return s; });
+const LOGO = 'LURVETA'; const e5letras = LOGO.split('').map((ch, i) => { const s = h('span', '', ch, e5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 2) s.className = 'glow'; return s; });
 const e5cortes = [0, 1, 2].map(i => { const c = h('div', 'c orb', LOGO, e5); c.style.fontSize = '176px'; c.style.color = i ? '#39FF88' : '#fff'; return c; });
 const e5tag = h('div', 'c mono', '', e5); Object.assign(e5tag.style, { fontSize: '46px', letterSpacing: '.22em', color: '#C9CED6', whiteSpace: 'nowrap' });
 const TAG = 'EL ECOSISTEMA DEFINITIVO';
@@ -407,11 +407,11 @@ const e9 = capa(10);
 const e9tel = telefono(e9, true);
 const e9bloq = h('div', '', '<div class="orb" style="font-size:120px;text-align:center;margin-top:170px">21:47</div><div class="mono" style="text-align:center;font-size:30px;color:#8A94A6">VIERNES 6 DE NOVIEMBRE</div>', e9tel.pant);
 Object.assign(e9bloq.style, { position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 30%, #0B2A3A, #03060C 70%)' });
-const NOTIS = [['🔔', 'UpGames · @neonkid', 'Publicó «Neon Rider v2.0»'], ['👥', '+128 seguidores nuevos', 'Tu comunidad está creciendo'], ['💬', 'Grupo «Modders LATAM»', '34 mensajes nuevos'], ['🔴', '@rocedev está EN VIVO', 'Toca para unirte al live']];
+const NOTIS = [['🔔', 'Lurveta · @neonkid', 'Publicó «Neon Rider v2.0»'], ['👥', '+128 seguidores nuevos', 'Tu comunidad está creciendo'], ['💬', 'Grupo «Modders LATAM»', '34 mensajes nuevos'], ['🔴', '@rocedev está EN VIVO', 'Toca para unirte al live']];
 const e9notis = NOTIS.map(([ic, b, s], i) => { const n = h('div', 'noti', `<div class="av hex">${ic}</div><div><b>${b}</b><small>${s}</small></div>`, e9tel.pant); n.style.top = (480 + i * 170) + 'px'; return n; });
 const e9seg = h('div', 'c', '<div class="orb glow" style="font-size:100px;text-align:center" id="e9n">+0</div><div class="mono" style="font-size:36px;text-align:center;color:#8A94A6;letter-spacing:.2em">SEGUIDORES</div>', e9);
 const e9n = document.getElementById('e9n');
-// Pantalla del live: el juego (canvas) y la interfaz de UpGames Live encima
+// Pantalla del live: el juego (canvas) y la interfaz de Lurveta Live encima
 const e9live = h('div', '', '', e9tel.pant); Object.assign(e9live.style, { position: 'absolute', inset: 0 });
 const juego = h('canvas', '', null, e9live); juego.width = 1112; juego.height = 2392; Object.assign(juego.style, { position: 'absolute', inset: 0, width: '100%', height: '100%' });
 const jctx = juego.getContext('2d');

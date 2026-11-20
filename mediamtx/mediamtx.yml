@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════
-#  UpGames Live — servidor de medios (MediaMTX) · OPCIONAL
+#  Lurveta Live — servidor de medios (MediaMTX) · OPCIONAL
 #  Entrada: OBS por RTMP (:1935) y navegador por WHIP (:8889)
 #  Salida:  LL-HLS (:8888) para los espectadores, sin límite de público
-#  Quién puede publicar lo decide el backend de UpGames (authMethod: http).
+#  Quién puede publicar lo decide el backend de Lurveta (authMethod: http).
 #  Cualquier valor se puede sobrescribir con variables MTX_<CLAVE>, p. ej.
 #  MTX_AUTHHTTPADDRESS=https://backend/live/mediamtx/auth?s=SECRETO
 # ══════════════════════════════════════════════════════════════════

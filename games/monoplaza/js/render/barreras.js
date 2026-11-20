@@ -10,7 +10,7 @@ function texturaBidon() {
   x.fillStyle = '#ff7a00'; x.fillRect(0, 0, 256, 128);
   x.fillStyle = '#ffffff'; x.fillRect(0, 44, 256, 40);
   x.fillStyle = '#0d47ff'; x.font = '900 italic 30px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillText('UPGAMES', 64, 64); x.fillText('UPGAMES', 192, 64);
+  x.fillText('LURVETA', 64, 64); x.fillText('LURVETA', 192, 64);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }

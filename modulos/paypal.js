@@ -1,8 +1,8 @@
 /**
- * PayPal Checkout (Orders v2) para cobros dentro de UpGames: monedas del live y
+ * PayPal Checkout (Orders v2) para cobros dentro de Lurveta: monedas del live y
  * acceso directo a enlaces. El comprador paga con TARJETA (crédito/débito, sin
  * cuenta de PayPal) o con su cuenta PayPal; los datos de la tarjeta los captura
- * PayPal en su formulario seguro, nunca pasan por UpGames.
+ * PayPal en su formulario seguro, nunca pasan por Lurveta.
  *
  * Flujo seguro: el servidor crea la orden con el dueño (custom_id) y el producto
  * (reference_id); al capturar, verifica ambos y el monto ANTES de cobrar.
@@ -70,7 +70,7 @@ function crear(config, getToken, { transporte } = {}) {
         const r = await req('POST', '/v2/checkout/orders', {
             intent: 'CAPTURE',
             purchase_units: [{ reference_id: referencia, custom_id: usuario, description: descripcion.slice(0, 127), amount: { currency_code: 'USD', value: usd.toFixed(2) } }],
-            application_context: { brand_name: 'UpGames', shipping_preference: 'NO_SHIPPING', user_action: 'PAY_NOW' },
+            application_context: { brand_name: 'Lurveta', shipping_preference: 'NO_SHIPPING', user_action: 'PAY_NOW' },
         }, { 'PayPal-Request-Id': `ug-${usuario}-${referencia}-${Date.now()}`.slice(0, 108) });
         if (r.status !== 201 || !r.data.id) {
             const e = new Error('PayPal no pudo crear la orden'); e.status = 502; e.detalle = JSON.stringify(r.data).slice(0, 300); throw e;
@@ -118,10 +118,10 @@ function crear(config, getToken, { transporte } = {}) {
         let r;
         try {
             r = await req('POST', '/v1/payments/payouts', {
-                sender_batch_header: { sender_batch_id: `UPGAMES_${pagoId}`, email_subject: '¡Tu pago de UpGames ha llegado!',
-                    email_message: 'Has recibido un pago por tus ganancias de creador en UpGames. ¡Gracias por crear!' },
+                sender_batch_header: { sender_batch_id: `UPGAMES_${pagoId}`, email_subject: '¡Tu pago de Lurveta ha llegado!',
+                    email_message: 'Has recibido un pago por tus ganancias de creador en Lurveta. ¡Gracias por crear!' },
                 items: [{ recipient_type: 'EMAIL', amount: { value: Number(monto).toFixed(2), currency: 'USD' }, receiver: email,
-                    note: `Retiro UpGames #${pagoId}`, sender_item_id: `item_${pagoId}` }],
+                    note: `Retiro Lurveta #${pagoId}`, sender_item_id: `item_${pagoId}` }],
             });
         } catch (e) { throw fallo(e.message, !!e.antesDeEnviar); }
         if (r.status === 201) return { batchId: r.data?.batch_header?.payout_batch_id || '', batchStatus: r.data?.batch_header?.batch_status || 'PENDING' };
@@ -145,7 +145,7 @@ function crear(config, getToken, { transporte } = {}) {
             error: it.errors ? `${it.errors.name || ''}${it.errors.message ? ': ' + it.errors.message : ''}`.slice(0, 300) : '', procesado: it.time_processed || '' };
     }
 
-    /** Cancela un ítem NO RECLAMADO (UNCLAIMED): PayPal devuelve el dinero a la cuenta de UpGames. → mismo formato que consultarPayout. */
+    /** Cancela un ítem NO RECLAMADO (UNCLAIMED): PayPal devuelve el dinero a la cuenta de Lurveta. → mismo formato que consultarPayout. */
     async function cancelarItemPayout(itemId) {
         if (!/^[A-Z0-9]{5,40}$/.test(String(itemId || ''))) { const e = new Error('Ítem no válido'); e.status = 400; throw e; }
         const r = await req('POST', `/v1/payments/payouts-item/${itemId}/cancel`, {});

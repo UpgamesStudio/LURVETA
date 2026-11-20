@@ -8,7 +8,7 @@
  *   2. Busca a la vez en la web, YouTube, TikTok, Facebook, Instagram y Reddit.
  *   3. Junta, quita duplicados y ordena por relevancia (con IA si hay Groq,
  *      por reglas si no).
- *   4. Marca lo que YA está publicado en UpGames → lo que falta es oportunidad.
+ *   4. Marca lo que YA está publicado en Lurveta → lo que falta es oportunidad.
  *
  *  Motores (se usa el primero que tenga clave; todos son opcionales):
  *   • Web / TikTok / Facebook / Instagram → SERPER_API_KEY (Google) ·
@@ -254,7 +254,7 @@ function consultasPorReglas(q) {
     return [...new Set(out.map(s => s.replace(/\s+/g, ' ').trim()).filter(Boolean))].slice(0, 3);
 }
 async function ampliar(q) {
-    const r = await llm.json(`Eres NEXUS, el buscador de contenido de UpGames (mods, ports de PC a Android, emuladores, juegos indie, apps y herramientas).
+    const r = await llm.json(`Eres NEXUS, el buscador de contenido de Lurveta (mods, ports de PC a Android, emuladores, juegos indie, apps y herramientas).
 Convierte el pedido del administrador en búsquedas efectivas para buscadores y redes (YouTube, TikTok, Facebook, Instagram, Reddit).
 Devuelve SOLO JSON: {"consultas": ["...", "...", "..."], "intencion": "una frase"}
 Reglas: máximo 3 consultas, cortas (3 a 7 palabras), sin "site:", sin comillas. La primera en el idioma del pedido; incluye al menos una en inglés si ayuda.
@@ -288,17 +288,17 @@ function tipoPorReglas(it) {
 async function ordenarConIA(consulta, items) {
     if (!llm.disponible() || !items.length) return null;
     const lista = items.slice(0, 50).map((it, i) => ({ i, f: it.fuente, t: it.titulo.slice(0, 120), d: String(it.descripcion || '').slice(0, 160), a: it.autor || '', v: it.vistas || '', fe: it.fecha || '' }));
-    const r = await llm.json(`Eres NEXUS, curador de contenido de UpGames (mods, ports a Android, emuladores, juegos indie, apps).
+    const r = await llm.json(`Eres NEXUS, curador de contenido de Lurveta (mods, ports a Android, emuladores, juegos indie, apps).
 Te paso resultados de varias redes para el pedido del administrador. Evalúa cada uno y devuelve SOLO JSON:
-{"resumen":"2-3 frases: qué hay, qué destaca y qué tendencia ves","resultados":[{"i":0,"relevancia":0-100,"tipo":"${TIPOS.join('|')}","nota":"por qué sirve, máx 14 palabras"}],"ideas":["oportunidad concreta para UpGames", "..."]}
+{"resumen":"2-3 frases: qué hay, qué destaca y qué tendencia ves","resultados":[{"i":0,"relevancia":0-100,"tipo":"${TIPOS.join('|')}","nota":"por qué sirve, máx 14 palabras"}],"ideas":["oportunidad concreta para Lurveta", "..."]}
 Reglas: relevancia alta solo si responde EXACTAMENTE al pedido. Baja la relevancia a spam, clickbait, estafas ("gratis 100% real", "hack de monedas"), piratería de juegos de pago y contenido viejo o repetido.
-Máximo 3 ideas, prácticas (qué publicar, a qué creador contactar, qué falta en UpGames). No inventes datos que no estén en los resultados.`,
+Máximo 3 ideas, prácticas (qué publicar, a qué creador contactar, qué falta en Lurveta). No inventes datos que no estén en los resultados.`,
     `Pedido: ${consulta}\n\nResultados (JSON):\n${JSON.stringify(lista)}`, { maxTokens: 2200, temperatura: 0.2, timeout: 40000 }).catch(() => null);
     if (!r || !Array.isArray(r.resultados)) return null;
     return r;
 }
 
-// ── ¿Ya está en UpGames? ────────────────────────────────────────
+// ── ¿Ya está en Lurveta? ────────────────────────────────────────
 let catalogo = { t: 0, items: [] };
 async function catalogoUpGames(Juego) {
     if (!Juego) return [];
@@ -314,7 +314,7 @@ function coincidenciaUpGames(it, cat) {
     for (const c of cat) {
         if (c.p.size < 1) continue;
         let n = 0; for (const w of c.p) if (p.includes(w)) n++;
-        const s = n / Math.max(2, c.p.size);   // qué parte del título de UpGames aparece en el resultado
+        const s = n / Math.max(2, c.p.size);   // qué parte del título de Lurveta aparece en el resultado
         if (n >= 2 && s > mejorS) { mejorS = s; mejor = c; }
     }
     return mejor && mejorS >= 0.6 ? { id: mejor.id, titulo: mejor.titulo, categoria: mejor.categoria } : null;
@@ -389,7 +389,7 @@ async function buscar(p, deps = {}) {
     items.sort((a, b) => b.relevancia - a.relevancia || (b.vistasN || 0) - (a.vistasN || 0));
     items = items.slice(0, 80);
 
-    // ¿Ya está en UpGames?
+    // ¿Ya está en Lurveta?
     try {
         const cat = await catalogoUpGames(deps.Juego);
         if (cat.length) items.forEach(it => { const m = coincidenciaUpGames(it, cat); if (m) it.enUpGames = m; });
@@ -399,7 +399,7 @@ async function buscar(p, deps = {}) {
         if (!items.length) return 'No encontré resultados con esa búsqueda. Prueba con menos palabras, otro periodo o en inglés.';
         const cuenta = Object.entries(items.reduce((a, i) => (a[i.fuente] = (a[i.fuente] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${v} en ${FUENTES[k]?.nombre || k}`).join(', ');
         const faltan = items.filter(i => !i.enUpGames && i.relevancia >= 50).length;
-        return `Encontré ${items.length} resultados (${cuenta}). ${faltan ? `${faltan} relevantes todavía no están en UpGames.` : ''}`.trim();
+        return `Encontré ${items.length} resultados (${cuenta}). ${faltan ? `${faltan} relevantes todavía no están en Lurveta.` : ''}`.trim();
     };
     const r = {
         consulta, consultas: amp.consultas, intencion: amp.intencion, periodo, idioma, fuentes,

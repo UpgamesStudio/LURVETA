@@ -1,5 +1,5 @@
 // ── NEXUS IA (nativa) ────────────────────────────────────
-// Nexus vive en el backend de UpGames (/nexus/*): misma base de datos y
+// Nexus vive en el backend de Lurveta (/nexus/*): misma base de datos y
 // servidor. Aquí solo está el chat: mensajes, tarjetas tocables y botones.
 let nxOpen=false, nxExpanded=false;
 const NX = { cargado:false, enviando:false, msgs:[] };   // msgs: [{rol, texto, items, acciones}]
@@ -90,7 +90,7 @@ function nxPintar(pensando = false) {
     html = `<div class="nx-hola">
       <div class="nx-hola-orb"><span></span></div>
       <h3>${usuario ? `Hola, @${escH(usuario)}` : 'Hola, soy Nexus'}</h3>
-      <p>Conozco todo el catálogo de UpGames${usuario ? ', tu cuenta y tus publicaciones' : ''}. Pregúntame lo que quieras.</p>
+      <p>Conozco todo el catálogo de Lurveta${usuario ? ', tu cuenta y tus publicaciones' : ''}. Pregúntame lo que quieras.</p>
       <div class="nx-sugs">${sug.map(s => `<button type="button" class="nx-sug" data-nx-sug="${escH(s)}">${escH(s)}</button>`).join('')}</div>
     </div>`;
   }

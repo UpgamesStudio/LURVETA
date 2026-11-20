@@ -1,4 +1,4 @@
-/* UpGames Blogs · comentarios de una entrada (marco aislado dentro de la página del blog).
+/* Lurveta Blogs · comentarios de una entrada (marco aislado dentro de la página del blog).
    Todo lo que escriben los usuarios se inserta con textContent: nunca como HTML. */
 (() => {
 'use strict';
@@ -27,7 +27,7 @@ function tarjeta(c) {
 }
 
 function formulario(alEnviar) {
-  if (!TOKEN) return el('div', { className: 'caja' }, el('p', { className: 'vacio', style: 'padding:6px 0' }, 'Inicia sesión en UpGames para comentar. '), el('div', { style: 'text-align:center' }, el('a', { className: 'boton', href: './login.html', target: '_blank', rel: 'noopener' }, 'Iniciar sesión')));
+  if (!TOKEN) return el('div', { className: 'caja' }, el('p', { className: 'vacio', style: 'padding:6px 0' }, 'Inicia sesión en Lurveta para comentar. '), el('div', { style: 'text-align:center' }, el('a', { className: 'boton', href: './login.html', target: '_blank', rel: 'noopener' }, 'Iniciar sesión')));
   const ta = el('textarea', { maxLength: 500, placeholder: 'Escribe un comentario respetuoso…' }), msg = el('div', { className: 'msg' }), n = el('small', {}, '0/500');
   const b = el('button', { type: 'button', textContent: 'Comentar' });
   ta.oninput = () => { n.textContent = `${ta.value.length}/500`; };

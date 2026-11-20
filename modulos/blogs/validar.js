@@ -1,5 +1,5 @@
 /**
- * UpGames Blogs · validación y limpieza
+ * Lurveta Blogs · validación y limpieza
  *
  * Todo lo que escribe el creador pasa por aquí antes de guardarse: la dirección del blog,
  * el dominio propio y los bloques de cada entrada. El contenido se guarda como bloques
@@ -21,7 +21,7 @@ const LIMITES = {
     GALERIA: 12,
 };
 
-// Direcciones que no puede usar un blog (se confundirían con UpGames o con servicios conocidos)
+// Direcciones que no puede usar un blog (se confundirían con Lurveta o con servicios conocidos)
 const RESERVADOS = new Set(['www', 'admin', 'api', 'app', 'blog', 'blogs', 'upgames', 'upgame', 'soporte', 'support', 'ayuda', 'help',
     'login', 'registro', 'cuenta', 'account', 'pago', 'pagos', 'paypal', 'google', 'facebook', 'banco', 'bank', 'seguridad', 'security',
     'mail', 'correo', 'ftp', 'cdn', 'static', 'assets', 'nexus', 'live', 'studio', 'racing', 'premium', 'oficial', 'official',
@@ -60,7 +60,7 @@ function validarDireccion(v) {
     return { valor: d };
 }
 
-/** Dominio propio: «www.misitio.com». Se rechazan IP, puertos, rutas y los dominios de UpGames. */
+/** Dominio propio: «www.misitio.com». Se rechazan IP, puertos, rutas y los dominios de Lurveta. */
 function validarDominio(v) {
     let d = String(v ?? '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/\.$/, '');
     if (!d || d.length > 253) return { error: 'Escribe tu dominio, por ejemplo www.misitio.com' };
@@ -193,7 +193,7 @@ function limpiarBloques(entrada) {
                 break;
             }
             case 'apoyo': {
-                // Apoyo con UpCoins: el botón abre UpGames (mismas reglas que apoyar una publicación)
+                // Apoyo con UpCoins: el botón abre Lurveta (mismas reglas que apoyar una publicación)
                 n = { tipo: 'apoyo', titulo: linea(b.titulo, 120) || 'Apoya este blog', texto: parrafos(b.texto, 400), bTexto: linea(b.bTexto, 40) || 'Apoyar con UpCoins', ...estiloSec(b) };
                 break;
             }

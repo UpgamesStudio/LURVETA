@@ -1,8 +1,8 @@
 /* ============================================================================
-   pb2proxy.js — Emulador táctil universal para juegos web (UpGames)
+   pb2proxy.js — Emulador táctil universal para juegos web (Lurveta)
    ----------------------------------------------------------------------------
    Reservir un juego web (HTML5/Flash-port) same-origin bajo el dominio de
-   UpGames e inyectarle una capa de controles táctiles (public/pb2-touch.*),
+   Lurveta e inyectarle una capa de controles táctiles (public/pb2-touch.*),
    de modo que cualquier juego "de este tipo" sea jugable en el celular.
 
    Por qué un proxy: el navegador PROHÍBE inyectar toques/teclas en un <iframe>
@@ -196,10 +196,10 @@ function registrar(app) {
         const target = 'https://' + rest + q;
         // Solo sitios de juegos autorizados (EMU_HOSTS=dominio1,dominio2). Abierto a cualquier
         // URL era un proxy público: servía cualquier página (phishing, contenido ilegal) bajo
-        // el dominio de UpGames y gastaba su ancho de banda.
+        // el dominio de Lurveta y gastaba su ancho de banda.
         const host = rest.split('/')[0].toLowerCase();
         const permitidos = String(process.env.EMU_HOSTS || '').toLowerCase().split(',').map(x => x.trim()).filter(Boolean);
-        if (!permitidos.some(h => host === h || host.endsWith('.' + h))) return send(res, 403, 'text/plain; charset=utf-8', 'Sitio no autorizado en el emulador de UpGames', 300);
+        if (!permitidos.some(h => host === h || host.endsWith('.' + h))) return send(res, 403, 'text/plain; charset=utf-8', 'Sitio no autorizado en el emulador de Lurveta', 300);
         try {
             const up = await fetchURL(target);
             const type = up.headers['content-type'] || 'application/octet-stream';

@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>UpGames · Patrocinio · Video 2</title>
+<title>Lurveta · Patrocinio · Video 2</title>
 <!--
   Video 2 — «Atención, creadores y desarrolladores indie» (vertical 1080×1920).
   Locución: segunda mitad de voz_video.mp3 (43,0 s → fin); t = 0 aquí es 43,0 s allá.
   Música: «Dead Network» (Infraction) desde 152,25 s: su corte cae en «Escucha esto»
-  y la caída entra en «En UpGames» (10,2 s).  ?t=12.5 · ?play
+  y la caída entra en «En Lurveta» (10,2 s).  ?t=12.5 · ?play
 -->
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=block" rel="stylesheet">
 <link rel="stylesheet" href="estilo.css">
@@ -175,12 +175,12 @@ M.escena(9.1, 10.22, r => {
   st(r.onda, { o: 1 - en(t, 10.05, .15), sy: 1 + enc * 1.5 });
 });
 
-/* ════════ 5 · UpGames patrocina el talento independiente (10.2 – 13.65) ════════ */
+/* ════════ 5 · Lurveta patrocina el talento independiente (10.2 – 13.65) ════════ */
 M.escena(10.2, 13.7, r => {
   r.logo = h('img', 'abs', null, r); r.logo.src = 'logo.png'; r.logo.style.cssText += 'width:900px;left:540px;top:720px';
   r.anl = anillos(r, 3); r.cs = chispas(r, 70);
   r.t = titular(r, 'TALENTO\nINDEPENDIENTE', 't-m', TY + 40, { stag: .025 });
-  r.card = h('div', 'abs bisel', `<div class="mono" style="font-size:28px;letter-spacing:.3em;color:#8A94A6">UPGAMES · 2026</div>
+  r.card = h('div', 'abs bisel', `<div class="mono" style="font-size:28px;letter-spacing:.3em;color:#8A94A6">LURVETA · 2026</div>
     <div style="display:flex;align-items:center;gap:28px;margin-top:24px">${ic('estrella', 120, '#39FF88')}<div class="orb" style="font-size:76px;line-height:1">SPONSOR<br><span class="verde">OFICIAL</span></div></div>
     <div class="mono" style="margin-top:28px;font-size:30px;color:#C9D2DC">PATROCINANDO EL TALENTO INDIE ▸</div>`, r);
   r.card.style.cssText += 'left:540px;top:900px;padding:48px 56px;background:linear-gradient(130deg,rgba(57,255,136,.22),rgba(7,16,31,.96) 55%,rgba(57,255,136,.14));border:3px solid #39FF88;box-shadow:0 0 90px rgba(57,255,136,.45)';
@@ -406,17 +406,17 @@ M.escena(30.0, 34.9, r => {
 M.escena(34.8, 40.25, r => {
   r.t1 = titular(r, 'HABLEMOS EN\nTUS REDES', 't-m', TY, { stag: .025 });
   r.t2 = titular(r, 'PROMOCIÓN\nOFICIAL', 't-l verde glow', TY, { modo: 'zoom', stag: .03 });
-  r.dm = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>mensajes · UpGames ✓</span></div><div class="ch abs" style="left:0;right:0;top:64px;bottom:0"></div>`, r);
+  r.dm = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>mensajes · Lurveta ✓</span></div><div class="ch abs" style="left:0;right:0;top:64px;bottom:0"></div>`, r);
   M.pos(r.dm, 190, 620, 700, 560);
   const ch = r.dm.querySelector('.ch');
   r.m1 = h('div', 'burb yo', 'Hola, quiero promocionar mi juego', ch); r.m1.style.top = '40px';
   r.m2 = h('div', 'burb ug', '¡Hecho! Te hacemos una <b style="color:#39FF88">promoción oficial</b> sin costo', ch); r.m2.style.top = '230px';
   r.redes = ['chat', 'env', 'arroba', 'users'].map(n => { const e = h('div', 'abs bisel-s', ic(n, 76, '#39FF88'), r); e.style.cssText += 'width:140px;height:140px;display:grid;place-items:center;background:rgba(10,18,32,.95);border:3px solid rgba(57,255,136,.5);box-shadow:0 0 40px rgba(57,255,136,.3)'; return e; });
   r.cert = h('div', 'abs', `<div style="border:3px solid #39FF88;padding:14px"><div style="border:2px solid rgba(57,255,136,.4);padding:40px 50px;text-align:center">
-     <div class="mono gris" style="font-size:26px;letter-spacing:.35em">CERTIFICADO · UPGAMES</div>
+     <div class="mono gris" style="font-size:26px;letter-spacing:.35em">CERTIFICADO · LURVETA</div>
      <div class="orb" style="font-size:72px;line-height:1.05;margin:18px 0">PROMOCIÓN<br><span class="verde">OFICIAL</span></div>
      <div class="mono" style="font-size:28px;color:#C9D2DC">para: <b style="color:#fff">@tu_estudio</b> · creador indie</div>
-     <div style="margin:26px auto 0;width:420px;height:2px;background:rgba(255,255,255,.3)"></div><div class="mono gris" style="font-size:22px;margin-top:8px">EQUIPO UPGAMES</div></div></div>`, r);
+     <div style="margin:26px auto 0;width:420px;height:2px;background:rgba(255,255,255,.3)"></div><div class="mono gris" style="font-size:22px;margin-top:8px">EQUIPO LURVETA</div></div></div>`, r);
   r.cert.style.cssText += 'left:540px;top:880px;width:820px;background:linear-gradient(160deg,#0E1A2E,#050A14);box-shadow:0 0 90px rgba(57,255,136,.35),0 60px 120px rgba(0,0,0,.8)';
   r.cbr = h('div', 'brillo', null, r.cert);
   r.sel = h('div', 'abs', `<svg width="260" height="260" viewBox="0 0 260 260"><g fill="none" stroke="#39FF88"><circle cx="130" cy="130" r="120" stroke-width="6" stroke-dasharray="14 8"/><circle cx="130" cy="130" r="96" stroke-width="3"/></g><text x="130" y="122" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="40" fill="#39FF88">SIN</text><text x="130" y="168" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="40" fill="#39FF88">COSTO</text></svg>`, r);
@@ -443,7 +443,7 @@ M.escena(34.8, 40.25, r => {
   explotar(r.cs, t, 38.78, 830, 1170, .9);
 });
 
-/* ════════ 12 · ¡El ecosistema UpGames te está esperando! (40.15 – fin) ════════ */
+/* ════════ 12 · ¡El ecosistema Lurveta te está esperando! (40.15 – fin) ════════ */
 M.escena(40.15, DUR + 1, r => {
   r.lineas = h('div', 'abs', '<svg width="1080" height="1920" style="overflow:visible"><g class="ls"></g></svg>', r); r.lineas.style.cssText += 'left:0;top:0';
   r.ls = r.lineas.querySelector('.ls');
@@ -475,7 +475,7 @@ M.escena(40.15, DUR + 1, r => {
     e.l.setAttribute('x1', 540); e.l.setAttribute('y1', 830); e.l.setAttribute('x2', x); e.l.setAttribute('y2', y);
     e.l.style.opacity = clamp((t - a) * 4); e.l.setAttribute('stroke-dashoffset', -t * 40);
   });
-  M.decode(r.eco, 'EL ECOSISTEMA UPGAMES', t, 40.38, .6); st(r.eco, { c: true, o: t > 40.38 ? 1 : 0 });
+  M.decode(r.eco, 'EL ECOSISTEMA LURVETA', t, 40.38, .6); st(r.eco, { c: true, o: t > 40.38 ? 1 : 0 });
   r.t.anim(t, 41.5);
   const bk = en(t, 42.2, .45, E.back);
   st(r.b, { c: true, o: clamp((t - 42.2) * 6), s: bk * (1 + Math.max(0, Math.sin((t - 42.6) * 5)) * .025 * (t > 42.6)) });
@@ -490,7 +490,7 @@ M.subtitulos([
   ['¿Llevas', 2.98], ['meses', 3.38], ['trabajando', 3.70], ['en', 4.20], ['tu', 4.34], ['proyecto', 4.50],
   ['pero', 4.90], ['no', 5.28], ['sabes', 5.48], ['dónde', 5.70], ['publicarlo', 6.00], ['o', 6.72], ['cómo', 6.98], ['conseguir', 7.26], ['visualizaciones', 7.70], ['reales?', 8.42],
   ['Escucha', 9.20], ['esto.', 9.68],
-  ['En', 10.32], ['UpGames', 10.52], ['estamos', 11.08], ['patrocinando', 11.42], ['el', 12.20], ['talento', 12.38], ['independiente.', 12.82],
+  ['En', 10.32], ['Lurveta', 10.52], ['estamos', 11.08], ['patrocinando', 11.42], ['el', 12.20], ['talento', 12.38], ['independiente.', 12.82],
   ['Queremos', 13.70], ['elevar', 14.02], ['tu', 14.44], ['nivel', 14.56], ['de', 14.88], ['profesionalismo.', 15.20],
   ['Olvídate', 15.84], ['de', 16.66], ['los', 16.82], ['links', 16.98], ['perdidos.', 17.16],
   ['Te', 17.96], ['damos', 18.12], ['un', 18.34], ['espacio', 18.52], ['premium', 18.84], ['para', 19.26], ['que', 19.56], ['presentes', 19.82], ['tus', 20.16], ['proyectos,', 20.34],
@@ -502,9 +502,9 @@ M.subtitulos([
   ['Publica', 30.90], ['tu', 31.26], ['trabajo', 31.44], ['totalmente', 31.84], ['gratis', 32.44], ['entrando', 33.08], ['a', 33.42], ['upgames.games', 33.68],
   ['o', 34.84], ['comunícate', 35.22], ['con', 35.72], ['nosotros', 35.88], ['por', 36.28], ['nuestras', 36.50], ['redes', 36.80],
   ['para', 37.06], ['hacerte', 37.40], ['una', 37.64], ['promoción', 37.88], ['oficial', 38.30], ['sin', 38.78], ['costo', 39.18], ['alguno.', 39.56],
-  ['¡El', 40.20], ['ecosistema', 40.38], ['UpGames', 40.98], ['te', 41.50], ['está', 41.74], ['esperando!', 42.00],
+  ['¡El', 40.20], ['ecosistema', 40.38], ['Lurveta', 40.98], ['te', 41.50], ['está', 41.74], ['esperando!', 42.00],
 ]);
-M.iniciar({ duracion: DUR, etiqueta: 'UPGAMES // ALERTA INDIE' });
+M.iniciar({ duracion: DUR, etiqueta: 'LURVETA // ALERTA INDIE' });
 const _r = window.render;
 window.render = t => { _r(t); M.hud.marca.style.opacity = .55 * clamp((t - 12.6) * 2) * (1 - clamp((t - 39.95) * 4)); M.hud.el.style.opacity = clamp(t * 3) * (1 - en(t, DUR - .6, .6)); };
 </script>

@@ -1,8 +1,8 @@
 /**
- * Tienda de UpGames: un catálogo y una entrega para todos los métodos de pago.
+ * Tienda de Lurveta: un catálogo y una entrega para todos los métodos de pago.
  *
  * Productos:  monedas:<paquete>  ·  acceso:<juegoId>  ·  plan:<pase7|pase30|pase365>
- * Métodos:    tarjeta (Mercado Pago) · PayPal · monedas · saldo de UpGames
+ * Métodos:    tarjeta (Mercado Pago) · PayPal · monedas · saldo de Lurveta
  *
  * Reglas:
  * - El precio lo calcula SIEMPRE el servidor a partir del producto.
@@ -87,13 +87,13 @@ function precioUsd(p) {
     if (p.tipo === 'plan') return p.plan.usd;
     return r2((precioUC(p) || 0) * L.MONEDA_USD);
 }
-const descripcion = p => p.tipo === 'monedas' ? `${p.paquete.monedas} UpCoins` : p.tipo === 'acceso' ? 'Acceso directo UpGames (sin anuncios)'
-    : p.tipo === 'plan' ? `${p.plan.nombre} UpGames` : p.tipo === 'ia' ? `${p.paquete.mensajes} mensajes de NEXUS IA` : `Promocionar publicación ${p.dias} día${p.dias > 1 ? 's' : ''} (${p.monedas} UpCoins)`;
+const descripcion = p => p.tipo === 'monedas' ? `${p.paquete.monedas} UpCoins` : p.tipo === 'acceso' ? 'Acceso directo Lurveta (sin anuncios)'
+    : p.tipo === 'plan' ? `${p.plan.nombre} Lurveta` : p.tipo === 'ia' ? `${p.paquete.mensajes} mensajes de NEXUS IA` : `Promocionar publicación ${p.dias} día${p.dias > 1 ? 's' : ''} (${p.monedas} UpCoins)`;
 
 function registrar(app, deps) {
     const { verificarToken, Usuario, LiveTx, Notificacion, paypal, acceso, logger, apiUrlSelf, Juego } = deps;
     const limpiarCache = deps.limpiarCache;
-    const avisar = (destinatario, itemTitle, mensaje) => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'UpGames', itemTitle, mensaje, leida: false, fecha: new Date() }).catch(() => {});
+    const avisar = (destinatario, itemTitle, mensaje) => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'Lurveta', itemTitle, mensaje, leida: false, fecha: new Date() }).catch(() => {});
     const olvidarPerfil = deps.olvidarPerfil || (() => {});
     const mp = deps.mp || MP.crear();
     const ok = (res, d) => res.json({ success: true, ...d });
@@ -418,7 +418,7 @@ function registrar(app, deps) {
                 .select('usuario planId planHasta planAvisadoHasta').limit(500).lean();
             const avisar = pronto.filter(u => !u.planAvisadoHasta || +new Date(u.planAvisadoHasta) !== +new Date(u.planHasta));
             if (!avisar.length) return;
-            await Notificacion.insertMany(avisar.map(u => ({ destinatario: u.usuario, tipo: 'sistema', emisor: 'UpGames', itemTitle: 'Tu Premium vence', leida: false, fecha: new Date(),
+            await Notificacion.insertMany(avisar.map(u => ({ destinatario: u.usuario, tipo: 'sistema', emisor: 'Lurveta', itemTitle: 'Tu Premium vence', leida: false, fecha: new Date(),
                 mensaje: `⏳ Tu ${nombrePlan(u.planId)} vence el ${new Date(u.planHasta).toLocaleDateString('es-CO')}. Renuévalo para seguir sin anuncios, con NEXUS ilimitado y más visibilidad (no hay cobros automáticos).` })), { ordered: false });
             for (const u of avisar) await Usuario.updateOne({ usuario: u.usuario }, { $set: { planAvisadoHasta: u.planHasta } });
             logger.info(`[tienda] Recordatorio de vencimiento enviado a ${avisar.length} usuario(s)`);

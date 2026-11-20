@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#050A14">
-  <title>Mensajes · UpGames</title>
+  <title>Mensajes · Lurveta</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
 /* ══════════════════════════════════════════════════════════════════
-   UpGames · Mensajes — Liquid Glass
+   Lurveta · Mensajes — Liquid Glass
    ══════════════════════════════════════════════════════════════════ */
 :root {
   --g: #32D583; --g-rgb: 50,213,131;
@@ -286,7 +286,7 @@ ion-icon { pointer-events: none; }
   </style>
   <style id="ug-cyber">
 /* ══════════════════════════════════════════════════════════════════
-   UpGames · Mensajes — tema CYBER (verde neón, blanco, gris y negro
+   Lurveta · Mensajes — tema CYBER (verde neón, blanco, gris y negro
    sobre azul noche). Va encima del estilo base: mismas piezas, otra piel.
    ══════════════════════════════════════════════════════════════════ */
 :root {
@@ -522,10 +522,10 @@ body::after { width: auto; height: auto; inset: 0; border-radius: 0; filter: non
   </style>
 <link rel="manifest" href="./manifest.json?v=3">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=2">
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=3">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="UpGames">
+<meta name="apple-mobile-web-app-title" content="Lurveta">
 <script src="./upgames-pwa.js?v=20261120a" defer></script>
 <script src="./upgames-errores.js?v=20261029i"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -538,7 +538,7 @@ body::after { width: auto; height: auto; inset: 0; border-radius: 0; filter: non
   <!-- ═══ LISTA DE CONVERSACIONES ═══ -->
   <aside class="side" aria-label="Conversaciones">
     <div class="side-hdr">
-      <a class="ico-btn" href="/" aria-label="Volver a UpGames"><ion-icon name="arrow-back"></ion-icon></a>
+      <a class="ico-btn" href="/" aria-label="Volver a Lurveta"><ion-icon name="arrow-back"></ion-icon></a>
       <div class="brand">
         <span class="brand-mark"><ion-icon name="chatbubbles"></ion-icon></span>
         <span class="brand-txt"><b>Mensajes</b><small>UP<em>GAMES</em></small></span>
@@ -572,7 +572,7 @@ body::after { width: auto; height: auto; inset: 0; border-radius: 0; filter: non
     <div class="welcome" id="welcome">
       <div class="orb"><ion-icon name="chatbubbles"></ion-icon></div>
       <h2>Tus mensajes</h2>
-      <p>Chatea en privado con los creadores que sigues, crea grupos con tus amigos o únete a comunidades de toda la red UpGames.</p>
+      <p>Chatea en privado con los creadores que sigues, crea grupos con tus amigos o únete a comunidades de toda la red Lurveta.</p>
       <div class="w-acts"><button class="btn pri" onclick="openNewChat()"><ion-icon name="create-outline"></ion-icon> Nuevo mensaje</button><button class="btn" onclick="openCreateGroup()"><ion-icon name="people-outline"></ion-icon> Crear grupo</button><button class="btn" onclick="setTab('explorar')"><ion-icon name="planet-outline"></ion-icon> Explorar</button></div>
       <p class="w-legal"><ion-icon name="shield-checkmark-outline"></ion-icon> NEXUS protege la comunidad: el contenido con menores, animales, abuso o gore real se bloquea y se reporta a las autoridades.</p>
     </div>
@@ -893,7 +893,7 @@ async function searchUsers(q) {
     if (!us.length) { if (!S.convs.some(c => c.contacto.includes(q))) { const el = document.createElement('div'); el.id = 'search-extra'; el.innerHTML = `<div class="empty-list">Nadie con “${esc(q)}”.</div>`; $('list').appendChild(el); } return; }
     const el = document.createElement('div');
     el.id = 'search-extra';
-    el.innerHTML = '<div class="sec">Personas en UpGames</div>' + us.map(u => {
+    el.innerHTML = '<div class="sec">Personas en Lurveta</div>' + us.map(u => {
       const mutuo = u.yoSigo && u.meSigue;
       return `<button class="conv" onclick="${mutuo ? `openChat('${esc(u.usuario)}')` : `location.href='./perfil-publico.html?usuario=${encodeURIComponent(u.usuario)}'`}">
         ${avatarHTML(u.usuario, u.avatar || u.foto, false)}
@@ -1099,7 +1099,7 @@ function rowEl(m, cont, isLastMine) {
     const jumbo = !m.imagen && !m.replyTo && m.texto && soloEmoji(m.texto);
     const q = m.replyTo ? `<button class="quote" onclick="jumpTo('${esc(m.replyTo.id)}')"><b>${m.replyTo.de === ME ? 'Tú' : '@' + esc(m.replyTo.de)}</b><span>${m.replyTo.imagen && !m.replyTo.texto ? '📷 Imagen' : esc(m.replyTo.texto)}</span></button>` : '';
     const img = m.imagen ? `<span class="bimg" onclick="openLB('${esc(m.imagen)}')"><img src="${esc(cld(m.imagen, 'c_limit,w_720,q_auto,f_auto'))}" alt="Imagen" loading="lazy"></span>` : '';
-    const card = m.texto && ITEM_RE.test(m.texto) ? `<a class="card-link" data-item="${m.texto.match(ITEM_RE)[1]}" href="/?id=${m.texto.match(ITEM_RE)[1]}"><img alt=""><span><b>Publicación de UpGames</b><small>Toca para abrir</small></span></a>` : '';
+    const card = m.texto && ITEM_RE.test(m.texto) ? `<a class="card-link" data-item="${m.texto.match(ITEM_RE)[1]}" href="/?id=${m.texto.match(ITEM_RE)[1]}"><img alt=""><span><b>Publicación de Lurveta</b><small>Toca para abrir</small></span></a>` : '';
     inner = `<div class="bubble${onlyImg ? ' only-img' : ''}${jumbo ? ' jumbo' : ''}">${q}${img}${m.texto ? `<span class="txt">${linkify(m.texto)}</span>` : ''}${card}<span class="meta">${time}${tick}</span></div>`;
   }
   const rx = (m.reacciones || []);
@@ -1122,7 +1122,7 @@ function bindPress(el, id) {
   el.addEventListener('contextmenu', e => { e.preventDefault(); openMsgMenu(id); });
   el.addEventListener('dblclick', () => react(id, '❤️'));
 }
-// Tarjetas de publicaciones de UpGames compartidas en el chat
+// Tarjetas de publicaciones de Lurveta compartidas en el chat
 async function hydrateCards() {
   for (const a of document.querySelectorAll('.card-link[data-item]')) {
     const id = a.dataset.item;
@@ -1134,7 +1134,7 @@ async function hydrateCards() {
     }
     if (!it || !it._id) continue;
     const img = it.image && !/\.(mp4|webm|mov|m4v|avi|3gp|3g2|mkv|ogv|mpe?g|wmv|flv)(\?|$)|\/video\/upload\//i.test(it.image) ? cld(it.image, 'c_fill,w_120,h_120,q_auto,f_auto') : '';
-    a.innerHTML = `${img ? `<img src="${esc(img)}" alt="">` : '<img alt="">'}<span><b>${esc(it.title)}</b><small>${esc(it.category || 'UpGames')} · por @${esc(it.usuario || '')}</small></span>`;
+    a.innerHTML = `${img ? `<img src="${esc(img)}" alt="">` : '<img alt="">'}<span><b>${esc(it.title)}</b><small>${esc(it.category || 'Lurveta')} · por @${esc(it.usuario || '')}</small></span>`;
   }
 }
 function jumpTo(id) {
@@ -1489,7 +1489,7 @@ function paintTotals() {
   const a = $('tn-chats'), b = $('tn-grupos');
   a.textContent = dm > 99 ? '99+' : dm; a.classList.toggle('on', dm > 0);
   b.textContent = gr > 99 ? '99+' : gr; b.classList.toggle('on', gr > 0);
-  document.title = (dm + gr ? `(${dm + gr}) ` : '') + 'Mensajes · UpGames';
+  document.title = (dm + gr ? `(${dm + gr}) ` : '') + 'Mensajes · Lurveta';
 }
 
 /* Mis grupos */
@@ -1647,7 +1647,7 @@ function paintGroupForm() {
       <button class="${f.tipo === 'comunidad' ? 'on' : ''}" onclick="GF.tipo='comunidad';paintGroupForm()"><b>🪐 Comunidad</b><small>Pública. Aparece en Explorar y cualquiera entra.</small></button></div></div>
     <div class="fld"><span>Temas (hasta 4)</span><div class="tags">${Object.keys(ETQ).map(t => `<button class="tag-c${f.etiquetas.includes(t) ? ' on' : ''}" onclick="gfTag('${t}')">${ETQ[t]} ${t}</button>`).join('')}</div></div>
     <label class="fld"><span>Reglas del grupo</span><textarea rows="3" maxlength="1500" oninput="GF.reglas=this.value" placeholder="Respeto, sin spam…">${esc(f.reglas)}</textarea>
-      <small>Las normas de UpGames aplican siempre: NEXUS bloquea y reporta a las autoridades cualquier contenido con menores, animales, abuso o gore real.</small></label>
+      <small>Las normas de Lurveta aplican siempre: NEXUS bloquea y reporta a las autoridades cualquier contenido con menores, animales, abuso o gore real.</small></label>
     <label class="sw adult"><div><b>🔞 Solo adultos (+18)</b><small>Para contenido adulto entre adultos que consienten. Se pide confirmar la edad al entrar y no sale en Explorar salvo que la persona active +18.</small></div><input type="checkbox" ${f.adultos ? 'checked' : ''} onchange="GF.adultos=this.checked;paintGroupForm()"></label>
     ${f.id ? `<label class="sw"><div><b>📢 Modo anuncios</b><small>Solo los administradores pueden escribir.</small></div><input type="checkbox" ${f.soloAdmins ? 'checked' : ''} onchange="GF.soloAdmins=this.checked"></label>` : ''}
     <div class="g-acts"><button class="btn" onclick="closeOv('ov-group')">Cancelar</button><button class="btn pri" id="gf-ok" onclick="saveGroup()">${f.id ? 'Guardar' : 'Crear'}</button></div>`;
@@ -1726,7 +1726,7 @@ function accionMiembro(u, accion) {
 async function copiarInv() { try { await navigator.clipboard.writeText(linkInv(S.group.codigo)); toast('🔗 Enlace copiado'); } catch (_) { prompt('Copia el enlace:', linkInv(S.group.codigo)); } }
 async function compartirInv() {
   const url = linkInv(S.group.codigo);
-  try { if (navigator.share) { await navigator.share({ title: S.group.nombre, text: `Únete a «${S.group.nombre}» en UpGames`, url }); return; } } catch (e) { if (e?.name === 'AbortError') return; }
+  try { if (navigator.share) { await navigator.share({ title: S.group.nombre, text: `Únete a «${S.group.nombre}» en Lurveta`, url }); return; } } catch (e) { if (e?.name === 'AbortError') return; }
   copiarInv();
 }
 function nuevoCodigo() {
@@ -1758,7 +1758,7 @@ function previewUnirse(g, codigo) {
   $('join-body').innerHTML = `${gAvatar(g)}<h3 style="margin-top:10px">${esc(g.nombre)}</h3>
     <p>${esc(g.descripcion || '')}</p><p style="margin-top:6px;font-family:var(--fm);font-size:.78rem">${g.nMiembros || 0} miembro${g.nMiembros === 1 ? '' : 's'} · ${g.tipo === 'comunidad' ? 'comunidad pública' : 'grupo privado'}</p>
     ${g.reglas ? `<div class="gi-box" style="margin:12px 0 0;text-align:left"><h4>Reglas</h4><p>${esc(g.reglas)}</p></div>` : ''}
-    ${g.adultos ? `<label class="join-chk"><input type="checkbox" id="join-edad"><span><b>Soy mayor de 18 años.</b> Este espacio es solo para adultos. Mentir sobre tu edad incumple los términos de UpGames.</span></label>` : ''}
+    ${g.adultos ? `<label class="join-chk"><input type="checkbox" id="join-edad"><span><b>Soy mayor de 18 años.</b> Este espacio es solo para adultos. Mentir sobre tu edad incumple los términos de Lurveta.</span></label>` : ''}
     ${g.baneado ? '<p style="margin-top:12px;color:#FF5A78">Los administradores te sacaron de este grupo.</p>' : ''}
     <div class="acts"><button class="btn" onclick="closeOv('ov-join')">Ahora no</button>${g.baneado ? '' : '<button class="btn pri" id="join-ok" onclick="unirse()">Unirme</button>'}</div>`;
   $('join-body').querySelector('.av').style.cssText = 'width:84px;height:92px;margin:0 auto;font-size:1.8rem';
@@ -1794,7 +1794,7 @@ const REPORTES = [
 ];
 function openReport(id) {
   const m = S.msgs.get(String(id)); if (!m) return;
-  $('report-body').innerHTML = `<h3 style="padding:0 18px 4px">Reportar mensaje de @${esc(m.de)}</h3><p style="padding:0 18px 10px;font-size:.86rem;color:var(--txt2)">Tu reporte es anónimo para @${esc(m.de)}. Lo grave llega al instante al equipo de seguridad de UpGames con la evidencia guardada.</p>
+  $('report-body').innerHTML = `<h3 style="padding:0 18px 4px">Reportar mensaje de @${esc(m.de)}</h3><p style="padding:0 18px 10px;font-size:.86rem;color:var(--txt2)">Tu reporte es anónimo para @${esc(m.de)}. Lo grave llega al instante al equipo de seguridad de Lurveta con la evidencia guardada.</p>
     ${REPORTES.map(([k, ic, t, d, grave]) => `<button class="rep-op${grave ? ' grave' : ''}" onclick="enviarReporte('${id}','${k}')"><ion-icon name="${ic}"></ion-icon><span><b>${t}</b><small>${d}</small></span></button>`).join('')}`;
   openOv('ov-report');
 }

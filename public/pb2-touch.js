@@ -1,5 +1,5 @@
 /* ==================================================================
-   PLAZMA BURST 2 — Controles táctiles estilo GAMEPAD para móvil (UpGames)
+   PLAZMA BURST 2 — Controles táctiles estilo GAMEPAD para móvil (Lurveta)
    Adaptación móvil del juego original. Traduce toques de botones fijos a
    la entrada que el juego ya entiende:
      · pointermove en <body>  -> apuntar (cursor)

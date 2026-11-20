@@ -63,7 +63,7 @@ function registrar(app, deps) {
     const ok = (res, d) => res.json({ success: true, ...d });
     const err = (res, code, error) => res.status(code).json({ success: false, error });
     const hoyCol = () => new Date(Date.now() - 5 * 3600e3).toISOString().slice(0, 10);   // día en hora de Colombia
-    const avisar = (destinatario, itemTitle, mensaje) => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'UpGames', itemTitle, mensaje, leida: false, fecha: new Date() }).catch(() => {});
+    const avisar = (destinatario, itemTitle, mensaje) => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'Lurveta', itemTitle, mensaje, leida: false, fecha: new Date() }).catch(() => {});
 
     app.get('/admin/finanzas/economia', verificarAdmin, async (req, res) => {
         try {
@@ -163,7 +163,7 @@ function registrar(app, deps) {
             if (!antes) return err(res, 404, 'Usuario no encontrado');
             const dif = uc - (antes.monedas || 0);
             logger.info(`ADMIN @${req.admin?.usuario || '?'}: UpCoins de @${antes.usuario} ${antes.monedas || 0} → ${uc} (${motivo})`);
-            if (dif > 0) avisar(antes.usuario, 'UpCoins', `🪙 UpGames te acreditó ${dif.toLocaleString('es-CO')} UpCoins. Motivo: ${motivo}`);
+            if (dif > 0) avisar(antes.usuario, 'UpCoins', `🪙 Lurveta te acreditó ${dif.toLocaleString('es-CO')} UpCoins. Motivo: ${motivo}`);
             ok(res, { usuario: antes.usuario, monedas: uc });
         } catch (e) { logger.error(`[admin] upcoins: ${e.message}`); err(res, 500, 'No se pudo ajustar'); }
     });
@@ -185,7 +185,7 @@ function registrar(app, deps) {
             await Juego.updateMany({ usuario: u.usuario }, { $set: { impulsoHasta: u.planHasta || null } }).catch(() => {});
             limpiarCache?.();
             logger.info(`ADMIN @${req.admin?.usuario || '?'}: Premium de @${u.usuario} ${dias ? `+${dias} días → ${u.planHasta?.toISOString?.().slice(0, 10)}` : 'retirado'} (${motivo})`);
-            if (dias) avisar(u.usuario, 'Premium', `⭐ UpGames te regaló ${dias} día(s) de Premium. Activo hasta el ${new Date(u.planHasta).toLocaleDateString('es-CO')}.`);
+            if (dias) avisar(u.usuario, 'Premium', `⭐ Lurveta te regaló ${dias} día(s) de Premium. Activo hasta el ${new Date(u.planHasta).toLocaleDateString('es-CO')}.`);
             ok(res, { usuario: u.usuario, planId: u.planId, planHasta: u.planHasta });
         } catch (e) { logger.error(`[admin] premium: ${e.message}`); err(res, 500, 'No se pudo cambiar Premium'); }
     });

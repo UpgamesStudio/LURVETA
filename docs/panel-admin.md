@@ -1,4 +1,4 @@
-# Panel de administración de UpGames
+# Panel de administración de Lurveta
 
 Guía para quien trabaja en el panel (`/admin/`). La misma información está dentro del panel, en **Guía del panel** y en el botón **?** de la barra superior.
 
@@ -21,7 +21,7 @@ Guía para quien trabaja en el panel (`/admin/`). La misma información está de
 | Entradas / Videos | Todo el contenido publicado | contenido |
 | Verificación | Publicaciones con nombre de juego comercial | revisión o contenido |
 | Reportes | Contenido denunciado por la comunidad | revisión o contenido |
-| Blogs | Sitios de los usuarios (UpGames Blogs): reportados, en revisión y suspendidos; activar o suspender | revisión, contenido o sanciones (cambiar estado: contenido o sanciones) |
+| Blogs | Sitios de los usuarios (Lurveta Blogs): reportados, en revisión y suspendidos; activar o suspender | revisión, contenido o sanciones (cambiar estado: contenido o sanciones) |
 | Comentarios / Moderación IA | Moderación | comentarios |
 | Usuarios | Cuentas, suspensiones y saldos | usuarios, sanciones o finanzas |
 | Anuncios | Mensajes a la comunidad | anuncios |
@@ -47,7 +47,7 @@ El número rojo del menú cuenta las alertas urgentes.
 Todo es **devengado**: lo generado en el mes, aunque se cobre o pague después.
 
 - **Ventas con dinero:** `live_transacciones` (igual que Economía; sin las revertidas).
-- **Publicidad:** anuncios vistos (`stats_items` + `blogvistas`) × el CPM que la red le paga a UpGames. Si el CPM no está escrito, sale en 0.
+- **Publicidad:** anuncios vistos (`stats_items` + `blogvistas`) × el CPM que la red le paga a Lurveta. Si el CPM no está escrito, sale en 0.
 - **Creadores:** su parte de las ventas y regalos (`creadorUsd`), el CPM que se les abona (`stats_items.g`) y lo de los blogs (`blogvistas.g` + `gd`).
 - **Comisiones de pasarela:** estimadas, % + fijo por venta.
 - **Montos:** se escriben como en Colombia: `12,50`, `1.500` (mil quinientos) o `1.234,56`. También vale `1,234.56`.
@@ -73,7 +73,7 @@ Contiene datos personales, contraseñas cifradas y secretos de 2FA: guárdalo ci
 Para restaurar una colección, extrae su lista y cárgala con `mongoimport`:
 
 ```
-node -e "const {EJSON}=require('bson');const o=EJSON.parse(require('fs').readFileSync('UpGames-respaldo.json','utf8'),{relaxed:false});require('fs').writeFileSync('usuarios.json',EJSON.stringify(o.colecciones.usuarios,{relaxed:false}))"
+node -e "const {EJSON}=require('bson');const o=EJSON.parse(require('fs').readFileSync('Lurveta-respaldo.json','utf8'),{relaxed:false});require('fs').writeFileSync('usuarios.json',EJSON.stringify(o.colecciones.usuarios,{relaxed:false}))"
 mongoimport --uri "$MONGODB_URI" --collection usuarios --jsonArray --file usuarios.json
 ```
 

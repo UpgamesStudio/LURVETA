@@ -3,7 +3,7 @@
 // transformado actual (las libreas trabajan en centímetros del coche): así el mismo rótulo sirve
 // para cualquier tamaño de textura.
 //
-// Las marcas son de la casa (UPGAMES, UPCOINS, NEXUS IA…) o inventadas para dar ambiente de
+// Las marcas son de la casa (LURVETA, UPCOINS, NEXUS IA…) o inventadas para dar ambiente de
 // parrilla: proveedores de frenos, aceite, neumáticos, etc.
 
 export function azar(semilla) {
@@ -33,11 +33,11 @@ export const fuente = (alto, estilo = 'italic 900') => `${estilo} ${alto}px ${FU
 
 // t: texto · c: color de la letra · f: fondo de la placa · i: icono · ic: color del icono
 export const MARCAS = {
-  UPGAMES: { t: 'UPGAMES', c: '#ffffff', f: '#0b0d14', i: 'cheuron', ic: '#00e5ff' },
+  LURVETA: { t: 'LURVETA', c: '#ffffff', f: '#0b0d14', i: 'cheuron', ic: '#00e5ff' },
   UPCOINS: { t: 'UPCOINS', c: '#ffc928', f: '#0b0d14', i: 'moneda', ic: '#ffc928' },
   NEXUS: { t: 'NEXUS IA', c: '#7fe7ff', f: '#0a1626', i: 'hex', ic: '#7fe7ff' },
   APEX: { t: 'RACING', c: '#ffffff', f: '#e8202a', i: 'meta', ic: '#ffffff' },
-  TV: { t: 'UPGAMES TV', c: '#ffffff', f: '#6a1bd8', i: 'play', ic: '#ffffff' },
+  TV: { t: 'LURVETA TV', c: '#ffffff', f: '#6a1bd8', i: 'play', ic: '#ffffff' },
   UPSTAR: { t: 'UPSTAR', c: '#14110a', f: '#ffd43b', i: 'estrella', ic: '#14110a' },
   TURBOLAR: { t: 'TURBOLAR', c: '#ffffff', f: '#d4380d', i: 'aro', ic: '#ffffff' },
   FRENOX: { t: 'FRENOX', c: '#ffffff', f: '#17181c', i: 'disco', ic: '#ff3b3b' },
@@ -52,7 +52,7 @@ export const MARCAS = {
   BUJIX: { t: 'BUJIX', c: '#ffffff', f: '#0f6f8f', i: 'disco', ic: '#ffffff' },
   CARBONIA: { t: 'CARBONIA', c: '#e6e8ec', f: '#2a2d33', i: null },
 };
-const CASA = ['UPGAMES', 'UPCOINS', 'NEXUS', 'APEX', 'TV', 'UPSTAR'];
+const CASA = ['LURVETA', 'UPCOINS', 'NEXUS', 'APEX', 'TV', 'UPSTAR'];
 const TECNICAS = ['TURBOLAR', 'FRENOX', 'RODAMAX', 'LUBRIK', 'NITRUM', 'AEROVAL', 'CHISPA', 'GOMAX', 'VELOZIA', 'DATAPIT', 'BUJIX', 'CARBONIA'];
 
 /** Patrocinadores de un equipo (los mismos siempre para la misma semilla): principal y
@@ -61,9 +61,9 @@ export function patrocinadores(semilla) {
   const r = azar(semillaDe(semilla) + 11);
   const baraja = (l) => { const a = l.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const casa = baraja(CASA.slice(1)), tec = baraja(TECNICAS);
-  // UPGAMES va siempre en el coche; el principal alterna entre las marcas de la casa
-  const principal = r() < 0.45 ? 'UPGAMES' : casa[0];
-  const resto = ['UPGAMES', ...casa].filter(m => m !== principal);
+  // LURVETA va siempre en el coche; el principal alterna entre las marcas de la casa
+  const principal = r() < 0.45 ? 'LURVETA' : casa[0];
+  const resto = ['LURVETA', ...casa].filter(m => m !== principal);
   return { principal, segundo: resto[0], tercero: resto[1], cuarto: resto[2], casa: [principal, ...resto], tecnicas: tec };
 }
 

@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>UpGames · Anuncio 2 (jugadores)</title>
+<title>Lurveta · Anuncio 2 (jugadores)</title>
 <!--
-  Segundo anuncio de UpGames, para JUGADORES (vertical 1080×1920, 30 fps).
+  Segundo anuncio de Lurveta, para JUGADORES (vertical 1080×1920, 30 fps).
   Sincronizado palabra por palabra con la locución (Lauren · ElevenLabs, editada sin "o una ROM").
   render(t) dibuja cada fotograma; render.js lo graba: node render.js salida.mp4 30 0 fin anuncio2.html
   Vista previa: anuncio2.html?t=33.7 o ?play
@@ -83,7 +83,7 @@ const T = {
   a2: 5.6,     // ¿O de lidiar con páginas llenas de virus, botones falsos…?
   a3: 12.7,    // Sabemos que tener una app para ver directos, otra para chatear…
   a4: 24.3,    // ¿Y si te dijera… todo tu mundo gamer en un solo lugar…?
-  a5: 33.0,    // ¡Eso es UpGames! (el drop de la música cae en 33.61)
+  a5: 33.0,    // ¡Eso es Lurveta! (el drop de la música cae en 33.61)
   a6: 39.7,    // Olvídate de los enlaces peligrosos…
   a7: 43.55,   // Aquí tienes un catálogo inmenso…
   a8: 50.7,    // Pero eso es solo el principio.
@@ -161,7 +161,7 @@ const bg = document.getElementById('bg'), bx = bg.getContext('2d');
 const PART = (() => { const r = rng(3); return Array.from({ length: 90 }, () => ({ x: r() * 1080, y: r() * 1920, z: .2 + r() * .8, f: r() })); })();
 function fondo(t) {
   const W = 1080, H = 1920;
-  // fases de color: 0-24.3 problema (gris/rojizo) · 24.3-33.6 vacío · después verde UpGames
+  // fases de color: 0-24.3 problema (gris/rojizo) · 24.3-33.6 vacío · después verde Lurveta
   const prob = t < T.a4 ? 1 : 0, vacio = t >= T.a4 && t < DROP ? 1 : 0, verde = t >= DROP ? 1 : 0;
   const g = bx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#03060C'); g.addColorStop(.55, vacio ? '#020408' : '#06101F'); g.addColorStop(1, '#03060C');
   bx.fillStyle = g; bx.fillRect(0, 0, W, H);
@@ -311,15 +311,15 @@ function esA4(t) {
   }
 }
 
-/* ════════ A5 · ¡ESO ES UPGAMES! (drop) · ecosistema híbrido · para jugadores de verdad ════════ */
+/* ════════ A5 · ¡ESO ES LURVETA! (drop) · ecosistema híbrido · para jugadores de verdad ════════ */
 const a5 = capa(12);
 const a5ray = h('div', 'c', '', a5); Object.assign(a5ray.style, { width: '2400px', height: '2400px', background: 'repeating-conic-gradient(from 0deg, rgba(57,255,136,.12) 0deg 5deg, transparent 5deg 15deg)', borderRadius: '50%', WebkitMaskImage: 'radial-gradient(circle, #000 15%, transparent 62%)' });
 const a5onda = h('div', 'c', '', a5); Object.assign(a5onda.style, { width: '200px', height: '200px', borderRadius: '50%', border: '16px solid #F2F5F7', boxShadow: '0 0 90px #39FF88, inset 0 0 60px #39FF88' });
 const a5chis = h('canvas', 'c', null, a5); a5chis.width = 1080; a5chis.height = 1920; const a5x = a5chis.getContext('2d');
 const CHIS = (() => { const r = rng(77); return Array.from({ length: 160 }, () => ({ a: r() * Math.PI * 2, v: 400 + r() * 1400, s: 2 + r() * 6, c: r() > .7 ? '#F2F5F7' : '#39FF88' })); })();
 const a5logo = h('div', 'c orb', '', a5); a5logo.style.fontSize = '180px';
-const a5let = 'UPGAMES'.split('').map((ch, i) => { const s = h('span', '', ch, a5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 2) s.className = 'glow'; return s; });
-const a5cortes = [0, 1, 2].map(i => { const c = h('div', 'c orb', 'UPGAMES', a5); c.style.fontSize = '180px'; c.style.color = i ? '#39FF88' : '#fff'; return c; });
+const a5let = 'LURVETA'.split('').map((ch, i) => { const s = h('span', '', ch, a5logo); s.style.display = 'inline-block'; s.style.color = i < 2 ? '#39FF88' : '#F2F5F7'; if (i < 2) s.className = 'glow'; return s; });
+const a5cortes = [0, 1, 2].map(i => { const c = h('div', 'c orb', 'LURVETA', a5); c.style.fontSize = '180px'; c.style.color = i ? '#39FF88' : '#fff'; return c; });
 const a5hib = h('div', 'c', '<div class="mono" style="font-size:40px;letter-spacing:.3em;color:#C9CED6;text-align:center">EL ECOSISTEMA</div><div class="orb glow" style="font-size:96px;text-align:center">HÍBRIDO</div>', a5);
 const MOD5 = [['DESCARGAS', IC.bajar], ['LIVES', IC.live], ['CHAT', IC.chat], ['VIDEOS', IC.play], ['NEXUS IA', IC.ia]];
 const a5mod = MOD5.map(([n, ic]) => h('div', 'c modulo hex', `${ic('#39FF88')}<span>${n}</span>`, a5));

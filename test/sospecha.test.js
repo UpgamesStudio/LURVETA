@@ -24,7 +24,7 @@ for (const [t, c] of [
 console.log('mods claros (pagan normal)');
 for (const [t, c] of [
     ['GTA V Mod ultra rendimiento', 'Optimizacion'], ['GTA San Andreas mod texturas HD', 'Mod'], ['Red dead redemption mod 60fps', 'Mod'],
-    ['Mods para project Zomboid', 'Mod'], ['APEX GP UPGAMES', 'Juego'], ['Mi juego indie de plataformas', 'Juego'],
+    ['Mods para project Zomboid', 'Mod'], ['APEX GP LURVETA', 'Juego'], ['Mi juego indie de plataformas', 'Juego'],
     ['Tema cyberpunk para Android', 'Apps'], ['f1 2014 mod + configuración gamehub', 'Video'],
 ]) test(`"${t}" (${c})`, () => assert.strictEqual(sosp(t, c), null));
 

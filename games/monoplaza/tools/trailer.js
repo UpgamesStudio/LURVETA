@@ -1,4 +1,4 @@
-// Tráiler cinematográfico de UpGames RACING rodado con el propio juego (index.html?trailer).
+// Tráiler cinematográfico de Lurveta RACING rodado con el propio juego (index.html?trailer).
 //
 // Una carrera de exhibición (todos los coches con la IA) y una lista de planos sincronizados con
 // la música (tools/trailer_musica.mp3, «There Is No Way Out», sin copyright): parrilla al
@@ -6,7 +6,7 @@
 // suelo, de frente a lo Need for Speed, montadas en la rueda, a bordo, teleobjetivo, dron, de
 // noche y bajo la lluvia, cámara lenta en el corte y el cierre con el logotipo.
 //
-// Encima, una capa 2D con los títulos (estilo motion graphics): «UPGAMES presenta», «UpGames RACING»,
+// Encima, una capa 2D con los títulos (estilo motion graphics): «LURVETA presenta», «Lurveta RACING»,
 // tarjetas de características y la llamada final.
 //
 // Dos formas de verlo:
@@ -159,12 +159,12 @@ const ventana = (t, a, b, d = 0.45) => Math.min(entra(t, a, d), sale(t, b, d));
 
 function logoApex(x, y, h, a = 1, brillo = 0) {
   g.save(); g.globalAlpha = a;
-  texto('UPGAMES', x - h * 0.06, y, h, { it: true, esp: h * 0.02, al: 'right' });
+  texto('LURVETA', x - h * 0.06, y, h, { it: true, esp: h * 0.02, al: 'right' });
   texto('RACING', x + h * 0.08, y, h, { it: true, color: ROJO, al: 'left' });
   // trazo de velocidad bajo el logotipo
   g.fillStyle = ROJO; g.globalAlpha = a * 0.9;
   g.beginPath(); g.moveTo(x - h * 4.6, y + h * 0.62); g.lineTo(x + h * 4.2, y + h * 0.62); g.lineTo(x + h * 4.1, y + h * 0.7); g.lineTo(x - h * 4.65, y + h * 0.7); g.fill();
-  if (brillo > 0) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = brillo * 0.5; texto('UPGAMES RACING', x, y, h, { it: true, color: '#ff8a8a' }); }
+  if (brillo > 0) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = brillo * 0.5; texto('LURVETA RACING', x, y, h, { it: true, color: '#ff8a8a' }); }
   g.restore();
 }
 function tarjeta(t, a, b, titulo, sub, W, H) {
@@ -191,17 +191,17 @@ function capa(t) {
   const fr = Math.max(0, (H - W / 2.39) / 2);
   g.fillStyle = '#000'; g.fillRect(0, 0, W, fr); g.fillRect(0, H - fr, W, fr);
   const cx = W / 2, cy = H / 2, u = H / 720;
-  // ── 0-9: UPGAMES presenta ──
+  // ── 0-9: LURVETA presenta ──
   if (t < 9.2) {
     g.fillStyle = `rgba(0,0,0,${Math.min(1, 0.55 + negro)})`; g.fillRect(0, 0, W, H);
     const lin = suave((t - 0.6) / 3.8);
     g.fillStyle = ROJO; g.fillRect(cx - 260 * u * lin, cy + 34 * u, 520 * u * lin, 2 * u);
     if (t >= 4.8) {
       const golpe = Math.max(0, 1 - (t - 4.8) / 0.6);
-      texto('UPGAMES', cx, cy - 6 * u, 74 * u * (1 + golpe * 0.06), { esp: 14 * u, a: sale(t, 9.1, 0.6) });
+      texto('LURVETA', cx, cy - 6 * u, 74 * u * (1 + golpe * 0.06), { esp: 14 * u, a: sale(t, 9.1, 0.6) });
       if (golpe > 0) { g.fillStyle = `rgba(255,255,255,${golpe * 0.35})`; g.fillRect(0, 0, W, H); }
       texto('p r e s e n t a', cx, cy + 66 * u, 20 * u, { peso: 500, a: ventana(t, 6.2, 9.1, 0.8), color: '#c8ced8', esp: 4 * u, sombra: false });
-    } else texto('UPGAMES', cx, cy - 6 * u, 74 * u, { esp: 14 * u, a: suave((t - 2.6) / 2.2) * 0.18 });
+    } else texto('LURVETA', cx, cy - 6 * u, 74 * u, { esp: 14 * u, a: suave((t - 2.6) / 2.2) * 0.18 });
   }
   // ── 9-28,8: frases cortas en el tercio inferior (la narración va por encima) ──
   texto('Cada milésima cuenta.', W * 0.08, H - fr - 60 * u, 30 * u, { al: 'left', it: true, a: ventana(t, 10.2, 13.8) });
@@ -214,7 +214,7 @@ function capa(t) {
       g.beginPath(); g.arc(x, y, 15 * u, 0, Math.PI * 2); g.fillStyle = on ? '#ff1a1a' : 'rgba(30,6,6,.85)'; g.shadowColor = '#ff1a1a'; g.shadowBlur = on ? 26 * u : 0; g.fill(); g.shadowBlur = 0;
     }
   }
-  // ── 28,8: UpGames RACING ──
+  // ── 28,8: Lurveta RACING ──
   if (t >= 28.8 && t < 31.6) {
     const k = (t - 28.8), golpe = Math.max(0, 1 - k / 0.35);
     if (golpe > 0) { g.fillStyle = `rgba(255,255,255,${golpe * 0.55})`; g.fillRect(0, 0, W, H); }
@@ -243,7 +243,7 @@ function capa(t) {
     logoApex(cx, cy - 30 * u, 92 * u, entra(t, 72, 0.3), golpe);
     texto('Juega gratis en  upgames.games', cx, cy + 62 * u, 26 * u, { peso: 800, a: entra(t, 72.6, 0.5) });
     texto('ANDROID  ·  NAVEGADOR  ·  MULTIJUGADOR', cx, cy + 100 * u, 13 * u, { peso: 600, a: entra(t, 73.1, 0.5), color: '#c8ced8', esp: 3 * u, sombra: false });
-    texto('UPGAMES', cx, H - fr - 28 * u, 14 * u, { peso: 800, a: entra(t, 73.4, 0.5) * 0.8, esp: 6 * u, sombra: false });
+    texto('LURVETA', cx, H - fr - 28 * u, 14 * u, { peso: 800, a: entra(t, 73.4, 0.5) * 0.8, esp: 6 * u, sombra: false });
   }
   if (negro > 0.001) { g.fillStyle = `rgba(0,0,0,${negro})`; g.fillRect(0, 0, W, H); }
 }

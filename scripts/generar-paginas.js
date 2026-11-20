@@ -44,7 +44,7 @@ const Seo = require('../modulos/seo');
         if (!fs.existsSync(ruta) || fs.readFileSync(ruta, 'utf8') !== html) fs.writeFileSync(ruta, html);
         // Copia con nombre fijo (<id>.html): es el enlace que se comparte. No depende del título, así que
         // sigue funcionando aunque el autor lo cambie (antes el enlace compartido daba 404). Su canónica es la de arriba.
-        // Quien abre el enlace compartido va DIRECTO a la publicación dentro de UpGames. WhatsApp, Telegram y
+        // Quien abre el enlace compartido va DIRECTO a la publicación dentro de Lurveta. WhatsApp, Telegram y
         // Google no ejecutan scripts: siguen leyendo aquí el título y la imagen para la vista previa.
         // Directo a la portada (la biblioteca): sin pasar por el puente /public/biblioteca.html
         const directo = html.replace('</title>', `</title>\n<script>location.replace(${JSON.stringify(`${Seo.INICIO}?id=${it.id}`)})</script>`);

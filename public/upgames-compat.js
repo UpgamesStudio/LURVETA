@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Compatibilidad real por dispositivo
+   Lurveta · Compatibilidad real por dispositivo
    "Funcionó en mi Snapdragon 8 Gen 2 a 45 FPS con Winlator"
    • En la ficha: resumen de la comunidad, por gama y "en equipos como el tuyo".
    • Reportar: el navegador detecta GPU/modelo/RAM; el usuario confirma el procesador,

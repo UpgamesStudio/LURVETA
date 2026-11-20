@@ -9,7 +9,7 @@ let passed = 0;
 function test(name, fn) { try { fn(); passed++; console.log(`  ✓ ${name}`); } catch (e) { console.error(`  ✗ ${name}\n    ${e.stack}`); process.exitCode = 1; } }
 
 test('APEX GP no es Apex Legends', () => {
-  assert.strictEqual(detectGame('APEX GP', 'APEX GP se presenta como el simulador de carreras definitivo de UPGAMES. Formula racing, apex de cada curva.'), null);
+  assert.strictEqual(detectGame('APEX GP', 'APEX GP se presenta como el simulador de carreras definitivo de LURVETA. Formula racing, apex de cada curva.'), null);
 });
 test('Apex Legends se sigue detectando', () => {
   assert.strictEqual(detectGame('Apex Legends PC', '')?.gameKey, 'Apex Legends');

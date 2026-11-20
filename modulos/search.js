@@ -1,5 +1,5 @@
 // ========================================
-// 🔍 BÚSQUEDA AVANZADA - UPGAMES
+// 🔍 BÚSQUEDA AVANZADA - LURVETA
 // ========================================
 //
 // Búsqueda tipo Elasticsearch pero usando MongoDB (sin dependencias extras).

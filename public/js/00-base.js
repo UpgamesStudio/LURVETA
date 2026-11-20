@@ -1,8 +1,8 @@
 // Imagen de respaldo local (antes via.placeholder.com, que dejó de existir: se veía la imagen rota)
-window.UG_PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#12141c"/><text x="160" y="98" font-family="sans-serif" font-size="18" font-weight="700" fill="#3a3f4d" text-anchor="middle">UpGames</text></svg>');
+window.UG_PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#12141c"/><text x="160" y="98" font-family="sans-serif" font-size="18" font-weight="700" fill="#3a3f4d" text-anchor="middle">Lurveta</text></svg>');
 
 // ═══════════════════════════════════════════════════════════
-// UPGAMES — BIBLIOTECA REDESIGN v3.0
+// LURVETA — BIBLIOTECA REDESIGN v3.0
 // Mobile-first · App Store style
 // ═══════════════════════════════════════════════════════════
 

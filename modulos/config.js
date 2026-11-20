@@ -1,5 +1,5 @@
 // ========================================
-// 📋 CONFIGURACIÓN CENTRALIZADA - UPGAMES
+// 📋 CONFIGURACIÓN CENTRALIZADA - LURVETA
 // ========================================
 
 require('dotenv').config();
@@ -46,7 +46,7 @@ const config = {
         'http://localhost:5500',
         'http://127.0.0.1:5500',
         'http://localhost:7700',
-        // app Android de UpGames RACING (Capacitor sirve el juego desde este origen)
+        // app Android de Lurveta RACING (Capacitor sirve el juego desde este origen)
         'https://localhost',
         'capacitor://localhost',
         ...[process.env.APP_URL, ...String(process.env.CORS_ORIGINS || '').split(',')]
@@ -54,7 +54,7 @@ const config = {
     ])],
     
     // ========== ECONOMÍA CPM ==========
-    // UpGames NO paga por descargas: paga por visualizaciones de publicidad.
+    // Lurveta NO paga por descargas: paga por visualizaciones de publicidad.
     // Lo que gana el creador por cada 1.000 visualizaciones de publicidad verificadas en la
     // página puente (el visitante ve los anuncios durante la espera, sin bloqueador).
     // Tarifa vigente: US$1,50 (75 UpCoins). Se puede ajustar con la variable CPM_VALUE.

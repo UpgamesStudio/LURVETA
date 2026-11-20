@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Videos en scroll infinito vertical (estilo feed corto)
+   Lurveta · Videos en scroll infinito vertical (estilo feed corto)
    ───────────────────────────────────────────────────────────────
    Al entrar a la categoría Video (o abrir un video) se abre un feed a
    pantalla completa: un video por pantalla, deslizar para el siguiente,
@@ -10,7 +10,7 @@
      una reacción; guardar lo deja en Favoritos. Los dos (y las vistas)
      pesan en el orden de Nexus (upgames-ranking.js), igual que las
      promociones con UpCoins, segmentadas por los gustos de cada usuario.
-   • Pantalla tipo consola UpGames: autor (+ seguir) junto al título y
+   • Pantalla tipo consola Lurveta: autor (+ seguir) junto al título y
      barra inferior con me gusta, comentarios, compartir, publicación
      destacada, progreso arrastrable y tiempo.
    • Solo el video visible y sus vecinos tienen el archivo cargado.
@@ -310,7 +310,7 @@
   }
   async function compartir(s) {
     const url = `${location.origin}${location.pathname}?id=${encodeURIComponent(s.item._id)}`;
-    try { if (navigator.share) { await navigator.share({ title: s.item.title, text: `Mira este video de @${s.item.usuario} en UpGames`, url }); return; } } catch (e) { if (e?.name === 'AbortError') return; }
+    try { if (navigator.share) { await navigator.share({ title: s.item.title, text: `Mira este video de @${s.item.usuario} en Lurveta`, url }); return; } } catch (e) { if (e?.name === 'AbortError') return; }
     try { await navigator.clipboard.writeText(url); if (typeof toast === 'function') toast('🔗 Enlace copiado'); } catch (_) { prompt('Copia el enlace:', url); }
   }
   function accion(e, s) {

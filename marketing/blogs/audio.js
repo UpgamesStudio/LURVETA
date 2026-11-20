@@ -1,5 +1,5 @@
 /**
- * Sonido del video de UpGames Blogs: TODO sintetizado aquí (sin archivos de música).
+ * Sonido del video de Lurveta Blogs: TODO sintetizado aquí (sin archivos de música).
  * Distinto al video SaaS: aquel usa una pista electrónica y efectos de «sistema»; este es cálido
  * y acústico (marimba, almohadillas suaves, campanitas) y la música va creciendo con las escenas:
  *   0–3,7 s  almohadilla sola · 3,7 s entra el arpegio · 10,3 s bajo · 15,7 s bombo suave y hi-hat

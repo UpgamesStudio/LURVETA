@@ -1,7 +1,7 @@
 /**
  * Informe mensual de actividad (panel admin → Informes).
  *
- * Reúne en un solo documento todo lo que pasó en UpGames en un mes natural (hora de Colombia):
+ * Reúne en un solo documento todo lo que pasó en Lurveta en un mes natural (hora de Colombia):
  *   • resumen: visitantes, cuentas nuevas, publicaciones, anuncios vistos, comentarios, reportes, pagos
  *   • día a día: una fila por día con las mismas cifras
  *   • top de creadores y de publicaciones del mes, búsquedas más repetidas y búsquedas sin resultado
@@ -62,7 +62,7 @@ const fila = (...cols) => cols.map(celda).join(';');
 function aCSV(inf) {
     const L = [];
     const seccion = (titulo, cabecera, filas) => { L.push('', fila(titulo.toUpperCase()), fila(...cabecera)); for (const f of filas) L.push(fila(...f)); if (!filas.length) L.push(fila('(sin datos)')); };
-    L.push(fila('UPGAMES · INFORME MENSUAL DE ACTIVIDAD'));
+    L.push(fila('LURVETA · INFORME MENSUAL DE ACTIVIDAD'));
     L.push(fila('Mes', inf.nombre));
     L.push(fila('Periodo', `${inf.dias[0]} a ${inf.dias[inf.dias.length - 1]} (hora de Colombia)`));
     L.push(fila('Generado', new Date(inf.generado).toISOString().replace('T', ' ').slice(0, 16) + ' UTC'));
@@ -193,7 +193,7 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Comentario, Pago, Repo
             const inf = await informeCompleto(mes, nivelDe(req.admin));
             if (req.query.formato === 'csv') {
                 res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-                res.setHeader('Content-Disposition', `attachment; filename="UpGames-informe-${mes}.csv"`);
+                res.setHeader('Content-Disposition', `attachment; filename="Lurveta-informe-${mes}.csv"`);
                 return res.send(aCSV(inf));
             }
             res.json({ success: true, informe: inf });
@@ -212,11 +212,11 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Comentario, Pago, Repo
             const filas = inf.resumen.map(r => { const p = r.anterior ? Math.round((r.valor - r.anterior) / r.anterior * 100) : null;
                 return `<tr><td style="padding:6px 12px 6px 0">${r.nombre}</td><td style="padding:6px 12px;text-align:right"><b>${Number(r.valor).toLocaleString('es-CO')}</b></td><td style="padding:6px 0;text-align:right;color:${p === null ? '#888' : p >= 0 ? '#16a34a' : '#dc2626'}">${p === null ? '—' : (p >= 0 ? '+' : '') + p + ' %'}</td></tr>`; }).join('');
             const html = `<div style="font-family:system-ui,sans-serif;max-width:600px;color:#111"><h2 style="margin:0 0 4px">Informe de ${inf.nombre}</h2>
-                <p style="color:#555;margin:0 0 14px">Resumen de la actividad de UpGames, comparado con ${inf.anterior}.</p>
+                <p style="color:#555;margin:0 0 14px">Resumen de la actividad de Lurveta, comparado con ${inf.anterior}.</p>
                 <table style="border-collapse:collapse;font-size:14px">${filas}</table>
                 <p style="margin:18px 0"><a href="https://upgames.games/admin/#informes" style="background:#16a34a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">Abrir y descargar el informe completo</a></p>
                 <p style="color:#888;font-size:12px">El informe completo (día a día, creadores, publicaciones, búsquedas, pagos y acciones del equipo) se descarga en Excel desde el panel → Informes.</p></div>`;
-            for (const to of (ownerEmails?.() || [])) await sendEmail({ to, subject: `UpGames · Informe de ${inf.nombre}`, html });
+            for (const to of (ownerEmails?.() || [])) await sendEmail({ to, subject: `Lurveta · Informe de ${inf.nombre}`, html });
         } catch (e) { logger?.warn?.(`[informes] aviso mensual: ${e.message}`); }
     }
     setTimeout(avisoMensual, 90 * 1000).unref?.();

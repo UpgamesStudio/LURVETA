@@ -1,5 +1,5 @@
 // ========================================
-// 📊 ANALYTICS AVANZADO - UPGAMES
+// 📊 ANALYTICS AVANZADO - LURVETA
 // ========================================
 //
 // Dashboard mejorado con:

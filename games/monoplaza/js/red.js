@@ -1,4 +1,4 @@
-// Conexión con UpGames: cuenta, garaje (mejoras y cosméticos con UpCoins) y multijugador.
+// Conexión con Lurveta: cuenta, garaje (mejoras y cosméticos con UpCoins) y multijugador.
 
 import { io } from '../lib/socket.io.esm.min.js';
 

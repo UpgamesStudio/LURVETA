@@ -7,7 +7,7 @@
  *  - las fichas /public/p/<id>.html van directo a https://upgames.games/?id=<id>
  *  - la portada no pide recursos inexistentes
  *  - service worker: instalación limpia en / y ACTUALIZACIÓN desde la versión en producción (6bc94d3, último main antes de la migración), cachés
- *    viejas de UpGames borradas, las de los juegos conservadas, funciona sin conexión
+ *    viejas de Lurveta borradas, las de los juegos conservadas, funciona sin conexión
  * Uso: node test/real/migracion.js   (VERSION_ANTERIOR=<commit> para otra versión de partida)
  */
 'use strict';
@@ -174,7 +174,7 @@ function versionAnterior() {
     const man = await p.evaluate(async () => { const l = document.querySelector('link[rel=manifest]'); const m = await (await fetch(l.href)).json(); return { href: new URL(l.href).pathname, start: m.start_url, scope: m.scope }; });
     C.prueba('manifest: start_url / y scope /', man.start === '/' && man.scope === '/', JSON.stringify(man));
     await ctx.setOffline(true); await p.reload().catch(() => {}); await espera(1500);
-    C.prueba('sin conexión la portada abre desde la caché', await p.evaluate(() => !!document.getElementById('main-view') && /UpGames/.test(document.title)).catch(() => false));
+    C.prueba('sin conexión la portada abre desde la caché', await p.evaluate(() => !!document.getElementById('main-view') && /Lurveta/.test(document.title)).catch(() => false));
     await ctx.close();
 
     // Actualización desde la versión anterior
@@ -199,9 +199,9 @@ function versionAnterior() {
     let d = { url: v.q.url(), ctl: await ctl(v.q), regs: await regs(v.q), cachés: await cachés(v.q) };
     C.prueba('A) el SW de migración lleva la ventana abierta a / conservando el query', new URL(d.url).pathname === '/' && new URL(d.url).search === '?q=winlator', d.url);
     C.prueba('A) queda solo el SW raíz (alcance /), sin el de /public/', JSON.stringify(d.regs) === '["/"]', JSON.stringify(d.regs));
-    C.prueba('A) cachés viejas de UpGames borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
+    C.prueba('A) cachés viejas de Lurveta borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
     await v.q.reload(); await espera(1500);
-    C.prueba('A) tras recargar, /service-worker.js controla la portada y llena su caché nueva', (await ctl(v.q)) === `${web.url}/service-worker.js` && (await cachés(v.q)).some(n => n.startsWith('upgames-v8.0.0')), JSON.stringify({ ctl: await ctl(v.q), c: await cachés(v.q) }));
+    C.prueba('A) tras recargar, /service-worker.js controla la portada y llena su caché nueva', (await ctl(v.q)) === `${web.url}/service-worker.js` && (await cachés(v.q)).some(n => n.startsWith('upgames-v8.1.0')), JSON.stringify({ ctl: await ctl(v.q), c: await cachés(v.q) }));
     await v.c.close();
 
     // B) Tras el despliegue abre un marcador / la app instalada vieja (/public/biblioteca.html?…)
@@ -213,7 +213,7 @@ function versionAnterior() {
     d = { url: v.q.url(), regs: await regs(v.q), cachés: await cachés(v.q) };
     C.prueba('B) marcador viejo con ?id= y #: llega a /?id=…#comentarios', d.url === `${web.url}/?id=${ID}#comentarios`, d.url);
     C.prueba('B) el SW de /public/ se da de baja y el raíz toma su lugar', JSON.stringify(d.regs) === '["/"]', JSON.stringify(d.regs));
-    C.prueba('B) cachés viejas de UpGames borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
+    C.prueba('B) cachés viejas de Lurveta borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
     await v.q.reload(); await espera(1500);
     await v.c.setOffline(true);
     await v.q.goto(web.url + '/').catch(() => {}); await espera(1500);
@@ -231,9 +231,9 @@ function versionAnterior() {
     await espera(3000); await v.q.reload().catch(() => {}); await espera(2000);
     d = { regs: await regs(v.q), ctl: await ctl(v.q), cachés: await cachés(v.q), script: await v.q.evaluate(async () => (await navigator.serviceWorker.getRegistration('/public/'))?.active?.scriptURL) };
     C.prueba('C) sin pasar por la portada, el registro de /public/ sigue (con el SW nuevo) y no pierde su suscripción', d.regs.includes('/public/') && d.script === `${web.url}/public/service-worker.js` && d.ctl === d.script, JSON.stringify(d));
-    C.prueba('C) aun así borra las cachés viejas de UpGames y conserva las de los juegos', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
+    C.prueba('C) aun así borra las cachés viejas de Lurveta y conserva las de los juegos', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
     await v.c.setOffline(true); await v.q.reload().catch(() => {}); await espera(1500);
-    C.prueba('C) y sirve sin conexión con el código del SW raíz', await v.q.evaluate(() => location.pathname === '/public/perfil-publico.html' && /UpGames/.test(document.title) && !/Sin conexión/.test(document.body.innerText.slice(0, 200))).catch(() => false));
+    C.prueba('C) y sirve sin conexión con el código del SW raíz', await v.q.evaluate(() => location.pathname === '/public/perfil-publico.html' && /Lurveta/.test(document.title) && !/Sin conexión/.test(document.body.innerText.slice(0, 200))).catch(() => false));
     await v.c.close();
 
     // D) Avisos push: con suscripción en el registro viejo, la portada lo da de baja solo cuando el de la raíz

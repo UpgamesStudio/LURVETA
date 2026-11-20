@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════════
- *  nexusPublish.js — Receptor y hosting de publicaciones NEXUS → UpGames
+ *  nexusPublish.js — Receptor y hosting de publicaciones NEXUS → Lurveta
  *  Archivo: modulos/nexusPublish.js
  *
  *  Cuando el usuario pulsa "🚀 Publicar" en la zona de Proyectos de Nexus,
@@ -107,7 +107,7 @@ function injectOpenGraph(html, { title, description, url, image }) {
         image ? `<meta property="og:image" content="${escapeHtml(image)}">` : '',
         `<meta name="twitter:card" content="summary_large_image">`,
         `<meta name="twitter:title" content="${escapeHtml(title)}">`,
-        `<meta name="generator" content="UpGames · publicado desde Nexus">`,
+        `<meta name="generator" content="Lurveta · publicado desde Nexus">`,
     ].filter(Boolean).join('\n');
     if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, m => `${m}\n${tags}`);
     return `${tags}\n${html}`;
@@ -313,7 +313,7 @@ function registrar(app, deps) {
 
             log.info(`[nexusPublish] "${title}" de @${fields.usuario} v${version} → ${files.length} archivo(s), ${(total / 1024).toFixed(0)}KB (${visibility})`);
             return res.json({ ok: true, id: String(item._id), url, version, visibility, files: files.length, bytes: total,
-                message: `Proyecto publicado en UpGames (categoría software, ${visibility === 'private' ? 'privado' : 'público'}).` });
+                message: `Proyecto publicado en Lurveta (categoría software, ${visibility === 'private' ? 'privado' : 'público'}).` });
         } catch (e) {
             log.error(`[nexusPublish] publish-project: ${e.message}`);
             return res.status(500).json({ error: 'Error hospedando el proyecto' });
@@ -431,7 +431,7 @@ function registrar(app, deps) {
             if (!item && !proj) return res.status(404).json({ error: 'Proyecto publicado no encontrado' });
 
             log.info(`[nexusPublish] unpublish ${projectId}`);
-            return res.json({ ok: true, message: 'Publicación eliminada de UpGames.' });
+            return res.json({ ok: true, message: 'Publicación eliminada de Lurveta.' });
         } catch (e) {
             log.error(`[nexusPublish] unpublish-project: ${e.message}`);
             return res.status(500).json({ error: 'Error despublicando el proyecto' });

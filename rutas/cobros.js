@@ -112,7 +112,7 @@ function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendE
                 esperaHasta: tenia && ESPERA_H > 0 ? new Date(Date.now() + ESPERA_H * 3600e3) : null };
             await Usuario.updateOne({ usuario: req.usuario }, { $set: { cobro, ...(paypalEmail ? { paypalEmail } : {}) } });
             logger.info(`[cobros] @${req.usuario} configuró su método de cobro: ${TIPOS[cobro.tipo].nombre}`);
-            if (tenia && u.email) sendEmail?.({ to: u.email, subject: '🔐 Cambiaste tu método de cobro en UpGames',
+            if (tenia && u.email) sendEmail?.({ to: u.email, subject: '🔐 Cambiaste tu método de cobro en Lurveta',
                 html: plantillaAviso ? plantillaAviso(u.usuario, `Tu método de cobro ahora es: <b>${resumen}</b>. Por seguridad, los retiros quedan en espera ${ESPERA_H} horas. Si no fuiste tú, cambia tu contraseña y escríbenos de inmediato.`)
                     : `Tu método de cobro ahora es: ${resumen}. Si no fuiste tú, cambia tu contraseña y escríbenos.` }).catch?.(() => {});
             ok(res, { metodo: { tipo: cobro.tipo, nombre: TIPOS[cobro.tipo].nombre, resumen }, esperaHasta: cobro.esperaHasta,

@@ -23,7 +23,7 @@ function texturaCartel(txt, fondo, letra) {
 export class SalidaBoxes {
   constructor(scene, modelo, equipo, calidad = 1) {
     this.scene = scene; this.m = modelo; this.t = 0; this.hecho = false;
-    const texto = equipo?.corto === 'UPG' ? 'UPGAMES' : (equipo?.nombre || 'UPGAMES').split(' ')[0].toUpperCase();
+    const texto = equipo?.corto === 'LUR' ? 'LURVETA' : (equipo?.nombre || 'LURVETA').split(' ')[0].toUpperCase();
     const color = equipo?.base || '#0d47ff';
     this.grupo = new THREE.Group();
     modelo.raiz.add(this.grupo);          // se mueve con el coche (y en su sistema de coordenadas)

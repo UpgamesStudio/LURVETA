@@ -1,4 +1,4 @@
-// Conexión con UpGames: sesión (la misma de upgames.games), descubrimientos compartidos, bases,
+// Conexión con Lurveta: sesión (la misma de upgames.games), descubrimientos compartidos, bases,
 // partida en la nube y jugadores en el mismo sector (Socket.IO /upstar).
 import { io } from '../../monoplaza/lib/socket.io.esm.min.js';
 

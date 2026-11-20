@@ -28,7 +28,7 @@ function texturaBandera(equipo) {
   x.fillStyle = equipo.acento || '#ffffff'; x.fillRect(0, 62, 256, 36);
   x.fillStyle = '#ffffff'; x.strokeStyle = 'rgba(0,0,0,0.5)'; x.lineWidth = 6;
   x.font = '900 italic 40px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  const txt = (equipo.corto === 'UPG' ? 'UPGAMES' : (equipo.nombre || '').split(' ')[0].toUpperCase()).slice(0, 10);
+  const txt = (equipo.corto === 'LUR' ? 'LURVETA' : (equipo.nombre || '').split(' ')[0].toUpperCase()).slice(0, 10);
   x.strokeText(txt, 128, 80); x.fillText(txt, 128, 80);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
@@ -41,7 +41,7 @@ function texturaFondo() {
   x.textAlign = 'center'; x.textBaseline = 'middle';
   for (let k = 0; k < 4; k++) for (let j = 0; j < 3; j++) {
     x.fillStyle = (k + j) % 2 ? 'rgba(255,255,255,0.10)' : 'rgba(232,32,42,0.18)';
-    x.font = '900 italic 40px Arial'; x.fillText((k + j) % 2 ? 'UPGAMES' : 'RACING', 128 + k * 256, 70 + j * 120);
+    x.font = '900 italic 40px Arial'; x.fillText((k + j) % 2 ? 'LURVETA' : 'RACING', 128 + k * 256, 70 + j * 120);
   }
   x.fillStyle = '#e8202a'; x.fillRect(0, 360, 1024, 24);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
@@ -69,7 +69,7 @@ export class Podio {
     const matBot = new THREE.MeshStandardMaterial({ color: 0x14361f, roughness: 0.15, metalness: 0.3 });
     const matOro = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.3, metalness: 0.9 });
     this.pilotos = top.map((p, k) => {
-      const per = new Persona({ color: p.equipo.base, texto: p.equipo.corto === 'UPG' ? 'UPGAMES' : p.equipo.nombre.split(' ')[0].toUpperCase(), numero: p.numero || k + 1, rol: 'piloto', calidad, podio: true });
+      const per = new Persona({ color: p.equipo.base, texto: p.equipo.corto === 'LUR' ? 'LURVETA' : p.equipo.nombre.split(' ')[0].toUpperCase(), numero: p.numero || k + 1, rol: 'piloto', calidad, podio: true });
       per.raiz.position.set(LADO[k], ALTOS[k] + 0.02, 0); per.raiz.rotation.y = -Math.PI / 2;    // de cara a la cámara (+z)
       per.poner('de_pie', 0.01);
       const bot = new THREE.Group();
@@ -91,7 +91,7 @@ export class Podio {
     this._bx = Float32Array.from(this.geoBandera.attributes.position.array);
     // el equipo del ganador, abajo frente al podio, mirando a sus pilotos
     this.equipo = [];
-    const n = calidad >= 2 ? 10 : 6, texto = ganador.corto === 'UPG' ? 'UPGAMES' : (ganador.nombre || '').split(' ')[0].toUpperCase();
+    const n = calidad >= 2 ? 10 : 6, texto = ganador.corto === 'LUR' ? 'LURVETA' : (ganador.nombre || '').split(' ')[0].toUpperCase();
     for (let k = 0; k < n; k++) {
       const per = new Persona({ color: ganador.base, texto, numero: 40 + k, rol: k % 4 === 3 ? 'ingeniero' : 'mecanico', calidad });
       const fila = k % 2, x = (k - (n - 1) / 2) * 0.62 + (fila ? 0.3 : 0);

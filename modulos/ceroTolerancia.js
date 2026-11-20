@@ -2,7 +2,7 @@
  * ══════════════════════════════════════════════════════════════════
  *  Cero tolerancia (NEXUS) — contenido que se reporta a las autoridades
  *
- *  Categorías (en cualquier parte de UpGames: chats privados, grupos,
+ *  Categorías (en cualquier parte de Lurveta: chats privados, grupos,
  *  comunidades, comentarios, publicaciones, historias y lives):
  *    • menores   → cualquier contenido sexual o sexualizado con menores de edad
  *    • zoofilia  → contenido sexual con animales
@@ -86,7 +86,7 @@ function revisarTexto(texto) {
 
 // ── Visión de NEXUS para imágenes (chat, grupos, historias, portadas) ──────
 const MODELOS_VISION = (process.env.NEXUS_VISION_MODELOS || 'meta-llama/llama-4-scout-17b-16e-instruct,meta-llama/llama-4-maverick-17b-128e-instruct').split(',').map(s => s.trim()).filter(Boolean);
-const SISTEMA_VISION = `Eres el sistema de seguridad infantil y de contenido ilegal de UpGames. Mira la imagen y responde SOLO JSON:
+const SISTEMA_VISION = `Eres el sistema de seguridad infantil y de contenido ilegal de Lurveta. Mira la imagen y responde SOLO JSON:
 {"categoria":"ok|menores|zoofilia|abuso|gore","confianza":0.0-1.0,"motivo":"frase corta"}
 - "menores": cualquier persona que parezca menor de 18 años en contexto sexual, desnuda o sexualizada (también dibujos o IA).
 - "zoofilia": actos sexuales con animales.
@@ -120,7 +120,7 @@ function ipDe(req) {
     return String(req.ip || req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim().slice(0, 64);
 }
 
-/** Expediente de la cuenta para las autoridades (lo que UpGames tenga). */
+/** Expediente de la cuenta para las autoridades (lo que Lurveta tenga). */
 async function expediente(usuario) {
     const U = mongoose.models.Usuario, Pago = mongoose.models.Pago;
     const u = U ? await U.findOne({ usuario }).select('usuario email paypalEmail registrationIP ultimaIp ipsVistas fecha ultimoLogin cobro.tipo cobro.resumen tarjetas.titular tarjetas.ultimos4 tarjetas.tipo listaSeguidores siguiendo suspendido strikesModeracion').lean().catch(() => null) : null;
@@ -179,7 +179,7 @@ async function frenarTexto({ texto, usuario, donde, ref, req }) {
     const v = revisarTexto(texto);
     if (!v.grave) return null;
     incidente({ usuario, categoria: v.categoria, motivo: v.motivo, fuente: 'NEXUS reglas', donde, ref, texto, req });
-    return { status: 400, error: `No se envió: ${v.motivo.toLowerCase()} está prohibido en UpGames y se reporta a las autoridades.`, code: 'CERO_TOLERANCIA' };
+    return { status: 400, error: `No se envió: ${v.motivo.toLowerCase()} está prohibido en Lurveta y se reporta a las autoridades.`, code: 'CERO_TOLERANCIA' };
 }
 
 /**

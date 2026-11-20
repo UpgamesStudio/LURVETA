@@ -1,5 +1,5 @@
 // Guardar un archivo creado en la página: en el navegador, una descarga normal; en la app de
-// Android, por trozos en base64 al puente nativo (window.StudioArchivo → Descargas › UpGames Studio).
+// Android, por trozos en base64 al puente nativo (window.StudioArchivo → Descargas › Lurveta Studio).
 export async function descargar(datos, nombre, tipo = 'application/octet-stream') {
   const blob = datos instanceof Blob ? datos : new Blob([datos], { type: tipo });
   const nativo = window.StudioArchivo;

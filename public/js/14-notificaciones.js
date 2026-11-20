@@ -262,7 +262,7 @@ function closeTheater() {
 //    activar las notificaciones del móvil.
 //  • Isla: cuando llega algo con la app abierta (polling o push del service
 //    worker), una "isla" flotante arriba; al tocarla te lleva al contenido.
-//  • Push: Web Push con claves VAPID del servidor; llega aunque UpGames
+//  • Push: Web Push con claves VAPID del servidor; llega aunque Lurveta
 //    esté cerrado (en iPhone, con la app instalada en la pantalla de inicio).
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -293,8 +293,8 @@ function ugnMeta(n) {
 // Texto plano de una notificación (los mensajes del servidor llegan con HTML escapado)
 const ugnPlano = s => { const d = document.createElement('textarea'); d.innerHTML = String(s || '').replace(/<[^>]*>/g, ''); return d.value; };
 function ugnTexto(n) {
-  if (n._push) return { quien: n._push.title || 'UpGames', accion: '', sub: n._push.body || '', anuncio: true };
-  const e = n.emisor ? '@' + n.emisor : 'UpGames', t = n.itemTitle || '', msg = ugnPlano(n.mensaje);
+  if (n._push) return { quien: n._push.title || 'Lurveta', accion: '', sub: n._push.body || '', anuncio: true };
+  const e = n.emisor && n.emisor !== 'UpGames' ? '@' + n.emisor : 'Lurveta', t = n.itemTitle || '', msg = ugnPlano(n.mensaje);
   switch (n.tipo) {
     case 'nueva_publicacion': return { quien: e, accion: 'publicó algo nuevo', sub: t };
     case 'nueva_entrada': return { quien: e, accion: 'publicó en su blog', sub: t };
@@ -308,13 +308,13 @@ function ugnTexto(n) {
   if (t === 'En vivo') return { quien: e, accion: 'está en vivo 🔴', sub: msg || 'Toca para verlo' };
   if (t === 'Verifica tu email') return { quien: 'Verifica tu email', accion: '', sub: msg.replace(/^📧\s*/, '') };
   if (t === 'Tu pase vence' || t === 'Tu Premium vence') return { quien: 'Tu Premium vence pronto', accion: '', sub: msg.replace(/^⏳\s*/, '') };
-  if (t === 'Anuncio') return { quien: 'UpGames', accion: '', sub: msg.replace(/^📢\s*/, ''), anuncio: true };
+  if (t === 'Anuncio') return { quien: 'Lurveta', accion: '', sub: msg.replace(/^📢\s*/, ''), anuncio: true };
   if (t === 'Revisión') return { quien: 'Revisión', accion: '', sub: msg, anuncio: true };
-  if (t === 'Equipo') return { quien: 'Equipo UpGames', accion: '', sub: msg, anuncio: true };
+  if (t === 'Equipo') return { quien: 'Equipo Lurveta', accion: '', sub: msg, anuncio: true };
   return { quien: e, accion: msg || 'Notificación', sub: t };
 }
 function ugnAvatar(n, meta) {
-  const sistema = !n.emisor || n.emisor === 'UpGames' || ugnTexto(n).anuncio;
+  const sistema = !n.emisor || n.emisor === 'Lurveta' || n.emisor === 'UpGames' /* avisos guardados antes del cambio de marca */ || ugnTexto(n).anuncio;
   const letra = sistema ? '' : escH((n.emisor[0] || '?').toUpperCase());
   let h = 0; for (const ch of n.emisor || 'u') h = (h * 31 + ch.charCodeAt(0)) % 360;
   return `<div class="ugn-av" style="${sistema ? '' : `background:linear-gradient(135deg,hsl(${h} 70% 55%),hsl(${(h + 50) % 360} 75% 45%))`}">
@@ -600,10 +600,10 @@ function ugnPintarPush() {
   const activo = ugnPushSoportado() && Notification.permission === 'granted' && LS.get('ugn_push_on') === '1';
   if (activo) { box.innerHTML = ''; return; }
   let txt, btn = '<button class="ugn-push-btn" onclick="ugnSuscribir(false)">Activar</button>';
-  if (ugnEsIOS() && !ugnInstalada()) { txt = 'En iPhone: toca <b>Compartir → Añadir a pantalla de inicio</b> y abre UpGames desde ahí para recibir avisos.'; btn = ''; }
+  if (ugnEsIOS() && !ugnInstalada()) { txt = 'En iPhone: toca <b>Compartir → Añadir a pantalla de inicio</b> y abre Lurveta desde ahí para recibir avisos.'; btn = ''; }
   else if (!ugnPushSoportado()) { txt = 'Tu navegador no admite avisos push. Prueba con Chrome.'; btn = ''; }
   else if (Notification.permission === 'denied') { txt = 'Bloqueaste los avisos. Actívalos en el candado 🔒 de la barra de direcciones → Notificaciones → Permitir.'; btn = ''; }
-  else txt = 'Entérate al instante cuando un creador que sigues publique, te escriban o haya novedades, aunque no estés en UpGames.';
+  else txt = 'Entérate al instante cuando un creador que sigues publique, te escriban o haya novedades, aunque no estés en Lurveta.';
   box.innerHTML = `<div class="ugn-push"><div class="ugn-push-ic"><ion-icon name="phone-portrait-outline"></ion-icon></div><div class="ugn-push-tx"><b>Avisos en tu móvil</b><span>${txt}</span></div>${btn}</div>`;
 }
 async function ugnAjustes(mostrar) {
@@ -623,7 +623,7 @@ async function ugnAjustes(mostrar) {
     ${fila('publicaciones', 'cloud-upload-outline', 'Nuevas publicaciones', 'Cuando un creador que sigues sube algo')}
     ${fila('mensajes', 'chatbubbles-outline', 'Mensajes', 'Mensajes privados del chat')}
     ${fila('social', 'heart-outline', 'Actividad social', 'Seguidores, me gusta, comentarios y logros')}
-    ${fila('anuncios', 'megaphone-outline', 'Anuncios de UpGames', 'Novedades y actualizaciones')}
+    ${fila('anuncios', 'megaphone-outline', 'Anuncios de Lurveta', 'Novedades y actualizaciones')}
     <p class="ugn-note">Los avisos sobre la revisión de tus publicaciones siempre se envían.</p>`;
   set.querySelectorAll('input[data-k]').forEach(i => i.addEventListener('change', () =>
     fetch(`${API_URL}/push/prefs`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...ugnAuth() }, body: JSON.stringify({ [i.dataset.k]: i.checked }) }).then(() => toast('✓ Preferencias guardadas')).catch(() => {})));

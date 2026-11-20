@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════════
- *  nexus/llm.js — Cerebro de Nexus: cliente Groq nativo de UpGames
+ *  nexus/llm.js — Cerebro de Nexus: cliente Groq nativo de Lurveta
  *
  *  Nexus vive dentro de este servidor: usa GROQ_API_KEY directamente,
  *  sin ningún servicio intermedio. Si un modelo está saturado (429) o

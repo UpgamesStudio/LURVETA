@@ -1,4 +1,4 @@
-/* UpGames · Patrocinio — motor común de animación.
+/* Lurveta · Patrocinio — motor común de animación.
    Todo se calcula en render(t): cada fotograma es exacto y reproducible,
    así render.js puede grabarlo cuadro a cuadro. Los videos definen:
      M.escena(desde, hasta, construir(raiz), actualizar(t, raiz))
@@ -317,7 +317,7 @@ const M = (() => {
     efectos(t);
   };
 
-  const iniciar = ({ duracion, etiqueta = 'UPGAMES // PATROCINIO' }) => {
+  const iniciar = ({ duracion, etiqueta = 'LURVETA // PATROCINIO' }) => {
     const stage = document.getElementById('stage');
     stage.innerHTML = `<canvas id="bg" width="${W}" height="${H}"></canvas><div id="mundo"></div><canvas id="fx" width="${W}" height="${H}"></canvas>
       <div id="subs"></div>

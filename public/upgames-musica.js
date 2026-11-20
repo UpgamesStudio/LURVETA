@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Música de fondo
+   Lurveta · Música de fondo
    ───────────────────────────────────────────────────────────────
    • Cada sesión arranca con una canción distinta a la de la sesión
      anterior y sigue con las demás en orden aleatorio.

@@ -1,5 +1,5 @@
 /**
- * UpGames Blogs · anuncios (monetización opcional)
+ * Lurveta Blogs · anuncios (monetización opcional)
  *
  * Si el creador activa «Monetizar», sus páginas llevan un espacio de publicidad. El anuncio
  * NO se carga dentro de la página del blog (que sigue sin scripts): va en un marco aislado

@@ -70,13 +70,13 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
   const raiz = cabecera(html);
   const grafo = JSON.parse(raiz.ld[0])['@graph'] || [];
   C.prueba('portada: Organization + WebSite (buscador en /?q=) + CollectionPage', ['Organization', 'WebSite', 'CollectionPage'].every(t => grafo.some(x => x['@type'] === t)) && grafo.find(x => x['@type'] === 'WebSite').potentialAction?.target?.urlTemplate === 'https://upgames.games/?q={search_term_string}' && grafo.every(x => !/biblioteca\.html/.test(JSON.stringify(x))), JSON.stringify(grafo.map(x => x['@type'])));
-  C.prueba('título y descripción de la portada', raiz.title === 'UpGames | Juegos, mods y apps de creadores independientes' && raiz.desc === 'UpGames conecta gamers, creadores de contenido y desarrolladores independientes en un ecosistema para descubrir, crear y monetizar.', `${raiz.title} · ${raiz.desc}`);
-  const h1 = (html.match(/<h1[^>]*>([^<]*)<\/h1>/) || [])[1] || '', bloque = ((html.match(/<section class="ug-intro"[\s\S]*?<\/section>/) || [''])[0] + (html.match(/<section id="ug-acerca"[\s\S]*?<\/section>/) || [''])[0]).toLowerCase();   // texto visible: introducción + qué es UpGames
+  C.prueba('título y descripción de la portada', raiz.title === 'Lurveta | Juegos, mods y apps de creadores independientes' && raiz.desc === 'Lurveta conecta gamers, creadores de contenido y desarrolladores independientes en un ecosistema para descubrir, crear y monetizar.', `${raiz.title} · ${raiz.desc}`);
+  const h1 = (html.match(/<h1[^>]*>([^<]*)<\/h1>/) || [])[1] || '', bloque = ((html.match(/<section class="ug-intro"[\s\S]*?<\/section>/) || [''])[0] + (html.match(/<section id="ug-acerca"[\s\S]*?<\/section>/) || [''])[0]).toLowerCase();   // texto visible: introducción + qué es Lurveta
   C.prueba('H1 con la propuesta de valor', /desarrolladores independientes/.test(h1) && /juegos, mods y apps/.test(h1), h1);
   const claves = ['juegos', 'mods', 'winlator', 'aplicaciones', 'descargas', 'desarrolladores independientes', 'creadores de contenido'].filter(k => !bloque.includes(k));
   C.prueba('palabras clave (juegos, mods, Winlator, aplicaciones, descargas, desarrolladores independientes, creadores de contenido)', !claves.length, 'faltan: ' + claves.join(', '));
-  C.prueba('sin texto oculto para Google: todo «qué es UpGames» (H1 incluido) en un <details> que se puede abrir', !/class="ug-sr"/.test(html) && /<details class="ug-sobre" id="ug-sobre">\s*<summary>Sobre UpGames<\/summary>[\s\S]*id="ug-acerca"[\s\S]*SEO:ENLACES[\s\S]*<\/details>/.test(html));
-  C.prueba('el H1 va dentro del desplegable, antes del contenido', /<details class="ug-sobre"[^>]*>\s*<summary>Sobre UpGames<\/summary>\s*<section class="ug-intro"[^>]*>\s*<h1/.test(html) && (html.match(/<h1[\s>]/g) || []).length === 1);
+  C.prueba('sin texto oculto para Google: todo «qué es Lurveta» (H1 incluido) en un <details> que se puede abrir', !/class="ug-sr"/.test(html) && /<details class="ug-sobre" id="ug-sobre">\s*<summary>Sobre Lurveta<\/summary>[\s\S]*id="ug-acerca"[\s\S]*SEO:ENLACES[\s\S]*<\/details>/.test(html));
+  C.prueba('el H1 va dentro del desplegable, antes del contenido', /<details class="ug-sobre"[^>]*>\s*<summary>Sobre Lurveta<\/summary>\s*<section class="ug-intro"[^>]*>\s*<h1/.test(html) && (html.match(/<h1[\s>]/g) || []).length === 1);
   C.prueba('sin anclas relativas (con <base> un href="#…" iría a /public/)', !/href="#[a-z]/i.test(html), (html.match(/href="#[^"]+"/g) || []).join(' '));
   C.prueba('nada en la portada apunta a biblioteca.html', !/biblioteca\.html/.test(html.replace(/<!--[\s\S]*?-->/g, '')));
   const puente = cabecera(fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8'));
@@ -123,7 +123,7 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
       });
       const sobre = await p.evaluate(() => { const d = document.getElementById('ug-sobre'), s = d?.querySelector('summary').getBoundingClientRect();
         return { cerrado: d && !d.open, resumen: !!s && s.height > 10, altoCerrado: Math.round(d?.getBoundingClientRect().height || 0) }; });
-      C.prueba(`${n}: «Sobre UpGames» llega plegado (el usuario solo ve una línea)`, sobre.cerrado && sobre.resumen && sobre.altoCerrado < 200 && !vis.acerca, JSON.stringify(sobre));
+      C.prueba(`${n}: «Sobre Lurveta» llega plegado (el usuario solo ve una línea)`, sobre.cerrado && sobre.resumen && sobre.altoCerrado < 200 && !vis.acerca, JSON.stringify(sobre));
       await p.evaluate(() => { document.getElementById('ug-sobre').open = true; });
       const abierto = await p.evaluate(() => { const r = document.getElementById('ug-acerca').getBoundingClientRect(); return r.height > 100; });
       C.prueba(`${n}: al abrirlo se ve todo (${vis.palabras} palabras en el HTML, con las palabras clave)`, abierto && vis.h1 && vis.palabras >= 300 && !vis.faltan.length, JSON.stringify(vis));
@@ -138,7 +138,7 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
       if (prep) await ctx.addInitScript(prep); const p = await ctx.newPage(); await p.goto(web.url + ruta).catch(() => {}); await espera(1200);
       const out = { url: new URL(p.url()).pathname + new URL(p.url()).search + new URL(p.url()).hash, ref: await p.evaluate(() => localStorage.getItem('ug_ref')).catch(() => null) }; await ctx.close(); return out; };
     let r = await nav('/', () => { if (location.pathname === '/') localStorage.setItem('ug_entro', '1'); });
-    C.prueba('quien ya usó UpGames también se queda en / (sin salto a otra URL)', r.url === '/', r.url);
+    C.prueba('quien ya usó Lurveta también se queda en / (sin salto a otra URL)', r.url === '/', r.url);
     r = await nav('/?ref=amigo_123');
     C.prueba('enlace de invitación ?ref= se guarda (y la portada se muestra)', r.url === '/?ref=amigo_123' && /amigo_123/.test(r.ref || ''), JSON.stringify(r));
     { const ctx = await b.newContext({ serviceWorkers: 'block' }); await ctx.route(/fonts\.|unpkg\.com|railway\.app/, r => r.abort());

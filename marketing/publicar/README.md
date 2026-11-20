@@ -1,6 +1,6 @@
-# Video SaaS · Cómo publicar tu proyecto en UpGames
+# Video SaaS · Cómo publicar tu proyecto en Lurveta
 
-Animación estilo **SaaS motion graphics** que explica, en tres pasos, cómo publicar un juego, mod o app en UpGames. Usa el mismo motor y la misma identidad que `marketing/saas` (verde → cian → violeta, cristal, Orbitron / Space Grotesk / JetBrains Mono). Horizontal **1920×1080 a 60 fps**, 35 s, con música y efectos. Sin locución: el mensaje va en texto cinético, así sirve con o sin sonido.
+Animación estilo **SaaS motion graphics** que explica, en tres pasos, cómo publicar un juego, mod o app en Lurveta. Usa el mismo motor y la misma identidad que `marketing/saas` (verde → cian → violeta, cristal, Orbitron / Space Grotesk / JetBrains Mono). Horizontal **1920×1080 a 60 fps**, 35 s, con música y efectos. Sin locución: el mensaje va en texto cinético, así sirve con o sin sonido.
 
 ## Cómo grabarlo
 

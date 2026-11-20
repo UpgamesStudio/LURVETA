@@ -1,4 +1,4 @@
-// UpGames Studio: arranque, bucle de render e interfaz del modo objeto (etapa 1, sprint 1).
+// Lurveta Studio: arranque, bucle de render e interfaz del modo objeto (etapa 1, sprint 1).
 import * as THREE from 'three';
 import { CamaraOrbital } from './camara.js';
 import { instalarGestos } from './ui/gestos.js';
@@ -422,7 +422,7 @@ function crearPlantilla(construir, nombre, texto) {
   escena.seleccionar(null);
   const s = escena.esferaDe(null);
   camOrb.enfocar(s.center, s.radius);
-  aviso(`${texto}: ${piezas.length} piezas con nombre. Exporta a GLB para UpGames RACING.`);
+  aviso(`${texto}: ${piezas.length} piezas con nombre. Exporta a GLB para Lurveta RACING.`);
 }
 $('rejillaPiezas').innerHTML = PIEZAS.map((p) => `<button data-pieza="${p.id}"><svg viewBox="0 0 32 32"><path d="M6 12l10-6 10 6v10l-10 6-10-6z"/><path d="M6 12l10 6 10-6M16 18v10"/></svg>${p.nombre}</button>`).join('');
 $('rejillaPiezas').addEventListener('click', (e) => {

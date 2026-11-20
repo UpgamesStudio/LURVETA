@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Usos extra de los UpCoins (UGX)
+   Lurveta · Usos extra de los UpCoins (UGX)
    Estilo del perfil, Apoyar publicaciones, revisión prioritaria, regalar Premium,
    cambio de nombre inmediato y misiones semanales. El servidor fija precios y
    reglas (rutas/extrasUC.js); aquí solo se muestra y se cobra con clave única.
@@ -134,12 +134,12 @@
     caja.innerHTML = `<div class="ugx-ref">
       <div class="ugx-ref-h"><span class="ugx-ref-ic">🤝</span><div><b>Invita y ganen los dos</b><small>Tú recibes <b>${d.recompensa.invitador} UC</b> y tu amigo <b>${d.recompensa.invitado} UC</b> cuando verifique su email.</small></div></div>
       <div class="ugx-ref-link"><input readonly value="${esc(link)}" aria-label="Tu enlace de invitación"><button type="button" class="ugx-btn" data-a="copiar">Copiar</button></div>
-      <div class="ugx-ref-acc">${navigator.share ? '<button type="button" class="ugx-btn sec" data-a="compartir">📤 Compartir</button>' : ''}<a class="ugx-btn sec" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Te invito a UpGames: descargas, videos, lives y una IA que te paga. Crea tu cuenta y recibe UpCoins de regalo 👉 ' + link)}">WhatsApp</a></div>
+      <div class="ugx-ref-acc">${navigator.share ? '<button type="button" class="ugx-btn sec" data-a="compartir">📤 Compartir</button>' : ''}<a class="ugx-btn sec" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Te invito a Lurveta: descargas, videos, lives y una IA que te paga. Crea tu cuenta y recibe UpCoins de regalo 👉 ' + link)}">WhatsApp</a></div>
       <div class="ugx-ref-st"><div><b>${fmt(d.total)}</b><small>Invitados</small></div><div><b>${fmt(d.pagados)}</b><small>Verificados</small></div><div><b>${fmt(d.ganadoUC)}</b><small>UC ganados</small></div><div><b>${d.pagadosMes}/${d.topeMes}</b><small>Este mes</small></div></div>
       ${d.recientes.length ? `<details class="ugx-ref-lista"><summary>Ver mis invitados (${d.recientes.length})</summary>${d.recientes.map(x => `<div><span>@${esc(x.usuario)}</span><small>${(est[x.estado] || est.pendiente).join(' ')}</small></div>`).join('')}</details>` : ''}
-      <p class="ugx-sub">Son UpCoins de regalo: se usan en UpGames y no se retiran. Cuentas falsas, la misma red o el abuso anulan las recompensas.</p></div>`;
+      <p class="ugx-sub">Son UpCoins de regalo: se usan en Lurveta y no se retiran. Cuentas falsas, la misma red o el abuso anulan las recompensas.</p></div>`;
     caja.querySelector('[data-a="copiar"]').onclick = async () => { try { await navigator.clipboard.writeText(link); aviso('🔗 Enlace copiado'); } catch (_) { caja.querySelector('input').select(); } };
-    caja.querySelector('[data-a="compartir"]')?.addEventListener('click', () => navigator.share({ title: 'UpGames', text: 'Te invito a UpGames y recibes UpCoins de regalo', url: link }).catch(() => {}));
+    caja.querySelector('[data-a="compartir"]')?.addEventListener('click', () => navigator.share({ title: 'Lurveta', text: 'Te invito a Lurveta y recibes UpCoins de regalo', url: link }).catch(() => {}));
   }
 
   // ── Promover mi live: plus en el directorio y en "En vivo ahora" ───────────
@@ -174,7 +174,7 @@
   function pintarMisiones(e) {
     const dias = Math.max(0, Math.ceil((new Date(e.terminaEn) - Date.now()) / 864e5));
     const html = !e.activo || !e.misiones.length ? '<p class="ugx-sub">No hay misiones activas esta semana.</p>'
-      : `<p class="ugx-sub">Se reinician cada lunes · quedan ${dias} día${dias === 1 ? '' : 's'}. Los UpCoins de misiones son de regalo: se usan en UpGames, no se retiran.</p>
+      : `<p class="ugx-sub">Se reinician cada lunes · quedan ${dias} día${dias === 1 ? '' : 's'}. Los UpCoins de misiones son de regalo: se usan en Lurveta, no se retiran.</p>
         <div class="ugx-mis">${e.misiones.map(m => {
           const pr = Math.round(m.progreso / m.objetivo * 100);
           const premio = [m.uc ? `🪙 ${m.uc} UC` : '', m.insignia ? `${m.insignia.emoji} Insignia ${m.insignia.nombre}` : ''].filter(Boolean).join(' + ');
@@ -425,7 +425,7 @@
     });
   }
 
-  // ── Apoyar un blog de UpGames Blogs (llega desde el bloque «Apoyar» del blog: ?apoyarBlog=<id>) ──
+  // ── Apoyar un blog de Lurveta Blogs (llega desde el bloque «Apoyar» del blog: ?apoyarBlog=<id>) ──
   async function apoyarBlog(blogId) {
     if (!/^[a-f\d]{24}$/i.test(String(blogId || ''))) return;
     if (!tok()) return window.ugPedirSesion?.('apoyar a los creadores');

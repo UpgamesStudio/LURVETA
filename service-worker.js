@@ -1,5 +1,5 @@
 // ========================================
-// 🛰️ SERVICE WORKER - UPGAMES PWA
+// 🛰️ SERVICE WORKER - LURVETA PWA
 // ========================================
 //
 // Gestiona:
@@ -16,12 +16,12 @@
 // No toca /admin/ (datos privados del panel), /games/ ni /studio/ (tienen su propio service worker).
 // ========================================
 
-const CACHE_VERSION = 'upgames-v8.0.0';   // v8: la biblioteca pasa a la raíz (/)
+const CACHE_VERSION = 'upgames-v8.1.0';   // v8.1: cambio de marca a Lurveta (v8: la biblioteca pasa a la raíz)
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_RUNTIME = `${CACHE_VERSION}-runtime`;
 const CACHE_API     = `${CACHE_VERSION}-api`;
 // Imágenes: caché propio que NO se borra al desplegar (las portadas no cambian de URL al cambiar el código)
-const CACHE_IMG     = 'upgames-img-v1';
+const CACHE_IMG     = 'upgames-img-v2';   // v2: logo e iconos nuevos (Lurveta) con la misma URL
 const IMG_MAX       = 400;                       // entradas como máximo (se van las más viejas)
 const IMG_REVALIDAR = 7 * 24 * 3600 * 1000;      // las que no son de Cloudinary se refrescan cada 7 días
 
@@ -55,8 +55,8 @@ const PRECACHE_URLS = [
     '/public/upgames-compat.js',
     '/public/upgames-metricas.js',
     '/public/manifest.json',
-    '/public/icons/icon-192.png?v=2',
-    '/public/icons/icon-512.png?v=2',
+    '/public/icons/icon-192.png?v=3',
+    '/public/icons/icon-512.png?v=3',
     '/public/offline.html',
     '/public/biblioteca.html',   // el puente (ya no la app): sin conexión, los marcadores viejos siguen llegando a /
     '/public/og-upgames.jpg'
@@ -88,7 +88,7 @@ self.addEventListener('activate', (event) => {
         caches.keys().then((nombres) => {
             return Promise.all(
                 nombres
-                    // Solo cachés de UpGames: los juegos (apexgp-*, studio-*) tienen las suyas en este mismo dominio
+                    // Solo cachés de Lurveta: los juegos (apexgp-*, studio-*) tienen las suyas en este mismo dominio
                     .filter(n => n.startsWith('upgames-') && !n.startsWith(CACHE_VERSION) && n !== CACHE_IMG)
                     .map(n => {
                         console.log('[SW] Borrando caché viejo:', n);
@@ -325,19 +325,19 @@ self.addEventListener('message', (event) => {
 });
 
 // ======================================================================
-// PUSH NOTIFICATIONS — avisos reales aunque UpGames esté cerrado
+// PUSH NOTIFICATIONS — avisos reales aunque Lurveta esté cerrado
 // ======================================================================
 self.addEventListener('push', (event) => {
     let data = {};
     try { data = event.data ? event.data.json() : {}; } catch (_) { data = { body: event.data && event.data.text() }; }
     event.waitUntil((async () => {
         const ventanas = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-        // UpGames abierto y a la vista → la isla flotante dentro de la app (sin duplicar)
+        // Lurveta abierto y a la vista → la isla flotante dentro de la app (sin duplicar)
         const abierta = ventanas.find(c => c.visibilityState === 'visible' && new URL(c.url).pathname === '/');
         if (abierta) { abierta.postMessage({ type: 'UG_PUSH', data }); return; }
         const opciones = {
-            body: data.body || 'Nueva actividad en UpGames',
-            icon: data.icon || '/public/icons/icon-192.png?v=2',
+            body: data.body || 'Nueva actividad en Lurveta',
+            icon: data.icon || '/public/icons/icon-192.png?v=3',
             badge: data.badge || '/public/icons/icon-96.png?v=2',
             tag: data.tag || 'upgames',
             renotify: true,
@@ -346,7 +346,7 @@ self.addEventListener('push', (event) => {
             data: { url: data.url || '/', id: data.id || '' },
         };
         if (data.image) opciones.image = data.image;
-        await self.registration.showNotification(data.title || 'UpGames', opciones);
+        await self.registration.showNotification(data.title || 'Lurveta', opciones);
         if (self.navigator && 'setAppBadge' in self.navigator) self.navigator.setAppBadge().catch(() => {});
     })());
 });
@@ -356,7 +356,7 @@ self.addEventListener('notificationclick', (event) => {
     const url = new URL(event.notification.data?.url || '/', self.location.href).href;
     event.waitUntil((async () => {
         const ventanas = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-        // Reutilizar una pestaña de UpGames si hay alguna abierta
+        // Reutilizar una pestaña de Lurveta si hay alguna abierta
         const propia = ventanas.find(c => c.url.startsWith(self.location.origin + '/') &&   // todo el sitio (este código también corre en el registro viejo de /public/)
              !/^\/(admin|games|studio)\//.test(new URL(c.url).pathname));
         if (propia) {

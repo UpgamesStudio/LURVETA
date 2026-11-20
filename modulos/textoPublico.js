@@ -1,6 +1,6 @@
 /**
  * Texto que escriben los usuarios (títulos y descripciones) tal como se MUESTRA
- * en la web. La palabra «ROM/ROMs» no aparece en ningún lado de UpGames: se
+ * en la web. La palabra «ROM/ROMs» no aparece en ningún lado de Lurveta: se
  * muestra «versión/versiones» respetando mayúsculas.
  *
  * Solo cambia lo que se muestra (listados públicos y páginas /p/): lo guardado

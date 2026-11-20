@@ -8,7 +8,7 @@
  *                no-reply@upgames.games. Gratis hasta 3.000 correos/mes (100/día).
  *   2. Brevo   — BREVO_API_KEY. Permite un Gmail verificado como remitente.
  *   3. SMTP    — GMAIL_USER + GMAIL_APP_PASSWORD (solo si el plan permite SMTP).
- * Remitente: EMAIL_FROM (o GMAIL_USER). Nombre: EMAIL_FROM_NAME (por defecto UpGames).
+ * Remitente: EMAIL_FROM (o GMAIL_USER). Nombre: EMAIL_FROM_NAME (por defecto Lurveta).
  */
 'use strict';
 
@@ -42,7 +42,7 @@ function getJSON(hostname, path, headers, timeout = 10000) {
 function crear({ env = process.env, nodemailer, logger, transporte } = {}) {
     const limpio = v => String(v ?? '').trim().replace(/^(['"])(.*)\1$/, '$2').trim();
     const remitente = () => limpio(env.EMAIL_FROM || env.GMAIL_USER);
-    const nombre = () => limpio(env.EMAIL_FROM_NAME) || 'UpGames';
+    const nombre = () => limpio(env.EMAIL_FROM_NAME) || 'Lurveta';
     const proveedor = limpio(env.RESEND_API_KEY) ? 'resend' : limpio(env.BREVO_API_KEY) ? 'brevo'
         : (limpio(env.GMAIL_USER) && limpio(env.GMAIL_APP_PASSWORD)) ? 'smtp' : null;
     let smtp = null;

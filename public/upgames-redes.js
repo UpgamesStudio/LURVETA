@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames Blogs · Redes y contacto (bloque «redes»)
+   Lurveta Blogs · Redes y contacto (bloque «redes»)
 
    Una sola lista para el editor (window.UGRedes) y el servidor
    (modulos/blogs/validar.js y render.js la usan con require()).

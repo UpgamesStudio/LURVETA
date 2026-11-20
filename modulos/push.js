@@ -2,7 +2,7 @@
  * ══════════════════════════════════════════════════════════════════
  *  push.js — Notificaciones push reales (Web Push / VAPID)
  *
- *  Llegan al móvil u ordenador aunque UpGames esté cerrado, como las de
+ *  Llegan al móvil u ordenador aunque Lurveta esté cerrado, como las de
  *  WhatsApp o Instagram. Funciona en Chrome/Edge/Firefox (Android y PC) y
  *  en iPhone con la app instalada en la pantalla de inicio (iOS 16.4+).
  *
@@ -80,7 +80,7 @@ function categoria(n) {
 
 /** Texto e enlace de la notificación del sistema operativo. */
 function contenido(n) {
-    const e = n.emisor ? '@' + n.emisor : 'UpGames';
+    const e = n.emisor ? '@' + n.emisor : 'Lurveta';
     const titulo = decodificar(n.itemTitle);
     const msg = decodificar(n.mensaje);
     const img = /^https:\/\//i.test(n.itemImage || '') && !/\.(mp4|webm|mov|m4v|avi|3gp|3g2|mkv|ogv|mpe?g|wmv|flv)(\?|$)|\/video\/upload\//i.test(n.itemImage) ? n.itemImage : undefined;
@@ -98,10 +98,10 @@ function contenido(n) {
     if (t === 'En vivo') return { title: `🔴 ${e} está en vivo`, body: recorta(msg || 'Toca para verlo ahora', 140), url: `${BASE}live.html?u=${encodeURIComponent(n.emisor)}`, tag: `live-${n.emisor}`, urgente: true };
     if (t === 'Verifica tu email') return { title: '📧 Verifica tu email', body: recorta(msg, 160), url: `${INICIO}?verificar=1`, tag: 'verificar-email' };
     if (t === 'Tu pase vence' || t === 'Tu Premium vence') return { title: '⏳ Tu Premium vence pronto', body: recorta(msg.replace(/^⏳\s*/, ''), 180), url: `${INICIO}?plan=1`, tag: 'pase-vence' };
-    if (t === 'Anuncio') return { title: '📢 UpGames', body: recorta(msg.replace(/^📢\s*/, ''), 200), url: INICIO, tag: `anuncio-${Date.now()}` };
+    if (t === 'Anuncio') return { title: '📢 Lurveta', body: recorta(msg.replace(/^📢\s*/, ''), 200), url: INICIO, tag: `anuncio-${Date.now()}` };
     if (t === 'Revisión') return { title: 'Revisión de tu publicación', body: recorta(msg, 200), url: `${INICIO}?tab=perfil`, tag: `rev-${n.itemId}` };
-    if (t === 'Equipo') return { title: '🛡️ Equipo UpGames', body: recorta(msg, 200), url: INICIO, tag: `equipo-${Date.now()}` };
-    return { title: 'UpGames', body: recorta(msg || titulo || 'Tienes una notificación nueva', 160), url: item, tag: `n-${n._id || Date.now()}` };
+    if (t === 'Equipo') return { title: '🛡️ Equipo Lurveta', body: recorta(msg, 200), url: INICIO, tag: `equipo-${Date.now()}` };
+    return { title: 'Lurveta', body: recorta(msg || titulo || 'Tienes una notificación nueva', 160), url: item, tag: `n-${n._id || Date.now()}` };
 }
 
 async function enviarA(usuarios, payloadDe, { Usuario } = {}) {
@@ -147,7 +147,7 @@ async function alCrear(notifs) {
         await enviarA([...porUsuario.keys()], (usuario, pref) => {
             const { n, cat } = porUsuario.get(usuario);
             if (cat !== 'cuenta' && pref[cat] === false) return null;
-            return { ...contenido(n), id: String(n._id || ''), categoria: cat, icon: './icons/icon-192.png?v=2', badge: './icons/icon-96.png?v=2' };
+            return { ...contenido(n), id: String(n._id || ''), categoria: cat, icon: './icons/icon-192.png?v=3', badge: './icons/icon-96.png?v=2' };
         });
     } catch (e) { logger.warn(`[push] alCrear: ${e.message}`); }
 }

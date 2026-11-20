@@ -2,7 +2,7 @@
 // ovalados, el doble de anchos que los de verdad y tenían manchas sin textura en la banda).
 //
 // - Neumático: perfil de revolución con flanco bajo y algo abombado, hombro redondeado y banda
-//   apenas bombeada. Dos grupos de material: 0 = flancos (rotulación «UP GAMES» y franja del
+//   apenas bombeada. Dos grupos de material: 0 = flancos (rotulación «LURVETA» y franja del
 //   compuesto, proyectados en plano como un disco: nada se estira) y 1 = banda de rodadura
 //   (u alrededor, v de 0,3 a 0,7: la goma con desgaste que pinta cocheModelo.js).
 // - Llanta: cara con radios (textura), labio metálico y tambor interior.
@@ -123,8 +123,8 @@ export function matFlanco(compuesto, calidad = 2) {
   // rotulación arriba y abajo
   x.fillStyle = color; x.textAlign = 'center'; x.textBaseline = 'middle';
   x.font = `italic 900 ${Math.round(R * 0.115)}px Arial, Helvetica, sans-serif`;
-  textoEnArco(x, 'UP GAMES', R * 0.80, 0, false);
-  textoEnArco(x, 'UP GAMES', R * 0.80, Math.PI, true);
+  textoEnArco(x, 'LURVETA', R * 0.80, 0, false);
+  textoEnArco(x, 'LURVETA', R * 0.80, Math.PI, true);
   // letra pequeña del tamaño
   x.fillStyle = 'rgba(205,205,210,0.75)'; x.font = `bold ${Math.round(R * 0.045)}px Arial, Helvetica, sans-serif`;
   textoEnArco(x, 'RACING  18"', R * 0.735, Math.PI / 2, false);

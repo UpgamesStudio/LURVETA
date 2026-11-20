@@ -1,5 +1,5 @@
 // ========================================
-// 🎮 GAMIFICACIÓN - UPGAMES
+// 🎮 GAMIFICACIÓN - LURVETA
 // ========================================
 //
 // Sistema completo de engagement:
@@ -52,7 +52,7 @@ const Gamificacion = mongoose.model('Gamificacion', GamificacionSchema);
 
 const BADGES = {
     // Primeros pasos
-    NEWBIE:        { id: 'NEWBIE',        emoji: '👋', titulo: 'Bienvenido',          descripcion: 'Te registraste en UpGames',               xp: 50 },
+    NEWBIE:        { id: 'NEWBIE',        emoji: '👋', titulo: 'Bienvenido',          descripcion: 'Te registraste en Lurveta',               xp: 50 },
     FIRST_DL:      { id: 'FIRST_DL',      emoji: '📥', titulo: 'Primera descarga',   descripcion: 'Descargaste tu primer item',              xp: 100 },
     FIRST_UPLOAD:  { id: 'FIRST_UPLOAD',  emoji: '📤', titulo: 'Creator',             descripcion: 'Subiste tu primer contenido',             xp: 200 },
     FIRST_FAV:     { id: 'FIRST_FAV',     emoji: '❤️', titulo: 'Coleccionista',       descripcion: 'Marcaste tu primer favorito',            xp: 50 },
@@ -82,9 +82,9 @@ const BADGES = {
     MILLIONAIRE:   { id: 'MILLIONAIRE',   emoji: '🤑', titulo: 'Creador Millonario',   descripcion: 'Ganaste $500 USD totales',           xp: 3000 },
 
     // Racha
-    STREAK_7:      { id: 'STREAK_7',      emoji: '🔥', titulo: 'Racha Semanal',        descripcion: '7 días seguidos en UpGames',         xp: 400 },
-    STREAK_30:     { id: 'STREAK_30',     emoji: '🌋', titulo: 'Racha Mensual',        descripcion: '30 días seguidos en UpGames',        xp: 2000 },
-    STREAK_100:    { id: 'STREAK_100',    emoji: '⚡', titulo: 'Racha Épica',          descripcion: '100 días seguidos en UpGames',       xp: 5000 },
+    STREAK_7:      { id: 'STREAK_7',      emoji: '🔥', titulo: 'Racha Semanal',        descripcion: '7 días seguidos en Lurveta',         xp: 400 },
+    STREAK_30:     { id: 'STREAK_30',     emoji: '🌋', titulo: 'Racha Mensual',        descripcion: '30 días seguidos en Lurveta',        xp: 2000 },
+    STREAK_100:    { id: 'STREAK_100',    emoji: '⚡', titulo: 'Racha Épica',          descripcion: '100 días seguidos en Lurveta',       xp: 5000 },
 
     // Verificación
     VERIFIED:      { id: 'VERIFIED',      emoji: '✅', titulo: 'Verificado',           descripcion: 'Cuenta verificada por el equipo',    xp: 1000 }

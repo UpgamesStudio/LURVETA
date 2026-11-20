@@ -17,7 +17,7 @@ function test(name, fn) {
     catch (e) { console.error(`  ✗ ${name}\n    ${e.message}`); process.exitCode = 1; }
 }
 
-test('regalos (UpCoins): el creador recibe 50 % y UpGames 50 %', () => {
+test('regalos (UpCoins): el creador recibe 50 % y Lurveta 50 %', () => {
     const r = L.reparto(500);   // 💎 Diamante: 500 UpCoins = US$10
     assert.strictEqual(r.bruto, 10); assert.strictEqual(r.creador, 5); assert.strictEqual(r.plataforma, 5);
 });

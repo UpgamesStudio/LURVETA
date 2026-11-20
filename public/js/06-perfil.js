@@ -204,7 +204,7 @@ async function pfShareProfile() {
   if (!pfUser) return;
   const url = new URL(`perfil-publico.html?usuario=${encodeURIComponent(pfUser)}`, document.baseURI).href;   // baseURI = /public/ también en la portada (/)
   try {
-    if (navigator.share) { await navigator.share({ title: `@${pfUser} en UpGames`, url }); return; }
+    if (navigator.share) { await navigator.share({ title: `@${pfUser} en Lurveta`, url }); return; }
   } catch (e) { if (e && e.name === 'AbortError') return; }
   try { await navigator.clipboard.writeText(url); toast('🔗 Enlace de tu perfil copiado'); }
   catch (_) { prompt('Copia el enlace de tu perfil:', url); }

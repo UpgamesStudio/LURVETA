@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Publicar por pasos (asistente)
+   Lurveta · Publicar por pasos (asistente)
    ───────────────────────────────────────────────────────────────
    1. ¿Qué deseas publicar hoy?     → categoría
    2. ¿Cómo se llamará…?            → nombre, descripción, imágenes/videos

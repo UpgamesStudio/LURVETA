@@ -1,5 +1,5 @@
 // Partida del jugador: nave, inventario, créditos, mejoras, reputación, descubrimientos e historia.
-// Se guarda en el dispositivo y, con cuenta de UpGames, también en la nube.
+// Se guarda en el dispositivo y, con cuenta de Lurveta, también en la nube.
 import { nube, token } from './red.js';
 
 const CLAVE = 'upstar.partida.v1';

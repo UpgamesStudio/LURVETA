@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════════
- *  Grupos y comunidades del chat de UpGames
+ *  Grupos y comunidades del chat de Lurveta
  *
  *  • Grupo     → privado: se entra con el enlace de invitación (?g=CODIGO).
  *  • Comunidad → pública: aparece en Explorar y cualquiera puede unirse.
@@ -78,7 +78,7 @@ const GrupoSchema = new mongoose.Schema({
     ultimo:      { de: String, texto: String, imagen: Boolean, fecha: Date, tipo: String },
     creado:      { type: Date, default: Date.now },
     actividad:   { type: Date, default: Date.now, index: true },
-    suspendido:  { type: Boolean, default: false },   // un admin de UpGames puede cerrarlo
+    suspendido:  { type: Boolean, default: false },   // un admin de Lurveta puede cerrarlo
 }, { collection: 'grupos' });
 GrupoSchema.index({ 'miembros.u': 1 });
 GrupoSchema.index({ nombre: 'text', descripcion: 'text', etiquetas: 'text' });
@@ -475,7 +475,7 @@ function registrar(app, deps) {
             const m = await GMensaje.findOne({ _id: req.params.mid, grupo: g._id }).lean();
             if (!m || m.tipo !== 'msg') return err(res, 404, 'Mensaje no encontrado');
             if (CeroTolerancia.MOTIVO[motivo]) {
-                // Reporte grave: incidente con la evidencia del mensaje (aunque luego lo borren) y aviso al admin de UpGames
+                // Reporte grave: incidente con la evidencia del mensaje (aunque luego lo borren) y aviso al admin de Lurveta
                 CeroTolerancia.incidente({ usuario: m.de, categoria: motivo, motivo: `Reportado por @${req.usuario}: ${CeroTolerancia.MOTIVO[motivo]}`, fuente: 'reporte de usuario', donde: `grupo «${g.nombre}»`, ref: String(m._id), texto: m.texto, imagen: m.imagen });
                 if (m.imagen) CeroTolerancia.vigilarImagen({ imagen: m.imagen, usuario: m.de, donde: `grupo «${g.nombre}» (reportado)`, ref: String(m._id), texto: m.texto,
                     ocultar: () => GMensaje.updateOne({ _id: m._id }, { $set: { borrado: true, borradoPor: 'NEXUS', texto: '', imagen: '', actualizado: new Date() } }) });
@@ -484,8 +484,8 @@ function registrar(app, deps) {
             }
             // Los admins del grupo también se enteran
             const admins = g.miembros.filter(x => x.rol !== 'miembro' && x.u !== req.usuario).map(x => x.u);
-            if (admins.length) Notificacion.insertMany(admins.map(a => ({ destinatario: a, tipo: 'sistema', emisor: 'UpGames', itemTitle: `Reporte en ${g.nombre}`, mensaje: `🚩 Reportaron un mensaje de @${m.de} en «${g.nombre}». Revísalo.`.replace(/[<>&]/g, ''), leida: false, fecha: new Date() }))).catch(() => {});
-            ok(res, { mensaje: 'Gracias. El reporte llegó al equipo de UpGames y a los administradores del grupo.' });
+            if (admins.length) Notificacion.insertMany(admins.map(a => ({ destinatario: a, tipo: 'sistema', emisor: 'Lurveta', itemTitle: `Reporte en ${g.nombre}`, mensaje: `🚩 Reportaron un mensaje de @${m.de} en «${g.nombre}». Revísalo.`.replace(/[<>&]/g, ''), leida: false, fecha: new Date() }))).catch(() => {});
+            ok(res, { mensaje: 'Gracias. El reporte llegó al equipo de Lurveta y a los administradores del grupo.' });
         } catch (e) { logger.error(`grupos reportar: ${e.message}`); err(res, 500, 'No se pudo reportar'); }
     });
     app.post('/grupos/:id/escribiendo', verificarToken, (req, res) => {

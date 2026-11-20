@@ -1,5 +1,5 @@
 // Convierte el cuerpo del piloto de Studio (pose de reposo) al formato de los personajes de
-// UpGames RACING: espacio del personaje (+x delante, +y arriba, +z a su derecha), una malla indexada por
+// Lurveta RACING: espacio del personaje (+x delante, +y arriba, +z a su derecha), una malla indexada por
 // parte (mono, franja, guante, bota, suela, cuello) y pesos de piel a sus huesos.
 import * as THREE from 'three';
 import { cuerpoPiloto, POSE_REPOSO, COLORES } from '../js/plantillas/cuerpo.js';

@@ -7,7 +7,7 @@
  *   • no genera UpCoins ni pagos al creador mientras el equipo la verifica (pagoPausado),
  *   • la página puente sigue mostrando sus anuncios,
  *   • el creador recibe un aviso explicando por qué.
- * Así UpGames no obtiene un beneficio directo de algo que podría ser un juego completo.
+ * Así Lurveta no obtiene un beneficio directo de algo que podría ser un juego completo.
  */
 'use strict';
 

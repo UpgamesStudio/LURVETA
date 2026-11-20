@@ -1,4 +1,4 @@
-# UpGames Live: servidor de medios (opcional)
+# Lurveta Live: servidor de medios (opcional)
 
 Sin este servicio el live ya funciona en **modo directo (P2P)**: el navegador del creador envía el video a cada espectador. Ese modo tiene un límite de `LIVE_P2P_MAX_VIEWERS` espectadores con video (12 por defecto); los demás siguen el chat.
 

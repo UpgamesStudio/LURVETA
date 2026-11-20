@@ -96,7 +96,7 @@ app.put('/push/prefs', verificarToken, async (req, res) => {
     res.json({ success: true });
 });
 app.post('/push/prueba', verificarToken, async (req, res) => {
-    const n = await push.enviarA([req.usuario], () => ({ title: '🔔 ¡Listo!', body: 'Así te llegarán los avisos de UpGames aunque no estés en la app.', url: (process.env.APP_URL || 'https://upgames.games').replace(/\/+$/, '') + '/', tag: 'prueba', icon: './icons/icon-192.png?v=2', badge: './icons/icon-96.png?v=2' }));
+    const n = await push.enviarA([req.usuario], () => ({ title: '🔔 ¡Listo!', body: 'Así te llegarán los avisos de Lurveta aunque no estés en la app.', url: (process.env.APP_URL || 'https://upgames.games').replace(/\/+$/, '') + '/', tag: 'prueba', icon: './icons/icon-192.png?v=3', badge: './icons/icon-96.png?v=2' }));
     res.json({ success: true, enviados: n });
 });
 

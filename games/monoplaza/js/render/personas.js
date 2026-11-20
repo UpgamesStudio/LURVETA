@@ -142,7 +142,7 @@ function texturaCasco(color) {
   x.fillStyle = claro ? '#1c1c1c' : '#ffffff';
   x.fillRect(0, 70, 512, 18);
   x.font = '900 italic 40px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillText('UPGAMES', 384, 40); x.fillText('UPGAMES', 128, 40);
+  x.fillText('LURVETA', 384, 40); x.fillText('LURVETA', 128, 40);
   const t = aTex(cv);
   cacheTex.set(clave, t);
   return t;
@@ -275,7 +275,7 @@ const HUESOS = ['tronco', 'cabeza', 'hI', 'hD', 'cI', 'cD', 'mI', 'mD', 'kI', 'k
  * opc: { color, texto, numero, rol: 'mecanico' | 'ingeniero' | 'piloto', piel, alto }
  */
 export class Persona {
-  constructor({ color = '#0d47ff', texto = 'UPGAMES', numero = 1, rol = 'mecanico', piel = '#c9967a', alto = 1, calidad = 2, podio = false, casco = null, escaneado = true } = {}) {
+  constructor({ color = '#0d47ff', texto = 'LURVETA', numero = 1, rol = 'mecanico', piel = '#c9967a', alto = 1, calidad = 2, podio = false, casco = null, escaneado = true } = {}) {
     const g = geometrias();
     this.rol = rol;
     const piloto = rol === 'piloto';
@@ -284,7 +284,7 @@ export class Persona {
     const escN = piloto ? 0.6 : 0.35;
     const tela = (map) => new THREE.MeshStandardMaterial({ map, roughness: 0.85, normalMap: normal, normalScale: new THREE.Vector2(escN, escN) });
     // el cuerpo escaneado (el mismo modelo del piloto, con casco) para mecánicos y pilotos, en todas
-    // las calidades; si no está, el cuerpo de UpGames Studio y, si tampoco, las piezas de siempre
+    // las calidades; si no está, el cuerpo de Lurveta Studio y, si tampoco, las piezas de siempre
     const esc = this.escaneado = escaneado && !podio && (rol === 'mecanico' || piloto) && cuerpoEscaneadoListo();
     const nuevo = esc || cuerpoListo();
     // (las texturas del mono solo se pintan si de verdad se van a usar: eran un lienzo por mecánico
@@ -307,7 +307,7 @@ export class Persona {
       return m;
     };
     const hueso = (padre, x, y, z, nombre = '') => { const h = new THREE.Bone(); h.name = nombre; h.position.set(x, y, z); (padre || BASE).add(h); huesos.push(h); return h; };
-    // cuerpo de UpGames Studio (una malla suave con mono, guantes y botas) si está cargado;
+    // cuerpo de Lurveta Studio (una malla suave con mono, guantes y botas) si está cargado;
     // si no, las piezas de siempre
     // el cuerpo escaneado (el mismo modelo del piloto, con casco) para mecánicos y pilotos
 

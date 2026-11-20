@@ -45,7 +45,7 @@ app.post('/comentarios', [verificarToken, body('itemId').notEmpty(), body('texto
                 if (!Moderacion.debeQuitar(v)) return;
                 await Comentario.deleteOne({ _id: nuevo._id });
                 Moderacion.registrar({ tipo: 'comentario', usuario: req.usuario, categoria: v.categoria, motivo: v.motivo, fuente: 'NEXUS', texto: textoLimpio, ref: req.body.itemId, accion: 'borrado' });
-                crearNotif({ destinatario: req.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(req.body.itemId), itemTitle: 'Revisión', mensaje: `🚫 Quitamos tu comentario porque ${Moderacion.MENSAJE[v.categoria]}. Mantengamos la comunidad sana.` });
+                crearNotif({ destinatario: req.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(req.body.itemId), itemTitle: 'Revisión', mensaje: `🚫 Quitamos tu comentario porque ${Moderacion.MENSAJE[v.categoria]}. Mantengamos la comunidad sana.` });
             }).catch(() => {});
         }
         res.status(201).json({ success: true, comentario: nuevo });

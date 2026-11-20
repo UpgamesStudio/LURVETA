@@ -35,7 +35,7 @@ async function avisar(doc, motivo) {
         correosHoy.n++; ultimoCorreo.set(doc._id, Date.now());
         const e = s => String(s ?? '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
         await enviarCorreo({
-            to: destino(), subject: `🚨 UpGames: ${motivo} (${doc.origen})`,
+            to: destino(), subject: `🚨 Lurveta: ${motivo} (${doc.origen})`,
             html: `<div style="font-family:system-ui,sans-serif;max-width:620px"><h2 style="margin:0 0 8px">🚨 ${e(motivo)}</h2>
               <p><b>Dónde:</b> ${e(doc.origen === 'navegador' ? 'en el navegador de los usuarios' : 'en el servidor')}${doc.pagina ? ' · ' + e(doc.pagina) : ''}</p>
               <p><b>Error:</b> ${e(doc.mensaje)}</p><p><b>Veces:</b> ${doc.n} · primera ${e(new Date(doc.primera).toLocaleString('es-CO'))}</p>

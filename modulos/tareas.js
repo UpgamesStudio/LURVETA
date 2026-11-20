@@ -11,7 +11,7 @@ function iniciarJobsAutomaticos() {
         try {
             const pendientes = await Usuario.find({ emailVerificado: { $ne: true }, avisoVerifEnviado: { $ne: true }, suspendido: { $ne: true } }).select('usuario').limit(500).lean();
             if (!pendientes.length) return;
-            await Notificacion.insertMany(pendientes.map(u => ({ destinatario: u.usuario, tipo: 'sistema', emisor: 'UpGames', itemTitle: 'Verifica tu email', mensaje: '📧 Confirma tu correo para proteger tu cuenta y poder retirar tus ganancias. Toca para reenviar el enlace.', leida: false, fecha: new Date() })), { ordered: false });
+            await Notificacion.insertMany(pendientes.map(u => ({ destinatario: u.usuario, tipo: 'sistema', emisor: 'Lurveta', itemTitle: 'Verifica tu email', mensaje: '📧 Confirma tu correo para proteger tu cuenta y poder retirar tus ganancias. Toca para reenviar el enlace.', leida: false, fecha: new Date() })), { ordered: false });
             await Usuario.updateMany({ usuario: { $in: pendientes.map(u => u.usuario) } }, { $set: { avisoVerifEnviado: true } });
             logger.info(`[verificación] Aviso enviado a ${pendientes.length} cuenta(s) sin email verificado`);
         } catch (e) { logger.warn(`[verificación] avisarSinVerificar: ${e.message}`); }
@@ -98,11 +98,11 @@ function iniciarJobsAutomaticos() {
                     else if (estado === 'muerto') {
                         if (!it.enlaceMuertoDesde) {
                             muertos++; set.enlaceMuertoDesde = new Date();
-                            crearNotif({ destinatario: it.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(it._id), itemTitle: 'Enlace', itemImage: it.image || '',
+                            crearNotif({ destinatario: it.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(it._id), itemTitle: 'Enlace', itemImage: it.image || '',
                                 mensaje: `⚠️ El enlace de “${titulo}” parece caído. Cámbialo hoy desde tu perfil para no perder descargas: mañana lo volvemos a revisar.` });
                         } else if (Date.now() - new Date(it.enlaceMuertoDesde) > 20 * 3600e3) {
                             caidos++; set.linkStatus = 'caido';
-                            crearNotif({ destinatario: it.usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(it._id), itemTitle: 'Enlace', itemImage: it.image || '',
+                            crearNotif({ destinatario: it.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(it._id), itemTitle: 'Enlace', itemImage: it.image || '',
                                 mensaje: `❌ “${titulo}” quedó marcado como caído porque su enlace sigue sin funcionar. Pega uno nuevo y vuelve a estar disponible.` });
                         }
                     } else dudas++;
@@ -132,7 +132,7 @@ function iniciarJobsAutomaticos() {
             }
             for (const [usuario, l] of porAutor) {
                 const lista = l.slice(0, 5).map(x => `"${String(x.it.title).slice(0, 40)}"`).join(', ') + (l.length > 5 ? ` y ${l.length - 5} más` : '');
-                crearNotif({ destinatario: usuario, tipo: 'sistema', emisor: 'UpGames', itemId: String(l[0].it._id), itemTitle: 'Revisión', itemImage: l[0].it.image || '',
+                crearNotif({ destinatario: usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(l[0].it._id), itemTitle: 'Revisión', itemImage: l[0].it.image || '',
                     mensaje: l.length === 1 ? Sospecha.mensajeCreador(l[0].it.title, l[0].juego)
                         : `⚠️ ${l.length} publicaciones tuyas (${lista}) coinciden con juegos comerciales. Siguen visibles, pero no generarán UpCoins mientras el equipo verifica que no sean juegos completos. Si son mods o configuraciones, edita sus títulos para indicarlo.` });
             }

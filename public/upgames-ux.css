@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Experiencia (portada, buscador, guía de instalación)
+   Lurveta · Experiencia (portada, buscador, guía de instalación)
    Va después de los demás estilos. Sin recortar calidad visual:
    las filas reutilizan las mismas tarjetas del catálogo.
 ═══════════════════════════════════════════════════════════════ */
@@ -260,7 +260,7 @@ html[data-tema="cyber"] #pf-tab-publicar.pfw .pfw-cats .pf-cat-btn.active { colo
 .ucx-enviar[disabled] { opacity: .45; cursor: not-allowed; }
 html[data-tema="cyber"] .ucx, html[data-tema="cyber"] .ucx-tuyo, html[data-tema="cyber"] .ucx-btn, html[data-tema="cyber"] .ucx-ops button, html[data-tema="cyber"] .ucx-enviar { border-radius: 0 !important; }
 
-/* Fila «Del blog de los creadores» (UpGames Blogs) */
+/* Fila «Del blog de los creadores» (Lurveta Blogs) */
 .ugx-fila--blogs .ugx-fila-h a.ugx-fila-borrar { text-decoration: none; margin-left: auto; white-space: nowrap; }
 .ugx-blog { min-width: 0; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--txt); scroll-snap-align: start; }
 .ugx-blog-img { display: grid; place-items: center; aspect-ratio: 16 / 9; border-radius: 14px; background: rgba(255,255,255,.06) center / cover no-repeat; border: 1px solid rgba(255,255,255,.09); font-size: 1.8rem; transition: transform .2s, border-color .2s; }

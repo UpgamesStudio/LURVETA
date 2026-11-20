@@ -1,5 +1,5 @@
 /**
- * UpGames RACING (games/monoplaza): catálogo de mejoras y cosméticos que se pagan con
+ * Lurveta RACING (games/monoplaza): catálogo de mejoras y cosméticos que se pagan con
  * UpCoins, validación de lo que equipa cada piloto y lógica de las salas
  * multijugador (sin red: rutas/apexgp.js la conecta a Socket.IO).
  */
@@ -97,7 +97,7 @@ function validarEquipado(entrada, perfil) {
     for (const k of ['base', 'acento']) if (COLOR.test(e.cascoColores?.[k] || '')) out.cascoColores[k] = e.cascoColores[k].toLowerCase();
     const n = Math.floor(+e.numero);
     if (n >= 1 && n <= 99) out.numero = n;
-    // monoplaza elegido: 0 = UpGames Racing (diseño propio), 1..10 = equipos de la parrilla
+    // monoplaza elegido: 0 = Lurveta Racing (diseño propio), 1..10 = equipos de la parrilla
     const eq = Math.floor(+e.equipo);
     out.equipo = eq >= 0 && eq <= 10 ? eq : 0;
     return out;

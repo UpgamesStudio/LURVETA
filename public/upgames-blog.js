@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════
-   UpGames Blogs · panel del creador (public/blog.html)
+   Lurveta Blogs · panel del creador (public/blog.html)
 
    Una sola página con cuatro partes:
      1. Base: sesión, llamadas a la API, avisos y hojas (menús).
@@ -67,7 +67,7 @@ async function ocupado(boton, tarea) {
 /** Error para el usuario; si es el límite del plan gratis de Nexus, ofrece Premium en vez de un aviso suelto. */
 function avisarError(e) {
   if (e.code !== 'LIMITE') return toast(e.message, true);
-  hoja(`<h3>✦ Llegaste al límite de hoy</h3><p>${h(e.message)}</p><p style="color:var(--txt2)">Con <b>Premium</b> tienes Nexus ilimitado, temas exclusivos y tu blog sin la marca de UpGames.</p>
+  hoja(`<h3>✦ Llegaste al límite de hoy</h3><p>${h(e.message)}</p><p style="color:var(--txt2)">Con <b>Premium</b> tienes Nexus ilimitado, temas exclusivos y tu blog sin la marca de Lurveta.</p>
     <div class="fila"><button class="btn" data-no style="flex:1">Mañana sigo</button><a class="btn pri" style="flex:1" href="/?plan=1">${ico('star')} Ver Premium</a></div>`).querySelector('[data-no]').onclick = cerrarHoja;
 }
 // Cupo de Nexus (lo devuelve el servidor en cada respuesta de Nexus)
@@ -84,7 +84,7 @@ const fechaCorta = d => d ? new Date(d).toLocaleDateString('es', { day: 'numeric
 const num = n => Number(n || 0).toLocaleString('es');
 async function copiar(texto) { try { await navigator.clipboard.writeText(texto); toast('Enlace copiado'); } catch (_) { prompt('Copia el enlace:', texto); } }
 
-/** Sube una imagen directo a Cloudinary con la firma del servidor (igual que las portadas de UpGames). */
+/** Sube una imagen directo a Cloudinary con la firma del servidor (igual que las portadas de Lurveta). */
 function elegirImagen() { return elegirImagenes(false).then(l => l[0] || null); }
 /** Varias a la vez (galería). Devuelve [] si cierra sin elegir. */
 function elegirImagenes(varias = true) {
@@ -95,7 +95,7 @@ function elegirImagenes(varias = true) {
     inp.click();
   });
 }
-// Mismo subidor que el resto de UpGames (preset público de Cloudinary); la firma del servidor queda de respaldo
+// Mismo subidor que el resto de Lurveta (preset público de Cloudinary); la firma del servidor queda de respaldo
 const CLD_NUBE = 'dd4w2plxn', CLD_PRESET = 'upgames_videos';
 async function enviarCloudinary(nube, campos, archivo) {
   const fd = new FormData();
@@ -127,7 +127,7 @@ const LOGO = '<a class="logo" href="/"><span><i>UP</i>GAMES</span><small>BLOGS</
 function bienvenida() {
   app.innerHTML = `<div class="portal">${LOGO}
     <section class="heroe">
-      <h1>Tu sitio web,<br><em>hecho en UpGames</em></h1>
+      <h1>Tu sitio web,<br><em>hecho en Lurveta</em></h1>
       <p>Elige un diseño, escribe y publica. Sin programar y gratis. Cuando quieras, conéctale tu propio dominio.</p>
       <a class="btn pri" href="../login.html">${ico('rocket-outline')} Entrar y crear mi blog</a>
     </section>
@@ -138,7 +138,7 @@ function bienvenida() {
       <div class="glass">${ico('globe-outline')}<b>Tu dominio</b><span>Empieza con una dirección gratis y conecta tu dominio cuando lo tengas.</span></div>
       <div class="glass">${ico('stats-chart-outline')}<b>Estadísticas</b><span>Mira cuántas visitas tienes cada día y qué entradas gustan más.</span></div>
     </div>
-    <p class="guia-enlace"><a href="./blogs-guia.html">${ico('book-outline')} Lee la guía de UpGames Blogs: cómo funciona, cómo ganar y tus responsabilidades</a></p></div>`;
+    <p class="guia-enlace"><a href="./blogs-guia.html">${ico('book-outline')} Lee la guía de Lurveta Blogs: cómo funciona, cómo ganar y tus responsabilidades</a></p></div>`;
 }
 
 function tarjetasTema(elegido) {
@@ -156,7 +156,7 @@ function asistente(puedeVolver) {
       <label class="campo"><span>Dirección</span><div class="prefijo"><b>…/b/</b><input class="inp" name="direccion" maxlength="30" placeholder="mi-blog" required autocapitalize="off" spellcheck="false"></div><small id="dir-nota">Letras, números y guiones. Entre 3 y 30 caracteres.</small></label>
       <label class="campo"><span>De qué trata (opcional)</span><input class="inp" name="descripcion" maxlength="300" placeholder="Una frase que lo describa"></label>
       <div class="campo"><span>Elige un tema</span>${tarjetasTema(tema)}</div>
-      <label class="acepto"><input type="checkbox" name="acepto" required><span>Soy el único responsable de todo lo que publique en mi blog (textos, imágenes, enlaces, descargas, dominio y comentarios que mantenga). UpGames solo presta la herramienta. Acepto los <a href="./terminos_condiciones.html#blogs" target="_blank" rel="noopener">Términos de UpGames Blogs</a> y la <a href="./politica-privacidad.html#blogs-datos" target="_blank" rel="noopener">Política de Privacidad</a>.</span></label>
+      <label class="acepto"><input type="checkbox" name="acepto" required><span>Soy el único responsable de todo lo que publique en mi blog (textos, imágenes, enlaces, descargas, dominio y comentarios que mantenga). Lurveta solo presta la herramienta. Acepto los <a href="./terminos_condiciones.html#blogs" target="_blank" rel="noopener">Términos de Lurveta Blogs</a> y la <a href="./politica-privacidad.html#blogs-datos" target="_blank" rel="noopener">Política de Privacidad</a>.</span></label>
       <button class="btn pri ancho" type="submit">${ico('sparkles-outline')} Crear mi blog</button>
       ${puedeVolver ? '<button class="btn ancho" type="button" data-volver>Cancelar</button>' : ''}
     </form></div>`;
@@ -187,7 +187,7 @@ function asistente(puedeVolver) {
 function reporte(direccion) {
   app.innerHTML = `<div class="portal">${LOGO}
     <form class="asistente glass">
-      <h2>Reportar un blog</h2><p>Vas a reportar el blog <b>${h(direccion)}</b>. El equipo de UpGames lo revisará.</p>
+      <h2>Reportar un blog</h2><p>Vas a reportar el blog <b>${h(direccion)}</b>. El equipo de Lurveta lo revisará.</p>
       <label class="campo"><span>¿Qué pasa con este blog?</span><select class="inp" name="motivo">
         <option value="estafa">Es una estafa o intenta robar datos</option><option value="malware">Lleva a virus o descargas peligrosas</option>
         <option value="sexual">Contenido sexual</option><option value="odio">Odio o acoso</option><option value="copia">Copia contenido de otra persona</option><option value="otro">Otro motivo</option></select></label>
@@ -199,7 +199,7 @@ function reporte(direccion) {
     e.preventDefault();
     ocupado($('[type=submit]', f), async () => {
       await api('/blogs/reportar', { metodo: 'POST', publico: true, cuerpo: { direccion, motivo: f.motivo.value, detalle: f.detalle.value } });
-      f.innerHTML = `<h2>Gracias por avisar</h2><p>Recibimos tu reporte y lo vamos a revisar.</p><a class="btn ancho" href="/">Ir a UpGames</a>`;
+      f.innerHTML = `<h2>Gracias por avisar</h2><p>Recibimos tu reporte y lo vamos a revisar.</p><a class="btn ancho" href="/">Ir a Lurveta</a>`;
     });
   };
 }
@@ -211,7 +211,7 @@ function panel() {
   const b = S.blog;
   app.innerHTML = `<div class="panel">
     <header class="barra">
-      <a class="ico" href="/" aria-label="Volver a UpGames">${ico('chevron-back')}</a>
+      <a class="ico" href="/" aria-label="Volver a Lurveta">${ico('chevron-back')}</a>
       <button class="quien" id="cambiar"><b><span>${h(b.titulo)}</span>${ico('chevron-down')}</b><small>${h(b.url.replace(/^https?:\/\//, ''))}</small></button>
       <a class="btn chico" href="${h(b.url)}" target="_blank" rel="noopener">${ico('open-outline')} Ver</a>
     </header>
@@ -242,7 +242,7 @@ async function vistaLista(tipo) {
   const v = $('#vista'), esPag = tipo === 'pagina';
   let lista;
   try { lista = (await api(`/blogs/${S.blog.id}/entradas?tipo=${tipo}`)).entradas; } catch (e) { v.innerHTML = `<div class="vacio"><b>No se pudo cargar</b>${h(e.message)}</div>`; return; }
-  const aviso = S.blog.estado !== 'activo' ? `<div class="seccion glass" style="border-color:rgba(255,204,0,.4)"><h2>${ico('warning-outline')} Blog en revisión</h2><p>Tu blog recibió reportes y no se muestra al público hasta que el equipo de UpGames lo revise.</p></div>` : '';
+  const aviso = S.blog.estado !== 'activo' ? `<div class="seccion glass" style="border-color:rgba(255,204,0,.4)"><h2>${ico('warning-outline')} Blog en revisión</h2><p>Tu blog recibió reportes y no se muestra al público hasta que el equipo de Lurveta lo revise.</p></div>` : '';
   v.innerHTML = `<h1>${esPag ? 'Páginas' : 'Entradas'}</h1><p class="sub">${esPag ? 'Páginas fijas que salen en el menú de tu blog: «Sobre mí», «Contacto»…' : 'Lo que publicas en tu blog, de lo más nuevo a lo más antiguo.'}</p>${aviso}
     ${lista.length ? `<div class="lista">${lista.map(e => {
       const [txt, color] = e.estado === 'programada' && new Date(e.publicadaEn) <= new Date() ? ESTADOS.publicada : ESTADOS[e.estado];
@@ -333,7 +333,7 @@ async function vistaEstadisticas() {
     const kpi = (k, n, icono, extra = '') => /* vs. los R días anteriores */ `<div class="cifra glass">${ico(icono)}<b>${num(suma(act, k))}</b><span>${n}</span>${extra || cambio(k)}</div>`;
     const max = Math.max(1, ...act.map(x => x.n));
     const barras = (pares, total) => pares.map(([n, x, col]) => `<div class="barra-h"><span>${n}</span><i><u style="width:${total ? Math.round(x / total * 100) : 0}%;background:${col}"></u></i><b>${total ? Math.round(x / total * 100) : 0}%</b></div>`).join('');
-    const fu = [['Directo o guardado', suma(act, 'rd'), '#5CE1FF'], ['Buscadores (Google…)', suma(act, 'rb'), '#39FF88'], ['Redes sociales', suma(act, 'rs'), '#B8A6FF'], ['UpGames', suma(act, 'ru'), '#FFCC00'], ['Otros sitios', suma(act, 'ro'), '#FF8A65']];
+    const fu = [['Directo o guardado', suma(act, 'rd'), '#5CE1FF'], ['Buscadores (Google…)', suma(act, 'rb'), '#39FF88'], ['Redes sociales', suma(act, 'rs'), '#B8A6FF'], ['Lurveta', suma(act, 'ru'), '#FFCC00'], ['Otros sitios', suma(act, 'ro'), '#FF8A65']];
     const tf = fu.reduce((s, x) => s + x[1], 0), mo = suma(act, 'mo'), pc = suma(act, 'pc');
     const contactos = suma(act, 'cw') + suma(act, 'cr') + suma(act, 'cb') + suma(act, 'fm') + suma(act, 'pe');
     const visitas = suma(act, 'n');
@@ -377,9 +377,9 @@ async function vistaIngresos() {
   try { d = await api(`/blogs/${b.id}/estadisticas`); } catch (e) { v.innerHTML = `<div class="vacio"><b>No se pudo cargar</b>${h(e.message)}</div>`; return; }
   const usd = n => 'US$' + Number(n || 0).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: Number(n) > 0 && Number(n) < 0.1 ? 4 : 2 });
   v.innerHTML = `<h1>Ingresos</h1><p class="sub">Tú decides si tu blog lleva publicidad. Si la activas, ganas dinero con cada anuncio que ven tus visitantes.</p>
-    <section class="seccion glass"><h2>${ico('cash')} Monetizar con UpGames</h2>
+    <section class="seccion glass"><h2>${ico('cash')} Monetizar con Lurveta</h2>
       <label class="interruptor"><span><b>Mostrar publicidad en mi blog</b><br><small style="color:var(--txt3)">Un anuncio al final de cada entrada y del inicio. Además, el bloque «Descarga» abre el enlace final a través del acortador de anuncios Cuty.io (nunca a usuarios Premium). Tus otros enlaces y botones no cambian.</small></span><input type="checkbox" id="monetizar"${b.monetizar ? ' checked' : ''}></label>
-      <p>Ganas <b style="color:var(--g)">${usd(d.cpm)}</b> por cada 1.000 anuncios vistos. Se suma a tu saldo de UpGames, el mismo de tus publicaciones, y lo retiras desde <a href="/">tu perfil → Economía</a>.</p>
+      <p>Ganas <b style="color:var(--g)">${usd(d.cpm)}</b> por cada 1.000 anuncios vistos. Se suma a tu saldo de Lurveta, el mismo de tus publicaciones, y lo retiras desde <a href="/">tu perfil → Economía</a>.</p>
       ${b.visibilidad !== 'publico' ? '<p style="color:var(--amber)">Tu blog está oculto: los anuncios solo se muestran en blogs públicos.</p>' : ''}
     </section>
     <div class="cifras"><div class="cifra glass"><b>${usd(d.ingresosMes)}</b><span>Últimos 30 días</span></div><div class="cifra glass"><b>${usd(d.ingresos)}</b><span>Desde siempre</span></div><div class="cifra glass"><b>${num(d.anunciosMes)}</b><span>Anuncios vistos (30 días)</span></div></div>
@@ -388,8 +388,8 @@ async function vistaIngresos() {
       <div class="cifras"><div class="cifra glass"><b>${usd(d.ingresosDescargasMes)}</b><span>Últimos 30 días</span></div><div class="cifra glass"><b>${usd(d.ingresosDescargas)}</b><span>Desde siempre</span></div><div class="cifra glass"><b>${num(d.descargas)}</b><span>Descargas pagadas</span></div></div>
     </section>
     <section class="seccion glass"><h2>${ico('heart')} Apoyos de tus lectores y afiliados</h2>
-      <p>Añade a una página el bloque <b>«Apoyar al creador»</b>: tus lectores te apoyan con UpCoins desde UpGames y recibes tu parte como ganancia (50 %, retirable tras 7 días), igual que los apoyos a tus publicaciones. Te avisamos cada vez que alguien te apoya.</p>
-      <p>Con el bloque <b>«Enlaces de afiliado»</b> recomiendas productos con tu enlace de Amazon u otras tiendas; la comisión te la paga la tienda, no UpGames. El aviso «Enlaces de afiliado» se muestra siempre.</p></section>
+      <p>Añade a una página el bloque <b>«Apoyar al creador»</b>: tus lectores te apoyan con UpCoins desde Lurveta y recibes tu parte como ganancia (50 %, retirable tras 7 días), igual que los apoyos a tus publicaciones. Te avisamos cada vez que alguien te apoya.</p>
+      <p>Con el bloque <b>«Enlaces de afiliado»</b> recomiendas productos con tu enlace de Amazon u otras tiendas; la comisión te la paga la tienda, no Lurveta. El aviso «Enlaces de afiliado» se muestra siempre.</p></section>
     <section class="seccion glass"><h2>${ico('shield-checkmark')} Cómo se cuenta</h2>
       <p>Un anuncio cuenta cuando una persona real lo tuvo a la vista unos segundos y no usa bloqueador. Cada visitante cuenta hasta 3 veces al día en tu blog. Las visitas falsas o hechas por ti mismo no pagan y pueden suspender la monetización.</p></section>`;
   $('#monetizar').onchange = async e => {
@@ -437,7 +437,7 @@ function vistaTema() {
       ${foto('portada', 'Foto de portada', 'Fondo grande de la parte de arriba del inicio.')}
     </section>
     <section class="seccion glass"><h2>${ico('grid')} Barra lateral</h2><p>Elige qué se muestra al lado de tus entradas.</p><div>
-      ${[['perfil', 'Tu perfil de UpGames'], ['populares', 'Lo más leído'], ['etiquetas', 'Etiquetas']].map(([k, n]) => `<label class="interruptor"><span>${n}</span><input type="checkbox" data-gadget="${k}"${g[k] !== false ? ' checked' : ''}></label>`).join('')}</div>
+      ${[['perfil', 'Tu perfil de Lurveta'], ['populares', 'Lo más leído'], ['etiquetas', 'Etiquetas']].map(([k, n]) => `<label class="interruptor"><span>${n}</span><input type="checkbox" data-gadget="${k}"${g[k] !== false ? ' checked' : ''}></label>`).join('')}</div>
     </section>
     <section class="seccion glass"><h2>${ico('link')} Enlaces</h2><p>Tus redes u otros sitios (hasta 6). Salen en la barra lateral.</p>
       <div id="enlaces" style="display:grid;gap:8px">${[...(a.enlaces || []), { texto: '', url: '' }].slice(0, 6).map(e => `<div class="fila"><input class="inp" style="flex:1;min-width:110px" placeholder="Nombre (YouTube)" maxlength="40" value="${h(e.texto)}"><input class="inp" style="flex:2;min-width:160px" placeholder="https://…" value="${h(e.url)}" inputmode="url"></div>`).join('')}</div>
@@ -539,7 +539,7 @@ function vistaAjustes() {
   });
   const quitar = $('#dns-quitar');
   if (quitar) quitar.onclick = async () => {
-    if (!(await confirmar('¿Quitar el dominio?', 'Tu blog volverá a abrirse solo en su dirección de UpGames.', 'Quitar', true))) return;
+    if (!(await confirmar('¿Quitar el dominio?', 'Tu blog volverá a abrirse solo en su dirección de Lurveta.', 'Quitar', true))) return;
     try { const r = await api(`/blogs/${b.id}/dominio`, { metodo: 'DELETE' }); ponerBlog(r.blog); panel(); } catch (e) { toast(e.message, true); }
   };
   $('#borrar-blog').onclick = async () => {
@@ -595,7 +595,7 @@ const crecer = ta => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeig
 const idYouTube = s => { s = String(s || '').trim(); if (/^[\w-]{11}$/.test(s)) return s; const m = s.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/); return m ? m[1] : ''; };
 
 const TIPOS = [['texto', 'text', 'Texto'], ['titulo', 'reorder-two', 'Subtítulo'], ['imagen', 'image', 'Imagen'], ['galeria', 'images', 'Galería'], ['video', 'logo-youtube', 'Video'],
-  ['cita', 'chatbox-ellipses', 'Cita'], ['aviso', 'alert-circle', 'Aviso'], ['ficha', 'list', 'Ficha / requisitos'], ['faq', 'help-circle', 'Preguntas'], ['audio', 'musical-notes', 'Spotify'], ['boton', 'radio-button-on', 'Botón'], ['redes', 'logo-whatsapp', 'Redes y contacto'],['juego', 'game-controller', 'Publicación de UpGames'], ['descarga', 'cloud-download-outline', 'Descarga'], ['codigo', 'code-slash', 'Código'], ['separador', 'remove', 'Separador']];
+  ['cita', 'chatbox-ellipses', 'Cita'], ['aviso', 'alert-circle', 'Aviso'], ['ficha', 'list', 'Ficha / requisitos'], ['faq', 'help-circle', 'Preguntas'], ['audio', 'musical-notes', 'Spotify'], ['boton', 'radio-button-on', 'Botón'], ['redes', 'logo-whatsapp', 'Redes y contacto'],['juego', 'game-controller', 'Publicación de Lurveta'], ['descarga', 'cloud-download-outline', 'Descarga'], ['codigo', 'code-slash', 'Código'], ['separador', 'remove', 'Separador']];
 // Secciones de página (landing): ocupan todo el ancho y tienen estilo propio. Campo = [clave, ayuda, máximo, 1 = varias líneas | 'check']
 const BOTON = [['bTexto', 'Texto del botón (ej.: Escríbenos)', 40], ['bUrl', 'Enlace del botón: https://… o wa.me/57300…', 600]];
 const SEC = {
@@ -610,14 +610,14 @@ const SEC = {
   testimonios: { nombre: 'Testimonios', ico: 'chatbubbles', campos: [['titulo', 'Título (ej.: Lo que dicen nuestros clientes)', 120]],
     item: [['texto', 'Lo que dijo (usa opiniones reales)', 500, 1], ['nombre', 'Nombre', 60], ['rol', 'Ciudad, cargo o red (opcional)', 60]], max: 6, nombreItem: 'Testimonio', otro: 'Añadir testimonio', nuevo: () => ({}), inicio: () => [{}, {}], idea: 'Ej.: opiniones de clientes de mi taller' },
   formulario: { nombre: 'Formulario de contacto', ico: 'mail', campos: [['titulo', 'Título (ej.: Escríbenos)', 120], ['texto', 'Frase corta (opcional): te respondemos en menos de 24 h', 400, 1], ['bTexto', 'Texto del botón (ej.: Enviar mensaje)', 40], ['exito', 'Mensaje de gracias (opcional)', 200], ['pideEmail', 'Pedir correo', 0, 'check'], ['pideTel', 'Pedir teléfono o WhatsApp', 0, 'check']],
-    defecto: { pideEmail: true }, idea: 'Ej.: formulario para pedir cotizaciones de diseño de logos', ayuda: 'Los mensajes te llegan a «Mensajes» en este panel y te avisamos en UpGames.' },
+    defecto: { pideEmail: true }, idea: 'Ej.: formulario para pedir cotizaciones de diseño de logos', ayuda: 'Los mensajes te llegan a «Mensajes» en este panel y te avisamos en Lurveta.' },
   catalogo: { nombre: 'Catálogo + pedido por WhatsApp', ico: 'bag-handle', campos: [['titulo', 'Título (ej.: Nuestros productos)', 120], ['texto', 'Frase corta (opcional)', 400, 1], ['whatsapp', 'Tu WhatsApp con código de país: +57 300 123 4567', 30], ['moneda', 'Moneda', ['COP', 'USD', 'MXN', 'ARS', 'CLP', 'PEN', 'EUR', 'BRL', 'UYU', 'BOB', 'GTQ', 'DOP', 'VES'].map(m => [m, m]), 'sel']],
     item: [['imagen', 'Foto del producto', 0, 'img'], ['nombre', 'Nombre del producto', 80], ['precio', 'Precio: solo el número (ej.: 25000). Vacío = «Consultar»', 20], ['descripcion', 'Descripción corta (opcional)', 300, 1]],
     max: 30, nombreItem: 'Producto', otro: 'Añadir producto', nuevo: () => ({}), inicio: () => [{}, {}], defecto: { moneda: 'COP' }, idea: 'Ej.: 4 tortas de mi pastelería con su descripción',
     ayuda: 'El visitante elige cantidades y se abre WhatsApp con el pedido y el total ya escritos.' },
   apoyo: { nombre: 'Apoyar al creador', ico: 'heart', campos: [['titulo', 'Título (ej.: ¿Te gusta lo que hago?)', 120], ['texto', 'Frase corta (ej.: Tu apoyo me ayuda a seguir creando)', 400, 1], ['bTexto', 'Texto del botón (ej.: Apoyar con UpCoins)', 40]],
     defecto: { titulo: 'Apoya este blog', bTexto: 'Apoyar con UpCoins' }, sinNexus: true,
-    ayuda: 'Tus lectores te apoyan con UpCoins desde UpGames. Recibes tu parte como ganancia (50 %, retirable tras 7 días), igual que los apoyos a tus publicaciones.' },
+    ayuda: 'Tus lectores te apoyan con UpCoins desde Lurveta. Recibes tu parte como ganancia (50 %, retirable tras 7 días), igual que los apoyos a tus publicaciones.' },
   afiliado: { nombre: 'Enlaces de afiliado', ico: 'pricetag', campos: [['titulo', 'Título (ej.: Mi setup gamer)', 120], ['texto', 'Frase corta (opcional)', 400, 1]],
     item: [['imagen', 'Foto del producto', 0, 'img'], ['nombre', 'Nombre del producto', 80], ['tienda', 'Tienda (ej.: Amazon)', 40], ['precio', 'Precio aproximado (opcional)', 30], ['url', 'Tu enlace de afiliado: https://…', 600]],
     max: 12, nombreItem: 'Producto', otro: 'Añadir producto', nuevo: () => ({}), inicio: () => [{}], sinNexus: true,
@@ -641,7 +641,7 @@ const PLANTILLAS = [
   ['resena', 'star-outline', 'Reseña de juego', 'Opinión, ficha y nota final', [{ tipo: 'texto', texto: 'Cuenta en dos frases de qué va el juego y por qué lo probaste.', grande: true }, { tipo: 'imagen' }, { tipo: 'titulo', texto: 'Lo mejor' }, { tipo: 'texto', texto: '- Punto fuerte 1\n- Punto fuerte 2\n- Punto fuerte 3' }, { tipo: 'titulo', texto: 'Lo peor' }, { tipo: 'texto', texto: '- Punto débil 1\n- Punto débil 2' }, { tipo: 'ficha', titulo: 'Ficha', filas: [{ k: 'Género', v: 'Acción' }, { k: 'Plataforma', v: 'Android' }, { k: 'Peso', v: '1,2 GB' }] }, { tipo: 'aviso', estilo: 'exito', texto: '**Nota final: 8/10.** Recomendado si te gusta…' }]],
   ['guia', 'construct-outline', 'Guía de instalación', 'Requisitos y pasos numerados', [{ tipo: 'texto', texto: 'Qué vas a conseguir con esta guía y cuánto tiempo toma.' }, { tipo: 'ficha', titulo: 'Requisitos', filas: [{ k: 'Android', v: '10 o superior' }, { k: 'RAM', v: '4 GB' }, { k: 'Espacio libre', v: '3 GB' }] }, { tipo: 'titulo', texto: 'Paso a paso' }, { tipo: 'texto', texto: '1. Descarga los archivos.\n2. Instala la APK.\n3. Copia la carpeta OBB.\n4. Abre el juego.' }, { tipo: 'aviso', estilo: 'alerta', texto: 'Haz una copia de tu partida antes de empezar.' }, { tipo: 'video' }, { tipo: 'faq', items: [{ p: '¿Sirve en mi celular?', r: 'Funciona en la mayoría de equipos con…' }, { p: 'Me sale pantalla negra, ¿qué hago?', r: 'Prueba a…' }] }]],
   ['noticia', 'megaphone-outline', 'Noticia', 'Titular, imagen y lo importante', [{ tipo: 'texto', texto: 'Lo más importante de la noticia en una o dos frases.', grande: true }, { tipo: 'imagen' }, { tipo: 'texto', texto: 'Desarrolla la noticia: qué pasó, cuándo y qué significa.' }, { tipo: 'cita', texto: 'Una frase destacada de la fuente.', autor: 'Fuente' }]],
-  ['top', 'trophy-outline', 'Top 5', 'Una lista con tus favoritos', [{ tipo: 'texto', texto: 'Explica cómo elegiste esta lista.' }, ...[5, 4, 3, 2, 1].flatMap(n => [{ tipo: 'titulo', texto: `${n}. Nombre` }, { tipo: 'texto', texto: 'Por qué está en la lista.' }]), { tipo: 'boton', texto: 'Ver más en UpGames', url: 'https://upgames.games' }]],
+  ['top', 'trophy-outline', 'Top 5', 'Una lista con tus favoritos', [{ tipo: 'texto', texto: 'Explica cómo elegiste esta lista.' }, ...[5, 4, 3, 2, 1].flatMap(n => [{ tipo: 'titulo', texto: `${n}. Nombre` }, { tipo: 'texto', texto: 'Por qué está en la lista.' }]), { tipo: 'boton', texto: 'Ver más en Lurveta', url: 'https://upgames.games' }]],
 ];
 // Para páginas: landing de negocio, contacto o en blanco
 const PLANTILLAS_PAGINA = [
@@ -956,7 +956,7 @@ async function editor(tipo, id) {
       pintar();
       el.leer = () => { leerFilas(); const items = filas.filter(f => f.url.trim()).map(f => ({ red: f.red, url: f.url.trim(), texto: (f.texto || '').trim() })); return items.length ? { tipo: 'redes', estilo, items } : null; };
     } else if (b.tipo === 'juego' || b.tipo === 'descarga') {
-      el.innerHTML = barra() + `<div class="tarj" hidden></div><input placeholder="Pega el enlace de una publicación de UpGames" value="${b.id ? h(b.id) : ''}">`;
+      el.innerHTML = barra() + `<div class="tarj" hidden></div><input placeholder="Pega el enlace de una publicación de Lurveta" value="${b.id ? h(b.id) : ''}">`;
       const inp = $('input', el), tarj = $('.tarj', el);
       const sacar = () => (inp.value.match(/[a-f0-9]{24}/i) || [''])[0].toLowerCase();
       let t; const ver = () => { clearTimeout(t); const jid = sacar(); if (!jid) { tarj.hidden = true; return; } t = setTimeout(async () => {
@@ -1172,7 +1172,7 @@ async function editor(tipo, id) {
   $('#nexus').onclick = () => {
     const ops = [
       ['landing', 'rocket-outline', 'Crear una landing con IA', 'Cuéntale tu negocio y arma portada, servicios, precios, dudas y contacto'],
-      ...(esPag ? [] : [['publicacion', 'game-controller-outline', 'Escribir sobre una publicación', 'Reseña, guía o noticia de un juego de UpGames']]),
+      ...(esPag ? [] : [['publicacion', 'game-controller-outline', 'Escribir sobre una publicación', 'Reseña, guía o noticia de un juego de Lurveta']]),
       ['revisar', 'checkmark-done-outline', 'Revisar mi página', 'Consejos para que se vea profesional y la encuentren'],
       ['seo', 'search-outline', 'Título, resumen y etiquetas', 'Para Google y para cuando la compartan'],
     ];
@@ -1249,17 +1249,17 @@ async function editor(tipo, id) {
     } catch (e) { cerrarHoja(); avisarError(e); }
   }
 
-  // ✦ Nexus escritor: arma el borrador con bloques a partir de una publicación de UpGames
+  // ✦ Nexus escritor: arma el borrador con bloques a partir de una publicación de Lurveta
   function nexusPublicacion() {
     const actual = [...cont.children].map(x => x.leer?.()).find(b => b && (b.tipo === 'juego' || b.tipo === 'descarga'))?.id || juegoDesde || '';
     const c = hoja(`<h3>✦ Nexus escribe por ti</h3><p style="color:var(--txt2)">Elige la publicación y qué quieres escribir. Nexus arma un borrador con bloques; tú lo revisas, lo completas con tu experiencia y lo publicas.</p>
-      <label class="campo"><span>Publicación de UpGames</span><input class="inp" id="n-id" placeholder="Pega el enlace de la publicación" value="${h(actual)}"></label>
+      <label class="campo"><span>Publicación de Lurveta</span><input class="inp" id="n-id" placeholder="Pega el enlace de la publicación" value="${h(actual)}"></label>
       <label class="campo"><span>Qué escribir</span><select class="inp" id="n-tipo"><option value="resena">Reseña</option><option value="guia">Guía de instalación</option><option value="noticia">Noticia</option></select></label>
       <label class="campo"><span>Enfoque (opcional)</span><input class="inp" id="n-nota" maxlength="200" placeholder="Ej.: rendimiento en celulares de gama baja"></label>
       <button class="btn pri ancho" id="n-ok">${ico('sparkles-outline')} Escribir borrador</button>`);
     $('#n-ok', c).onclick = async ev => {
       const jid = ($('#n-id', c).value.match(/[a-f0-9]{24}/i) || [''])[0].toLowerCase();
-      if (!jid) return toast('Pega el enlace de una publicación de UpGames.', true);
+      if (!jid) return toast('Pega el enlace de una publicación de Lurveta.', true);
       const hayTexto = [...cont.children].some(x => { const b = x.leer?.(); return b && b.tipo === 'texto' && String(b.texto || '').trim(); });
       if (hayTexto && !(await confirmar('¿Reemplazar lo escrito?', 'El borrador de Nexus sustituirá los bloques que ya tienes.', 'Reemplazar', true))) return;
       try {

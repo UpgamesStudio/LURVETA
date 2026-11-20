@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Motion — movimiento fluido y continuo
+   Lurveta · Motion — movimiento fluido y continuo
    ───────────────────────────────────────────────────────────────
    • Indicador "líquido" en la navegación inferior que se desliza
      entre pestañas con curva de resorte.

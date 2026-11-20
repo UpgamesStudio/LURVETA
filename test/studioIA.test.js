@@ -1,5 +1,5 @@
 /**
- * Tests de UpGames Studio · IA en la nube (modulos/studio.js) con un Space de Gradio simulado.
+ * Tests de Lurveta Studio · IA en la nube (modulos/studio.js) con un Space de Gradio simulado.
  * Autónomo: `node test/studioIA.test.js`.
  */
 'use strict';
@@ -36,7 +36,7 @@ function spaceFalso({ fallar = false } = {}) {
 }
 
 (async () => {
-  console.log('UpGames Studio · IA en la nube');
+  console.log('Lurveta Studio · IA en la nube');
   await test('genera el GLB: sube la foto, prepara, genera y descarga con el token', async () => {
     const sp = spaceFalso(), fases = [];
     const glb = await S.generarModelo([Buffer.alloc(200, 1)], { token: 'hf_x', space: 'trellis-community/TRELLIS', fetch: sp.f, alAvanzar: (a) => fases.push(a.fase) });

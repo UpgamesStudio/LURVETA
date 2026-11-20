@@ -695,7 +695,7 @@ export function pintarLibreaCerrada(cv, { categoria, patron = 'franjas', colores
     const zPar = anchoCab(F, F.xPar)[1];
     relleno(c, [...Array.from({ length: 21 }, (_, i) => { const z = zPar * (i - 10) / 10; return [F.xPar + 0.21 - F.kF * z * z, z]; }), ...Array.from({ length: 21 }, (_, i) => { const z = zPar * (10 - i) / 10; return [F.xPar - 0.1 - F.kF * z * z, z]; })], oscuro(col.acento, luma(col.acento) > 170 ? 0.15 : 0));
     c.restore();
-    sello_(v, F.xPar + 0.125, 0, () => { const t = (nombre || 'UPGAMES').toUpperCase(); c.fillStyle = contraste(col.acento); c.font = fuente(9.5); c.textAlign = 'center'; c.textBaseline = 'middle'; const m = c.measureText(t).width; if (m > 96) c.scale(96 / m, 1); c.fillText(t, 0, 0.4); }, -Math.PI / 2);
+    sello_(v, F.xPar + 0.125, 0, () => { const t = (nombre || 'LURVETA').toUpperCase(); c.fillStyle = contraste(col.acento); c.font = fuente(9.5); c.textAlign = 'center'; c.textBaseline = 'middle'; const m = c.measureText(t).width; if (m > 96) c.scale(96 / m, 1); c.fillText(t, 0, 0.4); }, -Math.PI / 2);
     // luneta: lamas (motor central) o parasol trasero
     c.save(); poli(c, lun); c.clip();
     if (F.tomaLateral) { c.fillStyle = 'rgba(30,34,40,.95)'; for (let x = F.xLun - 0.12; x > xDeck; x -= 0.085) c.fillRect(x, -1, 0.03, 2); }
@@ -755,7 +755,7 @@ export function pintarLibreaCerrada(cv, { categoria, patron = 'franjas', colores
     sello_(v, 0, y0 + (stock ? 0.33 : 0.25), () => logo(c, pub.principal, stock ? 9 : 7, { ancho: stock ? 120 : 70 }));
     c.fillStyle = '#ff2a1a'; c.fillRect(-0.05, y0 + 0.105, 0.10, 0.035);                                  // luz de lluvia
     sello_(v, -0.38, y0 + 0.16, () => tecnica(c, 'remolque', 3));
-    sello_(v, 0.62, y1 - 0.035, () => { c.fillStyle = tinta; c.font = fuente(3.4); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('UPGAMES RACING', 0, 0); });
+    sello_(v, 0.62, y1 - 0.035, () => { c.fillStyle = tinta; c.font = fuente(3.4); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('LURVETA RACING', 0, 0); });
   });
   c.setTransform(1, 0, 0, 1, 0, 0);
   return cv;

@@ -1,5 +1,5 @@
 /**
- * Tests de UpGames Blogs: validación (modulos/blogs/validar.js) y render (modulos/blogs/render.js).
+ * Tests de Lurveta Blogs: validación (modulos/blogs/validar.js) y render (modulos/blogs/render.js).
  * Autónomo: `node test/blogs.test.js` (o `npm test`).
  */
 'use strict';
@@ -178,7 +178,7 @@ test('las entradas llevan el marco de comentarios (no las páginas ni la vista p
     assert.ok(!R.entrada(ctxB(), ent({ tipo: 'pagina' })).includes('blog-comentarios'));
     assert.ok(!R.entrada(ctxB(), ent(), { previa: true }).includes('blog-comentarios'));
 });
-test('«Hecho con UpGames»: aparece salvo en Premium', () => {
+test('«Hecho con Lurveta»: aparece salvo en Premium', () => {
     assert.ok(R.entrada(ctxB(), ent()).includes('Hecho con'));
     assert.ok(!R.entrada(ctxB({ sinMarca: true }), ent()).includes('Hecho con'));
 });

@@ -482,7 +482,7 @@ async function ecoCobroEditar() {
   box.innerHTML = `<div class="eco-cobro-form">
     <div class="eco-cobro-tipos">${c.tipos.map((t, i) => `<button type="button" data-t="${t.id}" class="${i === 0 ? 'on' : ''}">${escH(t.nombre)}</button>`).join('')}</div>
     <div class="eco-cobro-campos"></div>
-    <input name="password" type="password" placeholder="Tu contraseña de UpGames (para confirmar)" autocomplete="current-password">
+    <input name="password" type="password" placeholder="Tu contraseña de Lurveta (para confirmar)" autocomplete="current-password">
     <p class="eco-cobro-nota">🔒 Tus datos se guardan cifrados y solo se usan para enviarte tus retiros. Si cambias un método ya configurado, por seguridad los retiros quedan en espera ${c.esperaHoras} h y te avisamos por email.
       <b>No se puede pagar a un número de tarjeta</b>: si tienes tarjeta débito, usa PayPal o Mercado Pago.</p>
     <div class="eco-cobro-acc"><button type="button" class="eco-cobro-btn" data-a="cancelar">Cancelar</button><button type="button" class="eco-cobro-btn p" data-a="guardar">Guardar</button></div></div>`;

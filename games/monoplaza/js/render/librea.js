@@ -156,7 +156,7 @@ const PATRONES = {
 };
 export const NOMBRES_PATRON = { lisa: 'Lisa', franjas: 'Franjas', flecha: 'Flecha', degradado: 'Degradado', rayo: 'Rayo', geometrico: 'Geométrico', digital: 'Camuflaje digital', llamas: 'Llamas' };
 
-// Dibuja la librea completa (colores, patrón, patrocinadores UPGAMES y número)
+// Dibuja la librea completa (colores, patrón, patrocinadores LURVETA y número)
 export function dibujarLibrea(canvas, { patron = 'franjas', colores, numero = 7, imagen = null, nombre = '' }) {
   const W = canvas.width, H = canvas.height, ctx = canvas.getContext('2d');
   const col = { base: '#0d47ff', acento: '#00e5ff', tercero: '#ffffff', ...colores };
@@ -228,7 +228,7 @@ export function texturaCasco(diseno = 'clasico', colores = {}) {
     x.shadowBlur = 0;
   }
   x.fillStyle = contraste(base); x.font = '900 italic 16px Arial'; x.textAlign = 'center';
-  x.fillText('UPGAMES', 64, 100); x.fillText('UPGAMES', 192, 100);
+  x.fillText('LURVETA', 64, 100); x.fillText('LURVETA', 192, 100);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }

@@ -146,7 +146,7 @@ export function texturaEdificio() {
   return aTextura(c);
 }
 
-// Fachada de edificio urbano: ventanas en rejilla y bajos con tiendas (algunas con UPGAMES)
+// Fachada de edificio urbano: ventanas en rejilla y bajos con tiendas (algunas con LURVETA)
 export function texturaFachada(semilla = 5) {
   const rnd = aleatorio(semilla);
   const c = lienzo(256, 512), ctx = c.getContext('2d');
@@ -161,7 +161,7 @@ export function texturaFachada(semilla = 5) {
   ctx.fillStyle = '#2a2d33'; ctx.fillRect(0, 452, 256, 60);
   ctx.fillStyle = rnd() < 0.5 ? '#0d47ff' : '#b3122e'; ctx.fillRect(0, 446, 256, 14);
   ctx.fillStyle = '#fff'; ctx.font = '900 italic 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(rnd() < 0.5 ? 'UPGAMES' : 'CAFÉ · HOTEL', 128, 453);
+  ctx.fillText(rnd() < 0.5 ? 'LURVETA' : 'CAFÉ · HOTEL', 128, 453);
   return aTextura(c);
 }
 
@@ -174,7 +174,7 @@ export function texturaTecpro() {
     ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(k * 64 + 4, 6, 56, 6);
   }
   ctx.fillStyle = '#ffffff'; ctx.font = '900 italic 16px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('UPGAMES', 64, 36); ctx.fillText('UPGAMES', 192, 36);
+  ctx.fillText('LURVETA', 64, 36); ctx.fillText('LURVETA', 192, 36);
   return aTextura(c);
 }
 
@@ -332,7 +332,7 @@ export function texturaParche() {
   return aTextura(c, false);
 }
 
-export function texturaMuro(texto = 'UPGAMES') {
+export function texturaMuro(texto = 'LURVETA') {
   const c = lienzo(1024, 128), ctx = c.getContext('2d');
   const colores = [['#0d47ff', '#ffffff'], ['#111', '#00e5ff'], ['#f2f2f2', '#d9161c'], ['#e8202a', '#fff']];
   const paneles = 4;
@@ -340,7 +340,7 @@ export function texturaMuro(texto = 'UPGAMES') {
     const [fondo, letra] = colores[k % colores.length];
     ctx.fillStyle = fondo; ctx.fillRect(k * 256, 0, 256, 128);
     ctx.fillStyle = letra; ctx.font = 'bold 54px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const t = [texto, 'RACING', texto, 'UPGAMES'][k];
+    const t = [texto, 'RACING', texto, 'LURVETA'][k];
     ctx.fillText(t, k * 256 + 128, 66);
     ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(k * 256, 0, 3, 128);
   }
@@ -361,7 +361,7 @@ export function texturaNeumaticos() {
   // funda publicitaria sobre los neumáticos
   ctx.fillStyle = '#0d47ff'; ctx.fillRect(0, 46, 256, 36);
   ctx.fillStyle = '#ffffff'; ctx.font = '900 italic 28px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('UPGAMES', 128, 65);
+  ctx.fillText('LURVETA', 128, 65);
   return aTextura(c);
 }
 

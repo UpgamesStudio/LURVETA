@@ -1,8 +1,8 @@
 // Imagen de respaldo local (antes via.placeholder.com, que dejó de existir: se veía la imagen rota)
-window.UG_PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#12141c"/><text x="160" y="98" font-family="sans-serif" font-size="18" font-weight="700" fill="#3a3f4d" text-anchor="middle">UpGames</text></svg>');
+window.UG_PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#12141c"/><text x="160" y="98" font-family="sans-serif" font-size="18" font-weight="700" fill="#3a3f4d" text-anchor="middle">Lurveta</text></svg>');
 
 // ═══════════════════════════════════════════════════════════
-// UPGAMES — BIBLIOTECA REDESIGN v3.0
+// LURVETA — BIBLIOTECA REDESIGN v3.0
 // Mobile-first · App Store style
 // ═══════════════════════════════════════════════════════════
 
@@ -787,7 +787,7 @@ function render(list, reset=true) {
     </div>`;
     const qBusq = document.getElementById('buscador')?.value?.trim();
     document.getElementById('empty-ask-nexus')?.addEventListener('click', () =>
-      nexusPreguntar(qBusq ? `Busco "${qBusq}" en UpGames y no aparece. ¿Hay algo parecido o qué me recomiendas?` : '¿Qué me recomiendas descargar hoy en UpGames?'));
+      nexusPreguntar(qBusq ? `Busco "${qBusq}" en Lurveta y no aparece. ¿Hay algo parecido o qué me recomiendas?` : '¿Qué me recomiendas descargar hoy en Lurveta?'));
     return;
   }
   const frag = document.createDocumentFragment();
@@ -1062,7 +1062,7 @@ function ugMeta(attr, key, val) {
 // ── La ficha es una «página» con su propia entrada en el historial ──
 // Abrir una publicación agrega ?id=… al historial (pushState): el botón «atrás» del móvil la cierra
 // y el enlace se puede copiar y compartir. Un enlace compartido que se abre directo deja el inicio
-// detrás, así «atrás» vuelve al catálogo en lugar de salir de UpGames.
+// detrás, así «atrás» vuelve al catálogo en lugar de salir de Lurveta.
 let ugFichaPorAtras = false, ugFichaVolviendo = false;
 function ugFichaEnHistorial(id) {
   const u = new URL(location.href);
@@ -1104,12 +1104,12 @@ function ugSeo(item) {
     const slug = String(item.title || 'publicacion').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '') || 'publicacion';
     const estatica = (!item.status || item.status === 'aprobado') && item.createdAt && Date.now() - new Date(item.createdAt) > UG_PAGINA_LISTA_MS;
     const url = estatica ? `https://upgames.games/public/p/${slug}-${item._id}.html` : `${UG_SEO_BASE.url}?id=${item._id}`;
-    const desc = String(item.description || `${item.category || 'Contenido'} compartido por @${item.usuario} en UpGames.`).replace(/\s+/g, ' ').slice(0, 160);
+    const desc = String(item.description || `${item.category || 'Contenido'} compartido por @${item.usuario} en Lurveta.`).replace(/\s+/g, ' ').slice(0, 160);
     const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://upgames.games/public/og-upgames.jpg');
-    document.title = `${item.title} — ${item.category || 'Descargar'} | UpGames`;
+    document.title = `${item.title} — ${item.category || 'Descargar'} | Lurveta`;
     canon.href = url;
     ugMeta('name', 'description', desc);
-    ugMeta('property', 'og:title', `${item.title} | UpGames`); ugMeta('property', 'og:description', desc);
+    ugMeta('property', 'og:title', `${item.title} | Lurveta`); ugMeta('property', 'og:description', desc);
     ugMeta('property', 'og:image', img); ugMeta('property', 'og:url', url); ugMeta('property', 'og:type', 'website');
     ugMeta('name', 'twitter:card', 'summary_large_image');
     const tipo = item.category === 'Video' ? 'VideoObject' : (item.category === 'Juego' ? 'VideoGame' : 'SoftwareApplication');
@@ -1313,8 +1313,8 @@ function openDetail(item) {
   window.UGUX?.guiaDetalle(item);
   const askBtn = document.getElementById('ds-btn-nexus');
   if (askBtn) askBtn.onclick = () => nexusPreguntar(item.category === 'Video'
-    ? `Cuéntame sobre el video "${item.title}" de @${item.usuario} y qué contenido relacionado hay en UpGames.`
-    : `¿Qué es "${item.title}" (${catLabel(item.category)}) de @${item.usuario}? ¿Cómo lo instalo y qué necesito? ¿Hay algo parecido en UpGames?`);
+    ? `Cuéntame sobre el video "${item.title}" de @${item.usuario} y qué contenido relacionado hay en Lurveta.`
+    : `¿Qué es "${item.title}" (${catLabel(item.category)}) de @${item.usuario}? ¿Cómo lo instalo y qué necesito? ¿Hay algo parecido en Lurveta?`);
 
   // ── Entrada destacada (solo para videos) ───────────────
   const featEl = document.getElementById('ds-featured-entry');
@@ -1870,7 +1870,7 @@ function ugTarjeta(it) {
   return m[1] + m[2] + ['c_fill,g_auto,w_1200,h_630', 'e_gradient_fade:40,y_-0.6,b_rgb:07080c',
     `l_text:Arial_60_bold:${enc(corta(it.title, 64))},co_white,c_fit,w_1080`, 'fl_layer_apply,g_south_west,x_60,y_120',
     `l_text:Arial_32_bold:${enc(l2)},co_rgb:32D583`, 'fl_layer_apply,g_south_west,x_60,y_62',
-    'l_text:Arial_30_bold:UPGAMES,co_rgb:32D583,b_rgb:07080c,bo_14px_solid_rgb:07080c', 'fl_layer_apply,g_north_east,x_40,y_36',
+    'l_text:Arial_30_bold:LURVETA,co_rgb:32D583,b_rgb:07080c,bo_14px_solid_rgb:07080c', 'fl_layer_apply,g_north_east,x_40,y_36',
     'q_auto:good,f_jpg'].join('/') + '/' + m[3];
 }
 // Enlace para compartir: la página estática (/p/…) si ya existe, que trae la vista previa lista
@@ -1883,7 +1883,7 @@ function ugUrlCompartir(it) {
 async function share(id) {
   const it = (currentItem && currentItem._id === id) ? currentItem : todosLosItems.find(i => i._id === id);
   const url = it ? ugUrlCompartir(it) : `${location.origin}${location.pathname}?id=${id}`;
-  const titulo = it ? `${it.title} en UpGames` : 'Mira este contenido en UpGames';
+  const titulo = it ? `${it.title} en Lurveta` : 'Mira este contenido en Lurveta';
   if(navigator.share) {
     // Se comparte el ENLACE de la publicación (antes iba la tarjeta como archivo de imagen y
     // WhatsApp y otras apps mandaban solo la foto, sin enlace). La vista previa con la portada
@@ -1960,7 +1960,7 @@ function visitarPerfil(usuario) {
 function handleMail(e) {
   if(e) e.preventDefault();
   const email='upgames.games.up@gmail.com';
-  const sub=encodeURIComponent('Soporte - UP GAMES');
+  const sub=encodeURIComponent('Soporte - LURVETA');
   const body=encodeURIComponent('Hola, necesito ayuda con...\n\n[Describe tu problema aquí]');
   window.location.href=`mailto:${email}?subject=${sub}&body=${body}`;
 }
@@ -1975,7 +1975,7 @@ document.querySelectorAll('.nav-tab[data-tab]').forEach(tab=>{
 
 // ── El inicio recuerda en qué parte ibas ──
 // · Al cambiar de pestaña y volver, el catálogo queda donde estaba (las demás pestañas empiezan arriba).
-// · Al volver a UpGames desde otra página (perfil, blog…) o al recargar, se restaura la posición
+// · Al volver a Lurveta desde otra página (perfil, blog…) o al recargar, se restaura la posición
 //   si fue hace menos de 30 min, con la misma categoría y sin una búsqueda distinta.
 const UG_POS = 'ug_pos_inicio';
 let ugScrollInicio = 0, ugGuardarPosT = null;
@@ -2114,7 +2114,7 @@ async function renderEconomia() {
       <div class="empty-state" style="padding:40px 20px">
         <ion-icon name="person-circle-outline"></ion-icon>
         <h3>Inicia sesión</h3>
-        <p>Con una cuenta ganas dinero con la publicidad que ven quienes abren lo que publicas (US$1,50 por cada 1.000 visualizaciones), recibes regalos en tus lives y ganas UpCoins (la moneda de UpGames) que puedes gastar o retirar, y puedes hacerte Premium: sin anuncios y NEXUS ilimitado.</p><a href="${ugUrlLogin(true)}" class="btn-login-action" style="margin-top:14px;display:inline-flex">Crear cuenta gratis</a><p style="margin-top:10px;font-size:.82rem"><a href="${ugUrlLogin(false)}" style="color:#32D583">Ya tengo cuenta</a></p>
+        <p>Con una cuenta ganas dinero con la publicidad que ven quienes abren lo que publicas (US$1,50 por cada 1.000 visualizaciones), recibes regalos en tus lives y ganas UpCoins (la moneda de Lurveta) que puedes gastar o retirar, y puedes hacerte Premium: sin anuncios y NEXUS ilimitado.</p><a href="${ugUrlLogin(true)}" class="btn-login-action" style="margin-top:14px;display:inline-flex">Crear cuenta gratis</a><p style="margin-top:10px;font-size:.82rem"><a href="${ugUrlLogin(false)}" style="color:#32D583">Ya tengo cuenta</a></p>
       </div>`;
     return;
   }
@@ -2348,7 +2348,7 @@ async function pfShareProfile() {
   if (!pfUser) return;
   const url = new URL(`perfil-publico.html?usuario=${encodeURIComponent(pfUser)}`, document.baseURI).href;   // baseURI = /public/ también en la portada (/)
   try {
-    if (navigator.share) { await navigator.share({ title: `@${pfUser} en UpGames`, url }); return; }
+    if (navigator.share) { await navigator.share({ title: `@${pfUser} en Lurveta`, url }); return; }
   } catch (e) { if (e && e.name === 'AbortError') return; }
   try { await navigator.clipboard.writeText(url); toast('🔗 Enlace de tu perfil copiado'); }
   catch (_) { prompt('Copia el enlace de tu perfil:', url); }
@@ -2781,7 +2781,7 @@ function pfGetUniversalWidget() {
         const msg = String(error.message || error.statusText || error || 'Error');
         // El plan de almacenamiento rechaza archivos más pesados que su tope: explicar qué hacer
         const tope = /exceeds maximum|too large|maximum allowed/i.test(msg);
-        if(pfWidgetCallback) pfWidgetCallback({ error: tope ? 'Ese archivo pesa más de lo que hoy acepta la nube de UpGames (100 MB por video). Comprímelo (p. ej. a 720p) o súbelo a YouTube y pega el enlace.' : msg });
+        if(pfWidgetCallback) pfWidgetCallback({ error: tope ? 'Ese archivo pesa más de lo que hoy acepta la nube de Lurveta (100 MB por video). Comprímelo (p. ej. a 720p) o súbelo a YouTube y pega el enlace.' : msg });
         return;
       }
       if(result.event === 'progress' && pfWidgetCallback) {
@@ -4234,7 +4234,7 @@ async function ecoCobroEditar() {
   box.innerHTML = `<div class="eco-cobro-form">
     <div class="eco-cobro-tipos">${c.tipos.map((t, i) => `<button type="button" data-t="${t.id}" class="${i === 0 ? 'on' : ''}">${escH(t.nombre)}</button>`).join('')}</div>
     <div class="eco-cobro-campos"></div>
-    <input name="password" type="password" placeholder="Tu contraseña de UpGames (para confirmar)" autocomplete="current-password">
+    <input name="password" type="password" placeholder="Tu contraseña de Lurveta (para confirmar)" autocomplete="current-password">
     <p class="eco-cobro-nota">🔒 Tus datos se guardan cifrados y solo se usan para enviarte tus retiros. Si cambias un método ya configurado, por seguridad los retiros quedan en espera ${c.esperaHoras} h y te avisamos por email.
       <b>No se puede pagar a un número de tarjeta</b>: si tienes tarjeta débito, usa PayPal o Mercado Pago.</p>
     <div class="eco-cobro-acc"><button type="button" class="eco-cobro-btn" data-a="cancelar">Cancelar</button><button type="button" class="eco-cobro-btn p" data-a="guardar">Guardar</button></div></div>`;
@@ -4878,7 +4878,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
       pal0.forEach((w, i) => entra(w, en(t, 1.6 + i * .11, .5), { dy: 16, blur: 8 }));
       entra(caps[0].querySelector('.obh-sub'), en(t, 1.9 + pal0.length * .11, .7), { dy: 12 });
     }
-    // 1 · Nueve apps que se funden en UpGames
+    // 1 · Nueve apps que se funden en Lurveta
     if (t > CAPS[1] - .5 && t < CAPS[2] + .5) {
       const a = CAPS[1];
       entra(caps[1].querySelector('.oba-kicker'), en(t, a + .1, .5));
@@ -4990,7 +4990,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
   }
   function avisoTerminosNuevos() {
     const a = document.createElement('div'); a.className = 'ug-terminos-aviso'; a.setAttribute('role', 'status');
-    a.innerHTML = `<span>📜 Actualizamos los <a href="./terminos_condiciones.html" target="_blank" rel="noopener">Términos (v${TERMINOS_VERSION})</a> y la <a href="./politica-privacidad.html" target="_blank" rel="noopener">Privacidad</a>: juegos y herramientas de UpGames, novedades de UpGames Blogs, sin reconocimiento automático de títulos (tú escribes tus metadatos) un protocolo claro para los fondos de cuentas suspendidas, y apoyos con UpCoins y enlaces de afiliado en los blogs, reparto 50/50 en regalos y métodos de cobro PayPal y Mercado Pago.</span><button type="button">Entendido</button>`;
+    a.innerHTML = `<span>📜 Actualizamos los <a href="./terminos_condiciones.html" target="_blank" rel="noopener">Términos (v${TERMINOS_VERSION})</a> y la <a href="./politica-privacidad.html" target="_blank" rel="noopener">Privacidad</a>: juegos y herramientas de Lurveta, novedades de Lurveta Blogs, sin reconocimiento automático de títulos (tú escribes tus metadatos) un protocolo claro para los fondos de cuentas suspendidas, y apoyos con UpCoins y enlaces de afiliado en los blogs, reparto 50/50 en regalos y métodos de cobro PayPal y Mercado Pago.</span><button type="button">Entendido</button>`;
     a.querySelector('button').onclick = () => { LS.set('upgames_terms_v', TERMINOS_VERSION); a.remove(); };
     setTimeout(() => document.body.appendChild(a), 2500);
   }
@@ -5130,7 +5130,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
 })();
 
 // ── NEXUS IA (nativa) ────────────────────────────────────
-// Nexus vive en el backend de UpGames (/nexus/*): misma base de datos y
+// Nexus vive en el backend de Lurveta (/nexus/*): misma base de datos y
 // servidor. Aquí solo está el chat: mensajes, tarjetas tocables y botones.
 let nxOpen=false, nxExpanded=false;
 const NX = { cargado:false, enviando:false, msgs:[] };   // msgs: [{rol, texto, items, acciones}]
@@ -5221,7 +5221,7 @@ function nxPintar(pensando = false) {
     html = `<div class="nx-hola">
       <div class="nx-hola-orb"><span></span></div>
       <h3>${usuario ? `Hola, @${escH(usuario)}` : 'Hola, soy Nexus'}</h3>
-      <p>Conozco todo el catálogo de UpGames${usuario ? ', tu cuenta y tus publicaciones' : ''}. Pregúntame lo que quieras.</p>
+      <p>Conozco todo el catálogo de Lurveta${usuario ? ', tu cuenta y tus publicaciones' : ''}. Pregúntame lo que quieras.</p>
       <div class="nx-sugs">${sug.map(s => `<button type="button" class="nx-sug" data-nx-sug="${escH(s)}">${escH(s)}</button>`).join('')}</div>
     </div>`;
   }
@@ -5380,7 +5380,7 @@ const TUT_STEPS = [
   { sel: '#buscador', title: '🔍 Busca lo que quieras', body: 'Escribe el nombre de un juego, mod, app o creador: los resultados aparecen mientras escribes.' },
   { sel: '#category-row', title: '🏷️ Filtra por categoría', body: 'Juegos, mods, apps, software y videos. Desliza para ver más.' },
   { sel: '.game-tile', title: '📦 Abre una publicación', body: 'Toca una tarjeta para ver su detalle: portada, descripción, comentarios y el botón para <strong>descargar</strong>.' },
-  { sel: '#hdr-uc, #hdr-entrar', title: '🪙 Tus UpCoins', body: 'La moneda de UpGames. Tócala para recargar y úsala en lives, NEXUS, Premium y el estilo de tu perfil. Si aún no tienes cuenta, aquí entras.' },
+  { sel: '#hdr-uc, #hdr-entrar', title: '🪙 Tus UpCoins', body: 'La moneda de Lurveta. Tócala para recargar y úsala en lives, NEXUS, Premium y el estilo de tu perfil. Si aún no tienes cuenta, aquí entras.' },
   { sel: '#hdr-orb', title: '✨ Menú rápido', body: 'Avisos, lives, subir contenido, Premium y soporte, desplegados en círculo.' },
   { sel: '#bottom-nav', title: '🧭 Navegación', body: '<strong>Inicio</strong>, <strong>Videos</strong>, <strong>NEXUS</strong> (tu asistente de IA), <strong>NEW</strong> (artículos de la comunidad) y tu <strong>Perfil</strong> (publicar, ajustes, Favoritos, Ganancias y Economía).' },
   { sel: '#tut-fab', title: '❔ Ayuda y guía de inicio', body: 'Aquí tienes tu lista de primeros pasos, guías cortas con buscador y acceso a NEXUS y soporte. ¡Listo! 🚀' },
@@ -5813,7 +5813,7 @@ function closeTheater() {
 //    activar las notificaciones del móvil.
 //  • Isla: cuando llega algo con la app abierta (polling o push del service
 //    worker), una "isla" flotante arriba; al tocarla te lleva al contenido.
-//  • Push: Web Push con claves VAPID del servidor; llega aunque UpGames
+//  • Push: Web Push con claves VAPID del servidor; llega aunque Lurveta
 //    esté cerrado (en iPhone, con la app instalada en la pantalla de inicio).
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -5844,8 +5844,8 @@ function ugnMeta(n) {
 // Texto plano de una notificación (los mensajes del servidor llegan con HTML escapado)
 const ugnPlano = s => { const d = document.createElement('textarea'); d.innerHTML = String(s || '').replace(/<[^>]*>/g, ''); return d.value; };
 function ugnTexto(n) {
-  if (n._push) return { quien: n._push.title || 'UpGames', accion: '', sub: n._push.body || '', anuncio: true };
-  const e = n.emisor ? '@' + n.emisor : 'UpGames', t = n.itemTitle || '', msg = ugnPlano(n.mensaje);
+  if (n._push) return { quien: n._push.title || 'Lurveta', accion: '', sub: n._push.body || '', anuncio: true };
+  const e = n.emisor && n.emisor !== 'UpGames' ? '@' + n.emisor : 'Lurveta', t = n.itemTitle || '', msg = ugnPlano(n.mensaje);
   switch (n.tipo) {
     case 'nueva_publicacion': return { quien: e, accion: 'publicó algo nuevo', sub: t };
     case 'nueva_entrada': return { quien: e, accion: 'publicó en su blog', sub: t };
@@ -5859,13 +5859,13 @@ function ugnTexto(n) {
   if (t === 'En vivo') return { quien: e, accion: 'está en vivo 🔴', sub: msg || 'Toca para verlo' };
   if (t === 'Verifica tu email') return { quien: 'Verifica tu email', accion: '', sub: msg.replace(/^📧\s*/, '') };
   if (t === 'Tu pase vence' || t === 'Tu Premium vence') return { quien: 'Tu Premium vence pronto', accion: '', sub: msg.replace(/^⏳\s*/, '') };
-  if (t === 'Anuncio') return { quien: 'UpGames', accion: '', sub: msg.replace(/^📢\s*/, ''), anuncio: true };
+  if (t === 'Anuncio') return { quien: 'Lurveta', accion: '', sub: msg.replace(/^📢\s*/, ''), anuncio: true };
   if (t === 'Revisión') return { quien: 'Revisión', accion: '', sub: msg, anuncio: true };
-  if (t === 'Equipo') return { quien: 'Equipo UpGames', accion: '', sub: msg, anuncio: true };
+  if (t === 'Equipo') return { quien: 'Equipo Lurveta', accion: '', sub: msg, anuncio: true };
   return { quien: e, accion: msg || 'Notificación', sub: t };
 }
 function ugnAvatar(n, meta) {
-  const sistema = !n.emisor || n.emisor === 'UpGames' || ugnTexto(n).anuncio;
+  const sistema = !n.emisor || n.emisor === 'Lurveta' || n.emisor === 'UpGames' /* avisos guardados antes del cambio de marca */ || ugnTexto(n).anuncio;
   const letra = sistema ? '' : escH((n.emisor[0] || '?').toUpperCase());
   let h = 0; for (const ch of n.emisor || 'u') h = (h * 31 + ch.charCodeAt(0)) % 360;
   return `<div class="ugn-av" style="${sistema ? '' : `background:linear-gradient(135deg,hsl(${h} 70% 55%),hsl(${(h + 50) % 360} 75% 45%))`}">
@@ -6151,10 +6151,10 @@ function ugnPintarPush() {
   const activo = ugnPushSoportado() && Notification.permission === 'granted' && LS.get('ugn_push_on') === '1';
   if (activo) { box.innerHTML = ''; return; }
   let txt, btn = '<button class="ugn-push-btn" onclick="ugnSuscribir(false)">Activar</button>';
-  if (ugnEsIOS() && !ugnInstalada()) { txt = 'En iPhone: toca <b>Compartir → Añadir a pantalla de inicio</b> y abre UpGames desde ahí para recibir avisos.'; btn = ''; }
+  if (ugnEsIOS() && !ugnInstalada()) { txt = 'En iPhone: toca <b>Compartir → Añadir a pantalla de inicio</b> y abre Lurveta desde ahí para recibir avisos.'; btn = ''; }
   else if (!ugnPushSoportado()) { txt = 'Tu navegador no admite avisos push. Prueba con Chrome.'; btn = ''; }
   else if (Notification.permission === 'denied') { txt = 'Bloqueaste los avisos. Actívalos en el candado 🔒 de la barra de direcciones → Notificaciones → Permitir.'; btn = ''; }
-  else txt = 'Entérate al instante cuando un creador que sigues publique, te escriban o haya novedades, aunque no estés en UpGames.';
+  else txt = 'Entérate al instante cuando un creador que sigues publique, te escriban o haya novedades, aunque no estés en Lurveta.';
   box.innerHTML = `<div class="ugn-push"><div class="ugn-push-ic"><ion-icon name="phone-portrait-outline"></ion-icon></div><div class="ugn-push-tx"><b>Avisos en tu móvil</b><span>${txt}</span></div>${btn}</div>`;
 }
 async function ugnAjustes(mostrar) {
@@ -6174,7 +6174,7 @@ async function ugnAjustes(mostrar) {
     ${fila('publicaciones', 'cloud-upload-outline', 'Nuevas publicaciones', 'Cuando un creador que sigues sube algo')}
     ${fila('mensajes', 'chatbubbles-outline', 'Mensajes', 'Mensajes privados del chat')}
     ${fila('social', 'heart-outline', 'Actividad social', 'Seguidores, me gusta, comentarios y logros')}
-    ${fila('anuncios', 'megaphone-outline', 'Anuncios de UpGames', 'Novedades y actualizaciones')}
+    ${fila('anuncios', 'megaphone-outline', 'Anuncios de Lurveta', 'Novedades y actualizaciones')}
     <p class="ugn-note">Los avisos sobre la revisión de tus publicaciones siempre se envían.</p>`;
   set.querySelectorAll('input[data-k]').forEach(i => i.addEventListener('change', () =>
     fetch(`${API_URL}/push/prefs`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...ugnAuth() }, body: JSON.stringify({ [i.dataset.k]: i.checked }) }).then(() => toast('✓ Preferencias guardadas')).catch(() => {})));
@@ -6574,7 +6574,7 @@ function ecoRenderPubStats() {
 })();
 
 // ═══════════════════════════════════════════════════════════
-// NEW — lecturas de la comunidad (entradas de UpGames Blogs)
+// NEW — lecturas de la comunidad (entradas de Lurveta Blogs)
 // Datos: GET /blogs/descubrir (rutas/blogs.js · modulos/blogs/descubrir.js).
 // Cada entrada es una tarjeta suelta (portada, título, resumen, creador, fecha,
 // lecturas y comentarios); al tocarla se abre el artículo completo en su blog.

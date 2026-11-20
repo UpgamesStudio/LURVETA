@@ -116,7 +116,7 @@ function ugTarjeta(it) {
   return m[1] + m[2] + ['c_fill,g_auto,w_1200,h_630', 'e_gradient_fade:40,y_-0.6,b_rgb:07080c',
     `l_text:Arial_60_bold:${enc(corta(it.title, 64))},co_white,c_fit,w_1080`, 'fl_layer_apply,g_south_west,x_60,y_120',
     `l_text:Arial_32_bold:${enc(l2)},co_rgb:32D583`, 'fl_layer_apply,g_south_west,x_60,y_62',
-    'l_text:Arial_30_bold:UPGAMES,co_rgb:32D583,b_rgb:07080c,bo_14px_solid_rgb:07080c', 'fl_layer_apply,g_north_east,x_40,y_36',
+    'l_text:Arial_30_bold:LURVETA,co_rgb:32D583,b_rgb:07080c,bo_14px_solid_rgb:07080c', 'fl_layer_apply,g_north_east,x_40,y_36',
     'q_auto:good,f_jpg'].join('/') + '/' + m[3];
 }
 // Enlace para compartir: la página estática (/p/…) si ya existe, que trae la vista previa lista
@@ -129,7 +129,7 @@ function ugUrlCompartir(it) {
 async function share(id) {
   const it = (currentItem && currentItem._id === id) ? currentItem : todosLosItems.find(i => i._id === id);
   const url = it ? ugUrlCompartir(it) : `${location.origin}${location.pathname}?id=${id}`;
-  const titulo = it ? `${it.title} en UpGames` : 'Mira este contenido en UpGames';
+  const titulo = it ? `${it.title} en Lurveta` : 'Mira este contenido en Lurveta';
   if(navigator.share) {
     // Se comparte el ENLACE de la publicación (antes iba la tarjeta como archivo de imagen y
     // WhatsApp y otras apps mandaban solo la foto, sin enlace). La vista previa con la portada
@@ -206,7 +206,7 @@ function visitarPerfil(usuario) {
 function handleMail(e) {
   if(e) e.preventDefault();
   const email='upgames.games.up@gmail.com';
-  const sub=encodeURIComponent('Soporte - UP GAMES');
+  const sub=encodeURIComponent('Soporte - LURVETA');
   const body=encodeURIComponent('Hola, necesito ayuda con...\n\n[Describe tu problema aquí]');
   window.location.href=`mailto:${email}?subject=${sub}&body=${body}`;
 }
@@ -221,7 +221,7 @@ document.querySelectorAll('.nav-tab[data-tab]').forEach(tab=>{
 
 // ── El inicio recuerda en qué parte ibas ──
 // · Al cambiar de pestaña y volver, el catálogo queda donde estaba (las demás pestañas empiezan arriba).
-// · Al volver a UpGames desde otra página (perfil, blog…) o al recargar, se restaura la posición
+// · Al volver a Lurveta desde otra página (perfil, blog…) o al recargar, se restaura la posición
 //   si fue hace menos de 30 min, con la misma categoría y sin una búsqueda distinta.
 const UG_POS = 'ug_pos_inicio';
 let ugScrollInicio = 0, ugGuardarPosT = null;
@@ -360,7 +360,7 @@ async function renderEconomia() {
       <div class="empty-state" style="padding:40px 20px">
         <ion-icon name="person-circle-outline"></ion-icon>
         <h3>Inicia sesión</h3>
-        <p>Con una cuenta ganas dinero con la publicidad que ven quienes abren lo que publicas (US$1,50 por cada 1.000 visualizaciones), recibes regalos en tus lives y ganas UpCoins (la moneda de UpGames) que puedes gastar o retirar, y puedes hacerte Premium: sin anuncios y NEXUS ilimitado.</p><a href="${ugUrlLogin(true)}" class="btn-login-action" style="margin-top:14px;display:inline-flex">Crear cuenta gratis</a><p style="margin-top:10px;font-size:.82rem"><a href="${ugUrlLogin(false)}" style="color:#32D583">Ya tengo cuenta</a></p>
+        <p>Con una cuenta ganas dinero con la publicidad que ven quienes abren lo que publicas (US$1,50 por cada 1.000 visualizaciones), recibes regalos en tus lives y ganas UpCoins (la moneda de Lurveta) que puedes gastar o retirar, y puedes hacerte Premium: sin anuncios y NEXUS ilimitado.</p><a href="${ugUrlLogin(true)}" class="btn-login-action" style="margin-top:14px;display:inline-flex">Crear cuenta gratis</a><p style="margin-top:10px;font-size:.82rem"><a href="${ugUrlLogin(false)}" style="color:#32D583">Ya tengo cuenta</a></p>
       </div>`;
     return;
   }

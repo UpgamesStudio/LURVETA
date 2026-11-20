@@ -1,5 +1,5 @@
 /**
- * UpGames Studio · IA en la nube (ver modulos/studio.js).
+ * Lurveta Studio · IA en la nube (ver modulos/studio.js).
  *
  *   GET  /studio/ia3d/estado       { disponible }  (público)
  *   POST /studio/ia3d              { fotos: [dataURL, …] (1 a 4) } → { id }
@@ -53,7 +53,7 @@ function registrar(app, { verificarToken, logger, gestor = crearGestor() }) {
   app.get('/studio/apk', async (req, res) => {
     try {
       const buf = await cargarApk();
-      res.set({ 'Content-Type': 'application/vnd.android.package-archive', 'Content-Length': buf.length, 'Content-Disposition': 'attachment; filename="UpGames-Studio.apk"', 'Cache-Control': 'public, max-age=300' });
+      res.set({ 'Content-Type': 'application/vnd.android.package-archive', 'Content-Length': buf.length, 'Content-Disposition': 'attachment; filename="Lurveta-Studio.apk"', 'Cache-Control': 'public, max-age=300' });
       res.end(buf);
     } catch (e) {
       logger?.error?.(`[studio] apk: ${e.message}`);

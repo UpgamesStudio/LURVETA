@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   UpGames · Intro «Entrar a la red» (public/intro/)
+   Lurveta · Intro «Entrar a la red» (public/intro/)
    ───────────────────────────────────────────────────────────────
    • Se muestra a pantalla completa la primera vez que alguien entra
      desde un dispositivo (localStorage 'ug_intro_visto').
@@ -26,7 +26,7 @@
   var base = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, '');
   var f = document.createElement('iframe');
   f.src = base + 'intro/index.html?v=20261109a';
-  f.title = 'Intro de UpGames';
+  f.title = 'Intro de Lurveta';
   f.allow = 'autoplay; fullscreen';
   f.setAttribute('style', 'position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483000;background:#020409;opacity:1;transition:opacity .6s ease');
   var root = document.documentElement;

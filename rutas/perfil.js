@@ -285,7 +285,7 @@ app.put('/usuarios/update-email', [verificarToken, body('nuevoEmail').isEmail().
         const nuevoToken = firmarToken({ usuario: req.usuario.toLowerCase(), email: nuevoEmail.toLowerCase(), sesionVer: await versionActual(req.usuario.toLowerCase()) });
         logger.info(`Usuario ${req.usuario} cambió su email a ${nuevoEmail}`);
         const verifLink = `${API_URL_SELF}/auth/verify-email/${verifToken}`;
-        sendEmail({ to: nuevoEmail, subject: '✅ Verifica tu nuevo email en UpGames', html: emailVerifTemplate(req.usuario.toLowerCase(), verifLink) }).catch(() => {});
+        sendEmail({ to: nuevoEmail, subject: '✅ Verifica tu nuevo email en Lurveta', html: emailVerifTemplate(req.usuario.toLowerCase(), verifLink) }).catch(() => {});
         res.json({ success: true, nuevoToken, mensaje: 'Email actualizado. Revisa tu bandeja para verificar el nuevo email.' });
     } catch (err) {
         const dup = mensajeDuplicado(err);

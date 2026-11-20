@@ -4,10 +4,10 @@ Documento de trabajo. Lo implementado en esta tanda está al final, en «Hecho»
 
 ---
 
-## 1. Instalador de UpGames (APK + OBB + DATA)
+## 1. Instalador de Lurveta (APK + OBB + DATA)
 
 ### Qué se puede y qué no
-- **Una página web o PWA no puede hacerlo.** El navegador no instala APK por su cuenta ni escribe en `Android/obb` o `Android/data`. Hace falta una **app nativa**. Ya tenemos el patrón: UpGames Studio (Capacitor, un puente Java y el APK compilado en GitHub Actions).
+- **Una página web o PWA no puede hacerlo.** El navegador no instala APK por su cuenta ni escribe en `Android/obb` o `Android/data`. Hace falta una **app nativa**. Ya tenemos el patrón: Lurveta Studio (Capacitor, un puente Java y el APK compilado en GitHub Actions).
 - **Instalar el APK:** se usa `PackageInstaller`. Admite APK sueltos y divididos (XAPK/APKS/APKM). Android siempre le pide al usuario que confirme; no hay instalación silenciosa.
 - **OBB (`Android/obb/<paquete>`):** desde Android 11, una app con el permiso `REQUEST_INSTALL_PACKAGES` puede escribir en las carpetas OBB de otras apps. Es el caso fácil.
 - **DATA (`Android/data/<paquete>`):** es el caso difícil.
@@ -16,20 +16,20 @@ Documento de trabajo. Lo implementado en esta tanda está al final, en «Hecho»
 - **Google Play:** `REQUEST_INSTALL_PACKAGES` está restringido. La app se distribuiría como el APK de Studio (GitHub Releases o upgames.games).
 
 ### Diseño propuesto
-1. **Fase 1 · App «UpGames Instalador»**
+1. **Fase 1 · App «Lurveta Instalador»**
    - Elegir un ZIP/XAPK/APK desde Descargas, o una APK más una carpeta.
    - Detectar la estructura sola: `manifest.json` del XAPK, archivos `main.N.paquete.obb`, carpetas con nombre de paquete (`com.x.y`).
    - Extraer mostrando el progreso.
    - Instalar la APK y mover OBB/DATA a su sitio.
    - Si no se puede mover algo, mostrar el plan B con instrucciones.
 2. **Fase 2 · Conexión con la página puente**
-   - Al terminar la descarga, un botón «Instalar con UpGames» abre la app (`upgames://instalar?...`) con el archivo ya elegido.
+   - Al terminar la descarga, un botón «Instalar con Lurveta» abre la app (`upgames://instalar?...`) con el archivo ya elegido.
 3. **Fase 3 · «Tipo de instalación» en cada publicación**
    - Nuevo campo en Publicar y Editar: APK sola / APK+OBB / APK+DATA / ZIP de emulador / mod que reemplaza archivos.
    - Con eso el instalador sabe qué hacer sin preguntar, y Nexus puede generar la guía.
 4. **Fase 4:** emuladores (contenedores de Winlator, BIOS, configuraciones recomendadas por juego).
 
-**Decisión pendiente:** ¿la hacemos como app aparte (recomendado: menos permisos sensibles en la app principal) o dentro de una futura app UpGames?
+**Decisión pendiente:** ¿la hacemos como app aparte (recomendado: menos permisos sensibles en la app principal) o dentro de una futura app Lurveta?
 
 ---
 
@@ -38,7 +38,7 @@ Documento de trabajo. Lo implementado en esta tanda está al final, en «Hecho»
 1. **Nexus en la barra de búsqueda:** escribir «juegos de carreras que corran en 3 GB de RAM» y que Nexus lo convierta en filtros. Es la entrada más usada de la app; hoy Nexus no está ahí.
 2. **«¿Funciona en mi celular?»** en cada publicación. Se usan datos del dispositivo (RAM aproximada con `navigator.deviceMemory`, GPU con WebGL) más los requisitos de la publicación. Resultado: semáforo y ajustes sugeridos (por ejemplo, la configuración de Winlator).
 3. **Guía de instalación generada** por publicación (desde la descripción y el «tipo de instalación»), conectada al instalador.
-4. **Radar semanal de tendencias:** el buscador nuevo se ejecuta solo una vez por semana. Detecta lo que está en auge y aún no está en UpGames, y avisa a los admins y a los creadores con un «esto se busca y nadie lo ha publicado». Opcional: recompensas en UpCoins.
+4. **Radar semanal de tendencias:** el buscador nuevo se ejecuta solo una vez por semana. Detecta lo que está en auge y aún no está en Lurveta, y avisa a los admins y a los creadores con un «esto se busca y nadie lo ha publicado». Opcional: recompensas en UpCoins.
 5. **Búsquedas sin resultados → ideas para creadores.** `modulos/search.js` ya registra las búsquedas; Nexus puede convertirlas en «publica esto y tendrás demanda».
 6. **Identidad:** un avatar animado propio, la misma voz en toda la app y un estado visible («Nexus revisó tu publicación», «Nexus encontró 3 mods nuevos»).
 7. **Soporte de primera línea:** Nexus responde los reportes y tickets primero y solo escala a un humano lo que no puede resolver.
@@ -106,16 +106,16 @@ Cada fase cabe en una o dos sesiones de trabajo.
   - Variables opcionales: `SERPER_API_KEY` (recomendada para las redes), `BRAVE_SEARCH_API_KEY`, `YOUTUBE_API_KEY`.
 - Correcciones de puntos ciegos listadas arriba.
 
-## Hecho · UpGames Blogs y portada (13 de noviembre)
+## Hecho · Lurveta Blogs y portada (13 de noviembre)
 - **Botón «Comprar» eliminado** (ficha, modal, endpoint `/items/buy-intent`, estilos y lista de tiendas). El servidor ya no guarda ni envía `purchaseLink`; solo `autoInfo` lo usa por dentro para buscar la portada en Steam.
 - **Blogs**
   - Bloque **Descarga**: el botón pasa por `puente.html` (espera, anuncios y ticket firmado), así suma al CPM normal de la publicación.
-  - **Comentarios** en las entradas, con las cuentas y la moderación de UpGames. La página del blog sigue sin scripts: los comentarios viven en un marco aislado, `public/blog-comentarios.html`, en el dominio de UpGames (donde está la sesión). Rutas: `GET/POST /blogs/comentarios/:eid`, `DELETE /blogs/comentarios/:eid/:cid`.
+  - **Comentarios** en las entradas, con las cuentas y la moderación de Lurveta. La página del blog sigue sin scripts: los comentarios viven en un marco aislado, `public/blog-comentarios.html`, en el dominio de Lurveta (donde está la sesión). Rutas: `GET/POST /blogs/comentarios/:eid`, `DELETE /blogs/comentarios/:eid/:cid`.
   - **«Escribir sobre esto»** en cada publicación: abre el editor con la tarjeta del juego ya puesta y ofrece Nexus.
   - **Nexus escritor** (`modulos/blogs/escritor.js`, `POST /blogs/nexus/escribir`): reseña, guía o noticia con bloques. Lo que devuelve el modelo pasa por `limpiarBloques`; sin enlaces ni descargas inventadas, y lo que no sabe lo deja entre `[corchetes]`.
   - **Aviso a seguidores** al publicar (notificación `nueva_entrada` + push, una sola vez por entrada, máximo 3 al día por blog, después de la revisión de Nexus).
-  - **Premium:** sin «Hecho con UpGames», hasta 10 blogs (3 en gratis) y dos temas exclusivos, **Cristal** y **Lienzo**. Si el Premium vence, esos temas vuelven al tema por defecto al mostrarse.
+  - **Premium:** sin «Hecho con Lurveta», hasta 10 blogs (3 en gratis) y dos temas exclusivos, **Cristal** y **Lienzo**. Si el Premium vence, esos temas vuelven al tema por defecto al mostrarse.
 - **Inicio:** carrusel «Recomendados para ti» (fichas de cristal, 3 entradas, la central crece, desvanecido en los bordes), dos filas por debajo del carrusel principal.
 - **Modo video:** el video ocupa toda la pantalla (sin marco ni márgenes verdes); controles en cristal.
 - **Video** `marketing/blogs` (diseño claro y sonido sintetizado propio).
-- ~~Pendiente: que el dueño del blog también gane por las descargas que genera su entrada.~~ Hecho (14 de noviembre): `via` firmado en el ticket de la página puente, pago `BLOGS_DESCARGA_CPM` (US$0,50 por 1.000 por defecto, del margen de la plataforma), tope diario por blog y sin autopago. Ver README → UpGames Blogs.
+- ~~Pendiente: que el dueño del blog también gane por las descargas que genera su entrada.~~ Hecho (14 de noviembre): `via` firmado en el ticket de la página puente, pago `BLOGS_DESCARGA_CPM` (US$0,50 por 1.000 por defecto, del margen de la plataforma), tope diario por blog y sin autopago. Ver README → Lurveta Blogs.

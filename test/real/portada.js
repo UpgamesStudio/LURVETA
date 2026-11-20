@@ -113,7 +113,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   const abre = await p2.evaluate(() => ({ url: location.href, hoja: !!document.getElementById('detail-sheet'), abierta: !!document.getElementById('detail-sheet')?.classList.contains('open'), titulo: document.getElementById('ds-title')?.textContent || '' }));
   C.prueba('abre directo la ficha', abre.abierta && !!abre.titulo, JSON.stringify(abre));
   await p2.goBack(); await espera(700);
-  C.prueba('«atrás» deja el catálogo detrás (no sale de UpGames)', await p2.evaluate(() => !document.getElementById('detail-sheet').classList.contains('open') && location.pathname === '/'));
+  C.prueba('«atrás» deja el catálogo detrás (no sale de Lurveta)', await p2.evaluate(() => !document.getElementById('detail-sheet').classList.contains('open') && location.pathname === '/'));
   await p2.close();
 
   C.seccion('El inicio recuerda dónde ibas');

@@ -202,7 +202,7 @@ function render(list, reset=true) {
     </div>`;
     const qBusq = document.getElementById('buscador')?.value?.trim();
     document.getElementById('empty-ask-nexus')?.addEventListener('click', () =>
-      nexusPreguntar(qBusq ? `Busco "${qBusq}" en UpGames y no aparece. ¿Hay algo parecido o qué me recomiendas?` : '¿Qué me recomiendas descargar hoy en UpGames?'));
+      nexusPreguntar(qBusq ? `Busco "${qBusq}" en Lurveta y no aparece. ¿Hay algo parecido o qué me recomiendas?` : '¿Qué me recomiendas descargar hoy en Lurveta?'));
     return;
   }
   const frag = document.createDocumentFragment();

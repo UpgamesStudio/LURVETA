@@ -1,7 +1,7 @@
 /**
- * UpGames Blogs
+ * Lurveta Blogs
  *
- * El creador arma su sitio desde UpGames (public/blog.html): elige un tema, escribe
+ * El creador arma su sitio desde Lurveta (public/blog.html): elige un tema, escribe
  * entradas y páginas por bloques y publica. El servidor las convierte en páginas HTML:
  *
  *   /b/<direccion>/…            → dirección gratis de cada blog
@@ -37,13 +37,13 @@ function enlaceProhibido(urls) {
     return '';
 }
 
-// De dónde llega una visita según el «Referer»: rd directo · rb buscadores · rs redes · ru UpGames · ro otros · '' navegación interna
+// De dónde llega una visita según el «Referer»: rd directo · rb buscadores · rs redes · ru Lurveta · ro otros · '' navegación interna
 const REDES_SOCIALES = ['facebook.com', 'fb.com', 'fb.me', 'instagram.com', 't.co', 'twitter.com', 'x.com', 'tiktok.com', 'whatsapp.com', 'wa.me', 'telegram.org', 't.me', 'youtube.com', 'youtu.be', 'reddit.com', 'discord.com', 'discord.gg', 'pinterest.com', 'linkedin.com', 'lnkd.in', 'threads.net', 'twitch.tv', 'kick.com', 'snapchat.com'];
 function categoriaFuente(ref, hostPropio = '', base = '') {
     let h = '', ruta = '';
     try { const u = new URL(ref); h = u.hostname.toLowerCase().replace(/^www\./, ''); ruta = u.pathname; } catch (_) { return 'rd'; }
     if (!h) return 'rd';
-    // Mismo sitio: dentro del blog es navegación interna; en otra parte de upgames.games (la biblioteca) es UpGames
+    // Mismo sitio: dentro del blog es navegación interna; en otra parte de upgames.games (la biblioteca) es Lurveta
     if (h === String(hostPropio).toLowerCase().replace(/^www\./, '')) return !base || ruta === base || ruta.startsWith(base + '/') ? '' : 'ru';
     const es = d => h === d || h.endsWith('.' + d);
     if (/(^|\.)(google|bing|duckduckgo|yahoo|yandex|ecosia|search\.brave|baidu)\.[a-z.]{2,}$/.test(h)) return 'rb';
@@ -121,7 +121,7 @@ function registrar(app, deps) {
         const m = Moderacion.reglas(texto, 'publicacion');
         if (m.bloquear) {
             Moderacion.registrar({ tipo: 'blog', usuario, categoria: m.categoria, motivo: m.motivo, fuente: 'reglas', texto: texto.slice(0, 600), ref, accion: 'bloqueado-antes' });
-            return `No se publicó porque ${Moderacion.MENSAJE[m.categoria] || 'incumple las normas de UpGames'}. Cámbialo e inténtalo de nuevo.`;
+            return `No se publicó porque ${Moderacion.MENSAJE[m.categoria] || 'incumple las normas de Lurveta'}. Cámbialo e inténtalo de nuevo.`;
         }
         return enlaceProhibido(V.enlacesDe(bloques));
     }
@@ -146,7 +146,7 @@ function registrar(app, deps) {
 
     app.get('/blogs/temas', (req, res) => res.json({ success: true, temas: Temas.lista(), fuentes: Object.entries(Temas.FUENTES).map(([id, f]) => ({ id, nombre: f.nombre })), fondos: Object.entries(Temas.FONDOS).map(([id, f]) => ({ id, nombre: f.nombre })), limites: V.LIMITES, cpm: Anuncios.CPM }));
 
-    // Lo último que publican los creadores en sus blogs: alimenta la fila «Del blog de los creadores» del inicio de UpGames
+    // Lo último que publican los creadores en sus blogs: alimenta la fila «Del blog de los creadores» del inicio de Lurveta
     app.get('/blogs/recientes', async (req, res) => {
         try {
             const lista = await conCache('recientes', 120, async () => {
@@ -227,10 +227,10 @@ function registrar(app, deps) {
             if (titulo.length < 2) return res.status(400).json({ success: false, error: 'Ponle un nombre a tu blog.' });
             const d = V.validarDireccion(req.body?.direccion);
             if (d.error) return res.status(400).json({ success: false, error: d.error });
-            if (req.body?.aceptaTerminos !== true) return res.status(400).json({ success: false, code: 'TERMINOS', error: 'Para crear un blog tienes que aceptar que eres el responsable de lo que publiques en él (Términos de UpGames Blogs).' });
+            if (req.body?.aceptaTerminos !== true) return res.status(400).json({ success: false, code: 'TERMINOS', error: 'Para crear un blog tienes que aceptar que eres el responsable de lo que publiques en él (Términos de Lurveta Blogs).' });
             const u = await Usuario.findOne({ usuario: req.usuario }).select('emailVerificado').lean();
             if (!u) return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-            if (!u.emailVerificado) return res.status(403).json({ success: false, code: 'EMAIL_SIN_VERIFICAR', error: 'Verifica tu correo para crear un blog. Lo haces desde tu perfil en UpGames.' });
+            if (!u.emailVerificado) return res.status(403).json({ success: false, code: 'EMAIL_SIN_VERIFICAR', error: 'Verifica tu correo para crear un blog. Lo haces desde tu perfil en Lurveta.' });
             if (await CeroTolerancia.restringido(req.usuario)) return res.status(403).json({ success: false, code: 'RESTRINGIDO', error: 'Tu cuenta está restringida mientras el equipo de seguridad revisa un reporte.' });
             const premium = await esPremium(req.usuario), maximo = premium ? V.LIMITES.BLOGS_PREMIUM : V.LIMITES.BLOGS_POR_CUENTA;
             if (await Blog.countDocuments({ usuario: req.usuario }) >= maximo) return res.status(400).json({ success: false, code: premium ? undefined : 'PREMIUM', error: premium ? `Puedes tener hasta ${maximo} blogs.` : `Llegaste a ${maximo} blogs. Con Premium puedes tener hasta ${V.LIMITES.BLOGS_PREMIUM}.` });
@@ -508,7 +508,7 @@ function registrar(app, deps) {
     });
 
     // ── Dominio propio ───────────────────────────────────────────────────────────────────
-    // El creador apunta su dominio a UpGames (CNAME) y demuestra que es suyo con un TXT.
+    // El creador apunta su dominio a Lurveta (CNAME) y demuestra que es suyo con un TXT.
     app.post('/blogs/:id/dominio', verificarToken, async (req, res) => {
         try {
             const b = await miBlog(req, res); if (!b) return;
@@ -535,7 +535,7 @@ function registrar(app, deps) {
             await b.save(); olvidar();
             logger.info(`[blogs] @${req.usuario} verificó el dominio ${b.dominio.nombre} para «${b.direccion}»`);
             res.json({ success: true, verificado: true, apunta: r.apunta, blog: vistaBlog(b),
-                mensaje: r.apunta ? 'Dominio verificado y apuntando a UpGames.' : 'Dominio verificado. Falta que el CNAME apunte a UpGames para que el blog abra en tu dominio.' });
+                mensaje: r.apunta ? 'Dominio verificado y apuntando a Lurveta.' : 'Dominio verificado. Falta que el CNAME apunte a Lurveta para que el blog abra en tu dominio.' });
         } catch (e) { fallo(res, e, 'verificar dominio'); }
     });
 
@@ -619,7 +619,7 @@ function registrar(app, deps) {
     app.post('/blogs/nexus/escribir', verificarToken, async (req, res) => {
         try {
             const id = String(req.body?.juegoId || '');
-            if (!idOk(id)) return res.status(400).json({ success: false, error: 'Elige una publicación de UpGames.' });
+            if (!idOk(id)) return res.status(400).json({ success: false, error: 'Elige una publicación de Lurveta.' });
             if (!llm.disponible()) return res.status(503).json({ success: false, error: 'Nexus no está disponible ahora. Usa una plantilla y escribe tú.' });
             const cu = await cupoNexus(req.usuario, 'escribir');
             if (!cu.ok) return sinCupo(res, cu);
@@ -739,7 +739,7 @@ function registrar(app, deps) {
             if (Moderacion.reglas(`${nombre}\n${texto}`, 'comentario').bloquear || (texto.match(/https?:\/\//g) || []).length > 3) return volver('ok');   // spam o insultos: no llega al creador
             await BlogMensaje.create({ blog: b._id, entrada: e._id, tipo: 'mensaje', nombre, email, telefono, texto, ip: String(req.ip || '').slice(0, 64) });
             contarDia(b._id, 'fm');
-            crearNotif({ destinatario: b.usuario, tipo: 'sistema', emisor: 'UpGames Blogs', itemId: String(b._id), itemTitle: b.titulo, mensaje: `📩 ${nombre} te escribió desde tu blog «${V.linea(b.titulo, 60)}». Míralo en UpGames Blogs → Mensajes.` });
+            crearNotif({ destinatario: b.usuario, tipo: 'sistema', emisor: 'Lurveta Blogs', itemId: String(b._id), itemTitle: b.titulo, mensaje: `📩 ${nombre} te escribió desde tu blog «${V.linea(b.titulo, 60)}». Míralo en Lurveta Blogs → Mensajes.` });
             return volver('ok');
         } catch (err) { logger.error(`[blogs] formulario: ${err.message}`); res.status(500).type('text/plain').send('No se pudo enviar. Inténtalo de nuevo.'); }
     });
@@ -792,7 +792,7 @@ function registrar(app, deps) {
 
     // ═══════════════ COMENTARIOS ═══════════════
     // Las páginas del blog no llevan scripts: los comentarios se muestran y escriben en un marco aislado
-    // (public/blog-comentarios.html, en el dominio de UpGames, donde está la sesión) que usa estas rutas.
+    // (public/blog-comentarios.html, en el dominio de Lurveta, donde está la sesión) que usa estas rutas.
     const refComentario = eid => `blog:${eid}`;
     async function entradaComentable(eid) {
         if (!idOk(eid)) return null;
@@ -835,7 +835,7 @@ function registrar(app, deps) {
                     if (!Moderacion.debeQuitar(v)) return;
                     await Comentario.deleteOne({ _id: nuevo._id });
                     Moderacion.registrar({ tipo: 'comentario', usuario: req.usuario, categoria: v.categoria, motivo: v.motivo, fuente: 'NEXUS', texto, ref, accion: 'borrado' });
-                    crearNotif({ destinatario: req.usuario, tipo: 'sistema', emisor: 'UpGames', itemTitle: 'Revisión', mensaje: `🚫 Quitamos tu comentario porque ${Moderacion.MENSAJE[v.categoria]}. Mantengamos la comunidad sana.` });
+                    crearNotif({ destinatario: req.usuario, tipo: 'sistema', emisor: 'Lurveta', itemTitle: 'Revisión', mensaje: `🚫 Quitamos tu comentario porque ${Moderacion.MENSAJE[v.categoria]}. Mantengamos la comunidad sana.` });
                 }).catch(() => {});
             }
             crearNotif({ destinatario: c.b.usuario, tipo: 'comentario', emisor: req.usuario, itemTitle: c.e.titulo, mensaje: `@${req.usuario} comentó en tu entrada «${c.e.titulo}»` });
@@ -859,7 +859,7 @@ function registrar(app, deps) {
 
     const APP_ORIGEN = (() => { try { return new URL(APP_URL).origin; } catch (_) { return ''; } })();
     const API_ORIGEN = (() => { try { return new URL(API_URL_SELF).origin; } catch (_) { return ''; } })();
-    // Los formularios del blog solo pueden ir a la API de UpGames (y el pedido, de ahí, a WhatsApp)
+    // Los formularios del blog solo pueden ir a la API de Lurveta (y el pedido, de ahí, a WhatsApp)
     const CSP = `default-src 'none'; img-src 'self' https: data:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src 'self' ${APP_ORIGEN} https://www.youtube-nocookie.com https://open.spotify.com; base-uri 'none'; form-action 'self' ${API_ORIGEN} https://wa.me https://api.whatsapp.com`;
     // Firmas cortas (HMAC) para los enlaces con conteo de clics y el sello anti-bots de los formularios
     const firma = txt => crypto.createHmac('sha256', JWT_SECRET).update(txt).digest('hex').slice(0, 16);
@@ -974,7 +974,7 @@ function registrar(app, deps) {
         // Detrás del proxy de Railway el dominio real llega en X-Forwarded-Host (req.hostname ya lo tiene en cuenta)
         const reenviado = String(req.get('x-forwarded-host') || '').split(',')[0].trim();
         const origen = `${req.protocol}://${reenviado && reenviado.split(':')[0].toLowerCase() === req.hostname ? reenviado : req.get('host')}`;
-        if (blog.estado !== 'activo') return html(res, 451, R.aviso('Blog no disponible', blog.estado === 'suspendido' ? 'Este blog fue suspendido por incumplir las normas de UpGames.' : 'Este blog está en revisión por el equipo de UpGames.', APP_URL));
+        if (blog.estado !== 'activo') return html(res, 451, R.aviso('Blog no disponible', blog.estado === 'suspendido' ? 'Este blog fue suspendido por incumplir las normas de Lurveta.' : 'Este blog está en revisión por el equipo de Lurveta.', APP_URL));
         ruta = ruta.replace(/\/+$/, '') || '/';
         let m;
 

@@ -1,4 +1,4 @@
-// UpGames Blogs · fase 2: formulario de contacto, catálogo con pedido por WhatsApp, clics contados y kit de marca
+// Lurveta Blogs · fase 2: formulario de contacto, catálogo con pedido por WhatsApp, clics contados y kit de marca
 'use strict';
 const assert = require('assert');
 const V = require('../modulos/blogs/validar');

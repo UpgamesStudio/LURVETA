@@ -32,10 +32,10 @@ scene.add(m.raiz);
 const car = { x: 0, y: 0, z: 0, psi: 0 };
 const g = new GestorBoxes(scene, calidad);
 const t0 = performance.now();
-g.preparar(1, { color: eq.base, texto: 'UPGAMES', compuesto: 'blando', posicion: car, ligero: !!q.get('ligero') });
+g.preparar(1, { color: eq.base, texto: 'LURVETA', compuesto: 'blando', posicion: car, ligero: !!q.get('ligero') });
 window.msCrear = performance.now() - t0;
 const tVer = +(q.get('t') ?? 1.2), D = 2.6;
-if (tVer >= 0) g.empezar(1, car, m, { color: eq.base, texto: 'UPGAMES', compuesto: 'blando', duracion: D, morro: false, trabajo: {}, ligero: !!q.get('ligero') });
+if (tVer >= 0) g.empezar(1, car, m, { color: eq.base, texto: 'LURVETA', compuesto: 'blando', duracion: D, morro: false, trabajo: {}, ligero: !!q.get('ligero') });
 else for (let k = 0; k < 120; k++) g.actualizar(1 / 30, null);        // t < 0: el equipo esperando al coche
 for (let t = 0; t < Math.max(0, tVer); t += 1 / 60) g.actualizar(1 / 60, null);
 const cam = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.05, 200);

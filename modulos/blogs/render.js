@@ -1,5 +1,5 @@
 /**
- * UpGames Blogs · render
+ * Lurveta Blogs · render
  *
  * Convierte un blog y sus entradas (bloques JSON) en páginas HTML completas. Todo lo que
  * escribió el creador se escapa: el único HTML que sale es el de estas plantillas.
@@ -69,13 +69,13 @@ function seccionHtml(b, ctx = {}, i = 0) {
         case 'cta': return seccion(b, 'cta', `${cabSec(b)}${b.bTexto && b.bUrl ? `<div class="botones">${boton(b.bTexto, b.bUrl, 'boton', ctx)}</div>` : ''}`);
         case 'apoyo': {
             const href = ctx.blog?._id && ctx.appUrl ? `${ctx.appUrl}/?apoyarBlog=${encodeURIComponent(String(ctx.blog._id))}` : '';
-            return seccion(b, 'apoyo', `<span class="apoyo-ic" aria-hidden="true">💛</span>${cabSec(b)}${href ? `<div class="botones"><a class="boton boton-apoyo" href="${esc(href)}" target="_blank" rel="noopener">🪙 ${esc(b.bTexto)}</a></div>` : ''}<p class="apoyo-nota">Se paga con UpCoins en UpGames. El creador recibe una parte como ganancia.</p>`);
+            return seccion(b, 'apoyo', `<span class="apoyo-ic" aria-hidden="true">💛</span>${cabSec(b)}${href ? `<div class="botones"><a class="boton boton-apoyo" href="${esc(href)}" target="_blank" rel="noopener">🪙 ${esc(b.bTexto)}</a></div>` : ''}<p class="apoyo-nota">Se paga con UpCoins en Lurveta. El creador recibe una parte como ganancia.</p>`);
         }
         case 'afiliado':
             return seccion(b, 'afiliado', `${cabSec(b)}<p class="afil-aviso" role="note">🔗 <b>Enlaces de afiliado:</b> si compras desde estos enlaces, el autor de este sitio puede recibir una comisión, sin costo extra para ti.</p>
 <div class="rej-sec prods">${b.items.map(p => `<div class="prod">${p.imagen ? `<div class="prod-img"><img src="${esc(img(p.imagen, 600))}" alt="" loading="lazy" decoding="async"></div>` : ''}<div class="prod-i"><h3>${esc(p.nombre)}</h3>${p.tienda ? `<p>${esc(p.tienda)}</p>` : ''}${p.precio ? `<b class="prod-precio">${esc(p.precio)}</b>` : ''}<a class="boton" href="${esc(destino(p.url, ctx, 'b'))}" target="_blank" rel="sponsored nofollow noopener">${esc(p.tienda ? `Ver en ${p.tienda}` : 'Ver oferta')}</a></div></div>`).join('')}</div>`);
         case 'formulario': {
-            // Sin scripts: un formulario HTML normal que va a la API de UpGames y vuelve a esta página
+            // Sin scripts: un formulario HTML normal que va a la API de Lurveta y vuelve a esta página
             const r = ctx.formRes?.i === i ? ctx.formRes.r : '';
             if (r === 'ok') return seccion(b, 'form', `${cabSec(b)}<div class="form-ok" id="f${i}" role="status">✓ ${esc(b.exito || '¡Gracias! Recibimos tu mensaje y te responderemos pronto.')}</div>`);
             const aviso = r === 'lim' ? 'Enviaste varios mensajes seguidos. Inténtalo de nuevo más tarde.' : r ? 'No se pudo enviar. Revisa tu nombre y tu mensaje e inténtalo de nuevo.' : '';
@@ -136,7 +136,7 @@ function bloqueHtml(b, ctx, i) {
         case 'juego': {
             const j = ctx.juegos?.[b.id];
             if (!j) return '';
-            return `<a class="juego" href="${esc(ctx.appUrl)}/?id=${esc(b.id)}" target="_blank" rel="noopener">${j.image ? `<img src="${esc(img(j.image, 320))}" alt="" loading="lazy">` : ''}<span><b>${esc(j.title)}</b><small>por @${esc(j.usuario)} · Ver en UpGames</small></span></a>`;
+            return `<a class="juego" href="${esc(ctx.appUrl)}/?id=${esc(b.id)}" target="_blank" rel="noopener">${j.image ? `<img src="${esc(img(j.image, 320))}" alt="" loading="lazy">` : ''}<span><b>${esc(j.title)}</b><small>por @${esc(j.usuario)} · Ver en Lurveta</small></span></a>`;
         }
     }
     return '';
@@ -351,7 +351,7 @@ function documento(ctx, { titulo, descripcion, ruta, imagen, cuerpo, tipo = 'web
     const a = blog.ajustes || {};
     const url = origen + base + ruta;
     const tituloPag = titulo ? `${titulo} · ${blog.titulo}` : blog.titulo;
-    const desc = descripcion || blog.descripcion || `Blog de @${blog.usuario} en UpGames`;
+    const desc = descripcion || blog.descripcion || `Blog de @${blog.usuario} en Lurveta`;
     const oculto = noindex || blog.visibilidad !== 'publico';
     const vars = `--bg:${v.bg};--bg2:${v.bg2};--tarjeta:${v.tarjeta};--borde:${v.borde};--txt:${v.txt};--txt2:${v.txt2};--acento:${v.acento};--acento2:${v.acento2};--sobre-acento:${v.sobreAcento};--radio:${v.radio};--fondo:${v.fondo};--fondo-tam:${v.fondoTam || 'auto'};--fondo-rep:${v.fondoRep || 'no-repeat'};--f-tit:${fTit.css};--f-txt:${fTxt.css}`;
     const menu = [`<a href="${esc(base)}/"${activo === 'inicio' ? ' class="activo"' : ''}>Inicio</a>`,
@@ -388,7 +388,7 @@ ${previa ? '<div class="previa">Vista previa · así se verá cuando la publique
 ${cuerpo}
 <footer class="pie"><div class="ancho">
 <span>© ${new Date().getUTCFullYear()} ${esc(blog.titulo)} · <a href="${esc(base)}/feed.xml">RSS</a> · <a href="${esc(ctx.appUrl)}/public/blog.html?reportar=${esc(blog.direccion)}" rel="nofollow">Reportar</a></span>
-${blog.sinMarca || ctx.sinMarca ? '' : `<a class="hecho" href="${esc(ctx.appUrl)}/public/blog.html" rel="noopener">Hecho con <b>UpGames</b> · crea tu blog gratis</a>`}
+${blog.sinMarca || ctx.sinMarca ? '' : `<a class="hecho" href="${esc(ctx.appUrl)}/public/blog.html" rel="noopener">Hecho con <b>Lurveta</b> · crea tu blog gratis</a>`}
 </div></footer>
 </body>
 </html>`;
@@ -399,7 +399,7 @@ function lateral(ctx) {
     const cajas = [];
     if (g.perfil && ctx.autor) {
         const au = ctx.autor;
-        cajas.push(`<section class="caja perfil">${au.avatar ? `<img src="${esc(img(au.avatar, 160))}" alt="">` : ''}<b>@${esc(au.usuario)}</b>${au.bio ? `<p>${esc(au.bio)}</p>` : ''}<p><a href="${esc(ctx.appUrl)}/public/perfil-publico.html?usuario=${encodeURIComponent(au.usuario)}" rel="noopener">Ver perfil en UpGames</a></p></section>`);
+        cajas.push(`<section class="caja perfil">${au.avatar ? `<img src="${esc(img(au.avatar, 160))}" alt="">` : ''}<b>@${esc(au.usuario)}</b>${au.bio ? `<p>${esc(au.bio)}</p>` : ''}<p><a href="${esc(ctx.appUrl)}/public/perfil-publico.html?usuario=${encodeURIComponent(au.usuario)}" rel="noopener">Ver perfil en Lurveta</a></p></section>`);
     }
     if (g.populares && ctx.populares?.length)
         cajas.push(`<section class="caja"><h3>Lo más leído</h3><ul>${ctx.populares.map(e => `<li><a href="${esc(ctx.base)}/e/${esc(e.slug)}">${esc(e.titulo)}</a></li>`).join('')}</ul></section>`);
@@ -442,7 +442,7 @@ function inicio(ctx, { entradas, pagina = 1, hayMas = false, etiqueta = '', enBl
 }
 
 /** Una entrada (o una página fija, que no lleva fecha, etiquetas ni contador). */
-/** Comentarios: un marco aislado en el dominio de UpGames (la página del blog no lleva scripts). */
+/** Comentarios: un marco aislado en el dominio de Lurveta (la página del blog no lleva scripts). */
 function comentarios(ctx, e) {
     const t = temaDe(ctx.blog.tema), a = ctx.blog.ajustes || {};
     const acento = esColor(a.acento) ? a.acento : t.v.acento;
@@ -487,9 +487,9 @@ function noEncontrada(ctx) {
 
 /** Página suelta para cuando el blog no existe o está suspendido (sin datos del blog). */
 function aviso(titulo, texto, appUrl) {
-    return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>${esc(titulo)} · UpGames</title>
+    return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>${esc(titulo)} · Lurveta</title>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#05080F;color:#F4F5F7;font-family:system-ui,sans-serif;text-align:center;padding:24px}h1{font-size:1.5rem;margin:0 0 10px}p{color:#A3A8B6;margin:0 0 22px;max-width:420px}a{background:#39FF88;color:#04160B;font-weight:800;padding:12px 24px;border-radius:99px;text-decoration:none}</style></head>
-<body><div><h1>${esc(titulo)}</h1><p>${esc(texto)}</p><a href="${esc(appUrl)}/public/blog.html">Crea tu blog en UpGames</a></div></body></html>`;
+<body><div><h1>${esc(titulo)}</h1><p>${esc(texto)}</p><a href="${esc(appUrl)}/public/blog.html">Crea tu blog en Lurveta</a></div></body></html>`;
 }
 
 const xml = s => esc(s).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');

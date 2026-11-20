@@ -111,7 +111,7 @@ export function abrirMenu(pest = 'mapa') {
       window.__upstarBorrando = true; location.reload();
     };
   } else if (pest === 'cuenta') {
-    c.innerHTML = `<div class="col"><h4>Cuenta de UpGames</h4>${token() ? '<p>Sesión iniciada: tu partida se guarda en la nube, tus descubrimientos llevan tu nombre y te ven los demás jugadores.</p>' : '<p>Inicia sesión en <a href="https://upgames.games" target="_blank">upgames.games</a> para guardar en la nube, registrar descubrimientos y jugar online.</p>'}
+    c.innerHTML = `<div class="col"><h4>Cuenta de Lurveta</h4>${token() ? '<p>Sesión iniciada: tu partida se guarda en la nube, tus descubrimientos llevan tu nombre y te ven los demás jugadores.</p>' : '<p>Inicia sesión en <a href="https://upgames.games" target="_blank">upgames.games</a> para guardar en la nube, registrar descubrimientos y jugar online.</p>'}
       <p class="tenue">Jugadores en tu sector: ${juego.online?.otros.size || 0}${juego.online?.conectado ? '' : ' (sin conexión)'}</p></div>
       <div class="col"><h4>Controles</h4><p class="tenue">Teclado: W/S acelerador (se queda donde lo dejas) · X parar · ratón o ↑↓←→ dirección · Q/E alabeo · Mayús turbo · Espacio pulso · clic o K disparar · L aterrizar · F bajar/subir · R escanear · J salto · M mapa · I inventario · C cámara · T visión térmica.</p></div>`;
   }
@@ -195,7 +195,7 @@ export function ficha(d, alNombrar) {
   const f = $('#ficha'); f.classList.add('visible');
   f.innerHTML = `<small>${d.tipo === 'criatura' ? 'NUEVA ESPECIE' : d.tipo === 'planeta' ? 'NUEVO PLANETA' : 'RUINA ANTIGUA'}</small>
     <input id="fNombre" value="${d.nombre}" maxlength="28"><div class="datos">${d.datos.map(([k, v]) => `<span>${k}<b>${v}</b></span>`).join('')}</div>
-    ${d.por ? `<p class="tenue">Descubierto por @${d.por}</p>` : token() ? '<p class="tenue">Eres el primero: ponle nombre y regístralo para todos.</p>' : '<p class="tenue">Inicia sesión en UpGames para registrarlo con tu nombre.</p>'}
+    ${d.por ? `<p class="tenue">Descubierto por @${d.por}</p>` : token() ? '<p class="tenue">Eres el primero: ponle nombre y regístralo para todos.</p>' : '<p class="tenue">Inicia sesión en Lurveta para registrarlo con tu nombre.</p>'}
     <div class="acc"><button id="fOk">${d.por ? 'Cerrar' : 'Registrar'}</button></div>`;
   const inp = $('#fNombre'); inp.disabled = !!d.por;
   $('#fOk').onclick = () => { f.classList.remove('visible'); if (!d.por) alNombrar(inp.value.trim() || d.nombre); };

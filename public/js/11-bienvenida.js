@@ -77,7 +77,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
       pal0.forEach((w, i) => entra(w, en(t, 1.6 + i * .11, .5), { dy: 16, blur: 8 }));
       entra(caps[0].querySelector('.obh-sub'), en(t, 1.9 + pal0.length * .11, .7), { dy: 12 });
     }
-    // 1 · Nueve apps que se funden en UpGames
+    // 1 · Nueve apps que se funden en Lurveta
     if (t > CAPS[1] - .5 && t < CAPS[2] + .5) {
       const a = CAPS[1];
       entra(caps[1].querySelector('.oba-kicker'), en(t, a + .1, .5));
@@ -189,7 +189,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
   }
   function avisoTerminosNuevos() {
     const a = document.createElement('div'); a.className = 'ug-terminos-aviso'; a.setAttribute('role', 'status');
-    a.innerHTML = `<span>📜 Actualizamos los <a href="./terminos_condiciones.html" target="_blank" rel="noopener">Términos (v${TERMINOS_VERSION})</a> y la <a href="./politica-privacidad.html" target="_blank" rel="noopener">Privacidad</a>: juegos y herramientas de UpGames, novedades de UpGames Blogs, sin reconocimiento automático de títulos (tú escribes tus metadatos) un protocolo claro para los fondos de cuentas suspendidas, y apoyos con UpCoins y enlaces de afiliado en los blogs, reparto 50/50 en regalos y métodos de cobro PayPal y Mercado Pago.</span><button type="button">Entendido</button>`;
+    a.innerHTML = `<span>📜 Actualizamos los <a href="./terminos_condiciones.html" target="_blank" rel="noopener">Términos (v${TERMINOS_VERSION})</a> y la <a href="./politica-privacidad.html" target="_blank" rel="noopener">Privacidad</a>: juegos y herramientas de Lurveta, novedades de Lurveta Blogs, sin reconocimiento automático de títulos (tú escribes tus metadatos) un protocolo claro para los fondos de cuentas suspendidas, y apoyos con UpCoins y enlaces de afiliado en los blogs, reparto 50/50 en regalos y métodos de cobro PayPal y Mercado Pago.</span><button type="button">Entendido</button>`;
     a.querySelector('button').onclick = () => { LS.set('upgames_terms_v', TERMINOS_VERSION); a.remove(); };
     setTimeout(() => document.body.appendChild(a), 2500);
   }

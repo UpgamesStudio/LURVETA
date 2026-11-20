@@ -1,5 +1,5 @@
 // ========================================
-// 🔌 RUTAS DE MEJORAS - UPGAMES
+// 🔌 RUTAS DE MEJORAS - LURVETA
 // ========================================
 //
 // Este archivo centraliza TODOS los endpoints de las nuevas mejoras.

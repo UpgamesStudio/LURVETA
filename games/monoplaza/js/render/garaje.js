@@ -43,7 +43,7 @@ function texturaSuelo(color) {
   x.strokeStyle = '#f2f2f2'; x.lineWidth = 8; x.setLineDash([40, 24]);
   x.strokeRect(330, 150, 364, 212);
   x.setLineDash([]);
-  x.fillStyle = 'rgba(255,255,255,.75)'; x.font = '900 italic 60px Arial'; x.textAlign = 'center'; x.fillText('UPGAMES RACING', 512, 270);
+  x.fillStyle = 'rgba(255,255,255,.75)'; x.font = '900 italic 60px Arial'; x.textAlign = 'center'; x.fillText('LURVETA RACING', 512, 270);
   return tex(cv);
 }
 
@@ -56,7 +56,7 @@ function texturaFondo(nombre, color) {
   const claro = new THREE.Color(color).getHSL({}).l > 0.6;
   x.fillStyle = claro ? '#ffffff' : color; x.font = '900 italic 92px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
   x.fillText(nombre.toUpperCase(), 512, 120);
-  x.fillStyle = '#fff'; x.font = '700 30px Arial'; x.fillText('POWERED BY UPGAMES', 512, 190);
+  x.fillStyle = '#fff'; x.font = '700 30px Arial'; x.fillText('POWERED BY LURVETA', 512, 190);
   return tex(cv);
 }
 

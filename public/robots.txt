@@ -1,5 +1,5 @@
 # ========================================
-# UpGames — robots.txt
+# Lurveta — robots.txt
 # ========================================
 # Permitir a todos los crawlers indexar el contenido público
 # Bloquear panel admin y rutas privadas

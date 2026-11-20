@@ -1,11 +1,11 @@
 /**
  * Mercado Pago (API de pagos + Card Payment Brick) para cobrar con tarjeta.
  *
- * - El formulario de la tarjeta lo dibuja Mercado Pago (Brick): UpGames recibe solo
+ * - El formulario de la tarjeta lo dibuja Mercado Pago (Brick): Lurveta recibe solo
  *   un token de un uso, nunca el número de la tarjeta.
  * - El servidor fija el monto (nunca el navegador) y crea el pago con clave de
  *   idempotencia: reintentar no cobra dos veces.
- * - La moneda sale de la cuenta (Colombia → COP). Los precios de UpGames están en
+ * - La moneda sale de la cuenta (Colombia → COP). Los precios de Lurveta están en
  *   USD y se convierten con MERCADOPAGO_TASA_USD (moneda local por 1 USD).
  *
  * Variables: MERCADOPAGO_ACCESS_TOKEN y MERCADOPAGO_PUBLIC_KEY (se aceptan también
@@ -96,7 +96,7 @@ function crear({ transporte, env = process.env } = {}) {
                 identification: f.payer?.identification?.number ? { type: String(f.payer.identification.type || '').slice(0, 10), number: String(f.payer.identification.number).slice(0, 20) } : undefined,
             },
             external_reference: referencia,
-            statement_descriptor: 'UPGAMES',
+            statement_descriptor: 'LURVETA',
             notification_url: notificacion || undefined,
             binary_mode: false,
         };

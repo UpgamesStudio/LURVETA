@@ -1,5 +1,5 @@
 /**
- * UpGames Blogs · modelos
+ * Lurveta Blogs · modelos
  *
  * Blog       → el sitio de un creador (dirección, tema, ajustes, dominio propio).
  * Entrada    → una entrada o una página fija; el contenido son bloques (JSON), no HTML.
@@ -25,10 +25,10 @@ module.exports = function modelos(mongoose) {
         estado:      { type: String, enum: ['activo', 'revision', 'suspendido'], default: 'activo' },
         reportes:    { type: Number, default: 0 },
         sinMarca:    { type: Boolean, default: false },
-        // Aceptación expresa de los Términos de UpGames Blogs al crear el blog (prueba de que el creador asumió la responsabilidad)
-        terminos:    { version: { type: String, default: '' }, fecha: { type: Date, default: null }, ip: { type: String, default: '' } },   // Premium: sin «Hecho con UpGames»
+        // Aceptación expresa de los Términos de Lurveta Blogs al crear el blog (prueba de que el creador asumió la responsabilidad)
+        terminos:    { version: { type: String, default: '' }, fecha: { type: Date, default: null }, ip: { type: String, default: '' } },   // Premium: sin «Hecho con Lurveta»
         vistas:      { type: Number, default: 0 },
-        // Monetización opcional: el creador decide si su blog lleva publicidad de UpGames
+        // Monetización opcional: el creador decide si su blog lleva publicidad de Lurveta
         monetizar:   { type: Boolean, default: false },
         // «Mis secciones»: bloques guardados por el creador para reutilizar en cualquier página (máx. 30)
         secciones:   { type: [{ nombre: String, bloque: mongoose.Schema.Types.Mixed, fecha: Date }], default: [] },
@@ -72,7 +72,7 @@ module.exports = function modelos(mongoose) {
 
     const BlogVistaSchema = new mongoose.Schema({ blog: { type: mongoose.Schema.Types.ObjectId, required: true }, dia: { type: String, required: true }, n: { type: Number, default: 0 }, a: { type: Number, default: 0 }, g: { type: Number, default: 0 }, d: { type: Number, default: 0 }, gd: { type: Number, default: 0 },
         u: { type: Number, default: 0 }, mo: { type: Number, default: 0 }, pc: { type: Number, default: 0 },   // visitantes (aprox.) · visitas desde móvil · desde computador
-        rd: { type: Number, default: 0 }, rb: { type: Number, default: 0 }, rs: { type: Number, default: 0 }, ru: { type: Number, default: 0 }, ro: { type: Number, default: 0 },   // de dónde llegan: directo · buscadores · redes · UpGames · otros sitios
+        rd: { type: Number, default: 0 }, rb: { type: Number, default: 0 }, rs: { type: Number, default: 0 }, ru: { type: Number, default: 0 }, ro: { type: Number, default: 0 },   // de dónde llegan: directo · buscadores · redes · Lurveta · otros sitios
         cw: { type: Number, default: 0 }, cr: { type: Number, default: 0 }, cb: { type: Number, default: 0 }, fm: { type: Number, default: 0 }, pe: { type: Number, default: 0 } });   // clics a WhatsApp · a redes · a botones · formularios recibidos · pedidos
     // n visitas · a anuncios vistos · g ganancia US$ · d descargas atribuidas · gd ganancia US$ por ellas
     BlogVistaSchema.index({ blog: 1, dia: 1 }, { unique: true });

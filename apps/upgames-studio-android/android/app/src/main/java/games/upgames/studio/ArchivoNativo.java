@@ -19,7 +19,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-// Guarda los archivos que exporta Studio en Descargas › UpGames Studio. La página los manda por
+// Guarda los archivos que exporta Studio en Descargas › Lurveta Studio. La página los manda por
 // trozos en base64: abrir(nombre, tipo) → id, escribir(id, base64)…, cerrar(id).
 public class ArchivoNativo {
     private final Context ctx;
@@ -64,11 +64,11 @@ public class ArchivoNativo {
                 ContentValues v = new ContentValues();
                 v.put(MediaStore.MediaColumns.DISPLAY_NAME, p.nombre);
                 v.put(MediaStore.MediaColumns.MIME_TYPE, p.tipo);
-                v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/UpGames Studio");
+                v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/Lurveta Studio");
                 Uri uri = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
                 if (uri == null) return false;
                 try (InputStream in = new FileInputStream(p.tmp); OutputStream out = cr.openOutputStream(uri)) { copiar(in, out); }
-                donde = "Descargas/UpGames Studio";
+                donde = "Descargas/Lurveta Studio";
             } else {
                 File dir = ctx.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
                 File dest = new File(dir, p.nombre);

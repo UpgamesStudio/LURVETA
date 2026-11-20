@@ -233,7 +233,7 @@ app.post('/admin/finanzas/pagos/:id/paypal-estado', verificarAdmin, idValido, as
     } catch (e) { logger.error(`paypal-estado: ${e.message}`); res.status(e.status || 500).json({ success: false, error: e.status ? e.message : 'Error al consultar PayPal' }); }
 });
 
-// Cancelar un payout NO RECLAMADO: PayPal devuelve el dinero a UpGames (luego se puede devolver el saldo o reenviar)
+// Cancelar un payout NO RECLAMADO: PayPal devuelve el dinero a Lurveta (luego se puede devolver el saldo o reenviar)
 app.post('/admin/finanzas/pagos/:id/paypal-cancelar', verificarAdmin, idValido, async (req, res) => {
     try {
         if (!validationResult(req).isEmpty()) return res.status(400).json({ success: false, error: 'ID inválido' });
