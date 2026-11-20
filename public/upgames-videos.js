@@ -326,7 +326,7 @@
       const id = s.item.featuredItemId, it = (typeof todosLosItems !== 'undefined' ? todosLosItems : []).find(x => x._id === id);
       cerrar();
       if (it && typeof openDetail === 'function') setTimeout(() => openDetail(it), 350);
-      else location.href = `./biblioteca.html?id=${encodeURIComponent(id)}`;
+      else location.href = `/?id=${encodeURIComponent(id)}`;
     }
   }
 

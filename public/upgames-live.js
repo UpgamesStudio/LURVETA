@@ -78,7 +78,7 @@ async function refrescarMonedas() {
 const medirTop = () => document.documentElement.style.setProperty('--top-h', document.querySelector('.top').offsetHeight + 'px');
 medirTop(); window.addEventListener('resize', medirTop);
 /* Cabecera */
-$('btn-back').onclick = () => { if (Q.has('u') || Q.has('estudio')) location.href = './live.html'; else location.href = './biblioteca.html'; };
+$('btn-back').onclick = () => { if (Q.has('u') || Q.has('estudio')) location.href = './live.html'; else location.href = '/'; };
 $('btn-golive').onclick = () => { TOKEN ? (location.href = './live.html?estudio=1') : irLogin(); };
 if (TOKEN) { $('btn-coins').hidden = false; $('btn-coins').onclick = () => abrirMonedas(); refrescarMonedas(); }
 
@@ -357,7 +357,7 @@ async function vistaEspectador(usuario) {
     app.innerHTML = `<div class="empty glass" style="margin-top:20px"><div class="off-av">${avatar(c.usuario, c.avatar)}</div>
       <h2>@${esc(c.usuario)} no está en vivo</h2>
       <p>${canal.ultimo ? `Su último directo fue “${esc(canal.ultimo.titulo)}” · ${new Date(canal.ultimo.inicio).toLocaleDateString()}` : 'Aún no ha hecho ningún directo.'}<br>Te avisaremos cuando empiece si lo sigues.</p>
-      ${(canal.repeticiones || []).length ? `<div class="reps"><b>🎬 Repeticiones</b>${canal.repeticiones.map(r => `<a class="btn btn-ghost" href="./biblioteca.html?id=${encodeURIComponent(r.item)}">▶ ${esc(r.titulo)} · ${new Date(r.inicio).toLocaleDateString()}</a>`).join('')}</div>` : ''}
+      ${(canal.repeticiones || []).length ? `<div class="reps"><b>🎬 Repeticiones</b>${canal.repeticiones.map(r => `<a class="btn btn-ghost" href="/?id=${encodeURIComponent(r.item)}">▶ ${esc(r.titulo)} · ${new Date(r.inicio).toLocaleDateString()}</a>`).join('')}</div>` : ''}
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost" href="./perfil-publico.html?u=${encodeURIComponent(c.usuario)}">Ver perfil</a><a class="btn btn-live" href="./live.html">Ver quién está en vivo</a></div></div>`;
     const t = setInterval(async () => {
       if (document.hidden) return;
@@ -1142,7 +1142,7 @@ async function vistaEstudio() {
         <div class="kpi glass money"><b>🪙 ${(ganado / (CFG?.monedaUsd || 0.02)).toLocaleString('es-CO', { maximumFractionDigits: 1 })}</b><small>UpCoins ganados</small></div>
       </div>
       <div class="rep-box" id="rep-box" hidden></div>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost" href="./biblioteca.html">Volver a UpGames</a><a class="btn btn-live" href="./live.html?estudio=1">Nuevo live</a></div></div>`;
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost" href="/">Volver a UpGames</a><a class="btn btn-live" href="./live.html?estudio=1">Nuevo live</a></div></div>`;
     if (repeticion) pintarRepeticion(repeticion, liveRep);
   }
   function pintarRepeticion(rep, liveRep) {
@@ -1163,7 +1163,7 @@ async function vistaEstudio() {
       try {
         const itemId = await publicarRepeticion(rep, liveRep, p => { bar.firstElementChild.style.width = Math.round(p * 100) + '%'; b.innerHTML = `Subiendo… ${Math.round(p * 100)} %`; });
         window.onbeforeunload = null;
-        box.innerHTML = `<h3>✅ ¡Repetición publicada!</h3><p class="sub">Ya está en tu perfil y en tu canal.</p>${itemId ? `<a class="btn btn-live" href="./biblioteca.html?id=${encodeURIComponent(itemId)}">Verla</a>` : ''}`;
+        box.innerHTML = `<h3>✅ ¡Repetición publicada!</h3><p class="sub">Ya está en tu perfil y en tu canal.</p>${itemId ? `<a class="btn btn-live" href="/?id=${encodeURIComponent(itemId)}">Verla</a>` : ''}`;
       } catch (err) { b.disabled = false; b.innerHTML = '<ion-icon name="refresh"></ion-icon> Reintentar'; toast('❌ ' + err.message, 6000); }
     };
   }

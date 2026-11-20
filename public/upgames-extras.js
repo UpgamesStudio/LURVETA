@@ -73,7 +73,7 @@
     if (typeof window.switchTab === 'function' && document.getElementById('economia-view')) {
       window.switchTab('economia');
       setTimeout(() => { document.getElementById('eco-tienda')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); window.ecoAbrirTienda?.(); }, 350);
-    } else location.href = './biblioteca.html?plan=1';
+    } else location.href = '/?plan=1';
   }
   /** Cobro común: clave única, avisos de saldo y refresco del contador de la cabecera. */
   async function pagar(path, body, btn, metodo = 'POST') {
@@ -129,7 +129,7 @@
   async function referidos() {
     const caja = document.getElementById('ugx-referidos'); if (!caja || !tok()) return;
     const r = await api('/referidos/mio'); if (!r.ok || !r.d.activo) { caja.innerHTML = ''; return; }
-    const d = r.d, link = `https://upgames.games/public/biblioteca.html?ref=${encodeURIComponent(d.codigo)}`;
+    const d = r.d, link = `https://upgames.games/?ref=${encodeURIComponent(d.codigo)}`;
     const est = { pendiente: ['⏳', 'Falta que verifique su email'], procesando: ['⏳', 'Procesando'], pagado: ['✅', `+${d.recompensa.invitador} UC`], tope: ['⏸', 'Tope del mes alcanzado'], misma_red: ['⚠️', 'Misma red: no cuenta'], bloqueado: ['⛔', 'No cuenta'] };
     caja.innerHTML = `<div class="ugx-ref">
       <div class="ugx-ref-h"><span class="ugx-ref-ic">🤝</span><div><b>Invita y ganen los dos</b><small>Tú recibes <b>${d.recompensa.invitador} UC</b> y tu amigo <b>${d.recompensa.invitado} UC</b> cuando verifique su email.</small></div></div>

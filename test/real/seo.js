@@ -3,10 +3,12 @@
  * SEO de extremo a extremo (sin tocar producción):
  *  - <head> de las páginas públicas clave: título y descripción únicos, canónica propia, sin noindex donde no toca,
  *    Open Graph / X completos, imagen de vista previa real de 1200×630, JSON-LD válido y un solo <h1>
- *  - portada: indexable y con contenido para quien llega por primera vez (y para Google); quien ya usa UpGames
- *    entra directo; ?ref= se guarda; los enlaces de los correos van al login; #sección va a la biblioteca
+ *  - portada (https://upgames.games/ = la biblioteca): título, descripción, H1 y palabras clave del posicionamiento;
+ *    el puente /public/biblioteca.html solo apunta (canónica) a la portada
  *  - todos los enlaces internos de la portada existen
- *  - /seo/sitemap.xml del servidor real: la portada primero y ninguna URL no canónica (?id=)
+ *  - sitemap: el del servidor real y el publicado (public/sitemap.xml) con la portada primero, sin biblioteca.html
+ *    ni URLs no canónicas (?id=); limpiarSitemap() repara uno viejo y es idempotente
+ *  (los parámetros, el puente y el service worker se prueban en migracion.js)
  *  - móvil y escritorio sin desborde
  * Uso: node test/real/seo.js   (CAPTURAS=dir)
  */
@@ -48,7 +50,6 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
   const pick = dir => fs.readdirSync(path.join(REPO, 'public', dir)).filter(f => f.endsWith('.html') && !/^[a-f\d]{24}\.html$/.test(f))[0];
   const PAGINAS = [
     ['portada', 'index.html', 'https://upgames.games/'],
-    ['biblioteca', 'public/biblioteca.html', 'https://upgames.games/public/biblioteca.html'],
     ['publicación', `public/p/${pick('p')}`, null], ['tema', `public/j/${pick('j')}`, null], ['creador', `public/u/${pick('u')}`, null],
     ['guía de blogs', 'public/blogs-guia.html', 'https://upgames.games/public/blogs-guia.html'],
   ];
@@ -65,19 +66,39 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
     for (const k of ['title', 'desc']) { if (vistos[k].has(h[k])) C.prueba(`${n}: ${k} distinto del de ${vistos[k].get(h[k])}`, false, h[k]); vistos[k].set(h[k], n); }
   }
   C.prueba('títulos y descripciones distintos en todas las páginas', vistos.title.size === PAGINAS.length && vistos.desc.size === PAGINAS.length);
-  const raiz = cabecera(fs.readFileSync(path.join(REPO, 'index.html'), 'utf8'));
+  const html = fs.readFileSync(path.join(REPO, 'index.html'), 'utf8');
+  const raiz = cabecera(html);
   const grafo = JSON.parse(raiz.ld[0])['@graph'] || [];
-  C.prueba('portada: Organization + WebSite (con buscador) + WebPage, mismas @id', ['Organization', 'WebSite', 'WebPage'].every(t => grafo.some(x => x['@type'] === t)) && grafo.find(x => x['@type'] === 'WebSite').potentialAction?.target?.urlTemplate?.includes('{search_term_string}'), JSON.stringify(grafo.map(x => x['@type'])));
-  C.prueba('el posicionamiento nuevo está en título, descripción y vista previa', /gamers, creadores y desarrolladores/.test(raiz.title + raiz.ogTitle) && /desarrolladores independientes/.test(raiz.desc), raiz.title);
-  C.prueba('ya no dice solo «descargar juegos gratis»', !/descarga juegos, mods, apps y software gratis|sin registrarte<\/title>/i.test(fs.readFileSync(path.join(REPO, 'index.html'), 'utf8') + fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8')));
+  C.prueba('portada: Organization + WebSite (buscador en /?q=) + CollectionPage', ['Organization', 'WebSite', 'CollectionPage'].every(t => grafo.some(x => x['@type'] === t)) && grafo.find(x => x['@type'] === 'WebSite').potentialAction?.target?.urlTemplate === 'https://upgames.games/?q={search_term_string}' && grafo.every(x => !/biblioteca\.html/.test(JSON.stringify(x))), JSON.stringify(grafo.map(x => x['@type'])));
+  C.prueba('título y descripción de la portada', raiz.title === 'UpGames | Juegos, mods y apps de creadores independientes' && raiz.desc === 'UpGames conecta gamers, creadores de contenido y desarrolladores independientes en un ecosistema para descubrir, crear y monetizar.', `${raiz.title} · ${raiz.desc}`);
+  const h1 = (html.match(/<h1>([^<]*)<\/h1>/) || [])[1] || '', bloque = html.slice(html.indexOf('<h1>'), html.indexOf('<h1>') + 1500).toLowerCase();
+  C.prueba('H1 con la propuesta de valor', /desarrolladores independientes/.test(h1) && /juegos, mods y apps/.test(h1), h1);
+  const claves = ['juegos', 'mods', 'winlator', 'aplicaciones', 'descargas', 'desarrolladores independientes', 'creadores de contenido'].filter(k => !bloque.includes(k));
+  C.prueba('palabras clave (juegos, mods, Winlator, aplicaciones, descargas, desarrolladores independientes, creadores de contenido)', !claves.length, 'faltan: ' + claves.join(', '));
+  C.prueba('nada en la portada apunta a biblioteca.html', !/biblioteca\.html/.test(html.replace(/<!--[\s\S]*?-->/g, '')));
+  const puente = cabecera(fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8'));
+  C.prueba('puente /public/biblioteca.html: canónica a la portada (sin noindex que la contradiga)', puente.canon === 'https://upgames.games/' && !puente.robots, JSON.stringify(puente));
+  const otras = ['public/p', 'public/j', 'public/u'].flatMap(d => fs.readdirSync(path.join(REPO, d)).filter(f => f.endsWith('.html')).map(f => cabecera(fs.readFileSync(path.join(REPO, d, f), 'utf8')).canon));
+  C.prueba(`las páginas generadas no se canonizan todas a la portada (${otras.filter(c => c === 'https://upgames.games/').length}/${otras.length})`, otras.length > 0 && !otras.includes('https://upgames.games/'));
   const jpg = fs.readFileSync(path.join(REPO, 'public/og-upgames.jpg')), dims = tamJpg(jpg);
   C.prueba(`imagen de vista previa real de 1200×630 y liviana (${Math.round(jpg.length / 1024)} KB)`, dims && dims[0] === 1200 && dims[1] === 630 && jpg.length < 300 * 1024, JSON.stringify(dims));
   C.prueba('raíz /sitemap.xml: índice que apunta al sitemap real', /<sitemapindex[\s\S]*https:\/\/upgames\.games\/public\/sitemap\.xml/.test(fs.readFileSync(path.join(REPO, 'sitemap.xml'), 'utf8')));
   const robots = fs.readFileSync(path.join(REPO, 'robots.txt'), 'utf8');
   C.prueba('robots.txt deja rastrear la portada y la biblioteca y declara el sitemap', /User-agent: \*[\s\S]*Allow: \//.test(robots) && !/^Disallow: \/\s*$/m.test(robots.split('User-agent: PetalBot')[0]) && /Sitemap: https:\/\/upgames\.games\/public\/sitemap\.xml/.test(robots));
-  const html = fs.readFileSync(path.join(REPO, 'index.html'), 'utf8');
-  const rotos = [...html.matchAll(/href="\.\/(public\/[^"?#]+)/g)].map(m => m[1]).filter(r => !fs.existsSync(path.join(REPO, r)));
-  C.prueba(`enlaces internos de la portada existen (${[...html.matchAll(/href="\.\/public\//g)].length})`, rotos.length === 0, rotos.join(', '));
+  // <base href="/public/">: los relativos cuelgan de public/, los absolutos de la raíz
+  const hrefs = [...html.matchAll(/href="([^"#:?]+)[^"]*"/g)].map(m => m[1]).filter(h => !/^\/\/|\.css$|^\/$/.test(h) && /\.html$/.test(h));
+  const rotos = hrefs.filter(h => !fs.existsSync(path.join(REPO, h.startsWith('/') ? h.slice(1) : 'public/' + h.replace(/^\.\//, ''))));
+  C.prueba(`enlaces internos de la portada existen (${hrefs.length})`, hrefs.length > 10 && rotos.length === 0, rotos.join(', '));
+  const enlaces = (html.match(/<!--SEO:ENLACES-->([\s\S]*?)<!--\/SEO:ENLACES-->/) || [])[1] || '';
+  C.prueba('la portada enlaza temas y secciones rastreables (absolutos, por el <base>)', (enlaces.match(/href="\/public\/j\//g) || []).length >= 3 && !/href="\.\//.test(enlaces), enlaces.slice(0, 200));
+  C.seccion('Sitemap publicado (public/sitemap.xml) y su saneado');
+  const Seo = require(path.join(REPO, 'modulos/seo.js'));
+  const pub = fs.readFileSync(path.join(REPO, 'public/sitemap.xml'), 'utf8'), locsPub = [...pub.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x => x[1]);
+  C.prueba('public/sitemap.xml: la portada primero, sin biblioteca.html ni ?id=', locsPub[0] === 'https://upgames.games/' && !locsPub.some(l => /biblioteca\.html|\?id=/.test(l)) && locsPub.filter(l => l === 'https://upgames.games/').length === 1, locsPub.slice(0, 3).join(' · '));
+  const viejo = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>https://upgames.games/public/biblioteca.html</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>\n<url><loc>https://upgames.games/public/blogs-guia.html</loc></url>\n</urlset>\n';
+  const limpio = Seo.limpiarSitemap(viejo), locsL = [...limpio.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x => x[1]);
+  C.prueba('limpiarSitemap(): quita biblioteca.html y pone la portada primero', locsL[0] === 'https://upgames.games/' && !locsL.some(l => /biblioteca/.test(l)) && locsL.includes('https://upgames.games/public/blogs-guia.html'), locsL.join(' · '));
+  C.prueba('limpiarSitemap() es idempotente', Seo.limpiarSitemap(limpio) === limpio && Seo.limpiarSitemap(pub) === pub);
 
   C.seccion('Portada en el navegador (primera visita = lo que ve Google)');
   const web = await servirRepo(), b = await navegador();
@@ -86,9 +107,10 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
       const ctx = await b.newContext({ viewport: vp, serviceWorkers: 'block' }); await ctx.route(/fonts\.(googleapis|gstatic)\.com|unpkg\.com|railway\.app/, r => r.abort());
       const p = await ctx.newPage(); const err = []; p.on('pageerror', e => err.push(e.message));
       await p.goto(web.url + '/', { waitUntil: 'load' }); await espera(700);
-      const r = await p.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.innerText, palabras: document.body.innerText.split(/\s+/).length, sobra: document.documentElement.scrollWidth - innerWidth }));
-      C.prueba(`${n}: primera visita se queda en la portada, con contenido (${r.palabras} palabras)`, r.url === '/' && /desarrolladores independientes/.test(r.h1) && r.palabras > 400, JSON.stringify(r));
-      C.prueba(`${n}: sin desborde horizontal ni errores`, r.sobra <= 1 && !err.length, `${r.sobra}px ${err.join(' | ')}`);
+      const r = await p.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.innerText, lib: !!document.getElementById('main-view'), sobra: document.documentElement.scrollWidth - innerWidth }));
+      C.prueba(`${n}: la portada es la biblioteca (se queda en /, con H1)`, r.url === '/' && /desarrolladores independientes/.test(r.h1) && r.lib, JSON.stringify(r));
+      const malos = err.filter(e => e !== 'undefined');   // rechazo sin motivo sin API: conocido, también antes de la migración (ver navegacion.js)
+      C.prueba(`${n}: sin desborde horizontal ni errores`, r.sobra <= 1 && !malos.length, `${r.sobra}px ${malos.join(' | ')}`);
       if (CAPT) await p.screenshot({ path: path.join(CAPT, `portada-${n}.png`), fullPage: n === 'móvil' });
       await ctx.close();
     }
@@ -96,9 +118,7 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
       if (prep) await ctx.addInitScript(prep); const p = await ctx.newPage(); await p.goto(web.url + ruta).catch(() => {}); await espera(1200);
       const out = { url: new URL(p.url()).pathname + new URL(p.url()).search + new URL(p.url()).hash, ref: await p.evaluate(() => localStorage.getItem('ug_ref')).catch(() => null) }; await ctx.close(); return out; };
     let r = await nav('/', () => { if (location.pathname === '/') localStorage.setItem('ug_entro', '1'); });
-    C.prueba('quien ya usó UpGames entra directo a la biblioteca', r.url.startsWith('/public/biblioteca.html'), r.url);
-    r = await nav('/?inicio=1', () => { if (location.pathname === '/') localStorage.setItem('ug_entro', '1'); });
-    C.prueba('?inicio=1 muestra la portada aunque ya la haya usado', r.url === '/?inicio=1', r.url);
+    C.prueba('quien ya usó UpGames también se queda en / (sin salto a otra URL)', r.url === '/', r.url);
     r = await nav('/?ref=amigo_123');
     C.prueba('enlace de invitación ?ref= se guarda (y la portada se muestra)', r.url === '/?ref=amigo_123' && /amigo_123/.test(r.ref || ''), JSON.stringify(r));
     { const ctx = await b.newContext({ serviceWorkers: 'block' }); await ctx.route(/fonts\.|unpkg\.com|railway\.app/, r => r.abort());
@@ -107,7 +127,7 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
       // login.html lee el token y luego lo borra de la barra de direcciones: se comprueba la petición
       C.prueba('enlace del correo (?reset_token=) sigue llegando al login con su token', pedidas.includes('/login.html?reset_token=abc'), pedidas.join(' → ')); }
     r = await nav('/#favoritos');
-    C.prueba('enlace viejo con #sección va a la biblioteca', r.url === '/public/biblioteca.html#favoritos', r.url);
+    C.prueba('#sección se queda en la portada', r.url === '/#favoritos', r.url);
   } finally { await b.close(); web.cerrar(); }
 
   C.seccion('Sitemap del servidor real (/seo/sitemap.xml)');
@@ -120,7 +140,7 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
     for (let i = 0; i < 60 && !xml; i++) { try { const r = await fetch(`http://127.0.0.1:${PORT}/seo/sitemap.xml`); if (r.ok) xml = await r.text(); } catch (_) {} if (!xml) await espera(500); }
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x => x[1]);
     C.prueba('la portada es la primera URL del sitemap', locs[0] === 'https://upgames.games/', locs.slice(0, 3).join(' · '));
-    C.prueba('sin URLs no canónicas (?id=) en el sitemap', !locs.some(l => /\?id=/.test(l)), locs.filter(l => /\?/.test(l)).join(' · '));
+    C.prueba('sin URLs no canónicas (?id=) ni el puente biblioteca.html en el sitemap', !locs.some(l => /\?id=|biblioteca\.html/.test(l)), locs.filter(l => /\?|biblioteca/.test(l)).join(' · '));
   } finally { srv.kill(); await m.stop(); }
   process.exit(C.fin() ? 1 : 0);
 })().catch(e => { console.error('FALLO', e); process.exit(1); });

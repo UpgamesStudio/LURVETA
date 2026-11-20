@@ -10,7 +10,7 @@
   // (el título cambió o la página aún no se generó): se abre la publicación por su id.
   (function () {
     var m = location.pathname.match(/\/p\/(?:[a-z0-9-]*-)?([a-f0-9]{24})(?:\.html)?\/?$/i);
-    if (m) location.replace('/public/biblioteca.html?id=' + m[1].toLowerCase());
+    if (m) location.replace('/?id=' + m[1].toLowerCase());
     else { m = location.pathname.match(/\/u\/([a-z0-9_]{3,20})(?:\.html)?\/?$/i); if (m) location.replace('/public/perfil-publico.html?usuario=' + encodeURIComponent(m[1].toLowerCase())); }
   })();
 </script>
@@ -26,7 +26,7 @@
   <b class="l"><i>UP</i>GAMES</b>
   <h1>No encontramos esa página</h1>
   <p>Puede que el enlace esté mal escrito o que el contenido ya no exista.</p>
-  <a href="/public/biblioteca.html">Ir a UpGames</a>
+  <a href="/">Ir a UpGames</a>
 </div>
 </body>
 </html>

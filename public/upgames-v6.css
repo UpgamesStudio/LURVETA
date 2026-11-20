@@ -373,3 +373,11 @@ html[data-tema] #profile-view .pf-menu { background: rgba(22,24,30,.98) !importa
 .ug-volver-perfil { display: inline-flex; align-items: center; gap: 4px; margin: 0 0 10px; padding: 7px 12px 7px 8px; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 14px;
   color: var(--txt2); background: var(--v6-glass); border: 1px solid var(--v6-bd); }
 .ug-volver-perfil:hover { color: var(--txt); }
+
+/* ═══ Explora UpGames: enlaces rastreables al final del inicio (scripts/generar-paginas.js) ═══ */
+.ug-explora { max-width: 1180px; margin: 28px auto 0; padding: 18px 16px calc(var(--nav-h, 72px) + 24px); border-top: 1px solid var(--v6-bd); }
+.ug-explora h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 800; color: var(--txt2); }
+.ug-explora h3:first-child { margin-top: 0; }
+.ug-explora .links { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.ug-explora .links a { display: inline-block; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--v6-bd); background: var(--v6-glass); color: var(--txt2); font-size: 13px; text-decoration: none; }
+.ug-explora .links a:hover { color: var(--txt); border-color: rgba(54,224,138,.4); }

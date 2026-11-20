@@ -10,9 +10,11 @@
         // Enlace de invitación (?ref=usuario): se recuerda 30 días para el registro
         var ref = (p.get('ref') || '').replace(/[^\w.-]/g, '').slice(0, 40);
         try { if (ref) localStorage.setItem('ug_ref', JSON.stringify({ c: ref, t: Date.now() })); } catch (e) {}
-        // ?volver=./public/... → tras iniciar sesión vuelve a donde estaba (solo rutas internas)
-        var v = p.get('volver') || '';
-        window.UG_VOLVER = /^\.\/public\/[\w.-]+\.html(\?[\w=&%.~+-]*)?$/.test(v) ? v : './public/biblioteca.html';
+        // ?volver=./ o ./public/... → tras iniciar sesión vuelve a donde estaba (solo rutas internas).
+        // La biblioteca es la portada (./): un ?volver=./public/biblioteca.html viejo vuelve también a la portada.
+        var v = (p.get('volver') || '').replace(/^\.\/public\/biblioteca\.html/, './');
+        if (/[?&](volver|login|registro|reset_token|verif)(=|&|$)/.test(v)) v = '';   // la portada los reenvía aquí: evitaría un bucle
+        window.UG_VOLVER = /^\.\/((public\/[\w.-]+\.html)?(\?[\w=&%.~+-]*)?)$/.test(v) ? v : './';
         if (!p.get('reset_token') && !p.get('verif')) {
           if (localStorage.getItem('user_admin') && localStorage.getItem('token')) {
             location.replace(window.UG_VOLVER);
@@ -511,7 +513,7 @@
         @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
     </style>
 <link rel="manifest" href="./public/manifest.json?v=3">
-<script src="./public/upgames-pwa.js" defer></script>
+<script src="./public/upgames-pwa.js?v=20261120a" defer></script>
 <link rel="apple-touch-icon" href="./public/icons/apple-touch-icon.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="./public/icons/icon-192.png?v=2">
 <script src="./public/upgames-errores.js?v=20261029i"></script>
@@ -561,7 +563,7 @@
                     <span id="switch-text">¿No tienes cuenta?</span> 
                     <a href="#" id="toggle-mode">Regístrate aquí</a>
                 </p>
-                <p style="margin-top:10px"><a href="./public/biblioteca.html" id="explorar-link" style="display:inline-block;padding:9px 16px;border-radius:999px;border:1px solid rgba(50,213,131,.35);color:#32D583;font-weight:700;font-size:13px;text-decoration:none">Explorar sin cuenta →</a></p>
+                <p style="margin-top:10px"><a href="./" id="explorar-link" style="display:inline-block;padding:9px 16px;border-radius:999px;border:1px solid rgba(50,213,131,.35);color:#32D583;font-weight:700;font-size:13px;text-decoration:none">Explorar sin cuenta →</a></p>
                 <p id="forgot-link-wrap" style="margin-top:6px">
                     <a href="#" id="forgot-link" style="font-size:12px;color:#a0a0b8;text-decoration:none">¿Olvidaste tu contraseña?</a>
                 </p>
@@ -645,7 +647,7 @@
 
     <script>
         const API_URL = window.UG_CONFIG?.API_URL ?? "https://upgames-production.up.railway.app";
-        const REDIRECT_URL = window.UG_VOLVER || "./public/biblioteca.html";
+        const REDIRECT_URL = window.UG_VOLVER || "./";
         let isLoginMode = true;
 
         // Cache de selectores
@@ -733,7 +735,7 @@
             if (_verifStatus === 'ok') {
                 showMsg('✅ Email verificado' + (_verifUser ? ', @'+_verifUser : '') + '. Ya puedes iniciar sesión.', '#32D583');
                 // Con la sesión ya iniciada (verificó desde el mismo dispositivo): volver a la biblioteca
-                if (localStorage.getItem('user_admin') && localStorage.getItem('token')) setTimeout(() => location.replace('./public/biblioteca.html?verif=ok'), 1400);
+                if (localStorage.getItem('user_admin') && localStorage.getItem('token')) setTimeout(() => location.replace('./?verificado=1'), 1400);   // ?verif lo atiende esta página; la portada usa ?verificado
             } else if (_verifStatus === 'error') {
                 showMsg('❌ El link de verificación es inválido o expiró.', '#ff4343');
             }

@@ -2,7 +2,7 @@
   "name": "UpGames — Ecosistema para gamers, creadores y desarrolladores",
   "short_name": "UpGames",
   "description": "El ecosistema digital para gamers, creadores y desarrolladores independientes: descubre juegos, mods y apps, publica tus proyectos, crea comunidad y monetiza tu trabajo.",
-  "start_url": "/public/biblioteca.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -71,7 +71,7 @@
       "name": "Biblioteca",
       "short_name": "Biblioteca",
       "description": "Explorar contenido gaming",
-      "url": "/public/biblioteca.html",
+      "url": "/",
       "icons": [
         {
           "src": "icons/icon-96.png?v=2",
@@ -84,7 +84,7 @@
       "name": "Mi Perfil",
       "short_name": "Perfil",
       "description": "Gestionar mi contenido",
-      "url": "/public/biblioteca.html?tab=perfil",
+      "url": "/?tab=perfil",
       "icons": [
         {
           "src": "icons/icon-96.png?v=2",

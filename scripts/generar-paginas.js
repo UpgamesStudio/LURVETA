@@ -31,7 +31,8 @@ const Seo = require('../modulos/seo');
         // sigue funcionando aunque el autor lo cambie (antes el enlace compartido daba 404). Su canónica es la de arriba.
         // Quien abre el enlace compartido va DIRECTO a la publicación dentro de UpGames. WhatsApp, Telegram y
         // Google no ejecutan scripts: siguen leyendo aquí el título y la imagen para la vista previa.
-        const directo = html.replace('</title>', `</title>\n<script>location.replace(${JSON.stringify(`https://upgames.games/public/biblioteca.html?id=${it.id}`)})</script>`);
+        // Directo a la portada (la biblioteca): sin pasar por el puente /public/biblioteca.html
+        const directo = html.replace('</title>', `</title>\n<script>location.replace(${JSON.stringify(`${Seo.INICIO}?id=${it.id}`)})</script>`);
         const fijo = `${it.id}.html`, rutaFija = path.join(dir, fijo); quedan.add(fijo);
         if (!fs.existsSync(rutaFija) || fs.readFileSync(rutaFija, 'utf8') !== directo) fs.writeFileSync(rutaFija, directo);
     }
@@ -69,6 +70,14 @@ const Seo = require('../modulos/seo');
         let bu = 0;
         for (const f of fs.readdirSync(dirU)) if (f.endsWith('.html') && !quedanU.has(f)) { fs.unlinkSync(path.join(dirU, f)); bu++; }
         console.log(`Perfiles: ${quedanU.size} · borrados: ${bu}`);
+    }
+
+    // Sitemap descargado del backend: sin la dirección vieja de la portada y con la raíz primero
+    // (por si el backend desplegado aún es el anterior: así el proceso automático no la vuelve a meter)
+    const sm = process.env.SEO_SITEMAP || path.join(__dirname, '..', 'public', 'sitemap.xml');
+    if (fs.existsSync(sm)) {
+        const antes = fs.readFileSync(sm, 'utf8'), despues = Seo.limpiarSitemap(antes);
+        if (despues !== antes) { fs.writeFileSync(sm, despues); console.log('Sitemap: limpiado (portada en la raíz)'); }
     }
 
     // Portada: enlaces rastreables a temas, publicaciones recientes y creadores

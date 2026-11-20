@@ -60,8 +60,10 @@ const LS = {
 // que lleva al login y luego devuelve al usuario exactamente a donde estaba.
 const ugSesion = () => !!(LS.get('token') && LS.get('user_admin'));
 function ugUrlLogin(registro) {
-  const aqui = './public/' + location.pathname.split('/').pop() + location.search.replace(/[^\w=&%.~+?-]/g, '');
-  return `../login.html?volver=${encodeURIComponent(aqui)}${registro ? '&registro=1' : ''}`;
+  // La portada (/) es la biblioteca: vuelve a ./ ; las demás páginas viven en /public/
+  const archivo = location.pathname.split('/').pop();
+  const aqui = (location.pathname === '/' ? './' : './public/' + archivo) + location.search.replace(/[^\w=&%.~+?-]/g, '');
+  return `/login.html?volver=${encodeURIComponent(aqui)}${registro ? '&registro=1' : ''}`;
 }
 function ugPedirSesion(accion = 'interactuar') {
   if (ugSesion()) return true;
@@ -1053,7 +1055,7 @@ function registrarVista(item) {
 // Las páginas estáticas /p/ se generan cada hora y al aprobar una publicación (ver sitemap.yml):
 // pasadas 3 h ya existen seguro.
 const UG_PAGINA_LISTA_MS = 3 * 3600e3;
-const UG_SEO_BASE = { title: document.title, url: 'https://upgames.games/public/biblioteca.html' };
+const UG_SEO_BASE = { title: document.title, url: 'https://upgames.games/' };
 function ugMeta(attr, key, val) {
   let m = document.head.querySelector(`meta[${attr}="${key}"]`);
   if (!m) { m = document.createElement('meta'); m.setAttribute(attr, key); document.head.appendChild(m); }
@@ -1878,7 +1880,7 @@ function ugUrlCompartir(it) {
   if (!it) return '';
   const estatica = (!it.status || it.status === 'aprobado') && it.createdAt && Date.now() - new Date(it.createdAt) > UG_PAGINA_LISTA_MS;
   // Nombre fijo por id: no depende del título (si el autor lo cambiaba, el enlace ya compartido daba 404)
-  return estatica ? `https://upgames.games/public/p/${it._id}.html` : `https://upgames.games/public/biblioteca.html?id=${it._id}`;
+  return estatica ? `https://upgames.games/public/p/${it._id}.html` : `https://upgames.games/?id=${it._id}`;
 }
 async function share(id) {
   const it = (currentItem && currentItem._id === id) ? currentItem : todosLosItems.find(i => i._id === id);
@@ -1979,10 +1981,12 @@ document.querySelectorAll('.nav-tab[data-tab]').forEach(tab=>{
 //   si fue hace menos de 30 min, con la misma categoría y sin una búsqueda distinta.
 const UG_POS = 'ug_pos_inicio';
 let ugScrollInicio = 0, ugGuardarPosT = null;
+// Posición relativa al catálogo: lo de arriba (carrusel, avisos) puede pintarse después y no debe correrla
+const ugTopCatalogo = () => { const o = document.getElementById('output'); return o ? o.getBoundingClientRect().top + scrollY : 0; };
 function ugGuardarPosicion() {
   if (typeof currentTab !== 'undefined' && currentTab !== 'main') return;
   if (document.getElementById('detail-sheet')?.classList.contains('open')) return;
-  try { sessionStorage.setItem(UG_POS, JSON.stringify({ y: Math.round(scrollY), t: Date.now(), cat: typeof activeCategory !== 'undefined' ? activeCategory : '', q: document.getElementById('buscador')?.value || '' })); } catch (_) {}
+  try { sessionStorage.setItem(UG_POS, JSON.stringify({ y: Math.round(scrollY), d: Math.round(scrollY - ugTopCatalogo()), t: Date.now(), cat: typeof activeCategory !== 'undefined' ? activeCategory : '', q: document.getElementById('buscador')?.value || '' })); } catch (_) {}
 }
 addEventListener('scroll', () => { clearTimeout(ugGuardarPosT); ugGuardarPosT = setTimeout(ugGuardarPosicion, 250); }, { passive: true });
 addEventListener('pagehide', ugGuardarPosicion);
@@ -1998,7 +2002,15 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) ugGua
     const lista = document.querySelectorAll('#output .game-tile').length;
     const mismaVista = (typeof activeCategory === 'undefined' || activeCategory === p.cat) && (document.getElementById('buscador')?.value || '') === p.q;
     if (lista && !mismaVista) return;
-    if (lista && document.documentElement.scrollHeight >= p.y + innerHeight * .5) { scrollTo({ top: p.y, behavior: 'instant' }); return; }
+    const meta = () => p.d == null ? p.y : Math.round(ugTopCatalogo() + p.d);
+    if (lista && document.documentElement.scrollHeight >= meta() + innerHeight * .5) {
+      scrollTo({ top: meta(), behavior: 'instant' });
+      // Lo de arriba aún puede crecer: se corrige ~2 s mientras la persona no toque la página
+      let tocó = false; const t = () => { tocó = true; }; ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(e => addEventListener(e, t, { once: true, passive: true }));
+      const fin = Date.now() + 2000;
+      (function ajustar() { if (tocó || Date.now() > fin) return; if (Math.abs(scrollY - meta()) > 30) scrollTo({ top: meta(), behavior: 'instant' }); setTimeout(ajustar, 150); })();
+      return;
+    }
     setTimeout(intentar, 120);
   })();
 })();
@@ -2336,7 +2348,7 @@ setInterval(() => { if (!document.hidden && currentTab === 'profile') pfChatBadg
 // ── Compartir el perfil público ──
 async function pfShareProfile() {
   if (!pfUser) return;
-  const url = `${location.origin}${location.pathname.replace(/[^/]*$/, '')}perfil-publico.html?usuario=${encodeURIComponent(pfUser)}`;
+  const url = new URL(`perfil-publico.html?usuario=${encodeURIComponent(pfUser)}`, document.baseURI).href;   // baseURI = /public/ también en la portada (/)
   try {
     if (navigator.share) { await navigator.share({ title: `@${pfUser} en UpGames`, url }); return; }
   } catch (e) { if (e && e.name === 'AbortError') return; }
@@ -3734,7 +3746,7 @@ async function pfLoadReportes() {
           <div class="pf-reporte-motivo"><ion-icon name="shield-outline" style="color:#ff00ff"></ion-icon><span style="font-weight:700;color:#ff00ff">${d.malware||0}</span><span>Malware</span></div>
         </div>
         <div class="pf-reporte-tip">💡 <strong>Consejo:</strong> Actualiza tu link para mantener tu reputación y tus ganancias.</div>
-        <button class="pf-reporte-ver" onclick="window.open('biblioteca.html?id=${pub._id}','_blank')"><ion-icon name="eye-outline"></ion-icon> Ver Publicación</button>`;
+        <button class="pf-reporte-ver" onclick="window.open('/?id=${pub._id}','_blank')"><ion-icon name="eye-outline"></ion-icon> Ver Publicación</button>`;
       cont.appendChild(card);
     });
   } catch(e) { cont.innerHTML='<div class="pf-empty" style="color:#ff4343"><p>Error al cargar reportes</p></div>'; }
@@ -6386,7 +6398,8 @@ function ecoAbrirTienda() {
     } catch (err) { toast(err.message || 'No se pudo enviar el correo'); b.disabled = false; b.textContent = 'Reintentar'; }
   };
   // Volver de verificar: avisar y ocultar
-  if (new URLSearchParams(location.search).get('verif') === 'ok') { toast('✅ ¡Email verificado!'); box.hidden = true; }
+  // ?verificado=1: el login avisa que se verificó (?verif lo atiende /login.html, que muestra el resultado)
+  if (new URLSearchParams(location.search).get('verificado') === '1') { toast('✅ ¡Email verificado!'); box.hidden = true; }
 })();
 
 

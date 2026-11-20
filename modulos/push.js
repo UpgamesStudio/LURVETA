@@ -61,7 +61,9 @@ async function iniciar(opts = {}) {
 const decodificar = s => String(s || '').replace(/<[^>]*>/g, '')
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
 const recorta = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
-const BASE = (process.env.APP_URL || 'https://upgames.games').replace(/\/+$/, '') + '/public/';
+const RAIZ = (process.env.APP_URL || 'https://upgames.games').replace(/\/+$/, '');
+const BASE = RAIZ + '/public/';
+const INICIO = RAIZ + '/';   // la biblioteca es la portada (antes /public/biblioteca.html)
 
 /** Categoría de preferencias a la que pertenece una notificación (null = no se envía push). */
 function categoria(n) {
@@ -82,23 +84,23 @@ function contenido(n) {
     const titulo = decodificar(n.itemTitle);
     const msg = decodificar(n.mensaje);
     const img = /^https:\/\//i.test(n.itemImage || '') && !/\.(mp4|webm|mov|m4v|avi|3gp|3g2|mkv|ogv|mpe?g|wmv|flv)(\?|$)|\/video\/upload\//i.test(n.itemImage) ? n.itemImage : undefined;
-    const item = n.itemId && /^[a-f\d]{24}$/i.test(n.itemId) ? `${BASE}biblioteca.html?id=${n.itemId}` : `${BASE}biblioteca.html`;
+    const item = n.itemId && /^[a-f\d]{24}$/i.test(n.itemId) ? `${INICIO}?id=${n.itemId}` : INICIO;
     switch (n.tipo) {
         case 'nueva_publicacion': return { title: `${e} publicó algo nuevo`, body: recorta(titulo || 'Toca para verlo', 120), url: item, image: img, tag: `pub-${n.itemId}` };
-        case 'nueva_entrada':     return { title: `${e} publicó en su blog`, body: recorta(titulo || 'Toca para leerlo', 120), url: /^https:\/\//.test(n.itemId || '') ? n.itemId : `${BASE}biblioteca.html`, image: img, tag: `blog-${String(n.itemId).slice(-40)}` };
+        case 'nueva_entrada':     return { title: `${e} publicó en su blog`, body: recorta(titulo || 'Toca para leerlo', 120), url: /^https:\/\//.test(n.itemId || '') ? n.itemId : INICIO, image: img, tag: `blog-${String(n.itemId).slice(-40)}` };
         case 'seguidor':          return { title: `${e} empezó a seguirte`, body: 'Toca para ver su perfil', url: `${BASE}perfil-publico.html?u=${encodeURIComponent(n.emisor)}`, tag: `seg-${n.emisor}` };
         case 'favorito':          return { title: `A ${e} le gustó tu publicación`, body: recorta(titulo, 120), url: item, image: img, tag: `fav-${n.itemId}` };
         case 'comentario':        return { title: `${e} comentó tu publicación`, body: recorta(msg || titulo, 140), url: item, tag: `com-${n.itemId}` };
-        case 'logro':             return { title: '🏆 ¡Nuevo logro!', body: recorta(msg || titulo || 'Desbloqueaste un logro', 140), url: `${BASE}biblioteca.html?tab=perfil`, tag: 'logro' };
+        case 'logro':             return { title: '🏆 ¡Nuevo logro!', body: recorta(msg || titulo || 'Desbloqueaste un logro', 140), url: `${INICIO}?tab=perfil`, tag: 'logro' };
     }
     const t = n.itemTitle || '';
     if (t.startsWith('Mensaje')) return { title: `Nuevo mensaje de ${e}`, body: recorta(msg || 'Toca para responder', 140), url: `${BASE}chats.html?usuario=${encodeURIComponent(n.emisor)}`, tag: `chat-${n.emisor}`, urgente: true };
     if (t === 'En vivo') return { title: `🔴 ${e} está en vivo`, body: recorta(msg || 'Toca para verlo ahora', 140), url: `${BASE}live.html?u=${encodeURIComponent(n.emisor)}`, tag: `live-${n.emisor}`, urgente: true };
-    if (t === 'Verifica tu email') return { title: '📧 Verifica tu email', body: recorta(msg, 160), url: `${BASE}biblioteca.html?verificar=1`, tag: 'verificar-email' };
-    if (t === 'Tu pase vence' || t === 'Tu Premium vence') return { title: '⏳ Tu Premium vence pronto', body: recorta(msg.replace(/^⏳\s*/, ''), 180), url: `${BASE}biblioteca.html?plan=1`, tag: 'pase-vence' };
-    if (t === 'Anuncio') return { title: '📢 UpGames', body: recorta(msg.replace(/^📢\s*/, ''), 200), url: `${BASE}biblioteca.html`, tag: `anuncio-${Date.now()}` };
-    if (t === 'Revisión') return { title: 'Revisión de tu publicación', body: recorta(msg, 200), url: `${BASE}biblioteca.html?tab=perfil`, tag: `rev-${n.itemId}` };
-    if (t === 'Equipo') return { title: '🛡️ Equipo UpGames', body: recorta(msg, 200), url: `${BASE}biblioteca.html`, tag: `equipo-${Date.now()}` };
+    if (t === 'Verifica tu email') return { title: '📧 Verifica tu email', body: recorta(msg, 160), url: `${INICIO}?verificar=1`, tag: 'verificar-email' };
+    if (t === 'Tu pase vence' || t === 'Tu Premium vence') return { title: '⏳ Tu Premium vence pronto', body: recorta(msg.replace(/^⏳\s*/, ''), 180), url: `${INICIO}?plan=1`, tag: 'pase-vence' };
+    if (t === 'Anuncio') return { title: '📢 UpGames', body: recorta(msg.replace(/^📢\s*/, ''), 200), url: INICIO, tag: `anuncio-${Date.now()}` };
+    if (t === 'Revisión') return { title: 'Revisión de tu publicación', body: recorta(msg, 200), url: `${INICIO}?tab=perfil`, tag: `rev-${n.itemId}` };
+    if (t === 'Equipo') return { title: '🛡️ Equipo UpGames', body: recorta(msg, 200), url: INICIO, tag: `equipo-${Date.now()}` };
     return { title: 'UpGames', body: recorta(msg || titulo || 'Tienes una notificación nueva', 160), url: item, tag: `n-${n._id || Date.now()}` };
 }
 

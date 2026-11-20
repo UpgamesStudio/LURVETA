@@ -148,12 +148,12 @@
     const r = await api(`/colecciones/${id}`);
     if (!r.ok) return aviso(r.d.error || 'No se pudo abrir la colección', 'error');
     const c = r.d.coleccion, propio = c.usuario === yo();
-    const enlace = `${location.origin}${location.pathname.replace(/[^/]*$/, '')}biblioteca.html?coleccion=${c.id}`;
+    const enlace = `${location.origin}/?coleccion=${c.id}`;
     hoja('📚 Colección', `
       <div class="ugrs-hero">${portadaHTML(c)}<div class="ugrs-hero-t"><b>${esc(c.titulo)}</b><a href="perfil-publico.html?usuario=${encodeURIComponent(c.usuario)}">@${esc(c.usuario)}</a> · ${fmt(c.total)} publicacion${c.total === 1 ? '' : 'es'}</div></div>
       ${c.descripcion ? `<p class="ugrs-desc">${esc(c.descripcion)}</p>` : ''}
       <div class="ugrs-acc">${propio ? '<button type="button" class="ugrs-btn sec" data-editar>✏️ Editar</button>' : ''}<button type="button" class="ugrs-btn sec" data-compartir>🔗 Compartir</button></div>
-      <div class="ugrs-grid">${c.items.map((i, k) => `<a class="ugrs-it" href="biblioteca.html?id=${esc(i._id)}" data-it="${k}"><span class="ugrs-it-img"><img src="${esc(cld(i.image, 'c_fill,g_auto,w_300,h_300,q_auto,f_auto'))}" alt="" loading="lazy" onerror="this.onerror=null;this.src=window.UG_PH||''"></span><b>${esc(i.title)}</b><small>${esc(i.category || '')}${i.resenas?.n ? ` · ★ ${dec(i.resenas.promedio)}` : ''}</small></a>`).join('') || '<p class="ugrs-vacio">Esta colección está vacía.</p>'}</div>`, b => {
+      <div class="ugrs-grid">${c.items.map((i, k) => `<a class="ugrs-it" href="/?id=${esc(i._id)}" data-it="${k}"><span class="ugrs-it-img"><img src="${esc(cld(i.image, 'c_fill,g_auto,w_300,h_300,q_auto,f_auto'))}" alt="" loading="lazy" onerror="this.onerror=null;this.src=window.UG_PH||''"></span><b>${esc(i.title)}</b><small>${esc(i.category || '')}${i.resenas?.n ? ` · ★ ${dec(i.resenas.promedio)}` : ''}</small></a>`).join('') || '<p class="ugrs-vacio">Esta colección está vacía.</p>'}</div>`, b => {
       b.querySelector('[data-editar]')?.addEventListener('click', () => editar(c.id, alCambiar));
       b.querySelector('[data-compartir]').onclick = async () => {
         try { if (navigator.share) await navigator.share({ title: c.titulo, text: `Colección "${c.titulo}" de @${c.usuario} en UpGames`, url: enlace }); else { await navigator.clipboard.writeText(enlace); aviso('Enlace copiado', 'success'); } } catch (_) {}
@@ -241,7 +241,7 @@
     });
   }
 
-  // Enlace directo: biblioteca.html?coleccion=<id>
+  // Enlace directo: /?coleccion=<id> (la portada)
   document.addEventListener('DOMContentLoaded', () => {
     const id = new URLSearchParams(location.search).get('coleccion');
     if (esId(id)) setTimeout(() => abrir(id), 1200);

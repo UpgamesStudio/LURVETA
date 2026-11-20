@@ -621,7 +621,7 @@
             const token = localStorage.getItem('token') || '';
             const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
             const cabecera = (extra = '') => `<div class="ad-pass-h"><div class="ad-pass-ic">⭐</div><div><b>Sin esperas con Premium</b><small>Sin esperar ${countdown > 0 ? countdown + ' s' : ''} ni anuncios en todas las publicaciones.${extra}</small></div></div>`;
-            const lnkPase = `<a class="ad-pass-btn coins" style="display:block;text-align:center;text-decoration:none" href="./biblioteca.html?plan=1">⭐ Premium: sin anuncios, NEXUS ilimitado y más · desde US$4.99</a>`;
+            const lnkPase = `<a class="ad-pass-btn coins" style="display:block;text-align:center;text-decoration:none" href="/?plan=1">⭐ Premium: sin anuncios, NEXUS ilimitado y más · desde US$4.99</a>`;
             const nota = `<div class="ad-pass-note">Premium es un plan prepago para toda la plataforma (sin cobros automáticos): no se paga por ningún enlace concreto. <a href="./terminos_condiciones.html#pagos" target="_blank">Términos</a></div>`;
             box.style.display = 'block';
 

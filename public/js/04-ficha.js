@@ -3,7 +3,7 @@
 // Las páginas estáticas /p/ se generan cada hora y al aprobar una publicación (ver sitemap.yml):
 // pasadas 3 h ya existen seguro.
 const UG_PAGINA_LISTA_MS = 3 * 3600e3;
-const UG_SEO_BASE = { title: document.title, url: 'https://upgames.games/public/biblioteca.html' };
+const UG_SEO_BASE = { title: document.title, url: 'https://upgames.games/' };
 function ugMeta(attr, key, val) {
   let m = document.head.querySelector(`meta[${attr}="${key}"]`);
   if (!m) { m = document.createElement('meta'); m.setAttribute(attr, key); document.head.appendChild(m); }

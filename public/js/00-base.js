@@ -60,8 +60,10 @@ const LS = {
 // que lleva al login y luego devuelve al usuario exactamente a donde estaba.
 const ugSesion = () => !!(LS.get('token') && LS.get('user_admin'));
 function ugUrlLogin(registro) {
-  const aqui = './public/' + location.pathname.split('/').pop() + location.search.replace(/[^\w=&%.~+?-]/g, '');
-  return `../login.html?volver=${encodeURIComponent(aqui)}${registro ? '&registro=1' : ''}`;
+  // La portada (/) es la biblioteca: vuelve a ./ ; las demás páginas viven en /public/
+  const archivo = location.pathname.split('/').pop();
+  const aqui = (location.pathname === '/' ? './' : './public/' + archivo) + location.search.replace(/[^\w=&%.~+?-]/g, '');
+  return `/login.html?volver=${encodeURIComponent(aqui)}${registro ? '&registro=1' : ''}`;
 }
 function ugPedirSesion(accion = 'interactuar') {
   if (ugSesion()) return true;

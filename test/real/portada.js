@@ -5,14 +5,14 @@
  * que abría otra publicación). Uso: node test/real/portada.js   (API=https://… para otro servidor)
  */
 'use strict';
-const { servir, navegador, contador } = require('./util');
+const { servirRaiz, navegador, contador } = require('./util');
 const API = (process.env.API || 'https://upgames-production.up.railway.app').replace(/\/+$/, '');
 const espera = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
   const C = contador('Portada y ficha con el catálogo real');
-  const web = await servir(), b = await navegador();
-  const ctx = await b.newContext({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true, ignoreHTTPSErrors: true });
+  const web = await servirRaiz(), b = await navegador();
+  const ctx = await b.newContext({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true, ignoreHTTPSErrors: true, serviceWorkers: 'block' });
   const p = await ctx.newPage();
   const errores = [], imgsMal = new Set();
   p.on('pageerror', e => errores.push(e.message));
@@ -23,13 +23,13 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     if (u.startsWith(web.url) || /res\.cloudinary|fonts\.g|unpkg|ytimg|youtube/.test(u)) return r.continue();
     if (process.env.DEPURAR && u.startsWith(API)) console.log('    API', r.request().method(), u);
     if (u.startsWith(API) && r.request().method() === 'GET' && !/\/(m|errores)\//.test(u)) {   // toda lectura va a producción (catálogo, fichas, reseñas…)
-      try { const h = { ...r.request().headers(), origin: 'https://upgames.games', referer: 'https://upgames.games/public/biblioteca.html' };   // producción solo acepta su propio origen
+      try { const h = { ...r.request().headers(), origin: 'https://upgames.games', referer: 'https://upgames.games/' };   // producción solo acepta su propio origen
         const resp = await r.fetch({ headers: h }); return r.fulfill({ status: resp.status(), body: await resp.body(), contentType: 'application/json', headers: { 'access-control-allow-origin': '*' } }); } catch (e) { console.log('    (no se pudo pedir ' + u + ': ' + e.message.split('\n')[0] + ')'); return r.abort(); }
     }
     return r.fulfill({ status: 200, body: '[]', contentType: 'application/json', headers: { 'access-control-allow-origin': '*' } });
   });
 
-  await p.goto(`${web.url}/biblioteca.html`, { waitUntil: 'domcontentloaded' });
+  await p.goto(`${web.url}/`, { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => document.querySelectorAll('#output .game-tile').length > 3, null, { timeout: 30000 }).catch(() => {});
   const n = await p.evaluate(() => typeof todosLosItems !== 'undefined' ? todosLosItems.length : 0);
   if (!C.prueba('el catálogo real cargó', n > 3, `publicaciones: ${n}`)) { await b.close(); web.cerrar(); process.exit(1); }
@@ -100,7 +100,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   C.prueba('la URL lleva ?id= (se puede compartir)', ficha.url.includes(`id=${item.id}`), ficha.url);
   await p.goBack(); await espera(700);
   const tras = await p.evaluate(() => ({ abierta: document.getElementById('detail-sheet').classList.contains('open'), url: location.href }));
-  C.prueba('«atrás» cierra la ficha sin salir de la biblioteca', !tras.abierta && /biblioteca\.html/.test(tras.url) && !/id=/.test(tras.url), JSON.stringify(tras));
+  C.prueba('«atrás» cierra la ficha sin salir de la biblioteca', !tras.abierta && new URL(tras.url).pathname === '/' && !/id=/.test(tras.url), JSON.stringify(tras));
   await p.goForward(); await espera(900);
   C.prueba('«adelante» la vuelve a abrir', await p.evaluate(() => document.getElementById('detail-sheet').classList.contains('open')));
   await p.evaluate(() => closeDetail()); await espera(600);
@@ -108,12 +108,12 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
 
   C.seccion('Enlace compartido');
   const p2 = await ctx.newPage(); p2.on('pageerror', e => errores.push(e.message));
-  await p2.goto(`${web.url}/biblioteca.html?id=${item.id}`, { waitUntil: 'domcontentloaded' });
+  await p2.goto(`${web.url}/?id=${item.id}`, { waitUntil: 'domcontentloaded' });
   await p2.waitForFunction(() => document.getElementById('detail-sheet')?.classList.contains('open'), null, { timeout: 25000 }).catch(() => {});
   const abre = await p2.evaluate(() => ({ url: location.href, hoja: !!document.getElementById('detail-sheet'), abierta: !!document.getElementById('detail-sheet')?.classList.contains('open'), titulo: document.getElementById('ds-title')?.textContent || '' }));
   C.prueba('abre directo la ficha', abre.abierta && !!abre.titulo, JSON.stringify(abre));
   await p2.goBack(); await espera(700);
-  C.prueba('«atrás» deja el catálogo detrás (no sale de UpGames)', await p2.evaluate(() => !document.getElementById('detail-sheet').classList.contains('open') && /biblioteca\.html/.test(location.href)));
+  C.prueba('«atrás» deja el catálogo detrás (no sale de UpGames)', await p2.evaluate(() => !document.getElementById('detail-sheet').classList.contains('open') && location.pathname === '/'));
   await p2.close();
 
   C.seccion('El inicio recuerda dónde ibas');

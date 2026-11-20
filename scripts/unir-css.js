@@ -8,7 +8,7 @@
  * siempre: edítalos a ellos y vuelve a correr este script (la acción
  * .github/workflows/css.yml lo hace sola al subir cambios a main).
  *
- *   node scripts/unir-css.js          → escribe el paquete y actualiza biblioteca.html
+ *   node scripts/unir-css.js          → escribe el paquete y actualiza index.html (la portada)
  *   node scripts/unir-css.js --check  → falla si el paquete no está al día
  */
 'use strict';
@@ -17,7 +17,7 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const PUB = path.join(__dirname, '..', 'public');
 const FUENTES = ['biblioteca.css', 'upgames-glass.css', 'upgames-estilo.css', 'upgames-cyber.css', 'upgames-videos.css', 'upgames-ux.css', 'upgames-neo.css', 'upgames-hero.css', 'upgames-v6.css'];
 const SALIDA = path.join(PUB, 'upgames-app.css');
-const HTML = path.join(PUB, 'biblioteca.html');
+const HTML = path.join(PUB, '..', 'index.html');   // la biblioteca es la portada (antes public/biblioteca.html)
 
 /** Minificador conservador: respeta cadenas y url(); solo quita comentarios y espacios sobrantes. */
 function minificar(css) {
@@ -56,7 +56,7 @@ const linea = `<link rel="stylesheet" href="upgames-app.css?v=${hash}">`;
 
 const html = fs.readFileSync(HTML, 'utf8');
 const re = /<!-- css:inicio -->[\s\S]*?<!-- css:fin -->/;
-if (!re.test(html)) { console.error('biblioteca.html no tiene los marcadores <!-- css:inicio --> / <!-- css:fin -->'); process.exit(1); }
+if (!re.test(html)) { console.error('index.html no tiene los marcadores <!-- css:inicio --> / <!-- css:fin -->'); process.exit(1); }
 const htmlNuevo = html.replace(re, `<!-- css:inicio -->\n<!-- Paquete de: ${FUENTES.join(', ')} (scripts/unir-css.js) -->\n${linea}\n<!-- css:fin -->`);
 
 if (process.argv.includes('--check')) {

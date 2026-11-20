@@ -50,7 +50,9 @@ Lógica reutilizable en `modulos/`: `sospecha.js` (juegos comerciales), `search.
 
 ## Web (GitHub Pages): `public/`
 
-`public/biblioteca.html` carga dos paquetes que **se generan** (no se editan a mano):
+La biblioteca es la **portada**: vive en `index.html` (raíz, `https://upgames.games/`) con `<base href="/public/">`, así que sus rutas relativas siguen apuntando a `public/`. `public/biblioteca.html` es solo un **puente** que reenvía a `/` conservando el query string y el fragmento (enlaces y apps instaladas de antes). El service worker vive en `/service-worker.js` (alcance `/`); `public/service-worker.js` solo migra a quien tenía el viejo (borra sus cachés de UpGames y se da de baja).
+
+`index.html` carga dos paquetes que **se generan** (no se editan a mano):
 
 | Paquete | Se arma desde | Script |
 |---|---|---|

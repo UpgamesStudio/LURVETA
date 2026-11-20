@@ -2,221 +2,2398 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<!-- Portada de upgames.games: página real e indexable (canónica en la raíz, como antes del 2026-11-08).
-     Quien ya usa UpGames entra directo a la biblioteca; los enlaces de los correos (?reset_token=, ?verif=…)
-     siguen yendo al login y ?ref= se guarda para el registro. La primera visita (y los buscadores) ven esta página. -->
+<!-- Portada de upgames.games: es la biblioteca (antes /public/biblioteca.html, que ahora es un puente hacia aquí).
+     Lo primero, antes de cargar nada: los enlaces de los correos y del login se atienden en /login.html
+     (?reset_token, ?verif, ?volver, ?login, ?registro) y la invitación ?ref= se guarda 30 días para el registro. -->
 <script>
   (function () {
     var q = location.search, p = new URLSearchParams(q);
-    // Enlace de invitación (?ref=usuario): se recuerda 30 días para cuando se registre
     var ref = (p.get('ref') || '').replace(/[^\w.-]/g, '').slice(0, 40);
     try { if (ref) localStorage.setItem('ug_ref', JSON.stringify({ c: ref, t: Date.now() })); } catch (e) {}
-    if (p.get('reset_token') || p.get('verif') || p.get('volver') || p.has('login') || p.has('registro')) {
-      location.replace('./login.html' + q + location.hash); return;
-    }
-    if (location.hash.length > 1) { location.replace('./public/biblioteca.html' + location.hash); return; }   // enlaces viejos con #sección
-    var vuelve = false;
-    try { vuelve = !!(localStorage.getItem('token') || localStorage.getItem('ug_entro')); } catch (e) {}
-    if (vuelve && !p.has('inicio')) location.replace('./public/biblioteca.html');
+    if (p.get('reset_token') || p.get('verif') || p.get('volver') || p.has('login') || p.has('registro')) location.replace('/login.html' + q + location.hash);
   })();
 </script>
+<!-- Los archivos de la biblioteca viven en /public/: así cada ruta relativa (CSS, JS, imágenes, páginas) sigue
+     apuntando al mismo archivo que cuando la página estaba en /public/biblioteca.html. -->
+<base href="/public/">
+    <script>
+      // Navegar, buscar y descargar es libre (también para Google). Publicar, comprar,
+      // comentar, seguir, dar favorito, chatear y Nexus piden iniciar sesión.
+      window.UG_INVITADO = (function () { try { return !localStorage.getItem('user_admin') || !localStorage.getItem('token'); } catch (_) { return true; } })();
+      if (window.UG_INVITADO) document.documentElement.classList.add('ug-invitado');
+    </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#05080E">
-<title>UpGames — El ecosistema de gamers, creadores y desarrolladores</title>
-<meta name="description" content="Ecosistema digital para gamers, creadores y desarrolladores independientes: descubre juegos, mods y apps, publica tus proyectos, crea comunidad y monetiza tu trabajo.">
+<meta name="theme-color" content="#0A0B0F">
+<title>UpGames | Juegos, mods y apps de creadores independientes</title>
+<meta name="description" content="UpGames conecta gamers, creadores de contenido y desarrolladores independientes en un ecosistema para descubrir, crear y monetizar.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://upgames.games/">
-<link rel="icon" type="image/png" sizes="96x96" href="./public/icons/icon-96.png?v=2">
-<link rel="apple-touch-icon" href="./public/icons/apple-touch-icon.png">
-<link rel="manifest" href="./public/manifest.json">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="UpGames">
 <meta property="og:locale" content="es_LA">
 <meta property="og:url" content="https://upgames.games/">
-<meta property="og:title" content="UpGames — El ecosistema digital para gamers, creadores y desarrolladores independientes">
-<meta property="og:description" content="Descubre juegos, mods, apps y contenido; publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.">
+<meta property="og:title" content="UpGames — Juegos, mods y apps de gamers, creadores y desarrolladores independientes">
+<meta property="og:description" content="Descubre juegos, mods, apps y herramientas (también para Winlator y Android), publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.">
 <meta property="og:image" content="https://upgames.games/public/og-upgames.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="UpGames: el ecosistema digital para gamers, creadores y desarrolladores independientes">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="UpGames — El ecosistema digital para gamers, creadores y desarrolladores independientes">
-<meta name="twitter:description" content="Descubre juegos, mods, apps y contenido; publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.">
+<meta name="twitter:title" content="UpGames — Juegos, mods y apps de gamers, creadores y desarrolladores independientes">
+<meta name="twitter:description" content="Descubre juegos, mods, apps y herramientas (también para Winlator y Android), publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.">
 <meta name="twitter:image" content="https://upgames.games/public/og-upgames.jpg">
-<meta name="twitter:image:alt" content="UpGames: el ecosistema digital para gamers, creadores y desarrolladores independientes">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://upgames.games/#org","name":"UpGames","url":"https://upgames.games/","logo":"https://upgames.games/public/icons/icon-512.png","image":"https://upgames.games/public/og-upgames.jpg","description":"UpGames es un ecosistema digital que conecta a gamers, creadores de contenido y desarrolladores independientes: descubrimiento y descarga de juegos, mods y apps, publicación y distribución de proyectos, videos, blogs, asistencia con Nexus IA y monetización para creadores.","email":"upgames.games.up@gmail.com"},{"@type":"WebSite","@id":"https://upgames.games/#website","url":"https://upgames.games/","name":"UpGames","inLanguage":"es","publisher":{"@id":"https://upgames.games/#org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://upgames.games/public/biblioteca.html?q={search_term_string}"},"query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://upgames.games/#inicio","url":"https://upgames.games/","name":"UpGames — El ecosistema de gamers, creadores y desarrolladores","isPartOf":{"@id":"https://upgames.games/#website"},"about":{"@id":"https://upgames.games/#org"},"inLanguage":"es","primaryImageOfPage":"https://upgames.games/public/og-upgames.jpg"}]}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<style>
-:root{--bg:#05080E;--s:#0B0F17;--s2:#101521;--l:rgba(255,255,255,.08);--tx:#F4F7FA;--tx2:#B7C1CE;--tx3:#7A8594;--g:#39FF88;--c:#5CE1FF;--grad:linear-gradient(120deg,#39FF88,#5CE1FF)}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:Manrope,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.6}
-a{color:inherit}
-.c{width:min(1120px,100%);margin:0 auto;padding:0 16px}
-header{position:sticky;top:0;z-index:5;background:rgba(5,8,14,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--l)}
-header .c{display:flex;align-items:center;gap:10px;height:60px}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:1.1rem;letter-spacing:-.01em;margin-right:auto}
-.logo img{width:32px;height:32px;border-radius:50%}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:12px;font-weight:700;text-decoration:none;border:1px solid var(--l);background:var(--s2);color:var(--tx);white-space:nowrap}
-.btn.pri{background:var(--grad);color:#031109;border-color:transparent}
-.btn.sm{min-height:38px;padding:8px 14px;font-size:.92rem}
-.hero{padding:48px 0 32px;background:radial-gradient(60% 70% at 85% 0%,rgba(57,255,136,.14),transparent 70%),radial-gradient(50% 60% at 0% 100%,rgba(92,225,255,.08),transparent 70%)}
-.eyebrow{color:var(--g);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px}
-h1{font-size:clamp(1.9rem,6.4vw,3.4rem);line-height:1.08;letter-spacing:-.025em;margin:0 0 16px;font-weight:800;max-width:20ch}
-h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{font-size:clamp(1.02rem,2.6vw,1.2rem);color:var(--tx2);max-width:62ch;margin:0 0 24px}
-.ctas{display:flex;flex-wrap:wrap;gap:10px}
-section{padding:36px 0;border-top:1px solid var(--l)}
-h2{font-size:clamp(1.35rem,4vw,1.9rem);letter-spacing:-.02em;line-height:1.2;margin:0 0 10px}
-h3{font-size:1.08rem;margin:0 0 6px}
-.sub{color:var(--tx2);margin:0 0 20px;max-width:65ch}
-.g3{display:grid;gap:12px}
-.card{background:var(--s);border:1px solid var(--l);border-radius:16px;padding:18px}
-.card p{margin:0;color:var(--tx2);font-size:.96rem}
-.card ul{margin:8px 0 0;padding-left:18px;color:var(--tx2);font-size:.95rem}
-.card li{margin:4px 0}
-.dev{background:linear-gradient(160deg,rgba(57,255,136,.08),rgba(92,225,255,.04));border-color:rgba(57,255,136,.25)}
-.pasos{display:grid;gap:12px;counter-reset:p}
-.pasos .card{position:relative;padding-left:58px}
-.pasos .card::before{counter-increment:p;content:counter(p);position:absolute;left:18px;top:18px;width:28px;height:28px;border-radius:50%;background:var(--grad);color:#031109;font-weight:800;display:grid;place-items:center;font-size:.9rem}
-.links{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
-.links a{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid var(--l);background:var(--s);text-decoration:none;font-size:.92rem;color:var(--tx2)}
-.links a:hover{color:var(--tx);border-color:rgba(57,255,136,.45)}
-.hub h3{margin-top:22px}
-footer{padding:28px 0 40px;border-top:1px solid var(--l);color:var(--tx3);font-size:.9rem}
-footer nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
-footer a{text-decoration:none;color:var(--tx2)}
-@media (min-width:720px){
-  .c{padding:0 24px}
-  .hero{padding:80px 0 56px}
-  section{padding:56px 0}
-  .g3{grid-template-columns:repeat(3,1fr);gap:16px}
-  .pasos{grid-template-columns:repeat(2,1fr)}
-}
-@media (min-width:1000px){ .pasos{grid-template-columns:repeat(4,1fr)} }
-</style>
+<meta name="application-name" content="UpGames">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://upgames.games/#org","name":"UpGames","url":"https://upgames.games/","logo":"https://upgames.games/public/icons/icon-512.png","image":"https://upgames.games/public/og-upgames.jpg","email":"upgames.games.up@gmail.com","description":"UpGames es un ecosistema digital que conecta a gamers, creadores de contenido y desarrolladores independientes: descubrimiento y descarga de juegos, mods y apps, publicación y distribución de proyectos, videos, blogs, asistencia con Nexus IA y monetización para creadores."},{"@type":"WebSite","@id":"https://upgames.games/#website","url":"https://upgames.games/","name":"UpGames","inLanguage":"es","publisher":{"@id":"https://upgames.games/#org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://upgames.games/?q={search_term_string}"},"query-input":"required name=search_term_string"}},{"@type":"CollectionPage","@id":"https://upgames.games/#inicio","url":"https://upgames.games/","name":"UpGames | Juegos, mods y apps de creadores independientes","description":"UpGames conecta gamers, creadores de contenido y desarrolladores independientes en un ecosistema para descubrir, crear y monetizar.","inLanguage":"es","isPartOf":{"@id":"https://upgames.games/#website"},"about":{"@id":"https://upgames.games/#org"},"primaryImageOfPage":"https://upgames.games/public/og-upgames.jpg"}]}</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://upgames-production.up.railway.app" crossorigin>
+<link rel="dns-prefetch" href="https://upgames-production.up.railway.app">
+<!-- Fuentes sin bloquear el primer render (se aplican al llegar; display=swap) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+
+<!-- css:inicio -->
+<!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css (scripts/unir-css.js) -->
+<link rel="stylesheet" href="upgames-app.css?v=de5346f4a6">
+<!-- css:fin -->
+<script src="upgames-tema.js?v=20261112a"></script>
+<script src="upgames-intro.js?v=20261109a"></script>
+<script src="upgames-musica.js?v=20261108a" defer></script>
+<!-- Widget de subida (pesado): solo se usa al publicar → se descarga cuando la página ya cargó
+     y el navegador está libre (window.ugCargarCloudinary lo fuerza antes si hace falta) -->
+<script>
+  window.ugCargarCloudinary = function () {
+    if (window.cloudinary || window._ugCld) return window._ugCld;
+    var s = document.createElement('script'); s.src = 'https://upload-widget.cloudinary.com/global/all.js'; s.async = true;
+    window._ugCld = new Promise(function (ok, ko) { s.onload = ok; s.onerror = function () { window._ugCld = null; ko(); }; });
+    document.head.appendChild(s); return window._ugCld;
+  };
+  addEventListener('load', function () {
+    (window.requestIdleCallback || function (f) { setTimeout(f, 2500); })(window.ugCargarCloudinary, { timeout: 6000 });
+  });
+</script>
+
+<link rel="manifest" href="./manifest.json?v=3">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="UpGames">
+<script src="./upgames-pwa.js?v=20261120a" defer></script>
+<script src="./upgames-errores.js?v=20261029i"></script>
+<style>.ug-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
 </head>
 <body>
-<header><div class="c">
-  <a class="logo" href="https://upgames.games/"><img src="./public/icons/icon-96.png?v=2" alt="" width="32" height="32">UpGames</a>
-  <a class="btn sm" href="./login.html?registro=1">Crear cuenta</a>
-  <a class="btn sm pri" href="./public/biblioteca.html">Entrar</a>
-</div></header>
 
-<main>
-<div class="hero"><div class="c">
-  <p class="eyebrow">UpGames</p>
-  <h1>El ecosistema digital para gamers, creadores y <span>desarrolladores independientes</span></h1>
-  <p class="lead">UpGames conecta a gamers, creadores de contenido y desarrolladores independientes. Descubre juegos, mods, apps y contenido; publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.</p>
-  <div class="ctas">
-    <a class="btn pri" href="./public/biblioteca.html">Explorar UpGames</a>
-    <a class="btn" href="./public/biblioteca.html?tab=publicar">Publicar mi proyecto</a>
+<!-- ══════════════════════════════════
+  PRELOADER
+══════════════════════════════════ -->
+<div id="preloader">
+  <div class="pl-glow"></div>
+  <div class="pl-logo">
+    <span class="up">UP</span><span class="gm">GAMES</span>
   </div>
-</div></div>
+  <div class="pl-track"><div class="pl-fill" id="pl-fill"></div></div>
+  <div class="pl-sub">La Nube de Contenido</div>
+</div>
 
-<section aria-labelledby="quien"><div class="c">
-  <h2 id="quien">Un lugar para cada parte de la comunidad</h2>
-  <p class="sub">Explorar es libre y no necesitas cuenta. Con una cuenta gratuita puedes publicar, comentar, seguir a otros y ganar con lo que compartes.</p>
-  <div class="g3">
-    <article class="card">
-      <h3>Para gamers</h3>
-      <p>Descubre juegos, mods de rendimiento, apps y herramientas para PC y Android que comparte la comunidad.</p>
-      <ul><li>Fichas con capturas, videos, reseñas y guías de instalación</li><li>Recomendaciones de Nexus según lo que te gusta</li><li>Videos, transmisiones en vivo y lecturas en NEW</li></ul>
-    </article>
-    <article class="card dev">
-      <h3>Para desarrolladores independientes</h3>
-      <p>Publica y distribuye tus juegos, mods y herramientas, llega a quienes buscan proyectos como el tuyo y construye una comunidad alrededor de tu trabajo.</p>
-      <ul><li>Página propia para cada proyecto, con capturas, videos y guía de instalación</li><li>Seguidores, comentarios, reseñas y avisos de novedades</li><li>Ingresos por la publicidad que ve quien llega a descargar</li></ul>
-    </article>
-    <article class="card">
-      <h3>Para creadores de contenido</h3>
-      <p>Comparte videos, guías y reseñas, crea tu blog con dominio propio y transmite en vivo.</p>
-      <ul><li>Monetización por visualizaciones de publicidad y blogs</li><li>Regalos y apoyos con UpCoins en tus lives</li><li>Estadísticas de tus publicaciones en tu panel</li></ul>
-    </article>
+<!-- ══════════════════════════════════
+  HEADER
+══════════════════════════════════ -->
+<header id="app-header">
+  <div class="hdr-logo"><span class="up">UP</span><span class="gm">GAMES</span></div>
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="buscador" placeholder="Buscar juegos, mods, apps, videos..." autocomplete="off">
+    <div id="autocomplete-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a1a28;border:1px solid rgba(50,213,131,.2);border-radius:0 0 12px 12px;z-index:1000;max-height:280px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.5)"></div>
   </div>
-</div></section>
-
-<section aria-labelledby="devs"><div class="c">
-  <h2 id="devs">Publica tu proyecto independiente en cuatro pasos</h2>
-  <p class="sub">UpGames no aloja tus archivos: tú mantienes tu enlace de descarga y UpGames te da la vitrina, la comunidad y la monetización.</p>
-  <div class="pasos">
-    <div class="card"><h3>Crea tu cuenta</h3><p>Gratis, con tu correo. Tu perfil público reúne todo lo que publicas.</p></div>
-    <div class="card"><h3>Publica</h3><p>Título, descripción, capturas, video y el enlace de descarga. El equipo revisa cada publicación antes de mostrarla.</p></div>
-    <div class="card"><h3>Llega a tu público</h3><p>Nexus recomienda tu proyecto a quienes les gusta ese tipo de contenido y tus seguidores reciben aviso de lo nuevo.</p></div>
-    <div class="card"><h3>Monetiza</h3><p>Ganas UpCoins por las visualizaciones de publicidad en la página de descarga, regalos en lives y tu blog, y puedes retirarlos como dinero.</p></div>
+  <div class="hdr-actions">
+    <!-- Menú rápido: el orbe despliega las opciones en abanico circular (script.js → UGR) -->
+    <button class="hdr-orb" id="hdr-orb" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="hdr-radial" title="Menú rápido" aria-label="Abrir menú rápido">
+      <span class="hdr-orb-ic"><i></i><i></i><i></i><i></i></span>
+      <span class="ugn-badge" id="hdr-orb-badge" hidden>0</span>
+      <span class="hdr-orb-live" id="hdr-orb-live" hidden></span>
+    </button>
   </div>
-</div></section>
+</header>
 
-<section aria-labelledby="todo"><div class="c">
-  <h2 id="todo">Todo lo que reúne UpGames</h2>
-  <div class="g3">
-    <div class="card"><h3>Juegos, mods y apps</h3><p>Un catálogo de la comunidad con categorías, búsqueda y fichas detalladas para PC y Android.</p></div>
-    <div class="card"><h3>Videos y lives</h3><p>Un feed de videos de creadores y transmisiones en vivo con chat y regalos.</p></div>
-    <div class="card"><h3>NEW y blogs</h3><p>Guías, reseñas y noticias escritas por la comunidad, y la herramienta para crear tu propio blog.</p></div>
-    <div class="card"><h3>Nexus IA</h3><p>Un asistente que busca, recomienda y responde dudas sobre lo que hay en UpGames.</p></div>
-    <div class="card"><h3>UpCoins y Premium</h3><p>La moneda de UpGames para regalos, apoyos y extras, y Premium para usar la plataforma sin anuncios ni esperas.</p></div>
-    <div class="card"><h3>Comunidad</h3><p>Perfiles, seguidores, comentarios, reseñas, colecciones y mensajes entre creadores.</p></div>
+<!-- Menú radial (fuera del header: su backdrop-filter recortaría los elementos fijos) -->
+<div class="ugr" id="hdr-radial" aria-hidden="true">
+  <div class="ugr-scrim" data-ugr-cerrar></div>
+  <div class="ugr-glow"></div>
+  <div class="ugr-items" role="menu" aria-label="Menú rápido">
+    <button class="ugr-item" type="button" role="menuitem" data-ugr="live" aria-label="Transmisiones en vivo">
+      <span class="ugr-bub"><ion-icon name="radio-outline"></ion-icon><span class="hdr-live-dot" id="hdr-live-dot" hidden></span></span><span class="ugr-lbl">En vivo</span>
+    </button>
+    <button class="ugr-item" type="button" role="menuitem" data-ugr="subir" aria-label="Subir contenido">
+      <span class="ugr-bub"><ion-icon name="cloud-upload-outline"></ion-icon></span><span class="ugr-lbl">Subir</span>
+    </button>
+    <button class="ugr-item" type="button" role="menuitem" data-ugr="blog" aria-label="Mi blog: crea tu sitio web">
+      <span class="ugr-bub"><ion-icon name="globe-outline"></ion-icon></span><span class="ugr-lbl">Mi blog</span>
+    </button>
+    <button class="ugr-item ugr-oro" type="button" role="menuitem" data-ugr="premium" aria-label="Premium y Mi plan">
+      <span class="ugr-bub"><ion-icon name="star"></ion-icon></span><span class="ugr-lbl">Premium</span>
+    </button>
+    <button class="ugr-item" type="button" role="menuitem" data-ugr="soporte" aria-label="Contactar soporte o reportar abuso">
+      <span class="ugr-bub"><ion-icon name="help-buoy-outline"></ion-icon></span><span class="ugr-lbl">Soporte</span>
+    </button>
   </div>
-</div></section>
+  <button class="ugr-core" type="button" data-ugr-cerrar aria-label="Cerrar menú"><ion-icon name="close"></ion-icon></button>
+</div>
 
-<section class="hub" aria-labelledby="explora"><div class="c">
-  <h2 id="explora">Explora UpGames</h2>
-  <p class="sub">Algunas páginas de la comunidad. El catálogo completo está en la <a href="./public/biblioteca.html">biblioteca</a>.</p>
+<!-- Aviso: email sin verificar (lo muestra script.js → ugVerif) -->
+<div class="ug-verif" id="ug-verif" role="status" hidden>
+  <div class="ug-verif-ic">📧</div>
+  <div class="ug-verif-txt"><b>Verifica tu email</b><span id="ug-verif-sub">Protege tu cuenta y desbloquea los retiros de dinero.</span></div>
+  <button type="button" class="ug-verif-btn" id="ug-verif-btn">Enviar enlace</button>
+  <button type="button" class="ug-verif-x" id="ug-verif-x" aria-label="Ocultar aviso">✕</button>
+</div>
+
+<!-- ══════════════════════════════════
+  CATEGORY CHIPS
+══════════════════════════════════ -->
+<div id="category-row">
+  <button class="chip active" data-cat="">Todo</button>
+  <button class="chip" data-cat="Juego">Juegos</button>
+  <button class="chip" data-cat="Mod">Mods</button>
+  <button class="chip" data-cat="Apps">Apps</button>
+  <button class="chip chip--video" data-cat="Video">Videos</button>
+  <button class="chip" data-cat="Ajustes">Herramientas</button>
+  <button class="chip" data-cat="Optimizacion">Optimización</button>
+  <button class="chip" data-cat="Software">Software</button>
+</div>
+
+<!-- ══════════════════════════════════
+  MAIN OUTPUT GRID
+══════════════════════════════════ -->
+<main id="main-view">
+  <div class="ug-sr">
+    <h1>UpGames: juegos, mods y apps de gamers, creadores y desarrolladores independientes</h1>
+    <p>UpGames es el ecosistema que conecta a gamers, creadores de contenido y desarrolladores independientes. Descubre y descarga juegos para PC y Android, mods de rendimiento, juegos y configuraciones para Winlator, aplicaciones, herramientas, videos y blogs que publica la comunidad, sin registrarte. Con una cuenta gratuita publicas tus proyectos, construyes una comunidad que te sigue y monetizas tu trabajo con la publicidad de las descargas, los regalos en tus lives y tu blog.</p>
+    <nav aria-label="Enlaces de UpGames"><a href="blogs-guia.html">UpGames Blogs</a> · <a href="live.html">UpGames Live: transmisiones en vivo</a> · <a href="politica-privacidad.html">Política de privacidad</a> · <a href="terminos_condiciones.html">Términos y condiciones</a></nav>
+  </div>
+  <div id="hero-carousel" style="display:none">
+    <div class="hero-track" id="hero-track"></div>
+    <div class="hero-dots" id="hero-dots"></div>
+    <button class="hero-arrow prev" id="hero-prev" aria-label="Anterior"><ion-icon name="chevron-back"></ion-icon></button>
+    <button class="hero-arrow next" id="hero-next" aria-label="Siguiente"><ion-icon name="chevron-forward"></ion-icon></button>
+  </div>
+  <!-- En vivo ahora: primero a quienes sigues, luego por puntaje (orgánico + promoción con UpCoins) -->
+  <section id="ug-vivos" class="ug-vivos" hidden aria-label="En vivo ahora"></section>
+  <div id="output">
+    <!-- Skeleton while loading -->
+    <div class="skeleton-grid" id="skeleton">
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div><div class="skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div><div class="skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div><div class="skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div><div class="skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div><div class="skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div><div class="skeleton-line w60"></div></div></div>
+    </div>
+  </div>
+  <!-- Enlaces rastreables a temas, publicaciones y creadores (los actualiza scripts/generar-paginas.js cada hora) -->
+  <nav class="ug-explora" aria-label="Explora UpGames">
   <!--SEO:ENLACES-->
   <h3>Secciones</h3>
   <ul class="links">
-    <li><a href="./public/biblioteca.html">Biblioteca</a></li>
-    <li><a href="./public/live.html">En vivo</a></li>
-    <li><a href="./public/blogs-guia.html">Guía de UpGames Blogs</a></li>
+    <li><a href="/public/live.html">En vivo</a></li>
+    <li><a href="/public/blogs-guia.html">Guía de UpGames Blogs</a></li>
+    <li><a href="/public/blog.html">Crea tu blog</a></li>
   </ul>
   <h3>Juegos y temas</h3>
   <ul class="links">
-    <li><a href="./public/j/juegos-y-mods-para-android.html">Juegos, mods y apps para Android</a></li>
-    <li><a href="./public/j/juegos-para-winlator.html">Juegos y mods para Winlator</a></li>
-    <li><a href="./public/j/mods-de-rendimiento.html">Mods de rendimiento y optimización</a></li>
-    <li><a href="./public/j/mods-de-project-zomboid.html">Mods y juegos de Project Zomboid</a></li>
-    <li><a href="./public/j/juegos-para-gamehub.html">Juegos y configuraciones para GameHub</a></li>
-    <li><a href="./public/j/mods-de-need-for-speed-most-wanted-2005.html">Mods y juegos de Need for Speed: Most Wanted (2005)</a></li>
-    <li><a href="./public/j/mods-de-resident-evil.html">Mods y juegos de Resident Evil</a></li>
+    <li><a href="/public/j/juegos-y-mods-para-android.html">Juegos, mods y apps para Android</a></li>
+    <li><a href="/public/j/juegos-para-winlator.html">Juegos y mods para Winlator</a></li>
+    <li><a href="/public/j/mods-de-rendimiento.html">Mods de rendimiento y optimización</a></li>
+    <li><a href="/public/j/mods-de-project-zomboid.html">Mods y juegos de Project Zomboid</a></li>
+    <li><a href="/public/j/juegos-para-gamehub.html">Juegos y configuraciones para GameHub</a></li>
+    <li><a href="/public/j/mods-de-need-for-speed-most-wanted-2005.html">Mods y juegos de Need for Speed: Most Wanted (2005)</a></li>
+    <li><a href="/public/j/mods-de-resident-evil.html">Mods y juegos de Resident Evil</a></li>
   </ul>
   <h3>Publicaciones recientes</h3>
   <ul class="links">
-    <li><a href="./public/p/tutorial-6afa720b2e20e42d7f78e3d9.html">Tutorial</a></li>
-    <li><a href="./public/p/upgames-crea-tu-primera-publicacion-6af6a1a7917a3083f39493a0.html">UPGAMES crea tu primera publicación</a></li>
-    <li><a href="./public/p/candy-s-sweet-nightmare-6af68cc9b7d5adc792c553fa.html">Candy&#39;s Sweet Nightmare</a></li>
-    <li><a href="./public/p/upgames-racing-6aee9550d50e6d2754da3616.html">UPGAMES RACING</a></li>
-    <li><a href="./public/p/upgames-6aedeb7281c7add0fef07b1f.html">UPGAMES</a></li>
-    <li><a href="./public/p/upgames-6aed638281c7add0fef073d0.html">UPGAMES</a></li>
-    <li><a href="./public/p/gran-velocita-mod-offline-6aea367681c7add0fef0570b.html">Gran Velocita mod offline</a></li>
-    <li><a href="./public/p/grid-autosport-mobile-6ae9ea0481c7add0fef05196.html">Grid Autosport mobile</a></li>
-    <li><a href="./public/p/f1-racing-mobile-mod-6ae9cd5781c7add0fef04f9f.html">F1 Racing mobile mod</a></li>
-    <li><a href="./public/p/real-racing-3-mod-dinero-ilimitado-6ae9738d81c7add0fef04b9f.html">Real Racing 3 mod Dinero ilimitado</a></li>
-    <li><a href="./public/p/halo-ce-mod-compatibilidad-6ae2948b0e686a57d884c50c.html">halo ce mod compatibilidad</a></li>
-    <li><a href="./public/p/formula-1-2014-mod-optimizado-6ae2412b0cf9b4888bd16b32.html">Formula 1 2014 mod optimizado</a></li>
+    <li><a href="/public/p/tutorial-6afa720b2e20e42d7f78e3d9.html">Tutorial</a></li>
+    <li><a href="/public/p/upgames-crea-tu-primera-publicacion-6af6a1a7917a3083f39493a0.html">UPGAMES crea tu primera publicación</a></li>
+    <li><a href="/public/p/candy-s-sweet-nightmare-6af68cc9b7d5adc792c553fa.html">Candy&#39;s Sweet Nightmare</a></li>
+    <li><a href="/public/p/upgames-racing-6aee9550d50e6d2754da3616.html">UPGAMES RACING</a></li>
+    <li><a href="/public/p/upgames-6aedeb7281c7add0fef07b1f.html">UPGAMES</a></li>
+    <li><a href="/public/p/upgames-6aed638281c7add0fef073d0.html">UPGAMES</a></li>
+    <li><a href="/public/p/gran-velocita-mod-offline-6aea367681c7add0fef0570b.html">Gran Velocita mod offline</a></li>
+    <li><a href="/public/p/grid-autosport-mobile-6ae9ea0481c7add0fef05196.html">Grid Autosport mobile</a></li>
+    <li><a href="/public/p/f1-racing-mobile-mod-6ae9cd5781c7add0fef04f9f.html">F1 Racing mobile mod</a></li>
+    <li><a href="/public/p/real-racing-3-mod-dinero-ilimitado-6ae9738d81c7add0fef04b9f.html">Real Racing 3 mod Dinero ilimitado</a></li>
+    <li><a href="/public/p/halo-ce-mod-compatibilidad-6ae2948b0e686a57d884c50c.html">halo ce mod compatibilidad</a></li>
+    <li><a href="/public/p/formula-1-2014-mod-optimizado-6ae2412b0cf9b4888bd16b32.html">Formula 1 2014 mod optimizado</a></li>
   </ul>
   <h3>Creadores</h3>
   <ul class="links">
-    <li><a href="./public/u/keroxenee.html">@keroxenee</a></li>
-    <li><a href="./public/u/spring_candies.html">@spring_candies</a></li>
-    <li><a href="./public/u/kale_ab.html">@kale_ab</a></li>
-    <li><a href="./public/u/upgames.html">@upgames</a></li>
+    <li><a href="/public/u/keroxenee.html">@keroxenee</a></li>
+    <li><a href="/public/u/spring_candies.html">@spring_candies</a></li>
+    <li><a href="/public/u/kale_ab.html">@kale_ab</a></li>
+    <li><a href="/public/u/upgames.html">@upgames</a></li>
   </ul>
   <!--/SEO:ENLACES-->
-</div></section>
+  </nav>
 </main>
 
-<footer><div class="c">
-  <nav aria-label="Enlaces legales y de ayuda">
-    <a href="./public/biblioteca.html">Biblioteca</a>
-    <a href="./public/blogs-guia.html">UpGames Blogs</a>
-    <a href="./public/live.html">En vivo</a>
-    <a href="./public/terminos_condiciones.html">Términos y condiciones</a>
-    <a href="./public/politica-privacidad.html">Política de privacidad</a>
-    <a href="mailto:upgames.games.up@gmail.com">Contacto</a>
+<!-- ══════════════════════════════════
+  FAVORITES VIEW
+══════════════════════════════════ -->
+<!-- ══════════════════════════════════
+  NEW — artículos y entradas de los blogs de la comunidad (public/js/16-new.js)
+══════════════════════════════════ -->
+<div id="new-view" aria-label="NEW: lecturas de la comunidad">
+  <header class="ugn-cab">
+    <div>
+      <p class="ugn-marca">NEW</p>
+      <h2 class="ugn-titulo">Lecturas de la comunidad</h2>
+      <p class="ugn-sub">Guías, reseñas y noticias escritas por creadores de UpGames.</p>
+    </div>
+    <a class="ugn-escribir" href="./blog.html"><ion-icon name="create-outline"></ion-icon> Escribir</a>
+  </header>
+  <nav class="ugn-filtros" role="tablist" aria-label="Secciones de NEW">
+    <button type="button" role="tab" data-ugn="todo" class="active" aria-selected="true">Para ti</button>
+    <button type="button" role="tab" data-ugn="siguiendo" aria-selected="false">Siguiendo</button>
+    <button type="button" role="tab" data-ugn="populares" aria-selected="false">Populares</button>
+    <button type="button" role="tab" data-ugn="recientes" aria-selected="false">Recientes</button>
   </nav>
-  <p>UpGames es un directorio comunitario: no aloja los archivos que comparten sus usuarios. No es un casino ni un sitio de apuestas.</p>
-</div></footer>
+  <div id="ugn-cuerpo" aria-live="polite"><div class="ugn-carga"><span></span><span></span><span></span></div></div>
+</div>
+
+<div id="favs-view">
+  <button type="button" class="ug-volver-perfil" onclick="switchTab('profile')"><ion-icon name="chevron-back"></ion-icon> Perfil</button>
+  <div class="favs-header"><ion-icon name="heart"></ion-icon> Mis Favoritos</div>
+  <div id="favs-grid">
+    <div class="empty-state">
+      <ion-icon name="heart-outline"></ion-icon>
+      <h3>Sin favoritos aún</h3>
+      <p>Guarda contenido que te guste pulsando ❤️</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  PROFILE VIEW — FULL PERFIL INTEGRADO
+══════════════════════════════════ -->
+<div id="profile-view">
+  <!-- Not logged state -->
+  <div id="pf-not-logged" class="profile-not-logged pf-guest" style="display:none">
+    <img src="icons/logo-upgames.png" alt="UpGames" class="pf-guest-logo">
+    <h3>Tu espacio de creador te está esperando</h3>
+    <p>Crea tu cuenta gratis y empieza a publicar hoy.</p>
+    <div class="pf-guest-ben">
+      <div><span><ion-icon name="cloud-upload-outline"></ion-icon></span><div><b>Publica gratis</b><small>Juegos, mods y apps, sin pagar nada</small></div></div>
+      <div><span><ion-icon name="cash-outline"></ion-icon></span><div><b>Gana por cada anuncio visto</b><small>US$ 1,50 por cada 1.000 visualizaciones</small></div></div>
+      <div><span><ion-icon name="people-outline"></ion-icon></span><div><b>Una comunidad que te sigue</b><small>Seguidores, reseñas y lives</small></div></div>
+    </div>
+    <a href="/login.html?volver=.%2F&amp;registro=1" class="btn-login-action">Crear cuenta gratis</a>
+    <a href="/login.html" class="pf-guest-login">Ya tengo cuenta · Iniciar sesión</a>
+  </div>
+
+  <!-- Logged in content -->
+  <div id="pf-logged" style="display:none">
+
+    <!-- ══ CABECERA TIPO RED SOCIAL: portada 3:1 + avatar + stats + acciones ══ -->
+    <div class="pf2-hero">
+      <div class="pf-amb" id="pf-amb" aria-hidden="true"></div>
+      <div class="pf2-cover" id="pf-cover">
+        <button type="button" class="pf2-cover-share" onclick="pfShareProfile()" aria-label="Compartir perfil" title="Compartir perfil"><ion-icon name="share-social-outline"></ion-icon></button>
+        <button type="button" class="pf2-cover-btn" onclick="pfOpenSettings('portada')" aria-label="Editar portada">
+          <ion-icon name="camera-outline"></ion-icon><span>Editar portada</span>
+        </button>
+      </div>
+
+      <div class="pf2-head">
+        <button type="button" class="pf2-avatar-wrap" onclick="pfOpenSettings('avatar')" aria-label="Cambiar foto de perfil">
+          <div class="pf2-avatar" id="pf-avatar-display">
+            <ion-icon name="person" id="pf-avatar-icon"></ion-icon>
+            <img src="" alt="Foto de perfil" id="pf-avatar-img" style="display:none">
+          </div>
+          <span class="pf2-avatar-edit"><ion-icon name="camera"></ion-icon></span>
+        </button>
+      </div>
+
+      <div class="pf2-info">
+        <div class="pf2-name">
+          <span id="pf-username">@usuario</span>
+          <span id="pf-badge"></span>
+        </div>
+        <div class="pf-handle" id="pf-handle"></div>
+        <div class="pf-pills" id="pf-pills"></div>
+        <div class="pf2-xp" id="pf-stat-xp"></div>
+        <div class="pf2-bio" id="pf-bio">Sin biografía</div>
+        <div class="profile-social-links" id="pf-social-links-row"></div>
+      </div>
+
+      <div class="pf2-actions">
+        <!-- Publicar: crear publicación, ir en vivo y mi blog -->
+        <div class="pf-dd">
+          <button type="button" class="pf2-btn pf-btn-publicar" id="pf-btn-publicar" onclick="pfMenu('pf-menu-pub', this)" aria-haspopup="menu" aria-expanded="false"><ion-icon name="add"></ion-icon>Publicar</button>
+          <div class="pf-menu" id="pf-menu-pub" role="menu" hidden>
+            <button type="button" role="menuitem" onclick="pfMenuCerrar();pfOpenPublish(true)"><ion-icon name="cloud-upload-outline"></ion-icon><span><b>Crear publicación</b><small>Juego, mod, app, software o video</small></span></button>
+            <button type="button" role="menuitem" onclick="window.location.href='./live.html?estudio=1'"><ion-icon name="radio"></ion-icon><span><b>Ir en vivo</b><small>Transmite a tu comunidad</small></span></button>
+            <button type="button" role="menuitem" onclick="window.location.href='./blog.html'"><ion-icon name="globe-outline"></ion-icon><span><b>Mi blog</b><small>Crea tu sitio web</small></span></button>
+          </div>
+        </div>
+        <button type="button" class="pf2-btn pf2-btn-icon" id="pf-chat-btn" onclick="window.location.href='./chats.html'" aria-label="Chats"><ion-icon name="chatbubbles-outline"></ion-icon><span class="pf2-chat-n" id="pf-chat-n" hidden></span></button>
+        <!-- Ajustes: editar perfil y cerrar sesión -->
+        <div class="pf-dd">
+          <button type="button" class="pf2-btn pf2-btn-icon" id="pf-btn-ajustes" onclick="pfMenu('pf-menu-aj', this)" aria-haspopup="menu" aria-expanded="false" aria-label="Ajustes"><ion-icon name="settings-outline"></ion-icon></button>
+          <div class="pf-menu pf-menu-der" id="pf-menu-aj" role="menu" hidden>
+            <button type="button" role="menuitem" onclick="pfMenuCerrar();pfOpenSettings()"><ion-icon name="create-outline"></ion-icon><span><b>Editar perfil</b><small>Foto, portada, bio y redes</small></span></button>
+            <button type="button" role="menuitem" class="peligro" onclick="pfMenuCerrar();pfLogout()"><ion-icon name="log-out-outline"></ion-icon><span><b>Cerrar sesión</b></span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pf2-stats">
+        <button type="button" class="pf2-stat" onclick="pfShowPosts('publicaciones')"><b id="pf-stat-uploads">0</b><span>publicaciones</span></button>
+        <div class="pf2-stat"><b id="pf-stat-followers">0</b><span>seguidores</span></div>
+        <div class="pf2-stat"><b id="pf-stat-following">0</b><span>siguiendo</span></div>
+        <div class="pf2-stat"><b id="pf-stat-downloads">0</b><span>descargas</span></div>
+      </div>
+
+      <!-- Publicar: botón desplegable con todo el formulario -->
+      <button type="button" class="pf2-create" id="pf-create-btn" onclick="pfTogglePublish()" aria-expanded="false" aria-controls="pf-publish-wrap">
+        <span class="pf2-create-ico"><ion-icon name="add"></ion-icon></span>
+        <span class="pf2-create-txt"><b>Crear publicación</b><small>Juego, mod, app, software o video</small></span>
+        <ion-icon name="chevron-down" class="pf2-chev"></ion-icon>
+      </button>
+    </div>
+
+    <div class="pf2-publish" id="pf-publish-wrap" hidden>
+    <div id="pf-tab-publicar" class="pf2-publish-body pfw" data-paso="1">
+
+      <!-- ══ Asistente de publicación por pasos (upgames-publicar.js) ══ -->
+      <div class="pfw-cab">
+        <div class="pfw-prog" aria-hidden="true"><i></i></div>
+        <div class="pfw-pasos" aria-hidden="true"><span data-n="1">Tipo</span><span data-n="2">Contenido</span><span data-n="3">Enlace</span><span data-n="4">Publicar</span></div>
+      </div>
+
+      <!-- ① ¿Qué deseas publicar hoy? -->
+      <section class="pf-cat-selector pfw-paso" data-paso="1">
+        <h3 class="pfw-q">¿Qué deseas publicar hoy?</h3>
+        <p class="pfw-sub">Elige el tipo de contenido. Puedes cambiarlo después.</p>
+        <div class="pf-cat-grid pfw-cats" id="pf-cat-grid">
+          <button type="button" class="pf-cat-btn active" data-cat="Juego" onclick="pfOnCategoryChange('Juego',this)">
+            <ion-icon name="game-controller"></ion-icon><span><b>Juego</b><small>Tu juego o uno indie que puedes compartir</small></span>
+          </button>
+          <button type="button" class="pf-cat-btn" data-cat="Mod" onclick="pfOnCategoryChange('Mod',this)">
+            <ion-icon name="construct"></ion-icon><span><b>Mod</b><small>Cambios, parches y mejoras para un juego</small></span>
+          </button>
+          <button type="button" class="pf-cat-btn" data-cat="Optimizacion" onclick="pfOnCategoryChange('Optimizacion',this)">
+            <ion-icon name="speedometer"></ion-icon><span><b>Optimización</b><small>Más FPS y menos lag</small></span>
+          </button>
+          <button type="button" class="pf-cat-btn" data-cat="Apps" onclick="pfOnCategoryChange('Apps',this)">
+            <ion-icon name="phone-portrait"></ion-icon><span><b>App</b><small>Aplicaciones para Android o PC</small></span>
+          </button>
+          <button type="button" class="pf-cat-btn" data-cat="Ajustes" onclick="pfOnCategoryChange('Ajustes',this)">
+            <ion-icon name="settings"></ion-icon><span><b>Herramienta</b><small>Emuladores, launchers y utilidades</small></span>
+          </button>
+          <button type="button" class="pf-cat-btn" data-cat="Software" onclick="pfOnCategoryChange('Software',this)">
+            <ion-icon name="code-slash"></ion-icon><span><b>Software</b><small>Programas para PC</small></span>
+          </button>
+          <button type="button" class="pf-cat-btn pf-cat-btn-video" data-cat="Video" onclick="pfOnCategoryChange('Video',this)">
+            <ion-icon name="videocam"></ion-icon><span><b>Video</b><small>Tutoriales, gameplays y reseñas</small></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Input oculto que guarda la categoría seleccionada -->
+      <input type="hidden" id="pf-addCategory" value="Juego">
+
+      <!-- ══ Juego / Mod / App / Software / Herramienta / Optimización ══ -->
+      <div id="pf-form-standard" class="pfp">
+        <div class="pf-form-section-hdr" id="pf-form-standard-hdr" hidden>
+          <ion-icon name="game-controller" id="pf-form-icon"></ion-icon>
+          <span id="pf-form-cat-label">SUBIR JUEGO</span>
+        </div>
+
+        <!-- ② ¿Cómo se llamará tu publicación? -->
+        <section class="pfw-paso" data-paso="2">
+          <h3 class="pfw-q">¿Cómo se llamará tu publicación?</h3>
+          <div class="pf-form-group">
+            <label class="pf-label" for="pf-addTitle">Nombre</label>
+            <input type="text" id="pf-addTitle" class="pf-input pfw-grande" placeholder="Ej: GTA V – mod de rendimiento para PC de bajos recursos" maxlength="80" oninput="pfDetectGameRealtime(this.value)">
+            <small class="pfp-ayuda">Di qué es y qué hace. Si es para un juego comercial, indica que es un mod, parche o configuración.</small>
+            <div class="pfw-aviso-com" id="pfw-aviso-com" hidden></div>
+            <div id="pf-game-detection-hint" style="display:none" class="pfp-detectado">
+              <ion-icon name="game-controller"></ion-icon><span><b id="pf-detected-game-name"></b><small>Lo usamos para clasificar tu publicación y que la encuentren mejor.</small></span>
+            </div>
+          </div>
+          <div class="pf-form-group">
+            <label class="pf-label" for="pf-addDescription">Agrega una descripción</label>
+            <div class="pfp-desc-acc">
+              <button type="button" class="pfp-chip" onclick="pfpPlantilla()"><ion-icon name="document-text-outline"></ion-icon> Usar plantilla</button>
+              <button type="button" class="pfp-chip pfp-chip-nx" id="pfp-nexus-desc" onclick="pfpNexusDescribe()">✦ Que NEXUS la escriba</button>
+            </div>
+            <textarea id="pf-addDescription" class="pf-textarea" placeholder="Qué incluye, qué cambia, requisitos…" maxlength="1000"></textarea>
+          </div>
+          <div class="pf-form-group">
+            <label class="pf-label">Agrega imágenes y videos</label>
+            <div class="pfp-portada" id="pfp-portada" onclick="if(!event.target.closest('input,button'))pfOpenCoverWidget(0)">
+              <div class="pf-img-preview-mini" id="pf-slot-prev-0"><img src="" alt=""></div>
+              <div class="pfp-portada-vacia"><ion-icon name="image-outline"></ion-icon><b>Toca para subir la portada</b><small>Horizontal (16:9) se ve mejor · JPG, PNG o WebP</small></div>
+            </div>
+            <div class="pf-img-slot-row pfp-portada-url">
+              <input type="url" id="pf-addImage" class="pf-input" placeholder="…o pega una URL de imagen o de YouTube" oninput="pfUpdatePreview();pfPreviewSlot(0)">
+              <button type="button" class="pf-img-upload-btn" onclick="pfOpenCoverWidget(0)" title="Subir desde tu dispositivo"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+            </div>
+          <details class="pfp-mas">
+            <summary><ion-icon name="images-outline"></ion-icon> Agregar más imágenes o un video <small>(opcional, hasta 3)</small></summary>
+            <div class="pf-images-grid pfp-extra">
+              <div class="pf-image-slot">
+                <div class="pf-img-slot-row">
+                  <input type="url" id="pf-addImage2" class="pf-input" placeholder="Imagen 2: URL de imagen o de YouTube" oninput="pfPreviewSlot(1)">
+                  <button type="button" class="pf-img-upload-btn" onclick="pfOpenCoverWidget(1)" title="Subir desde tu dispositivo"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+                </div>
+                <div class="pf-img-preview-mini" id="pf-slot-prev-1"><img src="" alt=""></div>
+              </div>
+              <div class="pf-image-slot">
+                <div class="pf-img-slot-row">
+                  <input type="url" id="pf-addImage3" class="pf-input" placeholder="Imagen 3: URL de imagen o de YouTube" oninput="pfPreviewSlot(2)">
+                  <button type="button" class="pf-img-upload-btn" onclick="pfOpenCoverWidget(2)" title="Subir desde tu dispositivo"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+                </div>
+                <div class="pf-img-preview-mini" id="pf-slot-prev-2"><img src="" alt=""></div>
+              </div>
+              <div class="pf-image-slot">
+                <div class="pf-img-slot-row">
+                  <input type="url" id="pf-addImage4" class="pf-input" placeholder="Imagen 4: URL de imagen o de YouTube" oninput="pfPreviewSlot(3)">
+                  <button type="button" class="pf-img-upload-btn" onclick="pfOpenCoverWidget(3)" title="Subir desde tu dispositivo"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+                </div>
+                <div class="pf-img-preview-mini" id="pf-slot-prev-3"><img src="" alt=""></div>
+              </div>
+            </div>
+          </details>
+          </div>
+        </section>
+
+        <!-- ③ Agrega el enlace -->
+        <section class="pfw-paso" data-paso="3">
+          <h3 class="pfw-q">Agrega el enlace</h3>
+          <p class="pfw-sub">Donde está el archivo. UpGames no lo guarda: solo muestra tu enlace.</p>
+          <div class="pf-form-group">
+            <label class="pf-label" for="pf-addLink">Enlace de descarga</label>
+            <input type="url" id="pf-addLink" class="pf-input pfw-grande" placeholder="https://www.mediafire.com/file/…" oninput="pfUpdatePreview()">
+            <small class="pfp-ayuda">MediaFire, MEGA, Google Drive, Dropbox, GitHub… (sin acortadores).</small>
+          </div>
+          <details class="pfp-mas pfp-detalles">
+            <summary><ion-icon name="options-outline"></ion-icon><b>Detalles y guía de instalación</b> <small>(opcional, ayuda a que te encuentren)</small></summary>
+            <div id="pf-extra-fields"></div>
+            <div class="ugx-guia-form" data-guia="pf"></div>
+          </details>
+        </section>
+
+        <!-- ④ Analizar y publicar -->
+        <section class="pfw-paso pfp-final" data-paso="4">
+          <h3 class="pfw-q">Revisa y publica</h3>
+          <p class="pfw-sub">Nexus revisa tu enlace, la portada y el texto antes de publicar.</p>
+          <div class="pfp-prev" id="pfp-prev">
+            <div class="pfp-prev-tile">
+              <div class="pfp-prev-img" id="pfp-prev-img"><span>Sin portada</span></div>
+              <div class="pfp-prev-body">
+                <span id="pf-prev-tag" class="pfp-prev-cat">JUEGO</span>
+                <div id="pf-prev-title" class="pfp-prev-titulo">Título de tu publicación</div>
+                <div class="pfp-prev-autor" id="pfp-prev-autor"></div>
+              </div>
+            </div>
+            <ul class="pfp-check" id="pfp-check"></ul>
+          </div>
+          <img id="pf-prev-img" alt="" hidden>
+          <div class="pf-nexus-check">
+            <div id="pf-nexus-res"></div>
+            <button type="button" class="pf-nexus-btn" id="pf-nexus-btn" onclick="pfRevisarConNexus(true)">
+              <span class="pf-nexus-ic">✦</span><span><b>Revisar a fondo con Nexus IA</b><small>Opinión detallada y sugerencias para que te descarguen más</small></span>
+            </button>
+          </div>
+          <label class="pfw-declara" id="pfw-declara" hidden>
+            <input type="checkbox" id="pf-declara">
+            <span><b>Declaro que soy el autor o tengo permiso para compartir este contenido</b><small>y que no es un juego comercial completo. Soy responsable de lo que publico (<a href="./terminos_condiciones.html" target="_blank" rel="noopener">Términos</a>).</small></span>
+          </label>
+          <button type="button" class="pf-btn-submit" id="pf-subirBtn">
+            <ion-icon name="cloud-upload"></ion-icon> Publicar
+          </button>
+        </section>
+      </div>
+
+      <!-- ══ Video ══ -->
+      <div id="pf-form-video" class="pfp" style="display:none">
+        <div class="pf-form-section-hdr pf-form-section-hdr--video" hidden>
+          <ion-icon name="videocam"></ion-icon>
+          <span>SUBIR VIDEO</span>
+        </div>
+
+        <!-- ② ¿De qué trata tu video? -->
+        <section class="pfw-paso" data-paso="2">
+          <h3 class="pfw-q">¿De qué trata tu video?</h3>
+          <div class="pf-form-group">
+            <label class="pf-label" for="pf-vid-title">Título</label>
+            <input type="text" id="pf-vid-title" class="pf-input pfw-grande" placeholder="Ej: Cómo instalar GTA V en Winlator paso a paso">
+          </div>
+          <div class="pf-form-group">
+            <label class="pf-label" for="pf-vid-description">Agrega una descripción</label>
+            <textarea id="pf-vid-description" class="pf-textarea" style="height:100px" placeholder="¿De qué trata el video?…"></textarea>
+          </div>
+        <!-- Subgénero del video -->
+        <div class="pf-form-group">
+          <label class="pf-label"><ion-icon name="pricetag"></ion-icon> Tipo de Video</label>
+          <div class="pf-vid-type-grid" id="pf-vid-type-grid">
+            <button class="pf-vid-type-btn active" data-type="Tutorial" onclick="pfSelectVidType('Tutorial',this)"><ion-icon name="school"></ion-icon> Tutorial</button>
+            <button class="pf-vid-type-btn" data-type="Gameplay" onclick="pfSelectVidType('Gameplay',this)"><ion-icon name="game-controller"></ion-icon> Gameplay</button>
+            <button class="pf-vid-type-btn" data-type="Review" onclick="pfSelectVidType('Review',this)"><ion-icon name="star"></ion-icon> Review</button>
+            <button class="pf-vid-type-btn" data-type="Showcase" onclick="pfSelectVidType('Showcase',this)"><ion-icon name="eye"></ion-icon> Showcase</button>
+            <button class="pf-vid-type-btn" data-type="Otro" onclick="pfSelectVidType('Otro',this)"><ion-icon name="ellipsis-horizontal"></ion-icon> Otro</button>
+          </div>
+          <input type="hidden" id="pf-vid-type" value="Tutorial">
+        </div>
+
+        </section>
+
+        <!-- ③ Sube tu video -->
+        <section class="pfw-paso" data-paso="3">
+          <h3 class="pfw-q">Sube tu video</h3>
+        <!-- Upload Cloudinary -->
+        <div class="pf-form-group">
+          <label class="pf-label"><ion-icon name="cloud-upload" style="color:var(--cy)"></ion-icon> Subir Video</label>
+          <div class="pf-cloudinary-zone" id="pf-cloudinary-zone">
+            <div class="pf-cld-idle" id="pf-cld-idle">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+              <p>Sube tu video directamente a la nube</p>
+              <span>MP4, WebM, MOV — máx. 500MB</span>
+              <button class="pf-cld-btn" id="pf-cld-open-btn" onclick="pfOpenCloudinaryWidget()">
+                <ion-icon name="videocam"></ion-icon> SELECCIONAR VIDEO
+              </button>
+            </div>
+            <div class="pf-cld-uploading" id="pf-cld-uploading" style="display:none">
+              <div class="pf-cld-spinner"></div>
+              <p>Subiendo video...</p>
+              <div class="pf-cld-progress-bar"><div class="pf-cld-progress-fill" id="pf-cld-progress-fill"></div></div>
+            </div>
+            <div class="pf-cld-done" id="pf-cld-done" style="display:none">
+              <ion-icon name="checkmark-circle" style="color:var(--g);font-size:2rem"></ion-icon>
+              <p class="pf-cld-done-label">¡Video subido!</p>
+              <video id="pf-vid-preview" controls playsinline muted style="width:100%;border-radius:10px;margin-top:8px;max-height:200px;object-fit:cover"></video>
+              <button class="pf-cld-change-btn" onclick="pfOpenCloudinaryWidget()">
+                <ion-icon name="refresh"></ion-icon> Cambiar video
+              </button>
+            </div>
+          </div>
+          <input type="hidden" id="pf-vid-url" value="">
+        </div>
+
+        <!-- Miniatura personalizada -->
+        <div class="pf-form-group">
+          <label class="pf-label"><ion-icon name="image"></ion-icon> Miniatura (opcional)</label>
+          <div class="pf-img-slot-row">
+            <input type="url" id="pf-vid-thumbnail" class="pf-input" placeholder="URL de imagen o déjalo vacío para auto-generar" oninput="pfUpdateVideoPreview()">
+            <button class="pf-img-upload-btn" onclick="pfOpenThumbnailWidget()" title="Subir a la nube"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+          </div>
+          <div class="pf-img-preview-mini" id="pf-vid-thumb-prev"><img src="" alt=""></div>
+        </div>
+
+        <!-- Entrada Destacada -->
+        <div class="pf-form-group">
+          <label class="pf-label">
+            <ion-icon name="pin" style="color:var(--cy)"></ion-icon>
+            Entrada Destacada
+            <span style="font-weight:400;color:var(--txt3);font-size:.72rem"> — opcional</span>
+          </label>
+          <p style="font-size:.73rem;color:var(--txt3);margin-bottom:10px;line-height:1.5">
+            Ancla una de tus publicaciones al video. Los espectadores podrán abrirla directamente desde aquí sin tener que buscarla en tu perfil.
+          </p>
+          <!-- Item seleccionado -->
+          <div class="pf-featured-selected" id="pf-featured-selected" style="display:none">
+            <img id="pf-featured-sel-img" src="" alt="">
+            <div class="pf-featured-sel-info">
+              <div class="pf-featured-sel-cat" id="pf-featured-sel-cat"></div>
+              <div class="pf-featured-sel-title" id="pf-featured-sel-title"></div>
+            </div>
+            <button class="pf-featured-sel-clear" onclick="pfClearFeaturedItem()" title="Quitar">
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+          </div>
+          <!-- Buscador -->
+          <div class="pf-featured-search-wrap" id="pf-featured-search-wrap">
+            <ion-icon name="search-outline"></ion-icon>
+            <input type="text" id="pf-featured-search" class="pf-featured-search"
+                   placeholder="Buscar en mis publicaciones..."
+                   oninput="pfFilterFeaturedItems(this.value)" autocomplete="off">
+          </div>
+          <!-- Lista desplegable -->
+          <div class="pf-featured-list" id="pf-featured-list">
+            <div class="pf-featured-loading" id="pf-featured-loading">
+              <ion-icon name="sync-outline" style="animation:spinAnim 1s linear infinite"></ion-icon>
+              Carga tus publicaciones al cambiar a esta categoría…
+            </div>
+          </div>
+          <input type="hidden" id="pf-vid-featured-id" value="">
+        </div>
+
+        </section>
+
+        <!-- ④ Revisa y publica -->
+        <section class="pfw-paso" data-paso="4">
+          <h3 class="pfw-q">Revisa y publica</h3>
+        <!-- Vista previa del video card -->
+        <div class="pf-section-title" style="font-size:.62rem"><ion-icon name="eye"></ion-icon> VISTA PREVIA</div>
+        <div class="pf-video-preview-card" id="pf-video-preview-card">
+          <div class="pf-vpc-thumb">
+            <img id="pf-vpc-img" src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 320 180%27%3E%3Crect width=%27320%27 height=%27180%27 fill=%27%2312141c%27/%3E%3Ctext x=%27160%27 y=%2798%27 font-family=%27sans-serif%27 font-size=%2718%27 fill=%27%233a3f4d%27 text-anchor=%27middle%27%3E%E2%96%B6 VIDEO%3C/text%3E%3C/svg%3E" alt="">
+            <div class="pf-vpc-play"><ion-icon name="play-circle"></ion-icon></div>
+            <div class="pf-vpc-badge">VIDEO</div>
+          </div>
+          <div class="pf-vpc-info">
+            <div class="pf-vpc-type" id="pf-vpc-type">Tutorial</div>
+            <div class="pf-vpc-title" id="pf-vpc-title">Título del Video</div>
+          </div>
+        </div>
+
+          <button type="button" class="pf-btn-submit pf-btn-submit--video" id="pf-subirVideoBtn">
+            <ion-icon name="cloud-upload"></ion-icon> Publicar video
+          </button>
+        </section>
+      </div>
+
+      <!-- Navegación del asistente -->
+      <div class="pfw-nav">
+        <button type="button" class="pfw-atras" id="pfw-atras"><ion-icon name="arrow-back"></ion-icon> Atrás</button>
+        <button type="button" class="pfw-sig" id="pfw-sig">Siguiente <ion-icon name="arrow-forward"></ion-icon></button>
+      </div>
+    </div>
+
+    </div><!-- /pf-publish-wrap -->
+
+    <!-- ── Accesos que antes estaban en la barra inferior ── -->
+    <div class="pf-accesos" role="group" aria-label="Accesos del perfil">
+      <button type="button" class="pf-acceso" onclick="switchTab('favs')">
+        <ion-icon name="heart-outline"></ion-icon><b>Favoritos</b><small>Lo que guardaste</small>
+      </button>
+      <button type="button" class="pf-acceso" onclick="switchTab('economia'); window.ecoSec && ecoSec('resumen')">
+        <ion-icon name="cash-outline"></ion-icon><b>Ganancias</b><small>Tus ingresos y retiros</small>
+      </button>
+      <button type="button" class="pf-acceso" onclick="switchTab('economia'); window.ecoSec && ecoSec('ganar')">
+        <ion-icon name="wallet-outline"></ion-icon><b>Economía</b><small>UpCoins, misiones y Premium</small>
+      </button>
+    </div>
+
+    <!-- ── Pestañas: Publicaciones (por defecto) · Videos · gestión ── -->
+    <div class="perfil-tabs pf2-tabs" id="pf-tabs">
+      <button class="perfil-tab active" data-pftab="historial" data-sub="publicaciones" onclick="pfShowPosts('publicaciones',this)">
+        <ion-icon name="grid-outline"></ion-icon> Publicaciones
+      </button>
+      <button class="perfil-tab" data-pftab="historial" data-sub="videos" onclick="pfShowPosts('videos',this)">
+        <ion-icon name="play-circle-outline"></ion-icon> Videos
+      </button>
+      <button class="perfil-tab" data-pftab="colecciones" onclick="pfSwitchTab('colecciones',this)">
+        <ion-icon name="albums-outline"></ion-icon> Colecciones
+      </button>
+      <button class="perfil-tab" data-pftab="pagos" onclick="pfSwitchTab('pagos',this)">
+        <ion-icon name="cash-outline"></ion-icon> Pagos
+      </button>
+      <button class="perfil-tab" data-pftab="reportes" onclick="pfSwitchTab('reportes',this)">
+        <ion-icon name="flag-outline"></ion-icon> Reportes
+      </button>
+    </div>
+
+    <!-- ══ TAB: PUBLICACIONES / VIDEOS (por defecto) ══ -->
+    <div id="pf-tab-historial" class="perfil-tab-content active">
+
+      <!-- ── Sub-nav sticky ── -->
+      <div class="hist-subnav" id="hist-subnav">
+        <button class="hist-subnav-tab active" data-subtab="publicaciones" onclick="histSwitchSubTab('publicaciones',this)">
+          <ion-icon name="cloud-upload-outline"></ion-icon> Publicaciones
+        </button>
+        <button class="hist-subnav-tab" data-subtab="videos" onclick="histSwitchSubTab('videos',this)">
+          <ion-icon name="videocam-outline"></ion-icon> Videos
+          <span class="hist-subnav-count" id="pf-hist-vid-count" style="display:none"></span>
+        </button>
+      </div>
+
+      <!-- ── Panel: Publicaciones ── -->
+      <div id="hist-panel-publicaciones" class="hist-panel">
+        <div class="pf-items-grid" id="pf-showContent">
+          <div class="pf-empty"><ion-icon name="sync-outline"></ion-icon><p>Cargando...</p></div>
+        </div>
+      </div>
+
+      <!-- ── Panel: Videos ── -->
+      <div id="hist-panel-videos" class="hist-panel" style="display:none">
+        <div class="pf-items-grid" id="pf-showVideos">
+          <div class="pf-empty"><ion-icon name="sync-outline"></ion-icon><p>Cargando...</p></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ TAB: HISTORIAL DE PAGOS ══ -->
+    <div id="pf-tab-colecciones" class="perfil-tab-content"><div id="pf-colecciones" class="ugrs-wrap"></div></div>
+    <div id="pf-tab-pagos" class="perfil-tab-content">
+      <div class="pf-section-title"><ion-icon name="cash"></ion-icon> HISTORIAL DE RETIROS</div>
+      <div id="pf-pagos-content">
+        <div class="pf-empty"><ion-icon name="sync-outline"></ion-icon><p>Cargando historial...</p></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: BÓVEDA ══ -->
+    <div id="pf-tab-boveda" class="perfil-tab-content">
+      <div class="pf-section-title"><ion-icon name="shield-checkmark"></ion-icon> FAVORITOS GUARDADOS</div>
+      <div class="pf-items-grid" id="pf-vaultContent">
+        <div class="pf-empty"><ion-icon name="sync-outline"></ion-icon><p>Cargando...</p></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: REPORTES ══ -->
+    <div id="pf-tab-reportes" class="perfil-tab-content">
+      <div class="pf-section-title"><ion-icon name="flag"></ion-icon> MIS PUBLICACIONES REPORTADAS</div>
+      <div class="pf-info-box">
+        <ion-icon name="information-circle"></ion-icon>
+        <div>
+          <h4>¿Por qué es importante atender los reportes?</h4>
+          <p>Los reportes ayudan a mantener la calidad de la plataforma. Links caídos o desactualizados afectan tu reputación y pueden reducir tus ganancias.</p>
+        </div>
+      </div>
+      <div id="pf-reportesContent">
+        <div class="pf-empty"><ion-icon name="sync-outline"></ion-icon><p>Cargando...</p></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: ECONOMÍA ══ -->
+  </div><!-- /#pf-logged -->
+</div><!-- /#profile-view -->
+
+<!-- ══════════════════════════════════
+  ECONOMIA VIEW — CREATOR STUDIO DASHBOARD
+══════════════════════════════════ -->
+<div id="economia-view">
+  <button type="button" class="ug-volver-perfil" onclick="switchTab('profile')"><ion-icon name="chevron-back"></ion-icon> Perfil</button>
+
+  <!-- Studio Topbar -->
+  <div class="eco-topbar">
+    <div class="eco-topbar-brand">
+      <ion-icon name="analytics-outline"></ion-icon>
+      <span>Creator <strong>Studio</strong></span>
+    </div>
+    <div class="eco-live-badge">
+      <span class="eco-live-dot"></span>LIVE
+    </div>
+  </div>
+
+  <!-- ══ HERO: Saldo + Progress Ring ══ -->
+  <div class="eco-hero-card">
+    <div class="eco-hero-glow"></div>
+    <div class="eco-hero-left">
+      <div class="eco-hero-eyebrow"><ion-icon name="wallet-outline"></ion-icon> MIS UPCOINS</div>
+      <div class="eco-hero-saldo" id="pf-saldo-display" data-val="0">🪙 0</div>
+      <div class="eco-hero-currency">1 UpCoin = US$0,02 &nbsp;·&nbsp; úsalos en lives, NEXUS, Premium o retíralos</div>
+      <div class="eco-hero-extra" id="eco-hero-extra">
+        <span title="UpCoins ganados como creador: se pueden retirar como dinero real"><ion-icon name="cash-outline"></ion-icon> <b id="eco-retirables">0</b> retirables <small id="eco-retirables-usd"></small></span>
+        <span title="UpCoins comprados o de regalo: se usan dentro de UpGames"><ion-icon name="ellipse"></ion-icon> <b id="eco-monedas">0</b> comprados</span>
+        <span title="Ganancias de regalos, Super Chat, apoyos, accesos y Premium: esperan 7 días y luego pasan solas a retirables"><ion-icon name="lock-closed-outline"></ion-icon> <b id="eco-retenido">0</b> en retención</span>
+      </div>
+      <div id="eco-trend-badge" class="eco-trend-chip eco-trend-up">
+        <ion-icon name="trending-up"></ion-icon>
+        <span id="eco-trend-txt">Actualizando…</span>
+      </div>
+    </div>
+    <div class="eco-hero-right">
+      <svg viewBox="0 0 120 120" class="eco-ring-svg">
+        <defs>
+          <linearGradient id="eco-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#32D583"/>
+            <stop offset="100%" stop-color="#5AC8FA"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="50" class="eco-ring-bg"/>
+        <circle cx="60" cy="60" r="50" class="eco-ring-fill" id="eco-ring-fill"
+                stroke="url(#eco-ring-grad)"
+                stroke-dasharray="314.16" stroke-dashoffset="314.16"
+                transform="rotate(-90 60 60)"/>
+        <text x="60" y="58" class="eco-ring-pct" id="eco-ring-pct">0%</text>
+        <text x="60" y="72" class="eco-ring-lbl">de $10</text>
+      </svg>
+      <div class="eco-ring-caption">Meta retiro</div>
+    </div>
+  </div>
+
+  <!-- Submenú: cada parte en su sección (antes todo iba en un solo panel larguísimo) -->
+  <nav class="eco-subnav" id="eco-subnav" role="tablist" aria-label="Secciones de Economía">
+    <button type="button" role="tab" data-sec="resumen" class="active"><ion-icon name="stats-chart-outline"></ion-icon><span>Resumen</span></button>
+    <button type="button" role="tab" data-sec="publicaciones"><ion-icon name="albums-outline"></ion-icon><span>Publicaciones</span></button>
+    <button type="button" role="tab" data-sec="ganar"><ion-icon name="sparkles-outline"></ion-icon><span>Ganar más</span></button>
+    <button type="button" role="tab" data-sec="cobros"><ion-icon name="card-outline"></ion-icon><span>Cobros</span></button>
+  </nav>
+
+  <section class="eco-sec active" data-sec="resumen">
+
+  <!-- ══ TARIFA: se paga por visualizaciones de publicidad ══ -->
+  <details class="eco-tarifa" aria-label="Cómo ganas en UpGames">
+    <summary class="eco-tarifa-k" style="cursor:pointer;margin:0">ⓘ Tu tarifa de creador · cómo ganas</summary>
+    <p class="eco-tarifa-v"><b>US$1,50</b><span>por cada 1.000 visualizaciones de publicidad · 75 UpCoins</span></p>
+    <p class="eco-tarifa-d">UpGames <strong>no paga por descargas</strong>: ganas cada vez que alguien ve la publicidad de la página puente antes de abrir tu enlace. La misma tarifa para todo el catálogo.</p>
+    <ol class="eco-tarifa-pasos">
+      <li><b>01</b>Alguien abre tu publicación y toca “Obtener link”</li>
+      <li><b>02</b>Ve la publicidad de la página puente (≈30 s)</li>
+      <li><b>03</b>Se suma a tus anuncios vistos y a tus UpCoins</li>
+    </ol>
+  </details>
+  <!-- Period Selector -->
+  <div class="eco-period-strip">
+    <button class="eco-period-btn active" data-period="7"  onclick="ecoSetPeriod(7,this)">7D</button>
+    <button class="eco-period-btn"        data-period="30" onclick="ecoSetPeriod(30,this)">30D</button>
+    <button class="eco-period-btn"        data-period="90" onclick="ecoSetPeriod(90,this)">90D</button>
+    <button class="eco-period-btn"        data-period="365" onclick="ecoSetPeriod(365,this)">1A</button>
+    <button class="eco-period-btn"        data-period="0"  onclick="ecoSetPeriod(0,this)">TODO</button>
+  </div>
+
+  <!-- ══ KPI STRIP ══ -->
+  <div class="eco-kpi-strip">
+    <div class="eco-kpi-card eco-kpi--green">
+      <div class="eco-kpi-icon"><ion-icon name="cloud-download-outline"></ion-icon></div>
+      <div class="eco-kpi-val" id="pf-descargas-totales" data-val="0">0</div>
+      <div class="eco-kpi-lbl">Anuncios vistos</div>
+      <div class="eco-kpi-delta" id="eco-kpi-dl-delta">— este período</div>
+    </div>
+    <div class="eco-kpi-card eco-kpi--cyan">
+      <div class="eco-kpi-icon"><ion-icon name="albums-outline"></ion-icon></div>
+      <div class="eco-kpi-val" id="pf-juegos-elegibles" data-val="0">0</div>
+      <div class="eco-kpi-lbl">Monetizados</div>
+      <div class="eco-kpi-delta" id="eco-kpi-content-total">de — pubs.</div>
+    </div>
+    <div class="eco-kpi-card eco-kpi--yellow">
+      <div class="eco-kpi-icon"><ion-icon name="cash-outline"></ion-icon></div>
+      <div class="eco-kpi-val" id="eco-kpi-rpm">$0.000</div>
+      <div class="eco-kpi-lbl">UC / anuncio</div>
+      <div class="eco-kpi-delta">Tasa real</div>
+    </div>
+    <div class="eco-kpi-card eco-kpi--pink">
+      <div class="eco-kpi-icon"><ion-icon name="people-outline"></ion-icon></div>
+      <div class="eco-kpi-val" id="eco-kpi-followers">0</div>
+      <div class="eco-kpi-lbl">Seguidores</div>
+      <div class="eco-kpi-delta">Alcance</div>
+    </div>
+  </div>
+
+  <!-- ══ CHART ══ -->
+  <div class="eco-panel">
+    <div class="eco-panel-hdr">
+      <div class="eco-panel-title"><ion-icon name="bar-chart-outline"></ion-icon> ANUNCIOS VISTOS POR DÍA</div>
+      <div class="eco-panel-badge" id="eco-chart-badge">— total</div>
+    </div>
+    <div class="eco-chart-wrap">
+      <canvas id="eco-bar-chart" height="130"></canvas>
+    </div>
+    <div class="eco-chart-legend">
+      <span class="eco-legend-dot" style="background:var(--g)"></span>Anuncios vistos
+      <span class="eco-legend-dot" style="background:var(--cy);margin-left:14px"></span>Tendencia
+    </div>
+  </div>
+
+  <!-- ══ 3-COL INSIGHTS ══ -->
+  <div class="eco-insights-row">
+
+    <!-- Health Score -->
+    <div class="eco-insight-panel">
+      <div class="eco-panel-hdr">
+        <div class="eco-panel-title"><ion-icon name="shield-checkmark-outline"></ion-icon> SALUD</div>
+      </div>
+      <div class="eco-gauge-wrap">
+        <svg viewBox="0 0 140 85" class="eco-gauge-svg">
+          <path d="M18 72 A52 52 0 0 1 122 72" class="eco-gauge-track" fill="none"/>
+          <path d="M18 72 A52 52 0 0 1 122 72" class="eco-gauge-arc"   fill="none"
+                id="eco-gauge-arc" stroke-dasharray="163.4" stroke-dashoffset="0"/>
+        </svg>
+        <div class="eco-gauge-overlay">
+          <div class="eco-gauge-val" id="eco-health-val">—</div>
+          <div class="eco-gauge-grade" id="eco-health-grade">—</div>
+        </div>
+      </div>
+      <div class="eco-health-rows" id="eco-health-rows">
+        <div class="eco-health-row"><span>Reportes</span><span id="eco-h-reports" class="eco-hv eco-hv--good">0</span></div>
+        <div class="eco-health-row"><span>Activos</span><span id="eco-h-active"  class="eco-hv eco-hv--good">—</span></div>
+        <div class="eco-health-row"><span>Links caídos</span><span id="eco-h-caidos" class="eco-hv eco-hv--good">0</span></div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="eco-insight-panel">
+      <div class="eco-panel-hdr">
+        <div class="eco-panel-title"><ion-icon name="pie-chart-outline"></ion-icon> CATEGORÍAS</div>
+      </div>
+      <div class="eco-cat-list" id="eco-cat-list">
+        <div class="eco-spin"><ion-icon name="sync-outline"></ion-icon></div>
+      </div>
+    </div>
+
+    <!-- Conversion Funnel -->
+    <div class="eco-insight-panel">
+      <div class="eco-panel-hdr">
+        <div class="eco-panel-title"><ion-icon name="funnel-outline"></ion-icon> CONVERSIÓN</div>
+      </div>
+      <div class="eco-funnel-list">
+        <div class="eco-funnel-item">
+          <div class="eco-fi-label">Vistas</div>
+          <div class="eco-fi-bar-wrap"><div class="eco-fi-bar eco-fi--a" id="eco-rb-views" style="width:100%"></div></div>
+          <div class="eco-fi-val" id="eco-rv-views">—</div>
+        </div>
+        <div class="eco-funnel-item">
+          <div class="eco-fi-label">Anuncios vistos</div>
+          <div class="eco-fi-bar-wrap"><div class="eco-fi-bar eco-fi--b" id="eco-rb-interact" style="width:75%"></div></div>
+          <div class="eco-fi-val" id="eco-rv-interact">—</div>
+        </div>
+        <div class="eco-funnel-item">
+          <div class="eco-fi-label">Apoyos</div>
+          <div class="eco-fi-bar-wrap"><div class="eco-fi-bar eco-fi--c" id="eco-rb-dl" style="width:50%"></div></div>
+          <div class="eco-fi-val" id="eco-rv-dl">—</div>
+        </div>
+        <div class="eco-funnel-item">
+          <div class="eco-fi-label">Monetizados</div>
+          <div class="eco-fi-bar-wrap"><div class="eco-fi-bar eco-fi--d" id="eco-rb-earn" style="width:25%"></div></div>
+          <div class="eco-fi-val" id="eco-rv-earn">—</div>
+        </div>
+        <div class="eco-cvr-row">
+          <span>De vista a anuncio</span>
+          <strong id="eco-cvr">—%</strong>
+        </div>
+        <div class="eco-funnel-note" id="eco-funnel-nota">Cargando datos…</div>
+      </div>
+    </div>
+
+  </div><!-- /.eco-insights-row -->
+
+  <!-- ══ TOP LEADERBOARD ══ -->
+  <div class="eco-panel">
+    <div class="eco-panel-hdr">
+      <div class="eco-panel-title"><ion-icon name="podium-outline"></ion-icon> TOP CONTENIDO</div>
+      <div class="eco-panel-badge">Por anuncios vistos</div>
+    </div>
+    <div id="eco-leaderboard">
+      <div class="eco-spin"><ion-icon name="sync-outline"></ion-icon></div>
+    </div>
+  </div>
+
+  <!-- ══ GOALS ══ -->
+  <div class="eco-panel">
+    <div class="eco-panel-hdr">
+      <div class="eco-panel-title"><ion-icon name="flag-outline"></ion-icon> HITOS Y METAS</div>
+    </div>
+    <div class="eco-goals-grid" id="eco-goals">
+      <div class="eco-spin"><ion-icon name="sync-outline"></ion-icon></div>
+    </div>
+  </div>
+
+  </section>
+
+  <section class="eco-sec" data-sec="publicaciones">
+  <!-- ══ ESTADÍSTICAS REALES POR PUBLICACIÓN (vistas, descargas, apoyos, ganancias) ══ -->
+  <div class="eco-panel">
+    <div class="eco-panel-hdr">
+      <div class="eco-panel-title"><ion-icon name="analytics-outline"></ion-icon> RENDIMIENTO POR PUBLICACIÓN</div>
+      <div class="eco-panel-badge" id="eco-pub-rango">30 días</div>
+    </div>
+    <div id="eco-pubstats"><div class="eco-spin"><ion-icon name="sync-outline"></ion-icon></div></div>
+  </div>
+
+  </section>
+
+  <section class="eco-sec" data-sec="ganar">
+  <!-- Usos de los UpCoins: misiones, estilo, regalar Premium, nombre (upgames-extras.js) -->
+  <div id="ugx-hub"></div>
+
+  <!-- Referidos: invita y ganan los dos (upgames-extras.js → UGX.referidos) -->
+  <div id="ugx-referidos"></div>
+  <!-- Promover mis lives con UpCoins (upgames-extras.js → UGX.promoLive) -->
+  <div id="ugx-promo-live"></div>
+  </section>
+
+  <section class="eco-sec" data-sec="cobros">
+  <!-- ══ PAYOUT PANEL ══ -->
+  <div class="eco-payout-panel">
+
+    <!-- Verification warning -->
+    <div class="pf-eco-warn" id="pf-estado-verificacion" style="display:none">
+      <ion-icon name="alert-circle"></ion-icon>
+      <span>Necesitas verificación nivel 1+ para monetizar</span>
+    </div>
+
+    <!-- Método de cobro: dónde recibe el creador sus retiros (rutas/cobros.js) -->
+    <label class="pf-label" style="margin-bottom:8px">
+      <ion-icon name="wallet-outline" style="color:var(--cy)"></ion-icon> MÉTODO DE COBRO <span style="font-weight:500;opacity:.7;text-transform:none;letter-spacing:0">· donde recibes tus retiros</span>
+    </label>
+    <div class="eco-cobro" id="eco-cobro"><div class="eco-spin"><ion-icon name="sync-outline"></ion-icon></div></div>
+
+    <!-- Mi plan: pase sin anuncios (estado, renovar, cambiar, recordatorio, historial) -->
+    <div class="pf-eco-divider">
+      <ion-icon name="star"></ion-icon>
+      <span>MI PREMIUM</span>
+    </div>
+    <div class="eco-plan" id="eco-plan"><div class="eco-spin"><ion-icon name="sync-outline"></ion-icon></div></div>
+
+    <!-- Conseguir UpCoins con tarjeta o PayPal (regalos, NEXUS, Premium, accesos, destacar).
+         El formulario de la tarjeta lo dibuja PayPal: UpGames nunca recibe esos datos. -->
+    <div class="pf-eco-divider">
+      <ion-icon name="card"></ion-icon>
+      <span>CONSEGUIR UPCOINS</span>
+    </div>
+    <div class="eco-pay-hero">
+      <span class="eco-pay-badge">NUEVO</span>
+      <div class="eco-pay-head">
+        <div class="eco-pay-ic">💳</div>
+        <div>
+          <b>Recarga UpCoins con tarjeta o PayPal</b>
+          <small>Visa, Mastercard, Amex o débito · Mercado Pago o PayPal</small>
+        </div>
+      </div>
+      <ul class="eco-pay-uses">
+        <li>🎁 <b>Regalos</b> en los <a href="./live.html">lives</a></li>
+        <li>🧠 <b>Más mensajes de NEXUS IA</b> cuando se acaben los gratis</li>
+        <li>⭐ <b>Premium</b> y ⚡ <b>accesos directos</b> sin anuncios</li>
+        <li>🚀 <b>Destacar tus publicaciones</b> en el inicio</li>
+      </ul>
+      <div id="eco-tienda">
+        <button type="button" class="eco-pay-open" onclick="ecoAbrirTienda()"><ion-icon name="card-outline"></ion-icon> Conseguir UpCoins</button>
+      </div>
+      <p class="eco-pay-safe">🔒 Pago cifrado procesado por Mercado Pago o PayPal. Nunca vemos ni guardamos los datos de tu tarjeta.</p>
+    </div>
+
+    <!-- Request payment -->
+    <button class="pf-solicitar-btn" id="pf-btn-solicitar-pago" disabled>
+      RETIRAR MIS UPCOINS (mín. 500 UC = US$10)
+    </button>
+    <div class="pf-eco-pending" id="pf-solicitud-pendiente" style="display:none">
+      <ion-icon name="checkmark-circle"></ion-icon>
+      <span>Tienes un retiro pendiente de revisión</span>
+    </div>
+    <div class="pf-eco-info">
+      <strong style="color:var(--g)">💡 Requisitos para retirar:</strong><br>
+      • Mínimo 500 UpCoins ganados (US$10). Los UpCoins comprados no se retiran<br>
+      • Verificación nivel 1+<br>
+      • Al menos 1 visualización de publicidad en tus aportes, o ingresos de lives ya liberados<br>
+      • Método de cobro configurado: PayPal o Mercado Pago<br>
+      • Email de tu cuenta verificado<br>
+      <strong style="color:var(--g)">💰 Cómo ganas UpCoins:</strong><br>
+      • 75 UC (US$1,50) por cada 1.000 visualizaciones de publicidad en la página puente (las descargas y las vistas no se pagan)<br>
+      • 50% de cada regalo en tus <a href="./live.html?estudio=1" style="color:var(--cy)">lives</a><br>
+      • 0,5 UC la primera vez que cada usuario Premium abre el enlace de tu publicación (Premium no ve publicidad)<br>
+      • Regalos y Premium quedan 7 días en retención antes de ser retirables<br>
+      <strong style="color:var(--g)">🪙 En qué gastarlos:</strong> regalos en lives, NEXUS IA, Premium, estilo del perfil y destacar tus publicaciones.
+    </div>
+  </div><!-- /.eco-payout-panel -->
+
+  </section>
+
+</div><!-- /#economia-view -->
+
+<!-- ══ Modal: Editar perfil · Perfil (foto, portada, bio, redes) · Estilo (personalización) · Cuenta ══ -->
+<div class="pf-modal-overlay pfx" id="pf-settingsModal">
+  <div class="pf-modal-sheet">
+    <div class="pf-modal-handle"></div>
+    <div class="pf-modal-hdr">
+      <div class="pf-modal-hdr-title"><ion-icon name="sparkles"></ion-icon> Editar perfil</div>
+      <button class="pf-modal-close" onclick="pfCloseSettings()"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="pf-modal-body">
+      <!-- Así te ven los demás (se actualiza al instante) -->
+      <div class="pfx-vista" id="pfx-vista" aria-label="Vista previa de tu perfil">
+        <div class="pfx-vista-fondo" id="pfx-vista-fondo"></div>
+        <div class="pfx-vista-av" id="pfx-vista-av"></div>
+        <div class="pfx-vista-txt"><b id="pfx-vista-nombre">@usuario</b><div id="pfx-vista-ins"></div><small id="pfx-vista-bio"></small></div>
+        <span class="pfx-vista-tag">Así te ven</span>
+      </div>
+      <div class="pfx-tabs" role="tablist">
+        <button type="button" role="tab" class="on" data-g="perfil"><ion-icon name="person-circle-outline"></ion-icon>Perfil</button>
+        <button type="button" role="tab" data-g="estilo"><ion-icon name="color-palette-outline"></ion-icon>Estilo ✨</button>
+        <button type="button" role="tab" data-g="cuenta"><ion-icon name="shield-checkmark-outline"></ion-icon>Cuenta</button>
+      </div>
+
+      <div class="pfx-grupo on" data-g="perfil">
+      <!-- ── Avatar ── -->
+      <div id="pf-settings-avatar" class="pf-scontent pfx-card"><div class="pfx-card-t">📸 Foto de perfil</div>
+        <div class="pf-avatar-preview" id="pf-preview-avatar">
+          <ion-icon name="person"></ion-icon>
+        </div>
+
+        <div class="pf-av-mode-tabs">
+          <button class="pf-av-mode-tab active" id="pf-av-tab-upload" onclick="pfSwitchAvatarMode('upload')">
+            <ion-icon name="cloud-upload-outline"></ion-icon> Subir foto
+          </button>
+          <button class="pf-av-mode-tab" id="pf-av-tab-url" onclick="pfSwitchAvatarMode('url')">
+            <ion-icon name="link-outline"></ion-icon> Desde un enlace
+          </button>
+        </div>
+
+        <div id="pf-av-mode-url" style="display:none">
+          <div class="pf-form-group">
+            <label class="pf-label">URL de Avatar</label>
+            <input type="url" id="pf-input-avatar-url" class="pf-input"
+                   placeholder="https://i.imgur.com/..."
+                   oninput="pfUpdateAvatarPreview()">
+          </div>
+          <button class="pf-btn-save" onclick="pfSaveAvatar()">
+            <ion-icon name="save"></ion-icon> GUARDAR AVATAR
+          </button>
+        </div>
+
+        <div id="pf-av-mode-upload">
+          <button class="pf-btn-save" id="pf-av-upload-btn" onclick="pfUploadAvatar()">
+            <ion-icon name="cloud-upload"></ion-icon> SELECCIONAR Y SUBIR FOTO
+          </button>
+          <p class="pf-settings-hint" style="margin-top:10px">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            La foto se sube a la nube y se guarda automáticamente.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── Portada (imagen detrás del avatar) ── -->
+      <div id="pf-settings-portada" class="pf-scontent pfx-card"><div class="pfx-card-t">🖼️ Portada</div>
+        <div class="pf-banner-preview" id="pf-preview-banner"><span>Sin portada</span></div>
+
+        <button class="pf-btn-save" id="pf-bn-upload-btn" onclick="pfUploadBanner()">
+          <ion-icon name="cloud-upload"></ion-icon> SUBIR IMAGEN DE PORTADA
+        </button>
+
+        <div class="pf-form-group" style="margin-top:14px">
+          <label class="pf-label">…o pega una URL de imagen</label>
+          <input type="url" id="pf-input-banner-url" class="pf-input" placeholder="https://i.imgur.com/..." oninput="pfPreviewBanner(this.value)">
+        </div>
+        <button class="pf-btn-save" onclick="pfSaveBanner(document.getElementById('pf-input-banner-url').value)">
+          <ion-icon name="save"></ion-icon> GUARDAR PORTADA
+        </button>
+        <button class="pf-btn-save pf-btn-danger" id="pf-bn-remove-btn" onclick="pfRemoveBanner()" style="display:none;margin-top:10px">
+          <ion-icon name="trash-outline"></ion-icon> QUITAR PORTADA
+        </button>
+        <p class="pf-settings-hint" style="margin-top:10px">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Se muestra detrás de tu foto en tu perfil y en tu perfil público. Recomendado: imagen horizontal (3:1), por ejemplo 1500×500.
+        </p>
+      </div>
+
+      <!-- ── Bio ── -->
+      <div id="pf-settings-bio" class="pf-scontent pfx-card"><div class="pfx-card-t">📝 Biografía</div>
+        <div class="pf-form-group">
+          <label class="pf-label">Biografía (máx. 200 caracteres)</label>
+          <textarea id="pf-input-bio" class="pf-textarea" maxlength="200"
+                    placeholder="Cuéntanos sobre ti..."
+                    style="min-height:120px"
+                    oninput="document.getElementById('pf-bio-count').textContent=this.value.length"></textarea>
+          <small style="color:var(--txt3);font-size:.72rem"><span id="pf-bio-count">0</span>/200</small>
+        </div>
+        <button class="pf-btn-save" onclick="pfSaveBio()">
+          <ion-icon name="save"></ion-icon> GUARDAR BIO
+        </button>
+      </div>
+
+      <!-- ── Links de Redes Sociales ── -->
+      <div id="pf-settings-links" class="pf-scontent pfx-card"><div class="pfx-card-t">🔗 Redes sociales</div>
+        <p class="pf-settings-hint">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Agrega hasta 4 links. El ícono de la red social se detecta automáticamente.
+        </p>
+        <div id="pf-links-inputs">
+          <div class="pf-link-row" id="pf-link-row-0">
+            <div class="pf-link-icon-wrap" id="pf-link-icon-0">
+              <ion-icon name="link-outline"></ion-icon>
+            </div>
+            <input type="url" class="pf-input pf-link-input" id="pf-link-0"
+                   placeholder="https://youtube.com/@tucanal"
+                   oninput="pfDetectLinkIcon(0)">
+          </div>
+          <div class="pf-link-row" id="pf-link-row-1">
+            <div class="pf-link-icon-wrap" id="pf-link-icon-1">
+              <ion-icon name="link-outline"></ion-icon>
+            </div>
+            <input type="url" class="pf-input pf-link-input" id="pf-link-1"
+                   placeholder="https://instagram.com/tuperfil"
+                   oninput="pfDetectLinkIcon(1)">
+          </div>
+          <div class="pf-link-row" id="pf-link-row-2">
+            <div class="pf-link-icon-wrap" id="pf-link-icon-2">
+              <ion-icon name="link-outline"></ion-icon>
+            </div>
+            <input type="url" class="pf-input pf-link-input" id="pf-link-2"
+                   placeholder="https://x.com/tuusuario"
+                   oninput="pfDetectLinkIcon(2)">
+          </div>
+          <div class="pf-link-row" id="pf-link-row-3">
+            <div class="pf-link-icon-wrap" id="pf-link-icon-3">
+              <ion-icon name="link-outline"></ion-icon>
+            </div>
+            <input type="url" class="pf-input pf-link-input" id="pf-link-3"
+                   placeholder="https://tiktok.com/@tuperfil"
+                   oninput="pfDetectLinkIcon(3)">
+          </div>
+        </div>
+        <button class="pf-btn-save" onclick="pfSaveSocialLinks()">
+          <ion-icon name="save"></ion-icon> GUARDAR LINKS
+        </button>
+      </div>
+
+      </div><!-- /perfil -->
+
+      <div class="pfx-grupo" data-g="estilo">
+        <p class="pfx-ayuda">Marcos animados, color del nombre, fondos, insignias y diseños de tarjeta para tus publicaciones. Se ven en tu perfil, en tus publicaciones, en los comentarios y en el chat de los lives.</p>
+        <div id="pfx-estilo"><div class="eco-spin"><ion-icon name="sync-outline"></ion-icon></div></div>
+      </div>
+
+      <div class="pfx-grupo" data-g="cuenta">
+      <!-- ── Editar Nombre de usuario ── -->
+      <div id="pf-settings-nombre" class="pf-scontent pfx-card pfx-plegable"><button type="button" class="pfx-card-h" onclick="pfxPlegar(this)"><span><b>✏️ Nombre de usuario</b><small>Cambia tu @ (1 vez cada 30 días)</small></span><ion-icon name="chevron-down-outline"></ion-icon></button><div class="pfx-card-c">
+        <div class="pf-cooldown-badge" id="pf-nombre-cooldown" style="display:none">
+          <ion-icon name="time-outline"></ion-icon>
+          <span id="pf-nombre-cooldown-msg">Disponible en X días</span>
+        </div>
+        <p class="pf-settings-hint">
+          <ion-icon name="warning-outline" style="color:#ffcc00"></ion-icon>
+          Solo puedes cambiar tu nombre de usuario <strong>1 vez cada 30 días</strong>. Este nombre también se usa para iniciar sesión.
+        </p>
+        <div class="pf-form-group">
+          <label class="pf-label">Nuevo nombre de usuario</label>
+          <input type="text" id="pf-input-username" class="pf-input"
+                 placeholder="minimo3, maximo20 chars"
+                 minlength="3" maxlength="20"
+                 autocomplete="off"
+                 oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'');pfCheckDisp('usuario',this)">
+          <small id="pf-username-disp" aria-live="polite" style="color:var(--txt3);font-size:.72rem">Solo letras minúsculas, números y guión bajo (_)</small>
+        </div>
+        <div class="pf-form-group">
+          <label class="pf-label">Confirma tu contraseña</label>
+          <input type="password" id="pf-input-username-pass" class="pf-input"
+                 placeholder="Tu contraseña actual" autocomplete="current-password">
+        </div>
+        <button class="pf-btn-save" id="pf-btn-save-username" onclick="pfSaveUsername()">
+          <ion-icon name="person-outline"></ion-icon> CAMBIAR NOMBRE
+        </button>
+      </div></div>
+
+      <!-- ── Editar Email ── -->
+      <div id="pf-settings-email" class="pf-scontent pfx-card pfx-plegable"><button type="button" class="pfx-card-h" onclick="pfxPlegar(this)"><span><b>✉️ Email</b><small>Para entrar y recuperar tu cuenta</small></span><ion-icon name="chevron-down-outline"></ion-icon></button><div class="pfx-card-c">
+        <div class="pf-cooldown-badge" id="pf-email-cooldown" style="display:none">
+          <ion-icon name="time-outline"></ion-icon>
+          <span id="pf-email-cooldown-msg">Disponible en X días</span>
+        </div>
+        <p class="pf-settings-hint">
+          <ion-icon name="warning-outline" style="color:#ffcc00"></ion-icon>
+          Solo puedes cambiar tu email <strong>1 vez cada 30 días</strong>. El nuevo email también sirve para iniciar sesión.
+        </p>
+        <div class="pf-form-group">
+          <label class="pf-label">Nuevo email</label>
+          <input type="email" id="pf-input-newemail" class="pf-input"
+                 placeholder="nuevo@email.com" autocomplete="off" oninput="pfCheckDisp('email',this)">
+          <small id="pf-email-disp" aria-live="polite" style="color:var(--txt3);font-size:.72rem"></small>
+        </div>
+        <div class="pf-form-group">
+          <label class="pf-label">Confirma tu contraseña</label>
+          <input type="password" id="pf-input-newemail-pass" class="pf-input"
+                 placeholder="Tu contraseña actual" autocomplete="current-password">
+        </div>
+        <button class="pf-btn-save" id="pf-btn-save-email" onclick="pfSaveEmail()">
+          <ion-icon name="mail-outline"></ion-icon> CAMBIAR EMAIL
+        </button>
+      </div></div>
+
+      <!-- ── Cambiar Contraseña ── -->
+      <div id="pf-settings-pass" class="pf-scontent pfx-card pfx-plegable"><button type="button" class="pfx-card-h" onclick="pfxPlegar(this)"><span><b>🔒 Contraseña</b><small>Cámbiala cuando quieras</small></span><ion-icon name="chevron-down-outline"></ion-icon></button><div class="pfx-card-c">
+        <p class="pf-settings-hint">
+          <ion-icon name="lock-closed-outline" style="color:var(--cy)"></ion-icon>
+          Usa una contraseña segura de al menos 8 caracteres.
+        </p>
+        <div class="pf-form-group">
+          <label class="pf-label">Contraseña actual</label>
+          <input type="password" id="pf-input-oldpass" class="pf-input"
+                 placeholder="Tu contraseña actual" autocomplete="current-password">
+        </div>
+        <div class="pf-form-group">
+          <label class="pf-label">Nueva contraseña</label>
+          <input type="password" id="pf-input-newpass" class="pf-input"
+                 placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        </div>
+        <div class="pf-form-group">
+          <label class="pf-label">Repetir nueva contraseña</label>
+          <input type="password" id="pf-input-newpass2" class="pf-input"
+                 placeholder="Repite la nueva contraseña" autocomplete="new-password">
+        </div>
+        <button class="pf-btn-save" onclick="pfSavePassword()">
+          <ion-icon name="lock-closed-outline"></ion-icon> CAMBIAR CONTRASEÑA
+        </button>
+      </div></div>
+
+      <!-- ── Recuperar publicaciones huérfanas ── -->
+      <div id="pf-settings-repair" class="pf-scontent pfx-card pfx-plegable"><button type="button" class="pfx-card-h" onclick="pfxPlegar(this)"><span><b>🛟 Recuperar publicaciones</b><small>Si cambiaste de nombre y no las ves</small></span><ion-icon name="chevron-down-outline"></ion-icon></button><div class="pfx-card-c">
+        <div class="pf-repair-header">
+          <ion-icon name="build-outline" style="font-size:1.6rem;color:#ff9800"></ion-icon>
+          <div>
+            <div style="font-weight:700;font-size:.85rem;color:#ff9800">RECUPERACIÓN DE CUENTA</div>
+            <div style="font-size:.72rem;color:var(--txt2);margin-top:2px">Si cambiaste de nombre antes del fix, tus publicaciones quedaron con el nombre viejo.</div>
+          </div>
+        </div>
+
+        <!-- Paso 1: Auto-detectar nombre viejo -->
+        <button class="pf-btn-detect" onclick="pfDetectOldName()">
+          <ion-icon name="search-outline"></ion-icon> DETECTAR MI NOMBRE ANTERIOR
+        </button>
+        <div id="pf-detect-result" style="display:none;margin-bottom:12px;padding:10px 12px;background:rgba(50,213,131,.07);border:1px solid var(--bd-g);border-radius:10px;font-size:.75rem;color:var(--txt2)"></div>
+
+        <div class="pf-repair-divider">— o ingresa el nombre manualmente —</div>
+
+        <div class="pf-form-group">
+          <label class="pf-label">Nombre de usuario anterior</label>
+          <input type="text" id="pf-repair-oldname" class="pf-input"
+                 placeholder="Ej: monsterx99"
+                 autocomplete="off"
+                 oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')">
+          <small style="color:var(--txt3);font-size:.72rem">Exactamente como era tu nombre antes del cambio</small>
+        </div>
+        <div class="pf-form-group">
+          <label class="pf-label">Confirma tu contraseña</label>
+          <input type="password" id="pf-repair-pass" class="pf-input"
+                 placeholder="Tu contraseña actual" autocomplete="current-password">
+        </div>
+        <button class="pf-btn-save" id="pf-btn-repair" style="background:linear-gradient(135deg,#ff9800,#ff5500)" onclick="pfRunRepair()">
+          <ion-icon name="construct-outline"></ion-icon> RESTAURAR MIS PUBLICACIONES
+        </button>
+        <div id="pf-repair-log" style="display:none;margin-top:12px;padding:12px;background:rgba(0,0,0,.3);border-radius:10px;font-size:.72rem;font-family:var(--ff-mono);color:var(--g);line-height:1.8"></div>
+      </div></div>
+      </div><!-- /cuenta -->
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: Editar Publicación ══ -->
+<div class="pf-modal-overlay" id="pf-editModal">
+  <div class="pf-modal-sheet">
+    <div class="pf-modal-handle"></div>
+    <div class="pf-modal-hdr">
+      <div class="pf-modal-hdr-title"><ion-icon name="create"></ion-icon> EDITAR PUBLICACIÓN</div>
+      <button class="pf-modal-close" onclick="pfCloseEditModal()"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="pf-modal-body pfe">
+      <input type="hidden" id="pf-edit-id">
+      <input type="hidden" id="pf-edit-category" value="Juego">
+      <div class="pfe-estado" id="pf-edit-estado" hidden></div>
+
+      <!-- ① Categoría: los mismos botones que al publicar -->
+      <div class="pf-form-group">
+        <div class="pfp-paso-h"><span>1</span><b>Categoría</b></div>
+        <div class="pf-cat-grid pfe-cat-grid" id="pf-edit-cat-grid">
+          <button type="button" class="pf-cat-btn" data-cat="Juego" onclick="pfEditCategoria('Juego')"><ion-icon name="game-controller"></ion-icon><span>Juego</span></button>
+          
+          <button type="button" class="pf-cat-btn" data-cat="Mod" onclick="pfEditCategoria('Mod')"><ion-icon name="construct"></ion-icon><span>Mod</span></button>
+          <button type="button" class="pf-cat-btn" data-cat="Apps" onclick="pfEditCategoria('Apps')"><ion-icon name="phone-portrait"></ion-icon><span>Apps</span></button>
+          <button type="button" class="pf-cat-btn" data-cat="Software" onclick="pfEditCategoria('Software')"><ion-icon name="code-slash"></ion-icon><span>Software</span></button>
+          <button type="button" class="pf-cat-btn" data-cat="Ajustes" onclick="pfEditCategoria('Ajustes')"><ion-icon name="settings"></ion-icon><span>Herramientas</span></button>
+          <button type="button" class="pf-cat-btn" data-cat="Optimizacion" onclick="pfEditCategoria('Optimizacion')"><ion-icon name="speedometer"></ion-icon><span>Optimización</span></button>
+        </div>
+      </div>
+
+      <!-- ② Lo esencial -->
+      <div class="pfp-paso-h"><span>2</span><b>Lo esencial</b></div>
+      <div class="pf-form-group">
+        <label class="pf-label" for="pf-edit-title">Título
+          <span class="pf-info-icon" onclick="pfToggleTooltip('pf-tooltip-title-edit')">?</span>
+        </label>
+        <input type="text" id="pf-edit-title" class="pf-input" required maxlength="80"
+               oninput="pfValidateEditTitle();pfEditDetectar()">
+        <small style="color:var(--txt3);font-size:.7rem" id="pf-edit-title-hint"></small>
+        <div id="pf-edit-detectado" class="pfp-detectado" style="display:none">
+          <ion-icon name="game-controller"></ion-icon><span><b id="pf-edit-detectado-n"></b><small>Lo usamos para clasificar tu publicación y que la encuentren mejor.</small></span>
+        </div>
+      </div>
+      <div class="pf-form-group">
+        <label class="pf-label" for="pf-edit-link">Enlace de descarga
+          <span class="pf-info-icon" onclick="pfToggleTooltip('pf-tooltip-link-edit')">?</span>
+        </label>
+        <input type="url" id="pf-edit-link" class="pf-input" required
+               oninput="pfValidateEditLink()">
+        <small style="color:var(--txt3);font-size:.7rem" id="pf-edit-link-hint"></small>
+        <small class="pfp-ayuda">Si cambias el enlace, la publicación vuelve a "En revisión" hasta comprobarlo.</small>
+      </div>
+
+      <!-- ③ Portada y medias -->
+      <div class="pfp-paso-h"><span>3</span><b>Portada y medias</b><small>hasta 4</small>
+        <span class="pf-info-icon" onclick="pfToggleTooltip('pf-tooltip-image-edit')">?</span></div>
+      <div class="pf-images-grid pfe-medias">
+        <div class="pf-image-slot">
+          <div class="pf-image-slot-label"><ion-icon name="image"></ion-icon> Portada</div>
+          <div class="pf-img-slot-row">
+            <input type="url" id="pf-edit-image" class="pf-input" placeholder="URL imagen/video o YouTube..." oninput="pfValidateEditImage();pfEditPrevSlot(0)">
+            <button type="button" class="pf-img-upload-btn" onclick="pfOpenEditCoverWidget(0)" title="Subir a la nube"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+          </div>
+          <div class="pf-img-preview-mini" id="pf-edit-prev-0"><img src="" alt=""></div>
+        </div>
+        <div class="pf-image-slot">
+          <div class="pf-image-slot-label"><ion-icon name="images"></ion-icon> Media 2</div>
+          <div class="pf-img-slot-row">
+            <input type="url" id="pf-edit-image2" class="pf-input" placeholder="URL imagen/video o YouTube..." oninput="pfEditPrevSlot(1)">
+            <button type="button" class="pf-img-upload-btn" onclick="pfOpenEditCoverWidget(1)" title="Subir a la nube"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+          </div>
+          <div class="pf-img-preview-mini" id="pf-edit-prev-1"><img src="" alt=""></div>
+        </div>
+        <div class="pf-image-slot">
+          <div class="pf-image-slot-label"><ion-icon name="images"></ion-icon> Media 3</div>
+          <div class="pf-img-slot-row">
+            <input type="url" id="pf-edit-image3" class="pf-input" placeholder="URL imagen/video o YouTube..." oninput="pfEditPrevSlot(2)">
+            <button type="button" class="pf-img-upload-btn" onclick="pfOpenEditCoverWidget(2)" title="Subir a la nube"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+          </div>
+          <div class="pf-img-preview-mini" id="pf-edit-prev-2"><img src="" alt=""></div>
+        </div>
+        <div class="pf-image-slot">
+          <div class="pf-image-slot-label"><ion-icon name="images"></ion-icon> Media 4</div>
+          <div class="pf-img-slot-row">
+            <input type="url" id="pf-edit-image4" class="pf-input" placeholder="URL imagen/video o YouTube..." oninput="pfEditPrevSlot(3)">
+            <button type="button" class="pf-img-upload-btn" onclick="pfOpenEditCoverWidget(3)" title="Subir a la nube"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+          </div>
+          <div class="pf-img-preview-mini" id="pf-edit-prev-3"><img src="" alt=""></div>
+        </div>
+      </div>
+      <small style="color:var(--txt3);font-size:.7rem" id="pf-edit-image-hint"></small>
+
+      <!-- ④ Descripción y detalles de la categoría -->
+      <div class="pfp-paso-h" style="margin-top:14px"><span>4</span><b>Descripción y detalles</b></div>
+      <div class="pf-form-group">
+        <div class="pfp-desc-acc">
+          <button type="button" class="pfp-chip" onclick="pfpPlantilla('edit')"><ion-icon name="document-text-outline"></ion-icon> Usar plantilla</button>
+          <button type="button" class="pfp-chip pfp-chip-nx" id="pfe-nexus-desc" onclick="pfpNexusDescribe('edit')">✦ Que NEXUS la escriba</button>
+        </div>
+        <textarea id="pf-edit-description" class="pf-textarea" maxlength="1000" placeholder="Qué incluye, cómo se instala, requisitos…" oninput="pfEditContador()"></textarea>
+        <small class="pfp-ayuda" id="pf-edit-desc-n">0 / 1000</small>
+      </div>
+      <div id="pf-edit-extra-fields"></div>
+      <div class="ugx-guia-form" data-guia="pfe"></div>
+
+      <!-- ⑤ Revisión y guardar -->
+      <div class="pf-nexus-check">
+        <button type="button" class="pf-nexus-btn" id="pf-edit-nexus-btn" onclick="pfRevisarEdicionConNexus()">
+          <span class="pf-nexus-ic">✦</span><span><b>Revisar con Nexus</b><small>Comprueba el enlace, la portada y el texto antes de guardar</small></span>
+        </button>
+        <div id="pf-edit-nexus-res"></div>
+      </div>
+      <button type="button" class="pf-btn-save" id="pf-edit-save-btn">
+        <ion-icon name="checkmark-circle"></ion-icon> GUARDAR CAMBIOS
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: Editar Video ══ -->
+<div class="pf-modal-overlay" id="pf-editVideoModal">
+  <div class="pf-modal-sheet">
+    <div class="pf-modal-handle"></div>
+    <div class="pf-modal-hdr">
+      <div class="pf-modal-hdr-title" style="color:var(--cy)"><ion-icon name="videocam"></ion-icon> EDITAR VIDEO</div>
+      <button class="pf-modal-close" onclick="pfCloseEditVideoModal()"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="pf-modal-body">
+      <input type="hidden" id="pf-edit-vid-id">
+      <input type="hidden" id="pf-edit-vid-type" value="Tutorial">
+      <div class="pf-form-group">
+        <label class="pf-label">Título del Video</label>
+        <input type="text" id="pf-edit-vid-title" class="pf-input" maxlength="200" placeholder="Título...">
+      </div>
+      <div class="pf-form-group">
+        <label class="pf-label">Descripción</label>
+        <textarea id="pf-edit-vid-desc" class="pf-textarea" maxlength="500" placeholder="Descripción..."></textarea>
+      </div>
+      <div class="pf-form-group">
+        <label class="pf-label">Tipo de Video</label>
+        <div class="pf-vid-type-grid">
+          <button class="pf-vid-type-btn pf-edit-vid-type-btn active" data-type="Tutorial" onclick="pfEditVidSelectType('Tutorial',this)"><ion-icon name="school"></ion-icon> Tutorial</button>
+          <button class="pf-vid-type-btn pf-edit-vid-type-btn" data-type="Gameplay" onclick="pfEditVidSelectType('Gameplay',this)"><ion-icon name="game-controller"></ion-icon> Gameplay</button>
+          <button class="pf-vid-type-btn pf-edit-vid-type-btn" data-type="Review" onclick="pfEditVidSelectType('Review',this)"><ion-icon name="star"></ion-icon> Review</button>
+          <button class="pf-vid-type-btn pf-edit-vid-type-btn" data-type="Showcase" onclick="pfEditVidSelectType('Showcase',this)"><ion-icon name="eye"></ion-icon> Showcase</button>
+          <button class="pf-vid-type-btn pf-edit-vid-type-btn" data-type="Otro" onclick="pfEditVidSelectType('Otro',this)"><ion-icon name="ellipsis-horizontal"></ion-icon> Otro</button>
+        </div>
+      </div>
+      <div class="pf-form-group">
+        <label class="pf-label">Miniatura</label>
+        <div class="pf-img-slot-row">
+          <input type="url" id="pf-edit-vid-thumb" class="pf-input" placeholder="URL de miniatura..."
+            oninput="var p=document.getElementById('pf-edit-vid-thumb-prev');p.src=this.value;p.style.display=this.value?'block':'none'">
+          <button class="pf-img-upload-btn" onclick="pfOpenEditVideoThumbWidget()" title="Subir a la nube"><ion-icon name="cloud-upload-outline"></ion-icon></button>
+        </div>
+        <img id="pf-edit-vid-thumb-prev" src="" alt="preview" style="display:none;width:100%;border-radius:10px;margin-top:8px;max-height:140px;object-fit:cover">
+      </div>
+      <button class="pf-btn-save" id="pf-edit-vid-save-btn" style="background:linear-gradient(135deg,var(--cy),#0084ff);color:#fff" onclick="pfSaveEditVideo()">
+        <ion-icon name="checkmark-circle"></ion-icon> GUARDAR CAMBIOS
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: Guía de Categorías ══ -->
+<div class="pf-modal-overlay" id="pf-catModal">
+  <div class="pf-modal-sheet">
+    <div class="pf-modal-handle"></div>
+    <div class="pf-modal-hdr">
+      <div class="pf-modal-hdr-title"><ion-icon name="apps"></ion-icon> GUÍA DE CATEGORÍAS</div>
+      <button class="pf-modal-close" onclick="pfCloseCatInfo()"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="pf-modal-body">
+      <div class="pf-cat-grid">
+        <div class="pf-cat-info"><h4><ion-icon name="game-controller"></ion-icon> JUEGO</h4>
+          <p>Juegos completos distribuidos legalmente (código abierto, desarrollador original, dominio público, o con permiso expreso).</p></div>
+        <div class="pf-cat-info"><h4><ion-icon name="construct"></ion-icon> MOD</h4>
+          <p>Modificaciones de juegos existentes (texturas, gameplay, personajes, etc.)</p></div>
+        <div class="pf-cat-info"><h4><ion-icon name="speedometer"></ion-icon> OPTIMIZACIÓN</h4>
+          <p>Mejoras de rendimiento, configuraciones optimizadas, parches de FPS.</p></div>
+        <div class="pf-cat-info"><h4><ion-icon name="settings"></ion-icon> AJUSTES</h4>
+          <p>Utilidades, herramientas de configuración, tweaks del sistema.</p></div>
+        <div class="pf-cat-info"><h4><ion-icon name="phone-portrait"></ion-icon> APPS</h4>
+          <p>Aplicaciones móviles o de escritorio.</p></div>
+        <div class="pf-cat-info"><h4><ion-icon name="code-slash"></ion-icon> OPEN SOURCE</h4>
+          <p>Software de código abierto, proyectos GPL, herramientas libres.</p></div>
+        <div class="pf-warning-box">
+          <h4><ion-icon name="warning"></ion-icon> IMPORTANTE</h4>
+          <p><strong>Categoría "Juego":</strong> Solo si eres el desarrollador original o tienes autorización legal. Redistribuir juegos de terceros sin permiso puede violar derechos de autor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Tooltips de formulario ══ -->
+<div class="pf-tooltip" id="pf-tooltip-title">
+  <button class="pf-tooltip-close" onclick="pfCloseTooltip('pf-tooltip-title')">✕</button>
+  <h4><ion-icon name="shield-checkmark"></ion-icon> Bot de Metadata Activo</h4>
+  <p class="pf-warn">⚠️ Sistema anti-piratería activado</p>
+  <p style="color:var(--txt);font-weight:600;margin-top:10px">Palabras PROHIBIDAS en el título:</p>
+  <ul><li><strong>crack</strong>, cracked, crackeado</li><li><strong>pirata</strong>, pirateado</li><li><strong>gratis</strong>, free</li><li><strong>full</strong>, completo</li><li><strong>premium</strong>, pro (sin licencia)</li><li><strong>descargar</strong>, download</li></ul>
+  <p class="pf-ok" style="margin-top:10px">✅ Usa títulos descriptivos y profesionales</p>
+</div>
+
+<div class="pf-tooltip" id="pf-tooltip-link">
+  <button class="pf-tooltip-close" onclick="pfCloseTooltip('pf-tooltip-link')">✕</button>
+  <h4><ion-icon name="information-circle"></ion-icon> Requisitos del Enlace</h4>
+  <p class="pf-ok">✅ Solo se admiten enlaces de descarga DIRECTA</p>
+  <p style="color:var(--txt);font-weight:600;margin-top:10px">Plataformas permitidas:</p>
+  <ul><li>MediaFire, MEGA, Google Drive</li><li>OneDrive, Dropbox, GitHub</li><li>GoFile, PixelDrain, Krakenfiles</li><li>ClaroDrive (go.clarodrive.com)</li><li>Descargas oficiales de UpGames (upgames-production.up.railway.app)</li></ul>
+  <p class="pf-warn" style="margin-top:10px">❌ NO se permiten acortadores (bit.ly, etc.)</p>
+</div>
+
+<div class="pf-tooltip" id="pf-tooltip-image">
+  <button class="pf-tooltip-close" onclick="pfCloseTooltip('pf-tooltip-image')">✕</button>
+  <h4><ion-icon name="image"></ion-icon> Cómo obtener enlace de imagen</h4>
+  <ol><li>Abre Google Imágenes y busca</li><li><strong>Móvil:</strong> Mantén presionada → "Abrir en otra pestaña"</li><li><strong>PC:</strong> Clic derecho → "Abrir imagen en pestaña nueva"</li><li>Copia el enlace completo</li><li>Pega aquí</li></ol>
+  <p class="pf-warn" style="margin-top:10px">⚠️ También se aceptan URLs de Imgur, Google Drive, Discord, y la mayoría de CDNs de imagen/video.</p>
+</div>
+
+<!-- Tooltips modal Editar (mismos límites que Publicar) -->
+<div class="pf-tooltip" id="pf-tooltip-title-edit">
+  <button class="pf-tooltip-close" onclick="pfCloseTooltip('pf-tooltip-title-edit')">✕</button>
+  <h4><ion-icon name="shield-checkmark"></ion-icon> Bot de Metadata Activo</h4>
+  <p class="pf-warn">⚠️ Sistema anti-piratería activado</p>
+  <p style="color:var(--txt);font-weight:600;margin-top:10px">Palabras PROHIBIDAS en el título:</p>
+  <ul><li><strong>crack</strong>, cracked, crackeado</li><li><strong>pirata</strong>, pirateado</li><li><strong>gratis</strong>, free</li><li><strong>full</strong>, completo</li><li><strong>premium</strong>, pro (sin licencia)</li><li><strong>descargar</strong>, download</li></ul>
+  <p class="pf-ok" style="margin-top:10px">✅ Usa títulos descriptivos y profesionales</p>
+</div>
+
+<div class="pf-tooltip" id="pf-tooltip-link-edit">
+  <button class="pf-tooltip-close" onclick="pfCloseTooltip('pf-tooltip-link-edit')">✕</button>
+  <h4><ion-icon name="information-circle"></ion-icon> Requisitos del Enlace</h4>
+  <p class="pf-ok">✅ Solo se admiten enlaces de descarga DIRECTA</p>
+  <p style="color:var(--txt);font-weight:600;margin-top:10px">Plataformas permitidas:</p>
+  <ul><li>MediaFire, MEGA, Google Drive</li><li>OneDrive, Dropbox, GitHub</li><li>GoFile, PixelDrain, Krakenfiles</li><li>ClaroDrive (go.clarodrive.com)</li><li>Descargas oficiales de UpGames (upgames-production.up.railway.app)</li></ul>
+  <p class="pf-warn" style="margin-top:10px">❌ NO se permiten acortadores (bit.ly, etc.)</p>
+</div>
+
+<div class="pf-tooltip" id="pf-tooltip-image-edit">
+  <button class="pf-tooltip-close" onclick="pfCloseTooltip('pf-tooltip-image-edit')">✕</button>
+  <h4><ion-icon name="image"></ion-icon> Cómo obtener enlace de imagen</h4>
+  <ol><li>Abre Google Imágenes y busca</li><li><strong>Móvil:</strong> Mantén presionada → "Abrir en otra pestaña"</li><li><strong>PC:</strong> Clic derecho → "Abrir imagen en pestaña nueva"</li><li>Copia el enlace completo</li><li>Pega aquí</li></ol>
+  <p class="pf-warn" style="margin-top:10px">⚠️ El enlace debe terminar en .jpg, .png, .webp o .gif</p>
+</div>
+
+<!-- ══════════════════════════════════
+  DETAIL SHEET (expanded card)
+══════════════════════════════════ -->
+<div id="detail-overlay"></div>
+<div id="detail-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-media">
+    <img id="ds-media-img" src="" alt="" loading="lazy">
+    <video id="ds-media-vid" autoplay muted loop playsinline style="display:none"></video>
+    <div class="sheet-media-overlay"></div>
+  </div>
+  <div class="sheet-scroll">
+    <!-- Galería de miniaturas (se oculta si solo hay 1 media) -->
+    <div class="sheet-gallery" id="ds-gallery" style="display:none"></div>
+    <!-- Header -->
+    <div class="sheet-header">
+      <div class="sheet-title-area">
+        <div class="sheet-cat" id="ds-cat"></div>
+        <h2 class="sheet-title" id="ds-title"></h2>
+      </div>
+      <button class="sheet-close" id="ds-close"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <!-- Author -->
+    <div class="sheet-author" id="ds-author">
+      <div class="author-avatar" id="ds-av-letter"></div>
+      <div class="author-info">
+        <div class="author-name" id="ds-author-name"></div>
+        <div class="author-sub">Ver perfil completo</div>
+      </div>
+      <ion-icon class="author-arrow" name="chevron-forward-outline"></ion-icon>
+    </div>
+    <!-- Stats -->
+    <div class="sheet-stats">
+      <div class="stat-box">
+        <div class="stat-val" id="ds-dl">0</div>
+        <div class="stat-lbl">Descargas</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="ds-upd">—</div>
+        <div class="stat-lbl">Actualizado</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="ds-favs">❤️</div>
+        <div class="stat-lbl">Favs</div>
+      </div>
+    </div>
+    <!-- Status -->
+    <div class="sheet-status-bar" id="ds-status">
+      <ion-icon name="checkmark-circle"></ion-icon>
+      <span id="ds-status-text">Online</span>
+    </div>
+    <!-- Description -->
+    <p class="sheet-desc" id="ds-desc"></p>
+    <!-- Serie por partes (se rellena por JS) -->
+    <div id="ds-serie" style="display:none"></div>
+    <!-- Cómo instalarlo: guía y/o video tutorial del creador (upgames-ux.js) -->
+    <div id="ds-guia" hidden></div>
+    <!-- Featured Entry (videos only — se inyecta por JS) -->
+    <div id="ds-featured-entry" style="display:none"></div>
+    <!-- Social Actions -->
+    <div class="sheet-actions">
+      <button class="action-pill" id="ds-btn-fav">
+        <ion-icon name="heart-outline"></ion-icon> Favorito
+      </button>
+      <button class="action-pill" id="ds-btn-share">
+        <ion-icon name="share-social-outline"></ion-icon> Compartir
+      </button>
+      <button class="action-pill" id="ds-btn-write" title="Escribe una entrada en tu blog sobre esta publicación">
+        <ion-icon name="create-outline"></ion-icon> Escribir sobre esto
+      </button>
+      <button class="action-pill" id="ds-btn-report">
+        <ion-icon name="flag-outline"></ion-icon> Reportar
+      </button>
+    </div>
+    <button class="ds-ask-nexus" id="ds-btn-nexus" type="button">
+      <span class="ds-ask-ic">✦</span><span><b>Pregúntale a Nexus</b><small>Qué es, cómo instalarlo y alternativas</small></span><ion-icon name="chevron-forward"></ion-icon>
+    </button>
+    <!-- Download -->
+    <a id="ds-download" href="#" target="_blank" class="sheet-download" onclick="event.stopPropagation()">
+      <ion-icon name="cloud-download-outline"></ion-icon>
+      ACCEDER A LA NUBE
+    </a>
+    <!-- Comments -->
+    <div class="comments-section-title">
+      <ion-icon name="chatbubbles"></ion-icon>
+      Comentarios
+    </div>
+    <div class="comment-input-area">
+      <textarea id="ds-comment-input" placeholder="Escribe una opinión..."></textarea>
+      <button class="btn-post" id="ds-comment-post">
+        <ion-icon name="send"></ion-icon>
+      </button>
+    </div>
+    <div id="ds-comments-list"><div class="no-comments">Cargando comentarios...</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  REPORT MODAL
+══════════════════════════════════ -->
+<div class="modal-overlay" id="report-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div class="modal-hdr-title"><span>⚠️</span> Reportar Contenido</div>
+      <button class="modal-close" onclick="closeReportModal()"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="report-options">
+        <button class="report-opt" data-motivo="caido">
+          <div class="report-opt-ico red"><ion-icon name="link-outline"></ion-icon></div>
+          <div>
+            <div class="report-opt-title">Link caído</div>
+            <div class="report-opt-sub">El enlace no funciona o está roto</div>
+          </div>
+        </button>
+        <button class="report-opt" data-motivo="viejo">
+          <div class="report-opt-ico yellow"><ion-icon name="time-outline"></ion-icon></div>
+          <div>
+            <div class="report-opt-title">Contenido obsoleto</div>
+            <div class="report-opt-sub">La versión está desactualizada</div>
+          </div>
+        </button>
+        <button class="report-opt" data-motivo="malware">
+          <div class="report-opt-ico blue"><ion-icon name="shield-outline"></ion-icon></div>
+          <div>
+            <div class="report-opt-title">Malware o engañoso</div>
+            <div class="report-opt-sub">Contenido sospechoso o peligroso</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  TERMS MODAL
+══════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════
+  BIENVENIDA — animación (6 capítulos, 9 apps en una) + reglas, UNA vez por versión de los términos
+  (script.js → TERMINOS_VERSION). Si los términos cambian, solo se
+  muestra un aviso pequeño, no esta bienvenida otra vez.
+══════════════════════════════════════════════════════ -->
+<div id="onboarding-modal" aria-modal="true" role="dialog" aria-label="Bienvenida a UpGames">
+  <button type="button" class="ob-saltar" id="ob-saltar" aria-label="Saltar la bienvenida">Saltar</button>
+
+  <!-- ── TRACK DE SLIDES ── -->
+  <div class="ob-track" id="ob-track">
+
+    <!-- PANTALLA 0 — Bienvenida animada (js/11-bienvenida.js → ugBienvAnim): la misma información de
+         siempre contada en 6 capítulos. Al terminar, o con «Saltar», pasa a las reglas y a aceptar. -->
+    <div class="ob-slide oba" data-slide="0">
+      <div class="obh-fondo" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="oba-rejilla" aria-hidden="true"></div>
+      <div class="oba-escena" id="oba-escena">
+
+        <section class="oba-cap" data-cap="0" aria-label="Bienvenida">
+          <div class="obh-pill oba-e"><span class="obh-dot"></span> ACCESO FUNDADOR · ERES DE LOS PRIMEROS</div>
+          <div class="obh-logo oba-logo"><span>UP</span>GAMES</div>
+          <h2 class="obh-titulo">No es otra app.<br><span>Es un ecosistema que no existe en ningún otro lugar.</span></h2>
+          <p class="obh-sub oba-e">Lo que hoy haces en <b>nueve apps distintas</b>, aquí está unido, conectado… <b>y te paga.</b></p>
+        </section>
+
+        <section class="oba-cap" data-cap="1" aria-label="Nueve apps en una">
+          <div class="oba-kicker oba-e">Todo en un solo lugar</div>
+          <div class="oba-fusion" role="list">
+            <div class="oba-app" role="listitem"><span>📚</span><b>Descargas</b><small>Juegos, mods y apps</small></div>
+            <div class="oba-app" role="listitem"><span>▶️</span><b>Videos</b><small>De creadores reales</small></div>
+            <div class="oba-app" role="listitem"><span>🔴</span><b>Lives</b><small>Con chat, regalos y Super Chat</small></div>
+            <div class="oba-app" role="listitem"><span>👥</span><b>Red social</b><small>Perfiles, seguidores y chat</small></div>
+            <div class="oba-app" role="listitem"><span>✦</span><b>NEXUS IA</b><small>Te conoce y te guía</small></div>
+            <div class="oba-app" role="listitem"><span>🪙</span><b>UpCoins</b><small>Una moneda para todo</small></div>
+            <div class="oba-app" role="listitem"><span>🌐</span><b>Blogs y webs</b><small>Tu sitio, tienda o landing con IA</small></div>
+            <div class="oba-app" role="listitem"><span>🏎️</span><b>Juegos</b><small>UpGames RACING y UPSTAR</small></div>
+            <div class="oba-app" role="listitem"><span>🧊</span><b>Studio 3D</b><small>Modela en 3D desde el celular</small></div>
+          </div>
+          <div class="oba-igual"><span class="oba-seis">9 apps</span><i class="oba-e">→</i><b class="oba-uno">1 UpGames</b></div>
+        </section>
+
+        <section class="oba-cap" data-cap="2" aria-label="Gratis, te paga y es tuyo">
+          <div class="oba-kicker oba-e">Así de simple</div>
+          <div class="oba-props">
+            <div class="oba-e"><b>Gratis</b><small>mira y descarga, incluso sin cuenta</small></div>
+            <div class="oba-e"><b>Te paga</b><small>ganas con cada anuncio que ven en tus publicaciones y tu blog</small></div>
+            <div class="oba-e"><b>Tuyo</b><small>tu perfil, tu estilo, tu comunidad</small></div>
+          </div>
+          <div class="obh-fundador oba-fundador oba-e"><span class="obh-medalla">🏛️</span><div><b>Insignia Fundador</b><small id="obh-fundador-txt">Solo para las cuentas creadas en esta etapa. No se vende y no vuelve a salir.</small></div><i class="oba-brillo" aria-hidden="true"></i></div>
+        </section>
+
+        <section class="oba-cap" data-cap="3" aria-label="Gana UpCoins">
+          <div class="oba-kicker oba-kicker-cy oba-e">Crea, gana y disfruta</div>
+          <h2 class="oba-titulo">Publica una vez.<br><span>Gana UpCoins para siempre.</span></h2>
+          <div class="oba-panel oba-e">
+            <div class="oba-panel-h"><span>Anuncios vistos</span><b class="oba-num">0</b></div>
+            <div class="oba-barra"><i></i></div>
+            <div class="oba-premio">🪙 <b>+75 UpCoins</b> <small>US$1,50 por cada 1.000</small></div>
+          </div>
+          <div class="oba-fila oba-e"><span class="oba-ic">🎁</span><span>Regalos, Super Chats y apoyos de tus fans</span><b>50 % para ti</b></div>
+          <div class="oba-fila oba-e"><span class="oba-ic">💸</span><span>Retira lo ganado</span><b>desde 500 UC</b></div>
+          <div class="oba-metodos"><i class="oba-e">PayPal</i><i class="oba-e">Mercado Pago</i></div>
+        </section>
+
+        <section class="oba-cap" data-cap="4" aria-label="Y además">
+          <div class="oba-kicker oba-e">Y además</div>
+          <div class="oba-feat oba-e"><ion-icon name="globe-outline"></ion-icon><div><b>UpGames Blogs</b><small>tu web gratis con dominio propio: landings que crea NEXUS, formularios, catálogo con pedidos por WhatsApp y estadísticas</small></div></div>
+          <div class="oba-feat oba-e"><ion-icon name="hardware-chip-outline"></ion-icon><div><b>NEXUS IA</b><small>te recomienda, resuelve dudas, escribe contigo y te guía · 10 mensajes gratis al día</small></div></div>
+          <div class="oba-feat oba-e"><ion-icon name="game-controller-outline"></ion-icon><div><b>Juegos y Studio</b><small>UpGames RACING, UPSTAR y Studio para modelar en 3D, en el navegador</small></div></div>
+          <div class="oba-feat oba-e"><ion-icon name="star-outline"></ion-icon><div><b>Premium</b><small>sin esperas ni anuncios, NEXUS ilimitado (también en tu blog) y más visibilidad</small></div></div>
+          <div class="oba-feat oba-e"><ion-icon name="sparkles-outline"></ion-icon><div><b>Misiones semanales</b><small>personaliza tu perfil y gana UpCoins</small></div></div>
+          <p class="oba-nota oba-e">1 UpCoin = US$0,02. Lo que ganas como creador se retira como dinero; lo que compras se usa dentro de UpGames.</p>
+        </section>
+
+        <section class="oba-cap" data-cap="5" aria-label="Reglas claras">
+          <div class="oba-kicker oba-e">Reglas claras</div>
+          <h2 class="oba-titulo">Lo esencial,<br><span>en 30 segundos.</span></h2>
+          <div class="oba-reglas">
+            <div class="oba-e"><span>📚</span><small>La biblioteca son referencias</small></div>
+            <div class="oba-e"><span>▶</span><small>Cada creador responde por lo que publica</small></div>
+            <div class="oba-e"><span>🛡</span><small>Tus datos y pagos, protegidos</small></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- PANTALLA 1 — Reglas claras + aceptar (también a donde lleva «Saltar») -->
+    <div class="ob-slide" data-slide="1">
+      <div class="ob-slide-inner">
+        <div class="ob-kicker">Reglas claras</div>
+        <h2 class="ob-title-sm">Lo esencial,<br><span class="ob-accent-g">en 30 segundos.</span></h2>
+        <div class="ob-rules">
+          <div class="ob-rule"><span class="ob-rule-num" style="background:rgba(90,200,250,.1);border-color:rgba(90,200,250,.3);color:var(--cy)">📚</span>
+            <div><strong>La biblioteca son referencias.</strong> Juegos, mods y apps los indexa la comunidad: UpGames no almacena esos archivos. Nada de piratería de juegos de pago ni malware.</div></div>
+          <div class="ob-rule"><span class="ob-rule-num" style="background:rgba(255,200,0,.1);border-color:rgba(255,200,0,.3);color:#ffc800">▶</span>
+            <div><strong>Cada creador responde por lo que publica</strong> (enlaces, videos y lives). Puedes reportar lo que incumpla.</div></div>
+          <div class="ob-rule"><span class="ob-rule-num" style="background:rgba(50,213,131,.1);border-color:rgba(50,213,131,.3);color:var(--g)">🛡</span>
+            <div><strong>Tus datos y pagos, protegidos.</strong> Mercado Pago y PayPal procesan las tarjetas (no vemos sus datos). Retiro de contenido ante notificación del titular (Decisión Andina 351 · Ley 23 de 1982).</div></div>
+        </div>
+        <div class="ob-cert"><ion-icon name="ribbon-outline"></ion-icon>
+          <div>UPGAMES: nombre, marca y software <strong>protegidos por derecho de autor</strong> (Decisión Andina 351 · Ley 23 de 1982).</div></div>
+        <div class="ob-legal-link" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a href="./terminos_condiciones.html" target="_blank" style="color:inherit">Términos</a> ·
+          <a href="./politica-privacidad.html" target="_blank" style="color:inherit">Privacidad</a> ·
+          <a href="./terminos_condiciones.html#pagos" target="_blank" style="color:inherit">Pagos</a> ·
+          <a href="./terminos_condiciones.html#derechos-autor" target="_blank" style="color:inherit">Derechos de autor</a>
+        </div>
+        <button id="btn-accept-terms" class="ob-btn-accept">✓ Acepto — Entrar a UpGames</button>
+        <button onclick="window.location.href='https://google.com'" class="ob-btn-reject">No acepto, salir</button>
+      </div>
+    </div>
+  </div><!-- /.ob-track -->
+
+  <!-- ── FOOTER FIJO: dots + botón siguiente ── -->
+  <div class="ob-footer" id="ob-footer">
+    <div class="oba-prog" id="oba-prog" aria-hidden="true"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+    <button class="ob-btn-next" id="ob-btn-next" aria-label="Siguiente">
+      Siguiente <ion-icon name="arrow-forward-outline"></ion-icon>
+    </button>
+  </div>
+
+</div><!-- /#onboarding-modal -->
+
+<!-- ══════════════════════════════════
+  BOTTOM NAVIGATION
+══════════════════════════════════ -->
+<nav id="bottom-nav">
+  <button class="nav-tab active" data-tab="main" aria-label="Explorar biblioteca">
+    <div class="nav-dot"></div>
+    <ion-icon name="home-outline"></ion-icon>
+    <span>Inicio</span>
+  </button>
+  <!-- Videos: abre el mismo feed vertical que el chip «Videos» (upgames-videos.js) -->
+  <button class="nav-tab nav-videos" onclick="window.UGVideos ? UGVideos.abrir() : switchTab('main')" aria-label="Ver videos">
+    <div class="nav-dot"></div>
+    <ion-icon name="play-circle-outline"></ion-icon>
+    <span>Videos</span>
+  </button>
+
+  <!-- NEXUS CENTER BUTTON -->
+  <button class="nav-tab nav-nexus" onclick="nxToggle()" aria-label="Abrir Nexus IA">
+    <div class="nav-nexus-ring"><ion-icon name="sparkles-outline"></ion-icon></div>
+    <span>Nexus</span>
+  </button>
+
+  <button class="nav-tab" data-tab="new" aria-label="NEW: artículos de la comunidad">
+    <div class="nav-dot"></div>
+    <ion-icon name="newspaper-outline"></ion-icon>
+    <span>NEW</span>
+  </button>
+  <!-- Favoritos y Ganancias/Economía viven ahora dentro del Perfil (accesos del perfil) -->
+  <button class="nav-tab" data-tab="profile" data-tabs="profile favs economia" aria-label="Mi perfil">
+    <div class="nav-dot"></div>
+    <ion-icon name="person-circle"></ion-icon>
+    <span>Perfil</span>
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════
+  TOAST CONTAINER
+══════════════════════════════════ -->
+<div id="toast-container"></div>
+
+<!-- ══════════════════════════════════
+  NEXUS AI FAB + PANEL
+══════════════════════════════════ -->
+<button id="nxFab" onclick="nxToggle()" aria-label="Abrir Nexus IA">
+  <svg viewBox="0 0 40 40" fill="none">
+    <path d="M20 3L35.59 12V28L20 37L4.41 28V12L20 3Z" stroke="url(#fg)" stroke-width="1.1" fill="none" opacity=".45"/>
+    <path d="M20 9.5L30 15.5V25.5L20 31.5L10 25.5V15.5L20 9.5Z" stroke="url(#fg)" stroke-width=".8" fill="none" opacity=".7"/>
+    <line x1="20" y1="14" x2="20" y2="26" stroke="url(#fg)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="14" y1="20" x2="26" y2="20" stroke="url(#fg)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="20" cy="20" r="2.8" fill="url(#fg)"/>
+    <defs>
+      <linearGradient id="fg" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#32D583"/><stop offset="1" stop-color="#5AC8FA"/>
+      </linearGradient>
+    </defs>
+  </svg>
+</button>
+
+<div id="nxPanel" role="dialog" aria-label="Nexus IA" aria-modal="true">
+  <header class="nx-hdr">
+    <div class="nx-hdr-l">
+      <div class="nx-logo-box">
+        <svg viewBox="0 0 24 24" fill="none" class="nx-lsvg">
+          <path d="M12 2L22 12L12 22L2 12Z" stroke="url(#hg)" stroke-width=".9" opacity=".4"/>
+          <path d="M12 7L17 12L12 17L7 12Z" stroke="url(#hg)" stroke-width=".7" opacity=".7"/>
+          <line x1="12" y1="9" x2="12" y2="15" stroke="#5AC8FA" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="9" y1="12" x2="15" y2="12" stroke="#5AC8FA" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="2" fill="#32D583"/>
+          <defs><linearGradient id="hg" x1="2" y1="2" x2="22" y2="22"><stop stop-color="#32D583"/><stop offset="1" stop-color="#5AC8FA"/></linearGradient></defs>
+        </svg>
+        <span class="nx-live"></span>
+      </div>
+      <div class="nx-titles">
+        <span class="nx-name">NEXUS <em>IA</em></span>
+        <span class="nx-sub" id="nxSub">Tu asistente en UpGames</span>
+      </div>
+    </div>
+    <div class="nx-hdr-r">
+      <button class="nx-ibtn" id="nxNuevo" onclick="nxNuevaConversacion()" title="Nueva conversación" aria-label="Nueva conversación">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+      </button>
+      <button class="nx-ibtn" id="nxExpBtn" onclick="nxExpand()" title="Expandir" aria-label="Expandir">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/>
+        </svg>
+      </button>
+      <button class="nx-ibtn nx-ibtn-x" onclick="nxToggle()" aria-label="Cerrar">✕</button>
+    </div>
+  </header>
+  <div class="nx-div"></div>
+  <div class="nx-body">
+    <div id="nxMsgs" class="nx-msgs" aria-live="polite"></div>
+  </div>
+  <div id="nxCuota" class="nx-cuota" hidden></div>
+  <form id="nxForm" class="nx-form" autocomplete="off">
+    <textarea id="nxInput" rows="1" maxlength="1500" placeholder="Pregúntale a Nexus…" aria-label="Mensaje para Nexus"></textarea>
+    <button type="submit" id="nxSend" aria-label="Enviar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
+  </form>
+</div>
+
+<!-- ══════════════════════════════════
+  TUTORIAL FAB
+══════════════════════════════════ -->
+<button id="tut-fab" onclick="window.UGG ? UGG.ayuda() : startTutorial()" title="Ayuda" aria-label="Ayuda y guía de inicio">?</button>
+
+<!-- Tutorial overlay elements -->
+<div id="btut-lock"></div>
+<div id="btut-spotlight"></div>
+<div id="btut-tooltip" style="display:none">
+  <button class="btut-close" id="btut-close">✕</button>
+  <div class="btut-inner">
+    <div class="btut-badge" id="btut-badge"></div>
+    <div class="btut-title" id="btut-title"></div>
+    <div class="btut-body" id="btut-body"></div>
+  </div>
+  <div class="btut-footer">
+    <div class="btut-dots" id="btut-dots"></div>
+    <div class="btut-nav">
+      <button class="btut-btn" id="btut-prev">← Atrás</button>
+      <button class="btut-btn primary" id="btut-next">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  CUSTOM CONFIRM DIALOG
+══════════════════════════════════ -->
+<div id="custom-confirm">
+  <div class="cc-box">
+    <div class="cc-icon" id="cc-icon">⚠️</div>
+    <div class="cc-title" id="cc-title"></div>
+    <div class="cc-msg" id="cc-msg"></div>
+    <div class="cc-btns">
+      <button class="cc-btn cancel" id="cc-cancel">Cancelar</button>
+      <button class="cc-btn confirm" id="cc-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ION ICONS -->
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<!-- Antes de script.js: render() usa UGUX.filas al pintar el catálogo de la caché -->
+<script src="upgames-metricas.js?v=20261120a"></script>
+<script src="upgames-ranking.js?v=20261108c"></script>
+<script src="upgames-ux.js?v=20261114a"></script>
+<script src="script.js?v=f1768a060f"></script>
+<script src="upgames-publicar.js?v=20261108a"></script>
+<script src="upgames-extras.js?v=20261115a"></script>
+<script src="upgames-social.js?v=20261029i"></script>
+<script src="upgames-guia.js?v=20261029i"></script>
+<script src="upgames-nexus-plus.js?v=20261114a"></script>
+<script src="upgames-compat.js?v=20261108a"></script>
+<script src="upgames-videos.js?v=20261108a"></script>
+<script src="upgames-motion.js?v=20261120a"></script>
+
+<!-- ══════════════════════════════════════
+  EXTENSIÓN DE PERFIL: Nombre / Email / Contraseña / Links
+══════════════════════════════════════ -->
+<script>
+/* ─── Plataformas detectables ─── */
+const PF_PLATFORMS = [
+  { key:'youtube',   match:['youtube.com','youtu.be'],    icon:'logo-youtube',  color:'#FF0000', label:'YouTube'  },
+  { key:'facebook',  match:['facebook.com','fb.com'],     icon:'logo-facebook', color:'#1877F2', label:'Facebook' },
+  { key:'instagram', match:['instagram.com'],             icon:'logo-instagram',color:'#E1306C', label:'Instagram'},
+  { key:'twitter',   match:['twitter.com','x.com'],       icon:'logo-twitter',  color:'#f0f0f8', label:'X'        },
+  { key:'tiktok',    match:['tiktok.com'],                icon:'logo-tiktok',   color:'#00f2ea', label:'TikTok'   },
+  { key:'twitch',    match:['twitch.tv'],                 icon:'logo-twitch',   color:'#9146FF', label:'Twitch'   },
+  { key:'discord',   match:['discord.gg','discord.com'],  icon:'logo-discord',  color:'#5865F2', label:'Discord'  },
+  { key:'linkedin',  match:['linkedin.com'],              icon:'logo-linkedin', color:'#0A66C2', label:'LinkedIn' },
+  { key:'github',    match:['github.com'],                icon:'logo-github',   color:'#f0f0f8', label:'GitHub'   },
+];
+
+function pfDetectPlatform(url) {
+  if (!url) return null;
+  const u = url.toLowerCase();
+  return PF_PLATFORMS.find(p => p.match.some(m => u.includes(m))) || null;
+}
+
+/* Actualiza el ícono en el input row mientras el usuario escribe */
+function pfDetectLinkIcon(idx) {
+  const url   = document.getElementById(`pf-link-${idx}`)?.value || '';
+  const wrap  = document.getElementById(`pf-link-icon-${idx}`);
+  if (!wrap) return;
+  const plat  = pfDetectPlatform(url);
+  const icon  = plat ? plat.icon  : 'link-outline';
+  const color = plat ? plat.color : 'var(--txt3)';
+  wrap.innerHTML = `<ion-icon name="${icon}" style="color:${color}"></ion-icon>`;
+}
+
+/* ─── pfOpenSettings (override para cargar datos en nuevas tabs) ─── */
+const _pfOpenSettingsOrig = typeof pfOpenSettings === 'function' ? pfOpenSettings : null;
+window.pfOpenSettings = function(tab) {
+  if (_pfOpenSettingsOrig) _pfOpenSettingsOrig(tab);   // pasar la pestaña pedida (p. ej. 'portada')
+  pfLoadSettingsExtras();
+};
+
+/* ─────────────────────────────────────────────────────────────
+   user_admin es SIEMPRE un string plano (el nombre de usuario),
+   tal como lo guarda el login. Los metadatos del perfil (cooldowns,
+   links sociales) viven en una clave aparte 'user_meta' para no
+   corromper user_admin — de lo contrario se rompen las notificaciones
+   y el dashboard, que usan user_admin como nombre de usuario.
+   ───────────────────────────────────────────────────────────── */
+function pfGetMeta() {
+  try { return JSON.parse(localStorage.getItem('user_meta') || '{}'); }
+  catch(_) { return {}; }
+}
+function pfSetMeta(patch) {
+  const m = pfGetMeta();
+  Object.assign(m, patch);
+  try { localStorage.setItem('user_meta', JSON.stringify(m)); } catch(_) {}
+  return m;
+}
+
+function pfLoadSettingsExtras() {
+  if (!localStorage.getItem('user_admin')) return;
+  try {
+    const m = pfGetMeta();
+
+    /* ── Cooldown de nombre ── */
+    pfCheckCooldown('nombre', m.lastUsernameChange);
+    /* ── Cooldown de email ── */
+    pfCheckCooldown('email', m.lastEmailChange);
+    /* ── Cargar links existentes ── */
+    const links = m.socialLinks || [];
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById(`pf-link-${i}`);
+      if (el) { el.value = links[i] || ''; pfDetectLinkIcon(i); }
+    }
+  } catch(e) {}
+}
+
+function pfCheckCooldown(type, lastChange) {
+  const badge   = document.getElementById(`pf-${type}-cooldown`);
+  const btnId   = type === 'nombre' ? 'pf-btn-save-username' : 'pf-btn-save-email';
+  const btn     = document.getElementById(btnId);
+  if (!badge) return;
+
+  if (!lastChange) { badge.style.display = 'none'; if(btn) btn.disabled = false; return; }
+
+  const last    = new Date(lastChange);
+  const now     = new Date();
+  const diffMs  = now - last;
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  const remaining = Math.ceil(30 - diffDays);
+
+  if (btn && type === 'nombre') { if (!btn.dataset.txt) btn.dataset.txt = btn.innerHTML; btn.dataset.pagar = ''; btn.innerHTML = btn.dataset.txt; }
+  if (remaining > 0) {
+    badge.style.display = 'flex';
+    // Nombre: con UpCoins se puede cambiar ya, sin esperar (rutas: PUT /usuarios/update-username { pagarUC })
+    const precio = type === 'nombre' && window.UGX?.precio?.('nombre');
+    document.getElementById(`pf-${type}-cooldown-msg`).textContent =
+      `Podrás cambiar tu ${type === 'nombre' ? 'nombre' : 'email'} en ${remaining} día${remaining !== 1 ? 's' : ''}${precio ? ` · o cámbialo ya por 🪙 ${precio} UpCoins` : ''}`;
+    if (btn && precio) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; btn.dataset.pagar = String(precio); btn.innerHTML = `⚡ Cambiar ya · 🪙 ${precio} UC`; }
+    else if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed'; }
+  } else {
+    badge.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+  }
+}
+
+/* ─── Disponibilidad en vivo: nombre y email son únicos ─── */
+const _pfDisp = { usuario: null, email: null }, _pfDispT = {};
+function pfCheckDisp(campo, input) {
+  const out = document.getElementById(campo === 'usuario' ? 'pf-username-disp' : 'pf-email-disp');
+  const v = input.value.trim().toLowerCase();
+  const set = (t, c) => { out.textContent = t; out.style.color = c || 'var(--txt3)'; };
+  _pfDisp[campo] = null;
+  clearTimeout(_pfDispT[campo]);
+  const actual = campo === 'usuario' ? (localStorage.getItem('user_admin') || '').toLowerCase() : (localStorage.getItem('email') || '').toLowerCase();
+  if (!v) return set(campo === 'usuario' ? 'Solo letras minúsculas, números y guión bajo (_)' : '');
+  if (v === actual) { _pfDisp[campo] = false; return set(campo === 'usuario' ? 'Ese ya es tu nombre actual' : 'Ese ya es tu email actual', '#ffcc00'); }
+  if (campo === 'usuario' && v.length < 3) return set('Mínimo 3 caracteres');
+  set('Comprobando…');
+  _pfDispT[campo] = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API_URL}/auth/disponibilidad?${campo}=${encodeURIComponent(v)}`);
+      const d = await r.json();
+      if (input.value.trim().toLowerCase() !== v || !d[campo]) return;
+      _pfDisp[campo] = !!d[campo].disponible;
+      set(d[campo].disponible ? (campo === 'usuario' ? `✓ @${v} está disponible` : '✓ Email disponible') : d[campo].motivo,
+          d[campo].disponible ? '#32D583' : '#ff5a5a');
+    } catch(_) { set(''); }
+  }, 450);
+}
+
+/* ─── Guardar nuevo nombre de usuario ─── */
+async function pfSaveUsername() {
+  const newUser  = (document.getElementById('pf-input-username')?.value || '').trim().toLowerCase();
+  const password = document.getElementById('pf-input-username-pass')?.value || '';
+  if (!newUser || newUser.length < 3) { showToast('El nombre debe tener al menos 3 caracteres', 'error'); return; }
+  if (_pfDisp.usuario === false) { showToast(document.getElementById('pf-username-disp')?.textContent || 'Ese nombre no está disponible', 'error'); return; }
+  if (!password) { showToast('Ingresa tu contraseña para confirmar', 'error'); return; }
+  const pagar = +(document.getElementById('pf-btn-save-username')?.dataset.pagar || 0);
+  if (pagar && !confirm(`¿Cambiar tu nombre a @${newUser} ahora por 🪙 ${pagar} UpCoins?`)) return;
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`${API_URL}/usuarios/update-username`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ nuevoUsuario: newUser, password, pagarUC: !!pagar })
+    });
+    const data = await res.json();
+    if (!data.success) { if (res.status === 402) window.UGX?.faltan?.(data.error); else showToast(data.error || 'Error al cambiar nombre', 'error'); return; }
+    if (pagar) window.ugContadorUC?.();
+    /* Actualizar localStorage — user_admin es un string plano (el que confirmó el servidor) */
+    localStorage.setItem('user_admin', data.nuevoUsuario || newUser);
+    if (data.nuevoToken) localStorage.setItem('token', data.nuevoToken);
+    // La marca de Premium va ligada al nombre: se pasa al nuevo (si no, la página puente volvía a mostrar anuncios)
+    try { const m = String(localStorage.getItem('ug_pase_hasta') || '').split('|'); if (m[1]) localStorage.setItem('ug_pase_hasta', (data.nuevoUsuario || newUser) + '|' + m[1]); } catch (_) {}
+    const lastUsernameChange = new Date().toISOString();
+    pfSetMeta({ lastUsernameChange });
+    document.getElementById('pf-username').textContent = '@' + newUser;
+    document.getElementById('pf-input-username').value = '';
+    document.getElementById('pf-input-username-pass').value = '';
+    pfCheckCooldown('nombre', lastUsernameChange);
+    showToast('¡Nombre actualizado!', 'success');
+  } catch(e) { showToast('Error de red', 'error'); }
+}
+
+/* ─── Guardar nuevo email ─── */
+async function pfSaveEmail() {
+  const newEmail = (document.getElementById('pf-input-newemail')?.value || '').trim();
+  const password = document.getElementById('pf-input-newemail-pass')?.value || '';
+  if (!newEmail || !/\S+@\S+\.\S+/.test(newEmail)) { showToast('Ingresa un email válido', 'error'); return; }
+  if (_pfDisp.email === false) { showToast(document.getElementById('pf-email-disp')?.textContent || 'Ese email no está disponible', 'error'); return; }
+  if (!password) { showToast('Ingresa tu contraseña para confirmar', 'error'); return; }
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`${API_URL}/usuarios/update-email`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ nuevoEmail: newEmail, password })
+    });
+    const data = await res.json();
+    if (!data.success) { showToast(data.error || 'Error al cambiar email', 'error'); return; }
+    localStorage.setItem('email', newEmail);
+    if (data.nuevoToken) localStorage.setItem('token', data.nuevoToken);
+    const lastEmailChange = new Date().toISOString();
+    pfSetMeta({ lastEmailChange });
+    document.getElementById('pf-input-newemail').value = '';
+    document.getElementById('pf-input-newemail-pass').value = '';
+    pfCheckCooldown('email', lastEmailChange);
+    showToast('¡Email actualizado!', 'success');
+  } catch(e) { showToast('Error de red', 'error'); }
+}
+
+/* ─── Cambiar contraseña ─── */
+async function pfSavePassword() {
+  const oldPass  = document.getElementById('pf-input-oldpass')?.value || '';
+  const newPass  = document.getElementById('pf-input-newpass')?.value || '';
+  const newPass2 = document.getElementById('pf-input-newpass2')?.value || '';
+  if (!oldPass) { showToast('Ingresa tu contraseña actual', 'error'); return; }
+  if (newPass.length < 8) { showToast('La nueva contraseña debe tener al menos 8 caracteres', 'error'); return; }
+  if (newPass !== newPass2) { showToast('Las contraseñas no coinciden', 'error'); return; }
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`${API_URL}/usuarios/update-password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ passwordActual: oldPass, nuevaPassword: newPass })
+    });
+    const data = await res.json();
+    if (!data.success) { showToast(data.error || 'Error al cambiar contraseña', 'error'); return; }
+    // Las demás sesiones quedan cerradas: este dispositivo sigue con el token nuevo
+    if (data.token) { try { localStorage.setItem('token', data.token); } catch (_) {} }
+    document.getElementById('pf-input-oldpass').value  = '';
+    document.getElementById('pf-input-newpass').value  = '';
+    document.getElementById('pf-input-newpass2').value = '';
+    showToast(data.mensaje || '¡Contraseña actualizada!', 'success');
+  } catch(e) { showToast('Error de red', 'error'); }
+}
+
+/* ─── Guardar links de redes sociales ─── */
+async function pfSaveSocialLinks() {
+  const links = [];
+  for (let i = 0; i < 4; i++) {
+    const v = (document.getElementById(`pf-link-${i}`)?.value || '').trim();
+    if (v) links.push(v);
+  }
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`${API_URL}/usuarios/update-social-links`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ socialLinks: links })
+    });
+    const data = await res.json();
+    if (!data.success) { showToast(data.error || 'Error al guardar links', 'error'); return; }
+    pfSetMeta({ socialLinks: links });
+    pfRenderSocialLinks(links);
+    showToast('¡Links guardados!', 'success');
+  } catch(e) { showToast('Error de red', 'error'); }
+}
+
+/* ─── RECUPERACIÓN: detectar nombre anterior automáticamente ─── */
+async function pfDetectOldName() {
+  const btn = document.querySelector('.pf-btn-detect');
+  const res_el = document.getElementById('pf-detect-result');
+  if (btn) { btn.disabled = true; btn.textContent = 'Buscando…'; }
+  try {
+    const token = localStorage.getItem('token');
+    const res   = await fetch(`${API_URL}/usuarios/orphan-check`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data  = await res.json();
+    if (data.success && data.huerfanos && data.huerfanos.length > 0) {
+      res_el.style.display = 'block';
+      res_el.innerHTML = `<strong style="color:var(--g)">Nombres detectados sin cuenta activa:</strong><br>${
+        data.huerfanos.map(n =>
+          `<span style="color:var(--cy);cursor:pointer;text-decoration:underline"
+                 onclick="document.getElementById('pf-repair-oldname').value='${n}'">@${n}</span>`
+        ).join('  ·  ')
+      }<br><small style="color:var(--txt3)">Toca uno para seleccionarlo automáticamente ↑</small>`;
+    } else {
+      res_el.style.display = 'block';
+      res_el.innerHTML = '<span style="color:#ff9800">No se detectaron nombres huérfanos automáticamente. Ingresa el nombre manualmente.</span>';
+    }
+  } catch(e) {
+    res_el.style.display = 'block';
+    res_el.innerHTML = '<span style="color:var(--txt3)">Error de red al detectar.</span>';
+  }
+  if (btn) { btn.disabled = false; btn.innerHTML = '<ion-icon name="search-outline"></ion-icon> DETECTAR MI NOMBRE ANTERIOR'; }
+}
+
+/* ─── RECUPERACIÓN: ejecutar cascada ─── */
+async function pfRunRepair() {
+  const btn      = document.getElementById('pf-btn-repair');
+  const log      = document.getElementById('pf-repair-log');
+  const oldName  = (document.getElementById('pf-repair-oldname')?.value || '').trim();
+  const password = document.getElementById('pf-repair-pass')?.value || '';
+
+  if (!oldName)  { showToast('Ingresa el nombre anterior', 'error');    return; }
+  if (!password) { showToast('Ingresa tu contraseña', 'error');         return; }
+
+  btn.disabled = true; btn.textContent = 'Reparando…';
+  log.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('token');
+    const res   = await fetch(`${API_URL}/usuarios/repair-cascade`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ oldUsername: oldName, password })
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      showToast(data.error || 'Error al reparar', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<ion-icon name="construct-outline"></ion-icon> RESTAURAR MIS PUBLICACIONES';
+      return;
+    }
+
+    const r = data.resumen;
+    log.style.display = 'block';
+    log.innerHTML = [
+      `✅ Reparación completada`,
+      `📦 Publicaciones migradas: ${r.juegos}`,
+      `💬 Comentarios migrados:   ${r.comentarios}`,
+      `🔔 Notificaciones:         ${r.notificaciones}`,
+      ``,
+      `Recargando perfil en 2 s…`
+    ].join('\n');
+
+    showToast(`✅ ${r.juegos} publicaciones restauradas. Recargando…`, 'success');
+    setTimeout(() => location.reload(), 2000);
+
+  } catch(e) {
+    showToast('Error de red — intenta de nuevo', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<ion-icon name="construct-outline"></ion-icon> RESTAURAR MIS PUBLICACIONES';
+  }
+}
+
+function pfRenderSocialLinks(links) {
+  const row = document.getElementById('pf-social-links-row');
+  if (!row) return;
+  if (!links || links.length === 0) { row.innerHTML = ''; return; }
+  const MAX_DISPLAY = 4;
+  const shown = links.slice(0, MAX_DISPLAY);
+  row.innerHTML = shown.map(url => {
+    const plat = pfDetectPlatform(url);
+    if (!plat) return '';
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer"
+               class="pf-social-icon-btn"
+               style="color:${plat.color}"
+               title="${plat.label}">
+               <ion-icon name="${plat.icon}"></ion-icon>
+            </a>`;
+  }).join('');
+}
+
+/* ─── Patch: cargar social links al renderizar perfil ─── */
+/* Sobreescribir pfLoadProfile o escuchar su fin */
+const _pfLoadProfileOrig = typeof pfLoadProfile === 'function' ? pfLoadProfile : null;
+if (_pfLoadProfileOrig) {
+  window.pfLoadProfile = async function(...args) {
+    await _pfLoadProfileOrig.apply(this, args);
+    const m = pfGetMeta();
+    if (m.socialLinks) pfRenderSocialLinks(m.socialLinks);
+  };
+} else {
+  /* Si pfLoadProfile no está definida aún, escuchar DOMContentLoaded */
+  document.addEventListener('DOMContentLoaded', () => {
+    const m = pfGetMeta();
+    if (m.socialLinks) pfRenderSocialLinks(m.socialLinks);
+  });
+}
+</script>
+<!-- Banners de fondo (copia de puente.html): detrás de todo, sin clics. Respeta el Pase (sin anuncios). -->
+<div id="ug-banners-fondo" aria-hidden="true" style="position:fixed;top:0;left:0;z-index:-10000;pointer-events:none;">
+<script>
+(function () {
+    var sin = false; try { var v = String(localStorage.getItem('ug_pase_hasta') || '').split('|'); sin = !!localStorage.getItem('token') && v[0] === localStorage.getItem('user_admin') && +v[1] > Date.now(); } catch (_) {}
+    if (sin) return;
+    var w = function (h) { document.write(h); };
+    w('<script>atOptions={"key":"0af19e39530f3a17d0722c5f0c91735a","format":"iframe","height":250,"width":300,"params":{}};<\/script><script data-cfasync="false" src="https://www.highperformanceformat.com/0af19e39530f3a17d0722c5f0c91735a/invoke.js"><\/script>');
+    w('<div id="container-bee2b46adf997334693eadeec583df85"></div>');
+    var s = document.createElement('script'); s.async = true; s.setAttribute('data-cfasync', 'false'); s.src = 'https://bellnewyork.org/21/bee2b46adf997334693eadeec583df85'; document.body.appendChild(s);
+    w('<script>atOptions={"key":"247173c86298a1f5a8e01a0e1c5889cd","format":"iframe","height":600,"width":160,"params":{}};<\/script><script data-cfasync="false" src="https://www.highperformanceformat.com/247173c86298a1f5a8e01a0e1c5889cd/invoke.js"><\/script>');
+})();
+</script>
+</div>
 </body>
 </html>

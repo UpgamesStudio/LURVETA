@@ -13,6 +13,7 @@
 const { filtrarPublicacion } = require('./textoPublico');   // títulos y descripciones sin palabras vetadas
 
 const SITIO = 'https://upgames.games/public';
+const INICIO = 'https://upgames.games/';   // la biblioteca es la portada (antes /public/biblioteca.html, hoy un puente)
 const esc = v => String(v ?? '').replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&#39;', '"': '&quot;' }[c]));
 
 function slug(t) {
@@ -50,7 +51,7 @@ function tarjeta(it) {
 /** HTML completo de la página de una publicación. */
 function pagina(it, grupo) {
     it = filtrarPublicacion(it);   // (el nombre del archivo/URL sigue saliendo del título guardado: no se rompen enlaces)
-    const url = urlPagina(it), app = `${SITIO}/biblioteca.html?id=${it.id}`;
+    const url = urlPagina(it), app = `${INICIO}?id=${it.id}`;
     const cat = CAT[it.category] || it.category || 'Contenido';
     const desc = String(it.description || `${cat} compartido por @${it.usuario} en UpGames.`).replace(/\s+/g, ' ').trim();
     const corta = desc.slice(0, 158) + (desc.length > 158 ? '…' : '');
@@ -70,8 +71,9 @@ function pagina(it, grupo) {
     };
     const migas = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'UpGames', item: 'https://upgames.games/' },
-        { '@type': 'ListItem', position: 2, name: cat, item: `${SITIO}/biblioteca.html?cat=${encodeURIComponent(it.category || '')}` },
-        { '@type': 'ListItem', position: 3, name: it.title, item: url }] };
+        // Nivel intermedio solo si es una página real (su juego o tema); la portada no filtra por ?cat=
+        ...(grupo ? [{ '@type': 'ListItem', position: 2, name: grupo.titulo, item: urlGrupo(grupo) }] : []),
+        { '@type': 'ListItem', position: grupo ? 3 : 2, name: it.title, item: url }] };
     const json = o => JSON.stringify(o).replace(/</g, '\\u003c');
     return `<!doctype html>
 <html lang="es"><head>
@@ -98,7 +100,7 @@ h1{margin:10px 0 6px;font-size:1.6rem;line-height:1.25}.meta{color:#9aa1af;font-
 .desc{white-space:pre-line;color:#c9ced8}.pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar</a></div>
+<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../../">Explorar</a></div>
 <article class="hero">
 ${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/w_960,q_auto,f_auto/'))}" alt="${esc(it.title)}" width="960" height="540">` : ''}
 <div class="c"><span class="cat">${esc(cat)}</span>
@@ -156,7 +158,7 @@ h1{margin:12px 0 4px;font-size:1.4rem}.st{display:flex;gap:18px;color:#c9ced8;fo
 .pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar</a></div>
+<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../../">Explorar</a></div>
 <div class="cv"${esImg(p.banner) ? ` style="background-image:url('${esc(p.banner.replace('/upload/', '/upload/w_1200,q_auto,f_auto/'))}')"` : ''}></div>
 <div class="hd">${avatar ? `<img class="av" src="${esc(avatar)}" alt="@${esc(p.usuario)}" width="92" height="92">` : '<div class="av"></div>'}</div>
 <h1>@${esc(p.usuario)}</h1>
@@ -241,30 +243,30 @@ h1{margin:6px 0 6px;font-size:1.7rem;line-height:1.2}.intro{color:#c9ced8;margin
 .pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar todo</a></div>
+<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../../">Explorar todo</a></div>
 <h1>${esc(g.h1)}</h1>
 <p class="intro">${esc(g.intro)}</p>
 <div class="st">${fmt(g.items.length)} publicaciones · ${fmt(total)} descargas</div>
 <div class="g">${lista.map(it => `<a class="c" href="${esc(urlPagina(it))}">${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/c_fill,g_auto,w_480,h_300,q_auto,f_auto/'))}" alt="${esc(it.title)}" loading="lazy" width="480" height="300">` : '<span class="ph"></span>'}<b>${esc(it.title)}</b><small>${esc(CAT[it.category] || it.category || '')} · @${esc(it.usuario)} · ⬇️ ${fmt(it.descargas)}</small></a>`).join('')}</div>
-<a class="btn" href="../biblioteca.html">Explorar más en UpGames</a>
+<a class="btn" href="../../">Explorar más en UpGames</a>
 ${otros.length ? `<div class="mas">${otros.map(o => `<a href="${esc(o.slug)}.html">${esc(o.titulo)}</a>`).join('')}</div>` : ''}
 <p class="pie"><a href="../../">UpGames</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes · <a href="../terminos_condiciones.html">Términos</a></p>
 </div></body></html>
 `;
 }
 
-// ── Enlaces de la portada (index.html, entre <!--SEO:ENLACES--> y <!--/SEO:ENLACES-->) ──
+// ── Enlaces de la portada (index.html = la biblioteca, entre <!--SEO:ENLACES--> y <!--/SEO:ENLACES-->) ──
 // La portada es la página con más autoridad; antes no enlazaba a ninguna página de la comunidad y estas solo se
 // descubrían por el sitemap. Rutas relativas a la raíz del sitio.
 function enlacesPortada({ grupos: gs = [], items = [], perfiles = [] } = {}) {
     const li = (href, txt) => `    <li><a href="${esc(href)}">${esc(txt)}</a></li>`;
-    const rel = u => './public/' + u.slice(SITIO.length + 1);
+    const rel = u => '/public/' + u.slice(SITIO.length + 1);   // absolutas: la portada tiene <base href="/public/">
     const lista = (titulo, filas) => filas.length ? `  <h3>${titulo}</h3>\n  <ul class="links">\n${filas.join('\n')}\n  </ul>` : '';
     const temas = gs.slice().sort((a, b) => b.items.length - a.items.length).slice(0, 16).map(g => li(rel(urlGrupo(g)), g.titulo || g.h1 || g.slug));
     const recientes = items.slice().sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || ''))).slice(0, 12).map(it => li(rel(urlPagina(it)), recorta(it.title, 60)));
     const creadores = perfiles.filter(p => usuarioValido(p.usuario)).sort((a, b) => (b.descargas || 0) - (a.descargas || 0)).slice(0, 12).map(p => li(rel(urlPerfil(p.usuario)), '@' + p.usuario));
     return [
-        lista('Secciones', [li('./public/biblioteca.html', 'Biblioteca'), li('./public/live.html', 'En vivo'), li('./public/blogs-guia.html', 'Guía de UpGames Blogs')]),
+        lista('Secciones', [li('/public/live.html', 'En vivo'), li('/public/blogs-guia.html', 'Guía de UpGames Blogs'), li('/public/blog.html', 'Crea tu blog')]),
         lista('Juegos y temas', temas), lista('Publicaciones recientes', recientes), lista('Creadores', creadores),
     ].filter(Boolean).join('\n');
 }
@@ -275,4 +277,16 @@ function ponerEnlacesPortada(html, bloque) {
     return html.slice(0, i + a.length) + '\n' + bloque + '\n  ' + html.slice(j);
 }
 
-module.exports = { SITIO, slug, archivo, urlPagina, pagina, usuarioValido, urlPerfil, paginaPerfil, tarjeta, grupos, urlGrupo, paginaGrupo, enlacesPortada, ponerEnlacesPortada };
+/**
+ * Limpia un sitemap ya generado: quita /public/biblioteca.html (hoy un puente hacia la portada; con o sin parámetros)
+ * y se asegura de que la portada https://upgames.games/ sea la primera URL. Idempotente.
+ */
+function limpiarSitemap(xml) {
+    if (!/<urlset/.test(xml)) return xml;
+    let out = xml.replace(/\s*<url>\s*<loc>https:\/\/upgames\.games\/public\/biblioteca\.html[^<]*<\/loc>[\s\S]*?<\/url>/g, '');
+    if (!/<loc>https:\/\/upgames\.games\/<\/loc>/.test(out))
+        out = out.replace(/(<urlset[^>]*>)/, `$1\n<url><loc>${INICIO}</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`);
+    return out;
+}
+
+module.exports = { SITIO, INICIO, limpiarSitemap, slug, archivo, urlPagina, pagina, usuarioValido, urlPerfil, paginaPerfil, tarjeta, grupos, urlGrupo, paginaGrupo, enlacesPortada, ponerEnlacesPortada };

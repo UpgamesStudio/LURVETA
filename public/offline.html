@@ -163,7 +163,7 @@
         if (navigator.onLine) {
             statusEl.textContent = 'Conexión restablecida ✓';
             statusEl.classList.add('online');
-            setTimeout(() => location.href = './biblioteca.html', 1000);
+            setTimeout(() => location.href = '/', 1000);
         } else {
             statusEl.textContent = 'Sin conexión a Internet';
             statusEl.classList.remove('online');
@@ -172,7 +172,7 @@
 
     function reintentar() {
         if (navigator.onLine) {
-            location.href = './biblioteca.html';
+            location.href = '/';
         } else {
             statusEl.style.animation = 'none';
             setTimeout(() => statusEl.style.animation = '', 10);

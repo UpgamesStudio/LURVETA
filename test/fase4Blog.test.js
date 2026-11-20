@@ -15,7 +15,7 @@ assert.ok(!afil.items.some(i => /javascript|Sin enlace/.test(i.url + i.nombre)))
 assert.deepStrictEqual(V.limpiarBloques([{ tipo: 'afiliado', items: [{ nombre: 'x' }] }]), [], 'sin productos con enlace no hay bloque');
 assert.ok(V.enlacesDe([afil]).includes('https://amzn.to/x'), 'los enlaces de afiliado pasan por la revisión');
 const html = R.bloquesHtml([apoyo, afil], { blog: { _id: 'b1' }, appUrl: 'https://upgames.games', clic: (u, t) => `/_c?t=${t}&u=${encodeURIComponent(u)}` });
-assert.ok(html.includes('href="https://upgames.games/public/biblioteca.html?apoyarBlog=b1"'), 'el apoyo abre UpGames con el blog');
+assert.ok(html.includes('href="https://upgames.games/?apoyarBlog=b1"'), 'el apoyo abre UpGames con el blog');
 assert.ok(html.includes('Enlaces de afiliado:') && html.includes('rel="sponsored nofollow noopener"'), 'aviso visible y enlaces patrocinados');
 assert.ok(html.includes('/_c?t=b&amp;u=https%3A%2F%2Famzn.to%2Fx') && html.includes('Ver en Amazon'));
 assert.ok(!R.bloquesHtml([apoyo], {}).includes('apoyarBlog'), 'sin blog (p. ej. pruebas) no hay botón');

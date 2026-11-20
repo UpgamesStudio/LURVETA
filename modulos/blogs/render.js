@@ -68,7 +68,7 @@ function seccionHtml(b, ctx = {}, i = 0) {
         case 'testimonios': return seccion(b, 'testimonios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<figure class="testi"><blockquote>${textoHtml(i.texto)}</blockquote><figcaption><span class="testi-ini" aria-hidden="true">${esc([...i.nombre][0].toUpperCase())}</span><span><b>${esc(i.nombre)}</b>${i.rol ? `<small>${esc(i.rol)}</small>` : ''}</span></figcaption></figure>`).join('')}</div>`);
         case 'cta': return seccion(b, 'cta', `${cabSec(b)}${b.bTexto && b.bUrl ? `<div class="botones">${boton(b.bTexto, b.bUrl, 'boton', ctx)}</div>` : ''}`);
         case 'apoyo': {
-            const href = ctx.blog?._id && ctx.appUrl ? `${ctx.appUrl}/public/biblioteca.html?apoyarBlog=${encodeURIComponent(String(ctx.blog._id))}` : '';
+            const href = ctx.blog?._id && ctx.appUrl ? `${ctx.appUrl}/?apoyarBlog=${encodeURIComponent(String(ctx.blog._id))}` : '';
             return seccion(b, 'apoyo', `<span class="apoyo-ic" aria-hidden="true">💛</span>${cabSec(b)}${href ? `<div class="botones"><a class="boton boton-apoyo" href="${esc(href)}" target="_blank" rel="noopener">🪙 ${esc(b.bTexto)}</a></div>` : ''}<p class="apoyo-nota">Se paga con UpCoins en UpGames. El creador recibe una parte como ganancia.</p>`);
         }
         case 'afiliado':
@@ -136,7 +136,7 @@ function bloqueHtml(b, ctx, i) {
         case 'juego': {
             const j = ctx.juegos?.[b.id];
             if (!j) return '';
-            return `<a class="juego" href="${esc(ctx.appUrl)}/public/biblioteca.html?id=${esc(b.id)}" target="_blank" rel="noopener">${j.image ? `<img src="${esc(img(j.image, 320))}" alt="" loading="lazy">` : ''}<span><b>${esc(j.title)}</b><small>por @${esc(j.usuario)} · Ver en UpGames</small></span></a>`;
+            return `<a class="juego" href="${esc(ctx.appUrl)}/?id=${esc(b.id)}" target="_blank" rel="noopener">${j.image ? `<img src="${esc(img(j.image, 320))}" alt="" loading="lazy">` : ''}<span><b>${esc(j.title)}</b><small>por @${esc(j.usuario)} · Ver en UpGames</small></span></a>`;
         }
     }
     return '';

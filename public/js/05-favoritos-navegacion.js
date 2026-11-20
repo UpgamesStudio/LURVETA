@@ -124,7 +124,7 @@ function ugUrlCompartir(it) {
   if (!it) return '';
   const estatica = (!it.status || it.status === 'aprobado') && it.createdAt && Date.now() - new Date(it.createdAt) > UG_PAGINA_LISTA_MS;
   // Nombre fijo por id: no depende del título (si el autor lo cambiaba, el enlace ya compartido daba 404)
-  return estatica ? `https://upgames.games/public/p/${it._id}.html` : `https://upgames.games/public/biblioteca.html?id=${it._id}`;
+  return estatica ? `https://upgames.games/public/p/${it._id}.html` : `https://upgames.games/?id=${it._id}`;
 }
 async function share(id) {
   const it = (currentItem && currentItem._id === id) ? currentItem : todosLosItems.find(i => i._id === id);
@@ -225,10 +225,12 @@ document.querySelectorAll('.nav-tab[data-tab]').forEach(tab=>{
 //   si fue hace menos de 30 min, con la misma categoría y sin una búsqueda distinta.
 const UG_POS = 'ug_pos_inicio';
 let ugScrollInicio = 0, ugGuardarPosT = null;
+// Posición relativa al catálogo: lo de arriba (carrusel, avisos) puede pintarse después y no debe correrla
+const ugTopCatalogo = () => { const o = document.getElementById('output'); return o ? o.getBoundingClientRect().top + scrollY : 0; };
 function ugGuardarPosicion() {
   if (typeof currentTab !== 'undefined' && currentTab !== 'main') return;
   if (document.getElementById('detail-sheet')?.classList.contains('open')) return;
-  try { sessionStorage.setItem(UG_POS, JSON.stringify({ y: Math.round(scrollY), t: Date.now(), cat: typeof activeCategory !== 'undefined' ? activeCategory : '', q: document.getElementById('buscador')?.value || '' })); } catch (_) {}
+  try { sessionStorage.setItem(UG_POS, JSON.stringify({ y: Math.round(scrollY), d: Math.round(scrollY - ugTopCatalogo()), t: Date.now(), cat: typeof activeCategory !== 'undefined' ? activeCategory : '', q: document.getElementById('buscador')?.value || '' })); } catch (_) {}
 }
 addEventListener('scroll', () => { clearTimeout(ugGuardarPosT); ugGuardarPosT = setTimeout(ugGuardarPosicion, 250); }, { passive: true });
 addEventListener('pagehide', ugGuardarPosicion);
@@ -244,7 +246,15 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) ugGua
     const lista = document.querySelectorAll('#output .game-tile').length;
     const mismaVista = (typeof activeCategory === 'undefined' || activeCategory === p.cat) && (document.getElementById('buscador')?.value || '') === p.q;
     if (lista && !mismaVista) return;
-    if (lista && document.documentElement.scrollHeight >= p.y + innerHeight * .5) { scrollTo({ top: p.y, behavior: 'instant' }); return; }
+    const meta = () => p.d == null ? p.y : Math.round(ugTopCatalogo() + p.d);
+    if (lista && document.documentElement.scrollHeight >= meta() + innerHeight * .5) {
+      scrollTo({ top: meta(), behavior: 'instant' });
+      // Lo de arriba aún puede crecer: se corrige ~2 s mientras la persona no toque la página
+      let tocó = false; const t = () => { tocó = true; }; ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(e => addEventListener(e, t, { once: true, passive: true }));
+      const fin = Date.now() + 2000;
+      (function ajustar() { if (tocó || Date.now() > fin) return; if (Math.abs(scrollY - meta()) > 30) scrollTo({ top: meta(), behavior: 'instant' }); setTimeout(ajustar, 150); })();
+      return;
+    }
     setTimeout(intentar, 120);
   })();
 })();

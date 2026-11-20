@@ -16,10 +16,12 @@
 (function() {
     'use strict';
 
-    // Relativo a este script (public/), así también funciona desde /UpGames/index.html
+    // Relativo a este script (public/): íconos y demás recursos de la PWA
     const BASE = (document.currentScript && document.currentScript.src) || location.href;
-    const SW_URL = new URL('service-worker.js', BASE).href;
-    const SW_SCOPE = new URL('./', BASE).href;
+    // El service worker vive en la raíz con alcance "/" (la portada / es la biblioteca). El viejo de /public/
+    // (alcance /public/) se da de baja aquí mismo; si queda alguno, su versión nueva lo migra al actualizarse.
+    const SW_URL = '/service-worker.js';
+    const SW_SCOPE = '/';
     let deferredInstallPrompt = null;
     let swRegistration = null;
 
@@ -31,6 +33,10 @@
         window.addEventListener('load', async () => {
             try {
                 swRegistration = await navigator.serviceWorker.register(SW_URL, { scope: SW_SCOPE });
+                // Registro viejo (/public/service-worker.js): fuera, para que no siga sirviendo páginas de /public/ desde su caché
+                (await navigator.serviceWorker.getRegistrations())
+                    .filter(r => new URL(r.scope).pathname === '/public/')
+                    .forEach(r => r.unregister().catch(() => {}));
                 console.log('[PWA] Service Worker registrado:', swRegistration.scope);
 
                 // Detectar updates

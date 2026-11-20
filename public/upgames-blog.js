@@ -68,7 +68,7 @@ async function ocupado(boton, tarea) {
 function avisarError(e) {
   if (e.code !== 'LIMITE') return toast(e.message, true);
   hoja(`<h3>✦ Llegaste al límite de hoy</h3><p>${h(e.message)}</p><p style="color:var(--txt2)">Con <b>Premium</b> tienes Nexus ilimitado, temas exclusivos y tu blog sin la marca de UpGames.</p>
-    <div class="fila"><button class="btn" data-no style="flex:1">Mañana sigo</button><a class="btn pri" style="flex:1" href="./biblioteca.html?plan=1">${ico('star')} Ver Premium</a></div>`).querySelector('[data-no]').onclick = cerrarHoja;
+    <div class="fila"><button class="btn" data-no style="flex:1">Mañana sigo</button><a class="btn pri" style="flex:1" href="/?plan=1">${ico('star')} Ver Premium</a></div>`).querySelector('[data-no]').onclick = cerrarHoja;
 }
 // Cupo de Nexus (lo devuelve el servidor en cada respuesta de Nexus)
 let NX_CUPO = null;
@@ -78,7 +78,7 @@ function lineaCupo() {
   if (!NX_CUPO) return '';
   if (NX_CUPO.premium) return `<p class="nx-cupo pro">${ico('star')} Premium: Nexus ilimitado</p>`;
   const a = NX_CUPO.acciones, n = (k, s, p) => `<b>${a[k].quedan}</b> ${a[k].quedan === 1 ? s : p}`;
-  return `<p class="nx-cupo">Plan gratis · hoy te quedan ${n('landing', 'landing', 'landings')}, ${n('seccion', 'sección', 'secciones')}, ${n('texto', 'mejora de texto', 'mejoras de texto')} y ${n('seo', 'SEO', 'SEO')}. <a href="./biblioteca.html?plan=1">✦ Ilimitado con Premium</a></p>`;
+  return `<p class="nx-cupo">Plan gratis · hoy te quedan ${n('landing', 'landing', 'landings')}, ${n('seccion', 'sección', 'secciones')}, ${n('texto', 'mejora de texto', 'mejoras de texto')} y ${n('seo', 'SEO', 'SEO')}. <a href="/?plan=1">✦ Ilimitado con Premium</a></p>`;
 }
 const fechaCorta = d => d ? new Date(d).toLocaleDateString('es', { day: 'numeric', month: 'short', year: new Date(d).getFullYear() === new Date().getFullYear() ? undefined : 'numeric' }) : '';
 const num = n => Number(n || 0).toLocaleString('es');
@@ -122,7 +122,7 @@ async function subirImagen(archivo) {
 const mini = (url, w) => String(url || '').replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\/(?:w_|c_))/, `$1f_auto,q_auto,w_${w},c_limit/`);
 
 // ── 2. BIENVENIDA, ASISTENTE Y REPORTE ──────────────────────────────
-const LOGO = '<a class="logo" href="./biblioteca.html"><span><i>UP</i>GAMES</span><small>BLOGS</small></a>';
+const LOGO = '<a class="logo" href="/"><span><i>UP</i>GAMES</span><small>BLOGS</small></a>';
 
 function bienvenida() {
   app.innerHTML = `<div class="portal">${LOGO}
@@ -199,7 +199,7 @@ function reporte(direccion) {
     e.preventDefault();
     ocupado($('[type=submit]', f), async () => {
       await api('/blogs/reportar', { metodo: 'POST', publico: true, cuerpo: { direccion, motivo: f.motivo.value, detalle: f.detalle.value } });
-      f.innerHTML = `<h2>Gracias por avisar</h2><p>Recibimos tu reporte y lo vamos a revisar.</p><a class="btn ancho" href="./biblioteca.html">Ir a UpGames</a>`;
+      f.innerHTML = `<h2>Gracias por avisar</h2><p>Recibimos tu reporte y lo vamos a revisar.</p><a class="btn ancho" href="/">Ir a UpGames</a>`;
     });
   };
 }
@@ -211,7 +211,7 @@ function panel() {
   const b = S.blog;
   app.innerHTML = `<div class="panel">
     <header class="barra">
-      <a class="ico" href="./biblioteca.html" aria-label="Volver a UpGames">${ico('chevron-back')}</a>
+      <a class="ico" href="/" aria-label="Volver a UpGames">${ico('chevron-back')}</a>
       <button class="quien" id="cambiar"><b><span>${h(b.titulo)}</span>${ico('chevron-down')}</b><small>${h(b.url.replace(/^https?:\/\//, ''))}</small></button>
       <a class="btn chico" href="${h(b.url)}" target="_blank" rel="noopener">${ico('open-outline')} Ver</a>
     </header>
@@ -379,7 +379,7 @@ async function vistaIngresos() {
   v.innerHTML = `<h1>Ingresos</h1><p class="sub">Tú decides si tu blog lleva publicidad. Si la activas, ganas dinero con cada anuncio que ven tus visitantes.</p>
     <section class="seccion glass"><h2>${ico('cash')} Monetizar con UpGames</h2>
       <label class="interruptor"><span><b>Mostrar publicidad en mi blog</b><br><small style="color:var(--txt3)">Un anuncio al final de cada entrada y del inicio. Además, el bloque «Descarga» abre el enlace final a través del acortador de anuncios Cuty.io (nunca a usuarios Premium). Tus otros enlaces y botones no cambian.</small></span><input type="checkbox" id="monetizar"${b.monetizar ? ' checked' : ''}></label>
-      <p>Ganas <b style="color:var(--g)">${usd(d.cpm)}</b> por cada 1.000 anuncios vistos. Se suma a tu saldo de UpGames, el mismo de tus publicaciones, y lo retiras desde <a href="./biblioteca.html">tu perfil → Economía</a>.</p>
+      <p>Ganas <b style="color:var(--g)">${usd(d.cpm)}</b> por cada 1.000 anuncios vistos. Se suma a tu saldo de UpGames, el mismo de tus publicaciones, y lo retiras desde <a href="/">tu perfil → Economía</a>.</p>
       ${b.visibilidad !== 'publico' ? '<p style="color:var(--amber)">Tu blog está oculto: los anuncios solo se muestran en blogs públicos.</p>' : ''}
     </section>
     <div class="cifras"><div class="cifra glass"><b>${usd(d.ingresosMes)}</b><span>Últimos 30 días</span></div><div class="cifra glass"><b>${usd(d.ingresos)}</b><span>Desde siempre</span></div><div class="cifra glass"><b>${num(d.anunciosMes)}</b><span>Anuncios vistos (30 días)</span></div></div>

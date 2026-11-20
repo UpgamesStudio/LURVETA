@@ -18,8 +18,8 @@ app.get('/seo/sitemap.xml', async (req, res) => {
             const dia = f => (f ? new Date(f) : new Date()).toISOString().slice(0, 10);
             const url = (loc, lastmod, freq, prio) => `<url><loc>${xmlEsc(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>${freq}</changefreq><priority>${prio}</priority></url>`;
             return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + [
-                url('https://upgames.games/', null, 'weekly', '1.0'),   // portada canónica (antes del 2026-11-08 era la URL que posicionaba)
-                url(`${SITIO}/biblioteca.html`, dia(items[0]?.createdAt), 'hourly', '0.9'),
+                // Portada = la biblioteca. /public/biblioteca.html es solo un puente hacia aquí: no va en el sitemap
+                url('https://upgames.games/', dia(items[0]?.createdAt), 'hourly', '1.0'),
                 url(`${SITIO}/live.html`, null, 'hourly', '0.8'),
                 // Páginas por juego y por tema (public/j/…): mismas reglas que scripts/generar-paginas.js
                 ...Seo.grupos(await datosPaginasSeo()).map(g => url(Seo.urlGrupo(g), dia(g.items.reduce((m, it) => (it.fecha > m ? it.fecha : m), '')), 'daily', '0.8')),

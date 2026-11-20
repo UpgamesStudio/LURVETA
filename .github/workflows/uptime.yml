@@ -32,7 +32,7 @@ jobs:
             if [ "$c" = "404" ] && r=$(probar https://upgames-production.up.railway.app/live/config); then api="ok ($r)"; break; fi
             api="caida (HTTP $c)"; sleep 45
           done
-          if r=$(probar https://upgames.games/public/biblioteca.html); then web="ok ($r)"; fi
+          if r=$(probar https://upgames.games/); then web="ok ($r)"; fi
           echo "API: $api · Web: $web"
           echo "api=$api" >> "$GITHUB_OUTPUT"; echo "web=$web" >> "$GITHUB_OUTPUT"
       - name: Abrir o cerrar el aviso

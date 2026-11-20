@@ -32,7 +32,7 @@
     tB = setTimeout(() => { q = String(q || '').trim().toLowerCase(); if (q.length < 2 || q === ultimaQ) return; ultimaQ = q; evento('busqueda', { q: q.slice(0, 60), n }); }, 1500);
   }
 
-  if (/biblioteca\.html|\/public\/?$/.test(location.pathname)) {
+  if (location.pathname === '/' || /biblioteca\.html|\/public\/?$/.test(location.pathname)) {   // la biblioteca vive en la portada (/)
     evento('visita');
     addEventListener('ug:detalle', () => evento('ficha'));
     // "Obtener link" (va a la página puente)

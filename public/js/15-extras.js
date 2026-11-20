@@ -179,7 +179,8 @@ function ecoAbrirTienda() {
     } catch (err) { toast(err.message || 'No se pudo enviar el correo'); b.disabled = false; b.textContent = 'Reintentar'; }
   };
   // Volver de verificar: avisar y ocultar
-  if (new URLSearchParams(location.search).get('verif') === 'ok') { toast('✅ ¡Email verificado!'); box.hidden = true; }
+  // ?verificado=1: el login avisa que se verificó (?verif lo atiende /login.html, que muestra el resultado)
+  if (new URLSearchParams(location.search).get('verificado') === '1') { toast('✅ ¡Email verificado!'); box.hidden = true; }
 })();
 
 

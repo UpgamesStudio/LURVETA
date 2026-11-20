@@ -218,7 +218,7 @@ a { text-decoration: none; color: inherit; }
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="UpGames">
-<script src="./upgames-pwa.js" defer></script>
+<script src="./upgames-pwa.js?v=20261120a" defer></script>
 <script src="./upgames-extras.js?v=20261108a"></script>
 <script src="./upgames-social.js?v=20261029i"></script>
 <script src="./upgames-errores.js?v=20261029i"></script>
@@ -227,7 +227,7 @@ a { text-decoration: none; color: inherit; }
 
     <!-- ── TOP BAR ── -->
     <header class="top-bar" id="top-bar">
-        <a href="./biblioteca.html" class="tb-btn" id="btn-volver" aria-label="Volver"><ion-icon name="arrow-back"></ion-icon></a>
+        <a href="/" class="tb-btn" id="btn-volver" aria-label="Volver"><ion-icon name="arrow-back"></ion-icon></a>
         <div class="top-bar-logo"><span class="up">UP</span>GAMES</div>
         <div class="tb-title"><b id="tb-nombre"></b><small id="tb-sub"></small></div>
         <button type="button" class="tb-btn" onclick="compartirPerfil()" aria-label="Compartir perfil"><ion-icon name="share-social-outline"></ion-icon></button>
@@ -237,7 +237,7 @@ a { text-decoration: none; color: inherit; }
     <section class="profile-hero">
         <div class="pp-amb" id="pp-amb" aria-hidden="true"></div>
         <div class="hero-cover" id="hero-cover">
-            <a class="hero-cover-edit" id="hero-cover-edit" href="./biblioteca.html?ajustes=portada">
+            <a class="hero-cover-edit" id="hero-cover-edit" href="/?ajustes=portada">
                 <ion-icon name="camera-outline"></ion-icon> Editar portada
             </a>
         </div>
@@ -387,7 +387,7 @@ a { text-decoration: none; color: inherit; }
             const isVideo = item.category === 'Video', n = isVideo ? (item.vistas || 0) + (item.descargasEfectivas || 0) : (item.descargasEfectivas || 0);
             const t = String(item.title || '').trim();
             return `<div class="pp-card">${ppTile(item).replace('</a>', puesto ? `<span class="pp-rk">${puesto}</span></a>` : '</a>')}
-                <a class="pp-card-t" href="./biblioteca.html?id=${encodeURIComponent(item._id)}">${ppEsc(t)}</a>
+                <a class="pp-card-t" href="/?id=${encodeURIComponent(item._id)}">${ppEsc(t)}</a>
                 <div class="pp-card-d">${ppFmt(n)} ${isVideo ? 'vistas' : (n === 1 ? 'descarga' : 'descargas')}</div></div>`;
         }
         function ppTile(item) {
@@ -395,7 +395,7 @@ a { text-decoration: none; color: inherit; }
             const img = item.image && !/\.(mp4|webm|mov|m4v|avi|3gp|3g2|mkv|ogv|mpe?g|wmv|flv)(\?|$)|\/video\/upload\//i.test(item.image) ? cldOpt(item.image, 'c_fill,g_auto,w_420,h_420,q_auto,f_auto') : '';
             const ls = item.linkStatus || 'online';
             const pending = item.status === 'pendiente' || item.status === 'pending';
-            return `<a class="pp-tile${img ? '' : ' no-img'}" href="./biblioteca.html?id=${encodeURIComponent(item._id)}" aria-label="${ppEsc(item.title)}">
+            return `<a class="pp-tile${img ? '' : ' no-img'}" href="/?id=${encodeURIComponent(item._id)}" aria-label="${ppEsc(item.title)}">
                 ${img ? `<img src="${ppEsc(img)}" alt="" loading="lazy" onerror="this.remove();this.parentElement.classList.add('no-img')">` : ''}
                 <span class="pp-tile-ph"><ion-icon name="${isVideo ? 'play' : 'game-controller'}"></ion-icon><em>${ppEsc(item.serieInfo?.base || item.title)}</em></span>
                 ${item.serieInfo ? `<span class="pp-tile-serie" title="${item.serieInfo.partes} partes"><ion-icon name="folder-open"></ion-icon>${item.serieInfo.partes}</span>` : ''}
@@ -670,7 +670,7 @@ a { text-decoration: none; color: inherit; }
             if (usuarioActual && usuarioActual.toLowerCase() === usuarioViendo.toLowerCase()) {
                 btnSeguir.innerHTML = `<ion-icon name="create-outline"></ion-icon> Editar perfil`;
                 btnSeguir.className = 'btn-seguir btn-siguiendo';
-                btnSeguir.onclick = () => { location.href = './biblioteca.html?ajustes=avatar'; };
+                btnSeguir.onclick = () => { location.href = '/?ajustes=avatar'; };
                 return;
             }
 
@@ -829,7 +829,7 @@ a { text-decoration: none; color: inherit; }
                         <ion-icon name="alert-circle-outline" style="color:var(--danger);opacity:1;"></ion-icon>
                         <h3>${titulo}</h3>
                         <p>${mensaje}</p>
-                        <button class="btn-volver-inicio" onclick="location.href='./biblioteca.html'">
+                        <button class="btn-volver-inicio" onclick="location.href='/'">
                             <ion-icon name="arrow-back-outline"></ion-icon>
                             Volver al inicio
                         </button>

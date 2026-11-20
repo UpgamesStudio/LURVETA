@@ -116,7 +116,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #020409; c
   const fin = () => {
     if (terminado) return; terminado = true;
     try { localStorage.setItem('ug_intro_visto', String(Date.now())); } catch (_) {}
-    const salir = () => { if (enMarco) window.parent.postMessage('ug-intro-fin', '*'); else location.replace('../biblioteca.html'); };
+    const salir = () => { if (enMarco) window.parent.postMessage('ug-intro-fin', '*'); else location.replace('/'); };
     // fundido rápido del audio
     const v0 = audio.volume, t0 = performance.now();
     const baja = () => { const k = Math.min(1, (performance.now() - t0) / 400); audio.volume = v0 * (1 - k); if (k < 1) requestAnimationFrame(baja); else { audio.pause(); salir(); } };

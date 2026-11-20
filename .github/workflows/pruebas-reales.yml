@@ -18,7 +18,7 @@ concurrency:
 jobs:
   pruebas:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -43,5 +43,7 @@ jobs:
         run: node test/real/admin.js
       - name: SEO (portada indexable, metadatos, vistas previas, datos estructurados y sitemap)
         run: node test/real/seo.js
+      - name: Migración de la portada (puente, parámetros, fichas, service worker y actualización desde la versión anterior)
+        run: node test/real/migracion.js
       - name: Economía adversarial (saltarse la espera, reciclar IPs y tickets, falsear vistas y descargas de blog)
         run: node test/real/economia.js

@@ -202,7 +202,7 @@ setInterval(() => { if (!document.hidden && currentTab === 'profile') pfChatBadg
 // ── Compartir el perfil público ──
 async function pfShareProfile() {
   if (!pfUser) return;
-  const url = `${location.origin}${location.pathname.replace(/[^/]*$/, '')}perfil-publico.html?usuario=${encodeURIComponent(pfUser)}`;
+  const url = new URL(`perfil-publico.html?usuario=${encodeURIComponent(pfUser)}`, document.baseURI).href;   // baseURI = /public/ también en la portada (/)
   try {
     if (navigator.share) { await navigator.share({ title: `@${pfUser} en UpGames`, url }); return; }
   } catch (e) { if (e && e.name === 'AbortError') return; }

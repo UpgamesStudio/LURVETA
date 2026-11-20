@@ -11,7 +11,7 @@
  */
 'use strict';
 const path = require('path');
-const { servir, navegador, contador } = require('./util');
+const { servirRaiz, navegador, contador } = require('./util');
 const API = 'https://upgames-production.up.railway.app';
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const CAPT = process.env.CAPTURAS;
@@ -48,7 +48,7 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
 
 (async () => {
   const C = contador('Navegación, perfil, NEW y página puente');
-  const web = await servir(), b = await navegador();
+  const web = await servirRaiz(), b = await navegador();
   const errores = [];
   const VISTAS = [['móvil', { width: 390, height: 844 }], ['escritorio', { width: 1440, height: 900 }]];
 
@@ -56,7 +56,7 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
     C.seccion(`Biblioteca · ${nombre}`);
     const ctx = await contexto(b, web, vp, { sesion: true });
     const p = await ctx.newPage(); p.on('pageerror', e => errores.push(`${nombre}: ${e.message} ${String(e.stack || '').split('\n').slice(0, 3).join(' | ')}`));
-    await p.goto(`${web.url}/biblioteca.html`, { waitUntil: 'domcontentloaded' }); await espera(2500);
+    await p.goto(`${web.url}/`, { waitUntil: 'domcontentloaded' }); await espera(2500);
     await p.evaluate(() => { document.getElementById('preloader')?.remove(); document.querySelectorAll('.modal, #onboarding-modal, .btut, #tutorial-overlay').forEach(m => m.remove?.()); });
 
     const nav = await p.$$eval('#bottom-nav .nav-tab', bs => bs.map(x => x.querySelector('span')?.textContent.trim()));
@@ -120,7 +120,7 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
     C.seccion(`Página puente · ${nombre}`);
     const ctx = await contexto(b, web, vp);
     const p = await ctx.newPage(); p.on('pageerror', e => errores.push(`puente ${nombre}: ${e.message}`));
-    await p.goto(`${web.url}/puente.html?id=${'a'.repeat(24)}`, { waitUntil: 'domcontentloaded' }); await espera(1500);
+    await p.goto(`${web.url}/public/puente.html?id=${'a'.repeat(24)}`, { waitUntil: 'domcontentloaded' }); await espera(1500);
     const m = await p.evaluate(() => ({ zona: document.querySelector('.ug-zona-boton').getBoundingClientRect().top + scrollY, alto: innerHeight, timer: document.getElementById('timer').textContent,
       orden: [...document.querySelectorAll('.container script')].map(s => s.textContent.match(/ugAnuncio\('([^']+)'/)?.[1]).filter(Boolean) }));
     C.prueba('el botón empieza debajo de la primera pantalla (hay que bajar)', m.zona >= m.alto, `zona ${Math.round(m.zona)} · pantalla ${m.alto}`);
@@ -133,7 +133,7 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
   C.seccion('Página puente · Premium (sin anuncios)');
   const ctx = await contexto(b, web, { width: 390, height: 844 }, { sesion: true, sinAnuncios: true });
   const p = await ctx.newPage(); p.on('pageerror', e => errores.push(`puente premium: ${e.message}`));
-  await p.goto(`${web.url}/puente.html?id=${'a'.repeat(24)}`, { waitUntil: 'domcontentloaded' }); await espera(1200);
+  await p.goto(`${web.url}/public/puente.html?id=${'a'.repeat(24)}`, { waitUntil: 'domcontentloaded' }); await espera(1200);
   C.prueba('con Premium no se fuerza el desplazamiento (no hay anuncios que ver)', await p.evaluate(() => document.documentElement.classList.contains('ug-sin-anuncios') && getComputedStyle(document.querySelector('.ug-antes-boton')).minHeight === '0px'));
   await ctx.close();
 

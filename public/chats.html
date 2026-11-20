@@ -526,7 +526,7 @@ body::after { width: auto; height: auto; inset: 0; border-radius: 0; filter: non
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="UpGames">
-<script src="./upgames-pwa.js" defer></script>
+<script src="./upgames-pwa.js?v=20261120a" defer></script>
 <script src="./upgames-errores.js?v=20261029i"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -538,7 +538,7 @@ body::after { width: auto; height: auto; inset: 0; border-radius: 0; filter: non
   <!-- ═══ LISTA DE CONVERSACIONES ═══ -->
   <aside class="side" aria-label="Conversaciones">
     <div class="side-hdr">
-      <a class="ico-btn" href="./biblioteca.html" aria-label="Volver a UpGames"><ion-icon name="arrow-back"></ion-icon></a>
+      <a class="ico-btn" href="/" aria-label="Volver a UpGames"><ion-icon name="arrow-back"></ion-icon></a>
       <div class="brand">
         <span class="brand-mark"><ion-icon name="chatbubbles"></ion-icon></span>
         <span class="brand-txt"><b>Mensajes</b><small>UP<em>GAMES</em></small></span>
@@ -1099,7 +1099,7 @@ function rowEl(m, cont, isLastMine) {
     const jumbo = !m.imagen && !m.replyTo && m.texto && soloEmoji(m.texto);
     const q = m.replyTo ? `<button class="quote" onclick="jumpTo('${esc(m.replyTo.id)}')"><b>${m.replyTo.de === ME ? 'Tú' : '@' + esc(m.replyTo.de)}</b><span>${m.replyTo.imagen && !m.replyTo.texto ? '📷 Imagen' : esc(m.replyTo.texto)}</span></button>` : '';
     const img = m.imagen ? `<span class="bimg" onclick="openLB('${esc(m.imagen)}')"><img src="${esc(cld(m.imagen, 'c_limit,w_720,q_auto,f_auto'))}" alt="Imagen" loading="lazy"></span>` : '';
-    const card = m.texto && ITEM_RE.test(m.texto) ? `<a class="card-link" data-item="${m.texto.match(ITEM_RE)[1]}" href="./biblioteca.html?id=${m.texto.match(ITEM_RE)[1]}"><img alt=""><span><b>Publicación de UpGames</b><small>Toca para abrir</small></span></a>` : '';
+    const card = m.texto && ITEM_RE.test(m.texto) ? `<a class="card-link" data-item="${m.texto.match(ITEM_RE)[1]}" href="/?id=${m.texto.match(ITEM_RE)[1]}"><img alt=""><span><b>Publicación de UpGames</b><small>Toca para abrir</small></span></a>` : '';
     inner = `<div class="bubble${onlyImg ? ' only-img' : ''}${jumbo ? ' jumbo' : ''}">${q}${img}${m.texto ? `<span class="txt">${linkify(m.texto)}</span>` : ''}${card}<span class="meta">${time}${tick}</span></div>`;
   }
   const rx = (m.reacciones || []);

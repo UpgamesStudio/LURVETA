@@ -9,7 +9,7 @@
  * mano: edita la parte y corre este script (la acción .github/workflows/css.yml lo hace
  * sola al subir cambios a main).
  *
- *   node scripts/unir-js.js           → escribe script.js y actualiza su ?v= en biblioteca.html
+ *   node scripts/unir-js.js           → escribe script.js y actualiza su ?v= en index.html (la portada)
  *   node scripts/unir-js.js --check   → falla si script.js no está al día
  */
 'use strict';
@@ -18,7 +18,7 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const PUB = path.join(__dirname, '..', 'public');
 const DIR = path.join(PUB, 'js');
 const SALIDA = path.join(PUB, 'script.js');
-const HTML = path.join(PUB, 'biblioteca.html');
+const HTML = path.join(PUB, '..', 'index.html');   // la biblioteca es la portada (antes public/biblioteca.html)
 
 const partes = fs.readdirSync(DIR).filter(f => /^\d{2}-[\w-]+\.js$/.test(f)).sort();
 if (!partes.length) { console.error('No hay partes en public/js/'); process.exit(1); }
