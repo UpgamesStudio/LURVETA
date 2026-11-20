@@ -23,7 +23,9 @@ const DESCUBRIR = { success: true, conSesion: false, secciones: {
   nexus: [0, 1, 2, 3].map(i => tarjeta(i)), destacadas: [tarjeta(7)], siguiendo: [], populares: [4, 5, 6].map(i => tarjeta(i)), recientes: [0, 1, 2, 3, 4, 5, 6, 7].map(i => tarjeta(i)) } };
 
 async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false } = {}) {
-  const ctx = await b.newContext({ viewport, ...(viewport.width < 600 ? { isMobile: true, hasTouch: true } : {}) });
+  // Sin service worker: él pide la API por su cuenta (network-first) y se saltaría la API simulada,
+  // yendo a producción (donde /blogs/descubrir aún no existe). Así fallaba en CI.
+  const ctx = await b.newContext({ viewport, serviceWorkers: 'block', ...(viewport.width < 600 ? { isMobile: true, hasTouch: true } : {}) });
   await ctx.addInitScript(([s, sa]) => {
     try {
       localStorage.setItem('upgames_tutorial_done', '1'); localStorage.setItem('ug_onb_hecho', '1');
