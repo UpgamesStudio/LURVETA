@@ -217,6 +217,40 @@ function versionAnterior() {
     await v.q.goto(web.url + '/public/biblioteca.html?tab=perfil').catch(() => {}); await espera(2000);
     C.prueba('B) sin conexión, el puente viejo también termina en la portada', new URL(v.q.url()).pathname === '/' && await v.q.evaluate(() => !!document.getElementById('main-view')).catch(() => false), v.q.url());
     await v.c.close();
+
+    // C) El SW viejo se actualiza sin que nadie abra la portada (otra página de /public/, o un aviso push que
+    //    dispara la comprobación del navegador): su registro NO se da de baja (la suscripción push vive en él)
+    v = await instalarViejo('/public/perfil-publico.html?usuario=upgames');   // (chats.html sin sesión lleva al login, fuera de /public/)
+    web.usar(REPO);
+    await v.q.goto(web.url + '/public/perfil-publico.html?usuario=upgames').catch(() => {}); await espera(1500);
+    await v.q.evaluate(() => navigator.serviceWorker.getRegistration('/public/').then(r => r && r.update())).catch(() => {});
+    await espera(3000); await v.q.reload().catch(() => {}); await espera(2000);
+    d = { regs: await regs(v.q), ctl: await ctl(v.q), cachés: await cachés(v.q), script: await v.q.evaluate(async () => (await navigator.serviceWorker.getRegistration('/public/'))?.active?.scriptURL) };
+    C.prueba('C) sin pasar por la portada, el registro de /public/ sigue (con el SW nuevo) y no pierde su suscripción', d.regs.includes('/public/') && d.script === `${web.url}/public/service-worker.js` && d.ctl === d.script, JSON.stringify(d));
+    C.prueba('C) aun así borra las cachés viejas de UpGames y conserva las de los juegos', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
+    await v.c.setOffline(true); await v.q.reload().catch(() => {}); await espera(1500);
+    C.prueba('C) y sirve sin conexión con el código del SW raíz', await v.q.evaluate(() => location.pathname === '/public/perfil-publico.html' && /UpGames/.test(document.title) && !/Sin conexión/.test(document.body.innerText.slice(0, 200))).catch(() => false));
+    await v.c.close();
+
+    // D) Avisos push: con suscripción en el registro viejo, la portada lo da de baja solo cuando el de la raíz
+    //    ya tiene la suya (la crea ugnSuscribir al abrir la app). Push real no existe en Chromium sin red:
+    //    se simula pushManager.getSubscription() en la página.
+    v = await instalarViejo();
+    web.usar(REPO);
+    await v.c.addInitScript(() => {
+      try { Object.defineProperty(Notification, 'permission', { configurable: true, get: () => 'granted' }); } catch (_) {}   // headless no concede el permiso
+      Object.defineProperty(ServiceWorkerRegistration.prototype, 'pushManager', { configurable: true, get() {
+        const viejo = new URL(this.scope).pathname === '/public/';
+        return { getSubscription: async () => viejo ? { endpoint: 'https://push.example/viejo' } : (window.__subRaiz || null), subscribe: async () => { throw new Error('sin servicio push'); } };
+      } });
+    });
+    await v.q.goto(web.url + '/').catch(() => {}); await listo(v.q); await espera(4000);
+    const esperando = await regs(v.q);
+    C.prueba('D) mientras la raíz no tiene suscripción, el registro viejo (con la suya) se conserva', JSON.stringify(esperando) === '["/","/public/"]', JSON.stringify(esperando));
+    await v.q.evaluate(() => { window.__subRaiz = { endpoint: 'https://push.example/nuevo' }; });
+    await espera(9000);
+    C.prueba('D) cuando la raíz ya tiene su suscripción, el viejo se da de baja', JSON.stringify(await regs(v.q)) === '["/"]', JSON.stringify(await regs(v.q)));
+    await v.c.close();
     fs.rmSync(viejo, { recursive: true, force: true });
   } finally { await bsw.close(); web.cerrar(); }
   process.exit(C.fin() ? 1 : 0);

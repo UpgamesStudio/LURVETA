@@ -12,7 +12,7 @@ app.get('/seo/sitemap.xml', async (req, res) => {
         const xml = await cacheado('seo:sitemap', 900, async () => {
             const items = await Juego.find({ status: 'aprobado', linkStatus: { $in: ['online', 'revision'] } })
                 .select('_id usuario title updatedAt createdAt').sort({ createdAt: -1 }).limit(40000).lean();
-            const hace36h = new Date(Date.now() - 3 * 3600e3);   // las páginas /p/ se generan cada hora (y al publicar)
+            const hace3h = new Date(Date.now() - 3 * 3600e3);   // las páginas /p/ se generan cada hora (y al publicar)
             const autores = new Map();
             for (const j of items) { const f = j.updatedAt || j.createdAt; if (!autores.has(j.usuario) || f > autores.get(j.usuario)) autores.set(j.usuario, f); }
             const dia = f => (f ? new Date(f) : new Date()).toISOString().slice(0, 10);
@@ -25,7 +25,7 @@ app.get('/seo/sitemap.xml', async (req, res) => {
                 ...Seo.grupos(await datosPaginasSeo()).map(g => url(Seo.urlGrupo(g), dia(g.items.reduce((m, it) => (it.fecha > m ? it.fecha : m), '')), 'daily', '0.8')),
                 // Publicaciones: solo su página estática (public/p/…). Las de menos de 3 h aún no la tienen y entran en la
                 // próxima pasada: antes se listaban como biblioteca.html?id=…, cuya canónica es otra (URL no canónica en el sitemap).
-                ...items.filter(j => new Date(j.createdAt || 0) < hace36h).map(j => url(Seo.urlPagina({ id: String(j._id), title: j.title }), dia(j.updatedAt || j.createdAt), 'weekly', '0.7')),
+                ...items.filter(j => new Date(j.createdAt || 0) < hace3h).map(j => url(Seo.urlPagina({ id: String(j._id), title: j.title }), dia(j.updatedAt || j.createdAt), 'weekly', '0.7')),
                 // Perfiles: su página estática (public/u/…), generada en la misma acción diaria
                 ...[...autores].map(([u, f]) => url(Seo.usuarioValido(u) ? Seo.urlPerfil(u) : `${SITIO}/perfil-publico.html?usuario=${encodeURIComponent(u)}`, dia(f), 'weekly', '0.5')),
                 url(`${SITIO}/terminos_condiciones.html`, null, 'monthly', '0.2'),

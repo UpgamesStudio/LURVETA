@@ -7,8 +7,6 @@ window.UG_PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http
 // ═══════════════════════════════════════════════════════════
 
 const API_URL = "https://upgames-production.up.railway.app";
-// Ya usó la biblioteca: la próxima vez que abra upgames.games entra directo aquí (la portada es para quien llega por primera vez)
-try { localStorage.setItem('ug_entro', String(Date.now())); } catch (_) {}
 
 // ── Sesión caducada o revocada: salir limpio en vez de quedar "conectado" con todo fallando ──
 // (pasa al cambiar la contraseña en otro dispositivo, o cuando el token vence a los 30 días)

@@ -357,7 +357,8 @@ self.addEventListener('notificationclick', (event) => {
     event.waitUntil((async () => {
         const ventanas = await clients.matchAll({ type: 'window', includeUncontrolled: true });
         // Reutilizar una pestaña de UpGames si hay alguna abierta
-        const propia = ventanas.find(c => c.url.startsWith(self.registration.scope) && !/^\/(admin|games|studio)\//.test(new URL(c.url).pathname));
+        const propia = ventanas.find(c => c.url.startsWith(self.location.origin + '/') &&   // todo el sitio (este código también corre en el registro viejo de /public/)
+             !/^\/(admin|games|studio)\//.test(new URL(c.url).pathname));
         if (propia) {
             await propia.focus();
             if ('navigate' in propia) return propia.navigate(url).catch(() => clients.openWindow(url));

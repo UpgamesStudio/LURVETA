@@ -23,6 +23,23 @@
     const SW_URL = '/service-worker.js';
     const SW_SCOPE = '/';
     let deferredInstallPrompt = null;
+    async function retirarRegistroViejo() {
+        const viejos = (await navigator.serviceWorker.getRegistrations()).filter(r => new URL(r.scope).pathname === '/public/');
+        for (const viejo of viejos) {
+            const sub = viejo.pushManager && await viejo.pushManager.getSubscription().catch(() => null);
+            if (sub && window.Notification && Notification.permission === 'granted') {
+                const raiz = await navigator.serviceWorker.ready;
+                let lista = false;
+                for (let i = 0; i < 60 && !lista; i++) {   // hasta ~1 min; si no, se reintenta en la próxima visita
+                    lista = !!(await raiz.pushManager.getSubscription().catch(() => null));
+                    if (!lista) await new Promise(ok => setTimeout(ok, 1000));
+                }
+                if (!lista) continue;
+                await new Promise(ok => setTimeout(ok, 5000));   // margen para que el servidor guarde la suscripción nueva
+            }
+            await viejo.unregister().catch(() => {});
+        }
+    }
     let swRegistration = null;
 
     // ======================================================================
@@ -33,10 +50,9 @@
         window.addEventListener('load', async () => {
             try {
                 swRegistration = await navigator.serviceWorker.register(SW_URL, { scope: SW_SCOPE });
-                // Registro viejo (/public/service-worker.js): fuera, para que no siga sirviendo páginas de /public/ desde su caché
-                (await navigator.serviceWorker.getRegistrations())
-                    .filter(r => new URL(r.scope).pathname === '/public/')
-                    .forEach(r => r.unregister().catch(() => {}));
+                // Registro viejo (/public/): se da de baja solo desde la portada y, si tenía avisos push, cuando el de la
+                // raíz ya tiene su propia suscripción (la crea ugnSuscribir(true) al abrir la app). Así nadie se queda sin avisos.
+                if (location.pathname === '/') retirarRegistroViejo().catch(() => {});
                 console.log('[PWA] Service Worker registrado:', swRegistration.scope);
 
                 // Detectar updates

@@ -58,7 +58,7 @@
 
 <!-- css:inicio -->
 <!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css (scripts/unir-css.js) -->
-<link rel="stylesheet" href="upgames-app.css?v=de5346f4a6">
+<link rel="stylesheet" href="upgames-app.css?v=764342b97a">
 <!-- css:fin -->
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-intro.js?v=20261109a"></script>
@@ -85,7 +85,6 @@
 <meta name="apple-mobile-web-app-title" content="UpGames">
 <script src="./upgames-pwa.js?v=20261120a" defer></script>
 <script src="./upgames-errores.js?v=20261029i"></script>
-<style>.ug-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
 </head>
 <body>
 
@@ -171,11 +170,12 @@
   MAIN OUTPUT GRID
 ══════════════════════════════════ -->
 <main id="main-view">
-  <div class="ug-sr">
-    <h1>UpGames: juegos, mods y apps de gamers, creadores y desarrolladores independientes</h1>
-    <p>UpGames es el ecosistema que conecta a gamers, creadores de contenido y desarrolladores independientes. Descubre y descarga juegos para PC y Android, mods de rendimiento, juegos y configuraciones para Winlator, aplicaciones, herramientas, videos y blogs que publica la comunidad, sin registrarte. Con una cuenta gratuita publicas tus proyectos, construyes una comunidad que te sigue y monetizas tu trabajo con la publicidad de las descargas, los regalos en tus lives y tu blog.</p>
-    <nav aria-label="Enlaces de UpGames"><a href="blogs-guia.html">UpGames Blogs</a> · <a href="live.html">UpGames Live: transmisiones en vivo</a> · <a href="politica-privacidad.html">Política de privacidad</a> · <a href="terminos_condiciones.html">Términos y condiciones</a></nav>
-  </div>
+  <!-- Qué es UpGames, visible para todos (también para Google). El párrafo y los botones son para quien no tiene cuenta. -->
+  <section class="ug-intro" aria-labelledby="ug-h1">
+    <h1 id="ug-h1">UpGames: juegos, mods y apps de gamers, creadores y desarrolladores independientes</h1>
+    <p>Descubre juegos para PC y Android, mods de rendimiento, juegos y configuraciones para Winlator, aplicaciones y herramientas que comparten gamers, creadores de contenido y desarrolladores independientes. Las descargas son libres y sin registro; con una cuenta gratuita publicas tus proyectos, construyes una comunidad y monetizas tu trabajo.</p>
+    <div class="ug-intro-cta"><a href="/login.html?volver=.%2F&amp;registro=1" class="ug-intro-btn">Crear cuenta gratis</a><a href="/#ug-acerca" class="ug-intro-link">Qué es UpGames</a></div>
+  </section>
   <div id="hero-carousel" style="display:none">
     <div class="hero-track" id="hero-track"></div>
     <div class="hero-dots" id="hero-dots"></div>
@@ -195,8 +195,39 @@
       <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div><div class="skeleton-line w60"></div></div></div>
     </div>
   </div>
+  <!-- Qué es UpGames (contenido de la portada de 9c2b81a, ahora visible al final del catálogo) -->
+  <section id="ug-acerca" class="ug-acerca" aria-labelledby="ug-acerca-t">
+    <h2 id="ug-acerca-t">Un lugar para cada parte de la comunidad</h2>
+    <p>UpGames conecta a gamers, creadores de contenido y desarrolladores independientes. Explorar es libre y no necesitas cuenta. Con una cuenta gratuita puedes publicar, comentar, seguir a otros y ganar con lo que compartes.</p>
+    <div class="ug-acerca-grid">
+      <article><h3>Para gamers</h3><p>Descubre juegos, mods de rendimiento, apps y herramientas para PC y Android que comparte la comunidad, también juegos y configuraciones para Winlator.</p>
+        <ul><li>Fichas con capturas, videos, reseñas y guías de instalación</li><li>Recomendaciones de Nexus según lo que te gusta</li><li>Videos, transmisiones en vivo y lecturas en NEW</li></ul></article>
+      <article><h3>Para desarrolladores independientes</h3><p>Publica y distribuye tus juegos, mods y herramientas, llega a quienes buscan proyectos como el tuyo y construye una comunidad alrededor de tu trabajo.</p>
+        <ul><li>Página propia para cada proyecto, con capturas, videos y guía de instalación</li><li>Seguidores, comentarios, reseñas y avisos de novedades</li><li>Ingresos por la publicidad que ve quien llega a descargar</li></ul></article>
+      <article><h3>Para creadores de contenido</h3><p>Comparte videos, guías y reseñas, crea tu blog con dominio propio y transmite en vivo.</p>
+        <ul><li>Monetización por visualizaciones de publicidad y blogs</li><li>Regalos y apoyos con UpCoins en tus lives</li><li>Estadísticas de tus publicaciones en tu panel</li></ul></article>
+    </div>
+    <h2>Publica tu proyecto independiente en cuatro pasos</h2>
+    <p>UpGames no aloja tus archivos: tú mantienes tu enlace de descarga y UpGames te da la vitrina, la comunidad y la monetización.</p>
+    <ol class="ug-pasos">
+      <li><b>Crea tu cuenta.</b> Gratis, con tu correo. Tu perfil público reúne todo lo que publicas.</li>
+      <li><b>Publica.</b> Título, descripción, capturas, video y el enlace de descarga. El equipo revisa cada publicación antes de mostrarla.</li>
+      <li><b>Llega a tu público.</b> Nexus recomienda tu proyecto a quienes les gusta ese tipo de contenido y tus seguidores reciben aviso de lo nuevo.</li>
+      <li><b>Monetiza.</b> Ganas UpCoins por las visualizaciones de publicidad en la página de descarga, regalos en lives y tu blog, y puedes retirarlos como dinero.</li>
+    </ol>
+    <h2>Todo lo que reúne UpGames</h2>
+    <dl class="ug-reune">
+      <div><dt>Juegos, mods y apps</dt><dd>Un catálogo de la comunidad con categorías, búsqueda y fichas detalladas para PC y Android.</dd></div>
+      <div><dt>Videos y lives</dt><dd>Un feed de videos de creadores y transmisiones en vivo con chat y regalos.</dd></div>
+      <div><dt>NEW y blogs</dt><dd>Guías, reseñas y noticias escritas por la comunidad, y la herramienta para crear tu propio blog.</dd></div>
+      <div><dt>Nexus IA</dt><dd>Un asistente que busca, recomienda y responde dudas sobre lo que hay en UpGames.</dd></div>
+      <div><dt>UpCoins y Premium</dt><dd>La moneda de UpGames para regalos, apoyos y extras, y Premium para usar la plataforma sin anuncios ni esperas.</dd></div>
+      <div><dt>Comunidad</dt><dd>Perfiles, seguidores, comentarios, reseñas, colecciones y mensajes entre creadores.</dd></div>
+    </dl>
+  </section>
   <!-- Enlaces rastreables a temas, publicaciones y creadores (los actualiza scripts/generar-paginas.js cada hora) -->
   <nav class="ug-explora" aria-label="Explora UpGames">
+  <h2>Explora UpGames</h2>
   <!--SEO:ENLACES-->
   <h3>Secciones</h3>
   <ul class="links">
@@ -237,6 +268,7 @@
     <li><a href="/public/u/upgames.html">@upgames</a></li>
   </ul>
   <!--/SEO:ENLACES-->
+  <p class="ug-legal"><a href="terminos_condiciones.html">Términos y condiciones</a> · <a href="politica-privacidad.html">Política de privacidad</a><br>UpGames es un directorio comunitario: no aloja los archivos que comparten sus usuarios. No es un casino ni un sitio de apuestas.</p>
   </nav>
 </main>
 
@@ -2016,7 +2048,7 @@
 <script src="upgames-metricas.js?v=20261120a"></script>
 <script src="upgames-ranking.js?v=20261108c"></script>
 <script src="upgames-ux.js?v=20261114a"></script>
-<script src="script.js?v=f1768a060f"></script>
+<script src="script.js?v=b5eb3963c1"></script>
 <script src="upgames-publicar.js?v=20261108a"></script>
 <script src="upgames-extras.js?v=20261115a"></script>
 <script src="upgames-social.js?v=20261029i"></script>

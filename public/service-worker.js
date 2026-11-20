@@ -3,27 +3,20 @@
 // ========================================
 // La biblioteca pasó a la portada (/) y el service worker de UpGames ahora vive en /service-worker.js
 // (alcance "/"). GitHub Pages no permite que un worker de /public/ controle "/", así que este archivo
-// solo existe para quien tenía instalado el viejo: el navegador lo descarga al visitar cualquier página
-// de /public/ y entonces
-//   1. borra las cachés VIEJAS de UpGames (upgames-*; nunca las de los juegos ni la de imágenes),
-//   2. se da de baja (las páginas de /public/ pasan a estar bajo el worker de la raíz),
-//   3. lleva a la portada, con sus parámetros, a las ventanas que aún mostraban /public/biblioteca.html.
-// No responde nada desde caché: sin manejador de fetch, todo va directo a la red mientras tanto.
+// existe para quien tenía instalado el viejo. El navegador lo descarga solo (al visitar una página de
+// /public/ o al llegar un aviso push) y entonces:
+//   · corre el MISMO código que el de la raíz (caché, sin conexión, avisos push y sus clics). No se da de
+//     baja: la suscripción push pertenece a este registro y, si lo hiciera, quien no abra la app dejaría de
+//     recibir avisos. La portada lo da de baja cuando ya tiene su propia suscripción (upgames-pwa.js).
+//   · al activarse borra las cachés VIEJAS de UpGames (upgames-*; nunca las de los juegos) y lleva a la
+//     portada, con sus parámetros, las ventanas que aún mostraban /public/biblioteca.html.
 // ========================================
-const CACHE_VERSION = 'upgames-v8.0.0';   // la de /service-worker.js: esas cachés se conservan
-const CACHE_IMG = 'upgames-img-v1';
-
-self.addEventListener('install', () => self.skipWaiting());
+importScripts('/service-worker.js');
 
 self.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
-        const nombres = await caches.keys();
-        await Promise.all(nombres
-            .filter(n => n.startsWith('upgames-') && !n.startsWith(CACHE_VERSION) && n !== CACHE_IMG)
-            .map(n => caches.delete(n)));
         await self.clients.claim();
         const ventanas = await self.clients.matchAll({ type: 'window' });
-        await self.registration.unregister();
         await Promise.all(ventanas.map(c => {
             const u = new URL(c.url);
             if (u.pathname !== '/public/biblioteca.html') return null;   // las demás páginas siguen tal cual (p. ej. un live abierto)

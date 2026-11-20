@@ -71,10 +71,14 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
   const grafo = JSON.parse(raiz.ld[0])['@graph'] || [];
   C.prueba('portada: Organization + WebSite (buscador en /?q=) + CollectionPage', ['Organization', 'WebSite', 'CollectionPage'].every(t => grafo.some(x => x['@type'] === t)) && grafo.find(x => x['@type'] === 'WebSite').potentialAction?.target?.urlTemplate === 'https://upgames.games/?q={search_term_string}' && grafo.every(x => !/biblioteca\.html/.test(JSON.stringify(x))), JSON.stringify(grafo.map(x => x['@type'])));
   C.prueba('título y descripción de la portada', raiz.title === 'UpGames | Juegos, mods y apps de creadores independientes' && raiz.desc === 'UpGames conecta gamers, creadores de contenido y desarrolladores independientes en un ecosistema para descubrir, crear y monetizar.', `${raiz.title} · ${raiz.desc}`);
-  const h1 = (html.match(/<h1>([^<]*)<\/h1>/) || [])[1] || '', bloque = html.slice(html.indexOf('<h1>'), html.indexOf('<h1>') + 1500).toLowerCase();
+  const h1 = (html.match(/<h1[^>]*>([^<]*)<\/h1>/) || [])[1] || '', bloque = ((html.match(/<section class="ug-intro"[\s\S]*?<\/section>/) || [''])[0] + (html.match(/<section id="ug-acerca"[\s\S]*?<\/section>/) || [''])[0]).toLowerCase();   // texto visible: introducción + qué es UpGames
   C.prueba('H1 con la propuesta de valor', /desarrolladores independientes/.test(h1) && /juegos, mods y apps/.test(h1), h1);
   const claves = ['juegos', 'mods', 'winlator', 'aplicaciones', 'descargas', 'desarrolladores independientes', 'creadores de contenido'].filter(k => !bloque.includes(k));
   C.prueba('palabras clave (juegos, mods, Winlator, aplicaciones, descargas, desarrolladores independientes, creadores de contenido)', !claves.length, 'faltan: ' + claves.join(', '));
+  C.prueba('el contenido de la portada no depende de texto oculto (sin .ug-sr; H1 visible)', !/class="ug-sr"/.test(html) && /<section class="ug-intro"[^>]*>\s*<h1/.test(html) && /id="ug-acerca"/.test(html));
+  const css = fs.readFileSync(path.join(REPO, 'public/upgames-v6.css'), 'utf8');
+  C.prueba('con sesión la introducción se reduce al título (el catálogo sube); sin sesión se ve completa', /html:not\(\.ug-invitado\) \.ug-intro p, html:not\(\.ug-invitado\) \.ug-intro-cta \{ display: none; \}/.test(css) && !/\.ug-intro h1[^{]*\{[^}]*display:\s*none/.test(css));
+  C.prueba('el ancla «Qué es UpGames» es absoluta (con <base> un href="#…" iría a /public/)', html.includes('href="/#ug-acerca"') && !/href="#[a-z]/i.test(html), (html.match(/href="#[^"]+"/g) || []).join(' '));
   C.prueba('nada en la portada apunta a biblioteca.html', !/biblioteca\.html/.test(html.replace(/<!--[\s\S]*?-->/g, '')));
   const puente = cabecera(fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8'));
   C.prueba('puente /public/biblioteca.html: canónica a la portada (sin noindex que la contradiga)', puente.canon === 'https://upgames.games/' && !puente.robots, JSON.stringify(puente));
@@ -107,6 +111,13 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
       const ctx = await b.newContext({ viewport: vp, serviceWorkers: 'block' }); await ctx.route(/fonts\.(googleapis|gstatic)\.com|unpkg\.com|railway\.app/, r => r.abort());
       const p = await ctx.newPage(); const err = []; p.on('pageerror', e => err.push(e.message));
       await p.goto(web.url + '/', { waitUntil: 'load' }); await espera(700);
+      const vis = await p.evaluate(() => {
+        const ve = el => { if (!el) return false; const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 100 && r.height > 10 && cs.visibility !== 'hidden' && cs.display !== 'none' && cs.clip === 'auto' && cs.position !== 'absolute'; };
+        const a = document.getElementById('ug-acerca'), txt = (a?.innerText || '').toLowerCase();
+        return { h1: ve(document.querySelector('h1')), intro: ve(document.querySelector('.ug-intro p')), acerca: ve(a), palabras: txt.split(/\s+/).length,
+          faltan: ['juegos', 'mods', 'winlator', 'apps', 'creadores de contenido', 'desarrolladores independientes', 'monetiza'].filter(k => !txt.includes(k)) };
+      });
+      C.prueba(`${n}: qué es UpGames se VE (H1, introducción y ${vis.palabras} palabras al final del catálogo)`, vis.h1 && vis.intro && vis.acerca && vis.palabras >= 300 && !vis.faltan.length, JSON.stringify(vis));
       const r = await p.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.innerText, lib: !!document.getElementById('main-view'), sobra: document.documentElement.scrollWidth - innerWidth }));
       C.prueba(`${n}: la portada es la biblioteca (se queda en /, con H1)`, r.url === '/' && /desarrolladores independientes/.test(r.h1) && r.lib, JSON.stringify(r));
       const malos = err.filter(e => e !== 'undefined');   // rechazo sin motivo sin API: conocido, también antes de la migración (ver navegacion.js)
