@@ -74,6 +74,24 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   r = await api(`/blogs/comentarios/${ent.id}/${cid}`, { m: 'DELETE', u: 'kio' }); prueba('otro usuario no puede borrarlo', r.d.success === false);
   r = await api(`/blogs/comentarios/${ent.id}/${cid}`, { m: 'DELETE', u: 'kale' }); prueba('el dueño del blog sí lo borra', r.d.success === true);
 
+  console.log('NEW · descubrir entradas (/blogs/descubrir)');
+  const vipBlog = (await api('/blogs/mios', { u: 'vip' })).d.blogs?.[0];
+  r = await api(`/blogs/${vipBlog?.id}/entradas`, { m: 'POST', u: 'vip', body: { tipo: 'entrada', titulo: 'Guía VIP de rendimiento', estado: 'publicada', bloques: [{ tipo: 'texto', texto: 'Una guía completa para sacar más FPS en cualquier equipo, paso a paso.' }] } });
+  prueba('Premium publica una entrada', r.d.success, JSON.stringify(r.d).slice(0, 160));
+  await db.collection('usuarios').updateOne({ usuario: 'lena' }, { $set: { siguiendo: ['kale'] } });
+  const anon = await api('/blogs/descubrir');
+  const todas = Object.values(anon.d.secciones || {}).flat();
+  prueba('responde sin sesión, con secciones', anon.s === 200 && anon.d.success && anon.d.conSesion === false && Array.isArray(anon.d.secciones?.nexus), JSON.stringify(anon.d).slice(0, 200));
+  const deKale = todas.find(e => e.usuario === 'kale');
+  prueba('tarjeta con título, resumen, creador, fecha y enlace al artículo completo', deKale && deKale.titulo && deKale.resumen && deKale.blog === 'Blog de Kale' && deKale.fecha && /\/b\/kale-mods\/e\//.test(deKale.url), JSON.stringify(deKale));
+  prueba('sin bloques ni datos internos en la respuesta', deKale && !('bloques' in deKale) && !('versiones' in deKale));
+  prueba('la entrada de un creador Premium sale como destacada (o ya en Nexus)', [...anon.d.secciones.destacadas, ...anon.d.secciones.nexus].some(e => e.usuario === 'vip' && e.premium), JSON.stringify(anon.d.secciones.destacadas));
+  prueba('sin sesión no hay «siguiendo»', anon.d.secciones.siguiendo.length === 0);
+  const conLena = await api('/blogs/descubrir', { u: 'lena' });
+  prueba('con sesión: «siguiendo» trae lo de los creadores que sigue', conLena.d.conSesion && conLena.d.secciones.siguiendo.some(e => e.usuario === 'kale') && conLena.d.secciones.siguiendo.every(e => e.usuario === 'kale'), JSON.stringify(conLena.d.secciones?.siguiendo));
+  const abre = deKale && await fetch(deKale.url.replace(/^https?:\/\/[^/]+/, A));
+  prueba('el enlace de la tarjeta abre el artículo (200)', abre && abre.status === 200, abre && abre.status);
+
   console.log('Nexus escritor');
   r = await api('/blogs/nexus/escribir', { m: 'POST', u: 'kale', body: { juegoId: juego } });
   prueba('sin clave de IA responde 503 con mensaje claro', r.s === 503 && /plantilla/.test(r.d.error), `${r.s} ${JSON.stringify(r.d)}`);

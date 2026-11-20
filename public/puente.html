@@ -8,6 +8,7 @@
         // Con un Pase activo la página no carga publicidad. La marca local solo evita
         // cargar anuncios; el enlace directo lo autoriza siempre el servidor.
         window.UG_SIN_ANUNCIOS = (function () { try { var v = String(localStorage.getItem('ug_pase_hasta') || '').split('|'); return !!localStorage.getItem('token') && v[0] === localStorage.getItem('user_admin') && +v[1] > Date.now(); } catch (_) { return false; } })();
+        if (window.UG_SIN_ANUNCIOS) document.documentElement.classList.add('ug-sin-anuncios');   // sin anuncios: el botón no se aleja
         window.ugAnuncio = function (src, async) {
             if (window.UG_SIN_ANUNCIOS) return;
             if (async) { var s = document.createElement('script'); s.async = true; s.setAttribute('data-cfasync', 'false'); s.src = src; document.body.appendChild(s); }
@@ -38,6 +39,14 @@
         .btn-neon:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 22px 44px -12px rgba(57,255,136,1), inset 0 1px 0 rgba(255,255,255,.5); }
         .btn-neon:disabled { opacity: 0.5; cursor: not-allowed; }
         .footer-note { font-size: 0.7rem; color: #6C7686; margin-top: 30px; }
+        /* El botón queda debajo de la primera pantalla en cualquier tamaño (svh: sin contar las barras del navegador).
+           Con Premium (sin anuncios) no hay nada que ver: el botón no se aleja. */
+        .ug-antes-boton { min-height: calc(100vh - 28px); min-height: calc(100svh - 28px); }
+        html.ug-sin-anuncios .ug-antes-boton { min-height: 0; }
+        html.ug-sin-anuncios .ug-bajar-aviso { display: none; }
+        .ug-bajar-aviso { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 14px; font-size: .82rem; color: #8fdcff; }
+        .ug-bajar-aviso ion-icon { font-size: 1.15rem; flex: none; }
+        .ug-zona-boton { padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08); margin-top: 10px; }
 
         /* ── VIDEO DEL JUEGO ── */
         #game-media-wrap {
@@ -91,10 +100,13 @@
 <body>
     
     <div class="container">
+        <!-- Todo lo anterior al botón ocupa al menos una pantalla: hay que bajar (y pasar por los anuncios) para llegar al enlace -->
+        <div class="ug-antes-boton">
         <ion-icon name="shield-checkmark-outline" style="font-size: 48px; color: var(--neon-green);"></ion-icon>
         <h1>Saliendo de UpGames</h1>
         <p>Estás siendo redirigido a un servidor externo. Recuerda que UpGames es un directorio neutral y no almacena archivos.</p>
         <div class="ug-apoyo"><span aria-hidden="true">💚</span><span><b>Tu visita apoya al creador.</b> La publicidad de esta página es lo que le paga: no se paga por descargar.</span></div>
+        <p class="ug-bajar-aviso"><ion-icon name="arrow-down-circle-outline" aria-hidden="true"></ion-icon><span>Tu enlace aparece <b>al final de la página</b> cuando termine la cuenta atrás.</span></p>
 
         <!-- ⭐ MEDIA DEL JUEGO — se carga dinámicamente desde los parámetros de URL -->
         <div id="game-title-bar"></div>
@@ -117,10 +129,6 @@
         </script>
         <script>ugAnuncio('https://www.highperformanceformat.com/0af19e39530f3a17d0722c5f0c91735a/invoke.js');</script><br /><br />
 
-        <div id="timer">Preparando enlace en 30...</div>
-        <div id="error-msg" class="error-box" style="display:none;"></div>
-        <div id="success-msg" class="success-box" style="display:none;"></div>
-        <button id="btn" class="btn-neon">Obtener Enlace</button><br />
         
         <!-- ⭐ PUBLICIDAD 2 -->
         <script>ugAnuncio('https://bellnewyork.org/21/bee2b46adf997334693eadeec583df85', true);</script>
@@ -142,6 +150,14 @@
           };
         </script>
         <script>ugAnuncio('https://www.highperformanceformat.com/247173c86298a1f5a8e01a0e1c5889cd/invoke.js');</script>
+        </div><!-- /.ug-antes-boton -->
+
+        <div class="ug-zona-boton">
+        <div id="timer">Preparando enlace en 30...</div>
+        <div id="error-msg" class="error-box" style="display:none;"></div>
+        <div id="success-msg" class="success-box" style="display:none;"></div>
+        <button id="btn" class="btn-neon">Obtener Enlace</button><br />
+        </div>
 
         <div class="footer-note">
             La responsabilidad legal recae en el usuario que indexó el link.
@@ -579,6 +595,9 @@
             errorEl.innerText = msg;
             errorEl.style.display = 'block';
             successEl.style.display = 'none';
+            // El mensaje está abajo, junto al botón: el aviso de arriba lo anuncia para que no pase desapercibido
+            const aviso = document.querySelector('.ug-bajar-aviso');
+            if (aviso) { aviso.style.color = '#FF8AA0'; aviso.lastElementChild.textContent = '⚠️ Hay un aviso sobre este enlace al final de la página.'; }
         }
 
         function showSuccess(msg) {

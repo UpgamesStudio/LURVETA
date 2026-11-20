@@ -260,7 +260,8 @@ function switchTab(t) {
   document.body.dataset.tab = t;   // la cabecera de la app se oculta en Perfil (upgames-v6.css)
   window.dispatchEvent(new CustomEvent('ug:tab', { detail: t }));   // pistas de la guía (upgames-guia.js)
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  const navBtn = document.querySelector(`.nav-tab[data-tab="${t}"]`);
+  // Favoritos y Ganancias/Economía se abren desde el Perfil: la barra marca Perfil (data-tabs)
+  const navBtn = [...document.querySelectorAll('.nav-tab[data-tab]')].find(b => (b.dataset.tabs || b.dataset.tab).split(' ').includes(t));
   if(navBtn) navBtn.classList.add('active');
   document.getElementById('main-view').style.display=t==='main'?'':'none';
   document.getElementById('category-row').style.display=t==='main'?'':'none';
@@ -270,6 +271,8 @@ function switchTab(t) {
   const favsView     = document.getElementById('favs-view');
   const economiaView = document.getElementById('economia-view');
   const profileView  = document.getElementById('profile-view');
+  document.getElementById('new-view')?.classList.toggle('active', t==='new');
+  if(t==='new') window.UGNew?.abrir();
   favsView.classList.toggle('active',     t==='favs');
   economiaView.classList.toggle('active', t==='economia');
   profileView.classList.toggle('active',  t==='profile');

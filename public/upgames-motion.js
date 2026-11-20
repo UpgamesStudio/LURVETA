@@ -66,7 +66,7 @@
     const orig = window.switchTab;
     if (typeof orig !== 'function') return;
     let actual = 'main';
-    const vistas = { main: 'main-view', favs: 'favs-view', economia: 'economia-view', profile: 'profile-view' };
+    const vistas = { main: 'main-view', new: 'new-view', favs: 'favs-view', economia: 'economia-view', profile: 'profile-view' };
     const cyber = () => document.documentElement.dataset.tema === 'cyber';
     window.switchTab = function (t) {
       const prev = actual;
@@ -74,7 +74,12 @@
       // Tema cyber + navegador moderno: transición real entre la vista vieja y la nueva (~1 s)
       if (!reduce && cyber() && prev !== t && typeof document.startViewTransition === 'function') {
         barrido();
-        try { document.startViewTransition(() => { orig.apply(self, args); actual = t; }); return; }
+        try {
+          const vt = document.startViewTransition(() => { orig.apply(self, args); actual = t; });
+          // Cambiar de pestaña durante la animación la «salta»: no es un error (antes quedaba como rechazo sin atender)
+          [vt.ready, vt.finished, vt.updateCallbackDone].forEach(pr => pr?.catch(() => {}));
+          return;
+        }
         catch (_) { /* sigue abajo */ }
       }
       orig.apply(this, arguments);

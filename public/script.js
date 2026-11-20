@@ -2012,7 +2012,8 @@ function switchTab(t) {
   document.body.dataset.tab = t;   // la cabecera de la app se oculta en Perfil (upgames-v6.css)
   window.dispatchEvent(new CustomEvent('ug:tab', { detail: t }));   // pistas de la guía (upgames-guia.js)
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  const navBtn = document.querySelector(`.nav-tab[data-tab="${t}"]`);
+  // Favoritos y Ganancias/Economía se abren desde el Perfil: la barra marca Perfil (data-tabs)
+  const navBtn = [...document.querySelectorAll('.nav-tab[data-tab]')].find(b => (b.dataset.tabs || b.dataset.tab).split(' ').includes(t));
   if(navBtn) navBtn.classList.add('active');
   document.getElementById('main-view').style.display=t==='main'?'':'none';
   document.getElementById('category-row').style.display=t==='main'?'':'none';
@@ -2022,6 +2023,8 @@ function switchTab(t) {
   const favsView     = document.getElementById('favs-view');
   const economiaView = document.getElementById('economia-view');
   const profileView  = document.getElementById('profile-view');
+  document.getElementById('new-view')?.classList.toggle('active', t==='new');
+  if(t==='new') window.UGNew?.abrir();
   favsView.classList.toggle('active',     t==='favs');
   economiaView.classList.toggle('active', t==='economia');
   profileView.classList.toggle('active',  t==='profile');
@@ -5300,7 +5303,7 @@ function nxEjecutar(a) {
     render(filteredItems);
     nexusTrack('category', { categoria: a.valor });
   } else if (a.tipo === 'ir_a') {
-    if (['main', 'favs', 'economia', 'profile'].includes(a.valor)) switchTab(a.valor);
+    if (['main', 'new', 'favs', 'economia', 'profile'].includes(a.valor)) switchTab(a.valor);
   } else if (a.tipo === 'buscar') {
     if (currentTab !== 'main') switchTab('main');
     const b = document.getElementById('buscador');
@@ -5368,7 +5371,7 @@ const TUT_STEPS = [
   { sel: '.game-tile', title: '📦 Abre una publicación', body: 'Toca una tarjeta para ver su detalle: portada, descripción, comentarios y el botón para <strong>descargar</strong>.' },
   { sel: '#hdr-uc, #hdr-entrar', title: '🪙 Tus UpCoins', body: 'La moneda de UpGames. Tócala para recargar y úsala en lives, NEXUS, Premium y el estilo de tu perfil. Si aún no tienes cuenta, aquí entras.' },
   { sel: '#hdr-orb', title: '✨ Menú rápido', body: 'Avisos, lives, subir contenido, Premium y soporte, desplegados en círculo.' },
-  { sel: '#bottom-nav', title: '🧭 Navegación', body: '<strong>Explorar</strong>, <strong>Favoritos</strong>, <strong>NEXUS</strong> (tu asistente de IA), <strong>Economía</strong> (ganancias, misiones y UpCoins) y tu <strong>Perfil</strong> (publicar y ajustes).' },
+  { sel: '#bottom-nav', title: '🧭 Navegación', body: '<strong>Inicio</strong>, <strong>Videos</strong>, <strong>NEXUS</strong> (tu asistente de IA), <strong>NEW</strong> (artículos de la comunidad) y tu <strong>Perfil</strong> (publicar, ajustes, Favoritos, Ganancias y Economía).' },
   { sel: '#tut-fab', title: '❔ Ayuda y guía de inicio', body: 'Aquí tienes tu lista de primeros pasos, guías cortas con buscador y acceso a NEXUS y soporte. ¡Listo! 🚀' },
 ];
 
@@ -5513,6 +5516,7 @@ document.getElementById('btut-close').addEventListener('click', finishTutorial);
   // Acceso directo de la app instalada: biblioteca.html?tab=perfil
   const t = new URLSearchParams(location.search).get('tab');
   if (t === 'perfil' && LS.get('token')) setTimeout(() => switchTab('profile'), 300);
+  if (t === 'new') setTimeout(() => switchTab('new'), 300);   // biblioteca.html?tab=new abre NEW
 })();
 (function abrirAjustesDesdeURL() {
   const tab = new URLSearchParams(location.search).get('ajustes');
@@ -6617,4 +6621,100 @@ function ecoRenderPubStats() {
     localStorage.setItem('ug_ref', JSON.stringify({ c: ref, t: Date.now() }));
     if (window.UG_INVITADO) setTimeout(() => toast(`🎁 @${ref} te invitó: crea tu cuenta gratis y recibe UpCoins de bienvenida`, 5000), 2500);
   } catch (_) {}
+})();
+
+// ═══════════════════════════════════════════════════════════
+// NEW — lecturas de la comunidad (entradas de UpGames Blogs)
+// Datos: GET /blogs/descubrir (rutas/blogs.js · modulos/blogs/descubrir.js).
+// Cada entrada es una tarjeta suelta (portada, título, resumen, creador, fecha,
+// lecturas y comentarios); al tocarla se abre el artículo completo en su blog.
+// ═══════════════════════════════════════════════════════════
+(function () {
+  const cuerpo = () => document.getElementById('ugn-cuerpo');
+  let datos = null, pedido = null, pedidoEn = 0, filtro = 'todo';
+
+  const img = src => (/^https:\/\//.test(src || '') ? (typeof cldOpt === 'function' ? cldOpt(src, 'c_limit,w_720,q_auto,f_auto') : src) : '');
+  const nf = n => { n = +n || 0; return n >= 1e6 ? (n / 1e6).toFixed(1).replace('.0', '') + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.0', '') + 'K' : String(n); };
+  function hace(f) {
+    const s = (Date.now() - new Date(f)) / 1000;
+    if (!(s >= 0)) return '';
+    if (s < 3600) return `hace ${Math.max(1, Math.round(s / 60))} min`;
+    if (s < 86400) return `hace ${Math.round(s / 3600)} h`;
+    if (s < 7 * 86400) return `hace ${Math.round(s / 86400)} d`;
+    return new Date(f).toLocaleDateString('es', { day: 'numeric', month: 'short' });
+  }
+
+  function tarjeta(e, { grande = false, etiqueta = '' } = {}) {
+    const portada = img(e.portada);
+    const perfil = `./perfil-publico.html?usuario=${encodeURIComponent(e.usuario)}`;
+    const avatar = img(e.avatar);
+    return `<article class="ugn-card${grande ? ' ugn-card--grande' : ''}${portada ? '' : ' ugn-card--sin-img'}">
+      <a class="ugn-card-link" href="${escH(e.url)}" target="_blank" rel="noopener" aria-label="Leer: ${escH(e.titulo)}">
+        ${portada ? `<span class="ugn-card-img" style="background-image:url('${escH(portada)}')"></span>` : ''}
+        <span class="ugn-card-txt">
+          ${etiqueta ? `<span class="ugn-chip">${escH(etiqueta)}</span>` : ''}
+          <b class="ugn-card-t">${escH(e.titulo)}</b>
+          ${e.resumen ? `<span class="ugn-card-r">${escH(e.resumen)}</span>` : ''}
+        </span>
+      </a>
+      <footer class="ugn-card-pie">
+        <a class="ugn-autor" href="${perfil}">
+          <span class="ugn-av"${avatar ? ` style="background-image:url('${escH(avatar)}')"` : ''}>${avatar ? '' : escH((e.usuario || '?')[0].toUpperCase())}</span>
+          <span><b>@${escH(e.usuario)}</b><small>${escH(e.blog)}</small></span>
+        </a>
+        <span class="ugn-meta"><time datetime="${escH(e.fecha)}">${hace(e.fecha)}</time>${e.vistas ? ` · <ion-icon name="eye-outline"></ion-icon>${nf(e.vistas)}` : ''}${e.comentarios ? ` · <ion-icon name="chatbubble-outline"></ion-icon>${nf(e.comentarios)}` : ''}</span>
+      </footer>
+    </article>`;
+  }
+  const seccion = (titulo, sub, lista, op = {}) => !lista?.length ? '' : `<section class="ugn-sec">
+      <div class="ugn-sec-h"><h2>${titulo}</h2>${sub ? `<small>${sub}</small>` : ''}</div>
+      <div class="ugn-grid">${lista.map(e => tarjeta(e, op)).join('')}</div></section>`;
+  const vacio = (icono, t, p, accion = '') => `<div class="ugn-vacio"><ion-icon name="${icono}"></ion-icon><h3>${t}</h3><p>${p}</p>${accion}</div>`;
+
+  function pintar() {
+    const el = cuerpo(); if (!el) return;
+    document.querySelectorAll('#new-view [data-ugn]').forEach(b => { const on = b.dataset.ugn === filtro; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+    if (!datos) return;
+    const s = datos.secciones || {};
+    const algo = ['nexus', 'destacadas', 'populares', 'recientes'].some(k => s[k]?.length);
+    if (!algo) { el.innerHTML = vacio('newspaper-outline', 'Todavía no hay lecturas', 'Cuando los creadores publiquen en sus blogs, aparecerán aquí.', '<a class="ugn-btn" href="./blog.html">Crea tu blog</a>'); return; }
+    if (filtro === 'siguiendo') {
+      el.innerHTML = !datos.conSesion
+        ? vacio('people-outline', 'Lo de tus creadores, aquí', 'Inicia sesión para ver las entradas de quienes sigues.', `<a class="ugn-btn" href="${typeof ugUrlLogin === 'function' ? ugUrlLogin(true) : '../login.html'}">Iniciar sesión</a>`)
+        : s.siguiendo?.length ? `<div class="ugn-grid">${s.siguiendo.map(e => tarjeta(e)).join('')}</div>`
+        : vacio('people-outline', 'Aún no hay entradas de quienes sigues', 'Sigue a creadores desde su perfil y sus nuevas entradas aparecerán aquí.');
+      return;
+    }
+    if (filtro === 'populares') { el.innerHTML = s.populares?.length ? `<div class="ugn-grid">${s.populares.map(e => tarjeta(e)).join('')}</div>` : vacio('flame-outline', 'Sin populares este mes', 'Vuelve pronto.'); return; }
+    if (filtro === 'recientes') { el.innerHTML = `<div class="ugn-grid">${(s.recientes || []).map(e => tarjeta(e)).join('')}</div>`; return; }
+    const [primera, ...resto] = s.nexus || [];
+    el.innerHTML = (primera ? `<section class="ugn-sec ugn-sec--nexus"><div class="ugn-sec-h"><h2><ion-icon name="sparkles"></ion-icon> Recomendado por Nexus</h2></div>
+        ${tarjeta(primera, { grande: true })}<div class="ugn-grid">${resto.map(e => tarjeta(e)).join('')}</div></section>` : '')
+      + seccion('Destacadas', 'De creadores Premium', s.destacadas, { etiqueta: 'Destacado' })
+      + (datos.conSesion ? seccion('De quienes sigues', '', (s.siguiendo || []).slice(0, 4)) : '')
+      + seccion('Populares', 'Lo más leído del mes', (s.populares || []).slice(0, 6))
+      + seccion('Recientes', 'Lo último publicado', (s.recientes || []).slice(0, 8));
+  }
+
+  async function cargar(forzar) {
+    if (pedido) return pedido;
+    if (datos && !forzar && Date.now() - pedidoEn < 120e3) return datos;
+    const el = cuerpo();
+    if (!datos && el) el.innerHTML = '<div class="ugn-carga"><span></span><span></span><span></span></div>';
+    const token = LS.get('token');
+    pedido = fetch(`${API_URL}/blogs/descubrir`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)))
+      .then(d => { if (!d.success) throw new Error('sin datos'); datos = d; pedidoEn = Date.now(); pintar(); return d; })
+      .catch(() => { if (!datos && cuerpo()) cuerpo().innerHTML = vacio('cloud-offline-outline', 'No se pudieron cargar las lecturas', 'Revisa tu conexión e inténtalo de nuevo.', '<button type="button" class="ugn-btn" data-ugn-reintentar>Reintentar</button>'); })
+      .finally(() => { pedido = null; });
+    return pedido;
+  }
+
+  document.getElementById('new-view')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-ugn]');
+    if (b) { filtro = b.dataset.ugn; pintar(); scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (e.target.closest('[data-ugn-reintentar]')) cargar(true);
+  });
+
+  window.UGNew = { abrir: () => { pintar(); cargar(); } };
 })();

@@ -183,7 +183,7 @@ function nxEjecutar(a) {
     render(filteredItems);
     nexusTrack('category', { categoria: a.valor });
   } else if (a.tipo === 'ir_a') {
-    if (['main', 'favs', 'economia', 'profile'].includes(a.valor)) switchTab(a.valor);
+    if (['main', 'new', 'favs', 'economia', 'profile'].includes(a.valor)) switchTab(a.valor);
   } else if (a.tipo === 'buscar') {
     if (currentTab !== 'main') switchTab('main');
     const b = document.getElementById('buscador');

@@ -43,7 +43,7 @@
 
 <!-- css:inicio -->
 <!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css (scripts/unir-css.js) -->
-<link rel="stylesheet" href="upgames-app.css?v=985af08ad4">
+<link rel="stylesheet" href="upgames-app.css?v=ed7b6c71ee">
 <!-- css:fin -->
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-intro.js?v=20261109a"></script>
@@ -185,7 +185,29 @@
 <!-- ══════════════════════════════════
   FAVORITES VIEW
 ══════════════════════════════════ -->
+<!-- ══════════════════════════════════
+  NEW — artículos y entradas de los blogs de la comunidad (public/js/16-new.js)
+══════════════════════════════════ -->
+<div id="new-view" aria-label="NEW: lecturas de la comunidad">
+  <header class="ugn-cab">
+    <div>
+      <p class="ugn-marca">NEW</p>
+      <h1 class="ugn-titulo">Lecturas de la comunidad</h1>
+      <p class="ugn-sub">Guías, reseñas y noticias escritas por creadores de UpGames.</p>
+    </div>
+    <a class="ugn-escribir" href="./blog.html"><ion-icon name="create-outline"></ion-icon> Escribir</a>
+  </header>
+  <nav class="ugn-filtros" role="tablist" aria-label="Secciones de NEW">
+    <button type="button" role="tab" data-ugn="todo" class="active" aria-selected="true">Para ti</button>
+    <button type="button" role="tab" data-ugn="siguiendo" aria-selected="false">Siguiendo</button>
+    <button type="button" role="tab" data-ugn="populares" aria-selected="false">Populares</button>
+    <button type="button" role="tab" data-ugn="recientes" aria-selected="false">Recientes</button>
+  </nav>
+  <div id="ugn-cuerpo" aria-live="polite"><div class="ugn-carga"><span></span><span></span><span></span></div></div>
+</div>
+
 <div id="favs-view">
+  <button type="button" class="ug-volver-perfil" onclick="switchTab('profile')"><ion-icon name="chevron-back"></ion-icon> Perfil</button>
   <div class="favs-header"><ion-icon name="heart"></ion-icon> Mis Favoritos</div>
   <div id="favs-grid">
     <div class="empty-state">
@@ -587,6 +609,19 @@
 
     </div><!-- /pf-publish-wrap -->
 
+    <!-- ── Accesos que antes estaban en la barra inferior ── -->
+    <div class="pf-accesos" role="group" aria-label="Accesos del perfil">
+      <button type="button" class="pf-acceso" onclick="switchTab('favs')">
+        <ion-icon name="heart-outline"></ion-icon><b>Favoritos</b><small>Lo que guardaste</small>
+      </button>
+      <button type="button" class="pf-acceso" onclick="switchTab('economia'); window.ecoSec && ecoSec('resumen')">
+        <ion-icon name="cash-outline"></ion-icon><b>Ganancias</b><small>Tus ingresos y retiros</small>
+      </button>
+      <button type="button" class="pf-acceso" onclick="switchTab('economia'); window.ecoSec && ecoSec('ganar')">
+        <ion-icon name="wallet-outline"></ion-icon><b>Economía</b><small>UpCoins, misiones y Premium</small>
+      </button>
+    </div>
+
     <!-- ── Pestañas: Publicaciones (por defecto) · Videos · gestión ── -->
     <div class="perfil-tabs pf2-tabs" id="pf-tabs">
       <button class="perfil-tab active" data-pftab="historial" data-sub="publicaciones" onclick="pfShowPosts('publicaciones',this)">
@@ -600,9 +635,6 @@
       </button>
       <button class="perfil-tab" data-pftab="pagos" onclick="pfSwitchTab('pagos',this)">
         <ion-icon name="cash-outline"></ion-icon> Pagos
-      </button>
-      <button class="perfil-tab" data-pftab="logros" onclick="pfSwitchTab('logros',this)">
-        <ion-icon name="trophy-outline"></ion-icon> Logros
       </button>
       <button class="perfil-tab" data-pftab="reportes" onclick="pfSwitchTab('reportes',this)">
         <ion-icon name="flag-outline"></ion-icon> Reportes
@@ -648,14 +680,6 @@
       </div>
     </div>
 
-    <!-- ══ TAB: LOGROS ══ -->
-    <div id="pf-tab-logros" class="perfil-tab-content">
-      <div class="pf-section-title"><ion-icon name="trophy"></ion-icon> LOGROS Y GAMIFICACIÓN</div>
-      <div id="pf-logros-content">
-        <div class="pf-empty"><ion-icon name="sync-outline"></ion-icon><p>Cargando logros...</p></div>
-      </div>
-    </div>
-
     <!-- ══ TAB: BÓVEDA ══ -->
     <div id="pf-tab-boveda" class="perfil-tab-content">
       <div class="pf-section-title"><ion-icon name="shield-checkmark"></ion-icon> FAVORITOS GUARDADOS</div>
@@ -687,6 +711,7 @@
   ECONOMIA VIEW — CREATOR STUDIO DASHBOARD
 ══════════════════════════════════ -->
 <div id="economia-view">
+  <button type="button" class="ug-volver-perfil" onclick="switchTab('profile')"><ion-icon name="chevron-back"></ion-icon> Perfil</button>
 
   <!-- Studio Topbar -->
   <div class="eco-topbar">
@@ -1794,10 +1819,11 @@
     <ion-icon name="home-outline"></ion-icon>
     <span>Inicio</span>
   </button>
-  <button class="nav-tab" data-tab="favs" aria-label="Mis favoritos">
+  <!-- Videos: abre el mismo feed vertical que el chip «Videos» (upgames-videos.js) -->
+  <button class="nav-tab nav-videos" onclick="window.UGVideos ? UGVideos.abrir() : switchTab('main')" aria-label="Ver videos">
     <div class="nav-dot"></div>
-    <ion-icon name="heart-outline"></ion-icon>
-    <span>Favoritos</span>
+    <ion-icon name="play-circle-outline"></ion-icon>
+    <span>Videos</span>
   </button>
 
   <!-- NEXUS CENTER BUTTON -->
@@ -1806,12 +1832,13 @@
     <span>Nexus</span>
   </button>
 
-  <button class="nav-tab" data-tab="economia" aria-label="Mi economía">
+  <button class="nav-tab" data-tab="new" aria-label="NEW: artículos de la comunidad">
     <div class="nav-dot"></div>
-    <ion-icon name="cash-outline"></ion-icon>
-    <span>Ganancias</span>
+    <ion-icon name="newspaper-outline"></ion-icon>
+    <span>NEW</span>
   </button>
-  <button class="nav-tab" data-tab="profile" aria-label="Mi perfil">
+  <!-- Favoritos y Ganancias/Economía viven ahora dentro del Perfil (accesos del perfil) -->
+  <button class="nav-tab" data-tab="profile" data-tabs="profile favs economia" aria-label="Mi perfil">
     <div class="nav-dot"></div>
     <ion-icon name="person-circle"></ion-icon>
     <span>Perfil</span>
@@ -1931,7 +1958,7 @@
 <script src="upgames-metricas.js?v=20261108a"></script>
 <script src="upgames-ranking.js?v=20261108c"></script>
 <script src="upgames-ux.js?v=20261114a"></script>
-<script src="script.js?v=988f08deda"></script>
+<script src="script.js?v=ad20a474b2"></script>
 <script src="upgames-publicar.js?v=20261108a"></script>
 <script src="upgames-extras.js?v=20261115a"></script>
 <script src="upgames-social.js?v=20261029i"></script>
@@ -1939,7 +1966,7 @@
 <script src="upgames-nexus-plus.js?v=20261114a"></script>
 <script src="upgames-compat.js?v=20261108a"></script>
 <script src="upgames-videos.js?v=20261108a"></script>
-<script src="upgames-motion.js?v=20261107f"></script>
+<script src="upgames-motion.js?v=20261120a"></script>
 
 <!-- ══════════════════════════════════════
   EXTENSIÓN DE PERFIL: Nombre / Email / Contraseña / Links

@@ -168,6 +168,42 @@ function registrar(app, deps) {
         } catch (e) { fallo(res, e, 'recientes'); }
     });
 
+    // NEW (pestaña de la app): entradas sueltas de la comunidad en secciones. La lista base es la misma
+    // para todos (caché 2 min); «siguiendo» se arma por persona si manda su sesión (opcional).
+    const Descubrir = require('../modulos/blogs/descubrir');
+    const visible = () => ({ tipo: 'entrada', noindex: { $ne: true }, $or: [{ estado: 'publicada' }, { estado: 'programada', publicadaEn: { $lte: new Date() } }] });
+    async function baseDescubrir() {
+        return conCache('descubrir', 120, async () => {
+            const entradas = await Entrada.find({ ...visible(), publicadaEn: { $gte: new Date(Date.now() - 120 * 864e5) } })
+                .sort({ publicadaEn: -1 }).limit(400).select('blog titulo slug portada resumen bloques publicadaEn usuario vistas etiquetas').lean();
+            const blogs = await Blog.find({ _id: { $in: [...new Set(entradas.map(e => String(e.blog)))] }, estado: 'activo', visibilidad: 'publico' }).select('titulo usuario direccion dominio').lean();
+            const porId = new Map(blogs.map(b => [String(b._id), b]));
+            const validas = entradas.filter(e => porId.has(String(e.blog)));
+            const autores = [...new Set(validas.map(e => e.usuario))];
+            const [usuarios, coms] = await Promise.all([
+                Usuario.find({ usuario: { $in: autores } }).select('usuario avatar planHasta').lean(),
+                validas.length ? Comentario.aggregate([{ $match: { itemId: { $in: validas.map(e => `blog:${e._id}`) } } }, { $group: { _id: '$itemId', n: { $sum: 1 } } }]) : [],
+            ]);
+            const perfil = new Map(usuarios.map(u => [u.usuario, u])), nCom = new Map(coms.map(c => [c._id, c.n]));
+            return validas.map(e => {
+                const b = porId.get(String(e.blog)), u = perfil.get(e.usuario) || {};
+                return { id: String(e._id), blogId: String(b._id), titulo: e.titulo, resumen: e.resumen || V.resumen(e.bloques, 180), portada: e.portada || V.primeraImagen(e.bloques) || '',
+                    url: `${urlPublica(b)}e/${e.slug}`, blog: b.titulo, usuario: e.usuario, avatar: /^https:\/\//.test(u.avatar || '') ? u.avatar : '', fecha: e.publicadaEn,
+                    vistas: e.vistas || 0, comentarios: nCom.get(`blog:${e._id}`) || 0, etiquetas: (e.etiquetas || []).slice(0, 3), premium: premiumActivo(u) };
+            });
+        });
+    }
+    app.get('/blogs/descubrir', async (req, res) => {
+        try {
+            let yo = '';
+            const t = String(req.headers.authorization || '').split(' ')[1];
+            if (t && t.length > 20) { try { yo = require('jsonwebtoken').verify(t, JWT_SECRET).usuario || ''; } catch (_) {} }
+            const siguiendo = yo ? ((await Usuario.findOne({ usuario: yo }).select('siguiendo').lean())?.siguiendo || []) : [];
+            const secciones = Descubrir.armar(await baseDescubrir(), { siguiendo });
+            res.set('Cache-Control', yo ? 'private, max-age=60' : 'public, max-age=120').json({ success: true, conSesion: !!yo, secciones });
+        } catch (e) { fallo(res, e, 'descubrir'); }
+    });
+
     app.get('/blogs/mios', verificarToken, async (req, res) => {
         try {
             const blogs = await Blog.find({ usuario: req.usuario }).sort({ createdAt: 1 }).lean();
