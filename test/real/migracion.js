@@ -15,12 +15,12 @@ const path = require('path'), fs = require('fs'), os = require('os'), { execSync
 const { servirRaiz, navegador, contador } = require('./util');
 const REPO = path.join(__dirname, '..', '..');
 const API = 'https://upgames-production.up.railway.app';
-const ID = '6997729a30ddf46b1304e780';   // publicación real (Silencio Hill 2)
+const ID = '69b47e904f3f676b7f4a93d3';   // publicación real (NFS Most Wanted 2005; la anterior, Silencio Hill 2, se borró)
 const ANTERIOR = process.env.VERSION_ANTERIOR || '6bc94d36d696f462aa473165474e97015cc05433';   // último main antes de la migración
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type', 'access-control-allow-methods': 'GET, POST, OPTIONS' };
 const json = (r, body) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body), headers: cors });
-const FICHA = { _id: ID, title: 'Silencio Hill 2', description: 'Ficha de prueba', image: '', category: 'Mod', usuario: 'creador', status: 'aprobado', link: 'https://example.com/x' };
+const FICHA = { _id: ID, title: 'NFS Most Wanted 2005', description: 'Ficha de prueba', image: '', category: 'Mod', usuario: 'creador', status: 'aprobado', link: 'https://example.com/x' };
 
 async function contexto(b, web, { sesion = false, vp = { width: 390, height: 844 }, js = true } = {}) {
   const ctx = await b.newContext({ viewport: vp, serviceWorkers: 'block', javaScriptEnabled: js });
