@@ -75,10 +75,9 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
   C.prueba('H1 con la propuesta de valor', /desarrolladores independientes/.test(h1) && /juegos, mods y apps/.test(h1), h1);
   const claves = ['juegos', 'mods', 'winlator', 'aplicaciones', 'descargas', 'desarrolladores independientes', 'creadores de contenido'].filter(k => !bloque.includes(k));
   C.prueba('palabras clave (juegos, mods, Winlator, aplicaciones, descargas, desarrolladores independientes, creadores de contenido)', !claves.length, 'faltan: ' + claves.join(', '));
-  C.prueba('sin texto oculto para Google: H1 visible y «qué es UpGames» en un <details> que se puede abrir', !/class="ug-sr"/.test(html) && /<section class="ug-intro"[^>]*>\s*<h1/.test(html) && /<details class="ug-sobre" id="ug-sobre">\s*<summary>Sobre UpGames<\/summary>[\s\S]*id="ug-acerca"[\s\S]*SEO:ENLACES[\s\S]*<\/details>/.test(html));
-  const css = fs.readFileSync(path.join(REPO, 'public/upgames-v6.css'), 'utf8');
-  C.prueba('con sesión la introducción se reduce al título (el catálogo sube); sin sesión se ve completa', /html:not\(\.ug-invitado\) \.ug-intro p, html:not\(\.ug-invitado\) \.ug-intro-cta \{ display: none; \}/.test(css) && !/\.ug-intro h1[^{]*\{[^}]*display:\s*none/.test(css));
-  C.prueba('el ancla «Qué es UpGames» es absoluta (con <base> un href="#…" iría a /public/)', html.includes('href="/#ug-sobre"') && !/href="#[a-z]/i.test(html), (html.match(/href="#[^"]+"/g) || []).join(' '));
+  C.prueba('sin texto oculto para Google: todo «qué es UpGames» (H1 incluido) en un <details> que se puede abrir', !/class="ug-sr"/.test(html) && /<details class="ug-sobre" id="ug-sobre">\s*<summary>Sobre UpGames<\/summary>[\s\S]*id="ug-acerca"[\s\S]*SEO:ENLACES[\s\S]*<\/details>/.test(html));
+  C.prueba('el H1 va dentro del desplegable, antes del contenido', /<details class="ug-sobre"[^>]*>\s*<summary>Sobre UpGames<\/summary>\s*<section class="ug-intro"[^>]*>\s*<h1/.test(html) && (html.match(/<h1[\s>]/g) || []).length === 1);
+  C.prueba('sin anclas relativas (con <base> un href="#…" iría a /public/)', !/href="#[a-z]/i.test(html), (html.match(/href="#[^"]+"/g) || []).join(' '));
   C.prueba('nada en la portada apunta a biblioteca.html', !/biblioteca\.html/.test(html.replace(/<!--[\s\S]*?-->/g, '')));
   const puente = cabecera(fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8'));
   C.prueba('puente /public/biblioteca.html: canónica a la portada (sin noindex que la contradiga)', puente.canon === 'https://upgames.games/' && !puente.robots, JSON.stringify(puente));
@@ -115,7 +114,11 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
         // checkVisibility: lo que está dentro de un <details> cerrado no se pinta (aunque tenga tamaño)
         const ve = el => { if (!el || (el.checkVisibility && !el.checkVisibility())) return false; const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 100 && r.height > 10 && cs.visibility !== 'hidden' && cs.display !== 'none' && cs.clip === 'auto' && cs.position !== 'absolute'; };
         const a = document.getElementById('ug-acerca'), txt = (a?.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-        return { h1: ve(document.querySelector('h1')), intro: ve(document.querySelector('.ug-intro p')), acerca: ve(a), palabras: txt.split(/\s+/).length,
+        const cerradoVisible = ve(document.querySelector('h1')) || ve(a);
+        document.getElementById('ug-sobre').open = true;
+        const abierto = { h1: ve(document.querySelector('h1')), acerca: ve(a) };
+        document.getElementById('ug-sobre').open = false;
+        return { h1: abierto.h1, intro: true, acerca: cerradoVisible, palabras: txt.split(/\s+/).length,
           faltan: ['juegos', 'mods', 'winlator', 'apps', 'creadores de contenido', 'desarrolladores independientes', 'monetiza'].filter(k => !txt.includes(k)) };
       });
       const sobre = await p.evaluate(() => { const d = document.getElementById('ug-sobre'), s = d?.querySelector('summary').getBoundingClientRect();

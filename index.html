@@ -58,7 +58,7 @@
 
 <!-- css:inicio -->
 <!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css (scripts/unir-css.js) -->
-<link rel="stylesheet" href="upgames-app.css?v=5ec37628ad">
+<link rel="stylesheet" href="upgames-app.css?v=962603a158">
 <!-- css:fin -->
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-intro.js?v=20261109a"></script>
@@ -170,12 +170,6 @@
   MAIN OUTPUT GRID
 ══════════════════════════════════ -->
 <main id="main-view">
-  <!-- Qué es UpGames, visible para todos (también para Google). El párrafo y los botones son para quien no tiene cuenta. -->
-  <section class="ug-intro" aria-labelledby="ug-h1">
-    <h1 id="ug-h1">UpGames: juegos, mods y apps de gamers, creadores y desarrolladores independientes</h1>
-    <p>Descubre juegos para PC y Android, mods de rendimiento, juegos y configuraciones para Winlator, aplicaciones y herramientas que comparten gamers, creadores de contenido y desarrolladores independientes. Las descargas son libres y sin registro; con una cuenta gratuita publicas tus proyectos, construyes una comunidad y monetizas tu trabajo.</p>
-    <div class="ug-intro-cta"><a href="/login.html?volver=.%2F&amp;registro=1" class="ug-intro-btn">Crear cuenta gratis</a><a href="/#ug-sobre" class="ug-intro-link" onclick="var d=document.getElementById('ug-sobre');if(d)d.open=true">Qué es UpGames</a></div>
-  </section>
   <div id="hero-carousel" style="display:none">
     <div class="hero-track" id="hero-track"></div>
     <div class="hero-dots" id="hero-dots"></div>
@@ -199,6 +193,11 @@
        Google indexa el contenido de un <details> cerrado con todo su peso (no es texto oculto: se puede abrir). -->
   <details class="ug-sobre" id="ug-sobre">
   <summary>Sobre UpGames</summary>
+  <section class="ug-intro" aria-labelledby="ug-h1">
+    <h1 id="ug-h1">UpGames: juegos, mods y apps de gamers, creadores y desarrolladores independientes</h1>
+    <p>Descubre juegos para PC y Android, mods de rendimiento, juegos y configuraciones para Winlator, aplicaciones y herramientas que comparten gamers, creadores de contenido y desarrolladores independientes. Las descargas son libres y sin registro; con una cuenta gratuita publicas tus proyectos, construyes una comunidad y monetizas tu trabajo.</p>
+    <div class="ug-intro-cta"><a href="/login.html?volver=.%2F&amp;registro=1" class="ug-intro-btn">Crear cuenta gratis</a></div>
+  </section>
   <section id="ug-acerca" class="ug-acerca" aria-labelledby="ug-acerca-t">
     <h2 id="ug-acerca-t">Un lugar para cada parte de la comunidad</h2>
     <p>UpGames conecta a gamers, creadores de contenido y desarrolladores independientes. Explorar es libre y no necesitas cuenta. Con una cuenta gratuita puedes publicar, comentar, seguir a otros y ganar con lo que compartes.</p>
@@ -242,9 +241,8 @@
   <ul class="links">
     <li><a href="/public/j/juegos-y-mods-para-android.html">Juegos, mods y apps para Android</a></li>
     <li><a href="/public/j/juegos-para-winlator.html">Juegos y mods para Winlator</a></li>
-    <li><a href="/public/j/mods-de-rendimiento.html">Mods de rendimiento y optimización</a></li>
     <li><a href="/public/j/mods-de-project-zomboid.html">Mods y juegos de Project Zomboid</a></li>
-    <li><a href="/public/j/juegos-para-gamehub.html">Juegos y configuraciones para GameHub</a></li>
+    <li><a href="/public/j/mods-de-rendimiento.html">Mods de rendimiento y optimización</a></li>
     <li><a href="/public/j/mods-de-need-for-speed-most-wanted-2005.html">Mods y juegos de Need for Speed: Most Wanted (2005)</a></li>
     <li><a href="/public/j/mods-de-resident-evil.html">Mods y juegos de Resident Evil</a></li>
   </ul>
