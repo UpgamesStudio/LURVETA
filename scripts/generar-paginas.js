@@ -70,4 +70,12 @@ const Seo = require('../modulos/seo');
         for (const f of fs.readdirSync(dirU)) if (f.endsWith('.html') && !quedanU.has(f)) { fs.unlinkSync(path.join(dirU, f)); bu++; }
         console.log(`Perfiles: ${quedanU.size} · borrados: ${bu}`);
     }
+
+    // Portada: enlaces rastreables a temas, publicaciones recientes y creadores
+    const portada = process.env.SEO_PORTADA || path.join(__dirname, '..', 'index.html');
+    if (fs.existsSync(portada)) {
+        const antes = fs.readFileSync(portada, 'utf8');
+        const despues = Seo.ponerEnlacesPortada(antes, Seo.enlacesPortada({ grupos, items: validos, perfiles: dp?.success ? dp.perfiles : [] }));
+        if (despues !== antes) { fs.writeFileSync(portada, despues); console.log('Portada: enlaces actualizados'); }
+    }
 })().catch(e => { console.error(e.message); process.exit(1); });

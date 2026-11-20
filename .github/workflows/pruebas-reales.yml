@@ -41,5 +41,7 @@ jobs:
         run: node test/real/navegacion.js
       - name: Panel de administración y conciliación de PayPal (servidor real, móvil y escritorio)
         run: node test/real/admin.js
+      - name: SEO (portada indexable, metadatos, vistas previas, datos estructurados y sitemap)
+        run: node test/real/seo.js
       - name: Economía adversarial (saltarse la espera, reciclar IPs y tickets, falsear vistas y descargas de blog)
         run: node test/real/economia.js

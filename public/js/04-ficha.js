@@ -55,7 +55,7 @@ function ugSeo(item) {
     const estatica = (!item.status || item.status === 'aprobado') && item.createdAt && Date.now() - new Date(item.createdAt) > UG_PAGINA_LISTA_MS;
     const url = estatica ? `https://upgames.games/public/p/${slug}-${item._id}.html` : `${UG_SEO_BASE.url}?id=${item._id}`;
     const desc = String(item.description || `${item.category || 'Contenido'} compartido por @${item.usuario} en UpGames.`).replace(/\s+/g, ' ').slice(0, 160);
-    const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://upgames.games/public/og-cover.png');
+    const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://upgames.games/public/og-upgames.jpg');
     document.title = `${item.title} — ${item.category || 'Descargar'} | UpGames`;
     canon.href = url;
     ugMeta('name', 'description', desc);

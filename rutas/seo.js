@@ -18,12 +18,14 @@ app.get('/seo/sitemap.xml', async (req, res) => {
             const dia = f => (f ? new Date(f) : new Date()).toISOString().slice(0, 10);
             const url = (loc, lastmod, freq, prio) => `<url><loc>${xmlEsc(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>${freq}</changefreq><priority>${prio}</priority></url>`;
             return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + [
-                url(`${SITIO}/biblioteca.html`, dia(items[0]?.createdAt), 'hourly', '1.0'),
+                url('https://upgames.games/', null, 'weekly', '1.0'),   // portada canónica (antes del 2026-11-08 era la URL que posicionaba)
+                url(`${SITIO}/biblioteca.html`, dia(items[0]?.createdAt), 'hourly', '0.9'),
                 url(`${SITIO}/live.html`, null, 'hourly', '0.8'),
                 // Páginas por juego y por tema (public/j/…): mismas reglas que scripts/generar-paginas.js
                 ...Seo.grupos(await datosPaginasSeo()).map(g => url(Seo.urlGrupo(g), dia(g.items.reduce((m, it) => (it.fecha > m ? it.fecha : m), '')), 'daily', '0.8')),
-                // Publicaciones: su página estática (public/p/…), ya generada si tiene más de un día
-                ...items.map(j => url(new Date(j.createdAt || 0) < hace36h ? Seo.urlPagina({ id: String(j._id), title: j.title }) : `${SITIO}/biblioteca.html?id=${j._id}`, dia(j.updatedAt || j.createdAt), 'weekly', '0.7')),
+                // Publicaciones: solo su página estática (public/p/…). Las de menos de 3 h aún no la tienen y entran en la
+                // próxima pasada: antes se listaban como biblioteca.html?id=…, cuya canónica es otra (URL no canónica en el sitemap).
+                ...items.filter(j => new Date(j.createdAt || 0) < hace36h).map(j => url(Seo.urlPagina({ id: String(j._id), title: j.title }), dia(j.updatedAt || j.createdAt), 'weekly', '0.7')),
                 // Perfiles: su página estática (public/u/…), generada en la misma acción diaria
                 ...[...autores].map(([u, f]) => url(Seo.usuarioValido(u) ? Seo.urlPerfil(u) : `${SITIO}/perfil-publico.html?usuario=${encodeURIComponent(u)}`, dia(f), 'weekly', '0.5')),
                 url(`${SITIO}/terminos_condiciones.html`, null, 'monthly', '0.2'),

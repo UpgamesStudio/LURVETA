@@ -54,7 +54,7 @@ function pagina(it, grupo) {
     const cat = CAT[it.category] || it.category || 'Contenido';
     const desc = String(it.description || `${cat} compartido por @${it.usuario} en UpGames.`).replace(/\s+/g, ' ').trim();
     const corta = desc.slice(0, 158) + (desc.length > 158 ? '…' : '');
-    const img = tarjeta(it) || (esImg(it.image) ? it.image.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_jpg/') : `${SITIO}/og-cover.png`);
+    const img = tarjeta(it) || (esImg(it.image) ? it.image.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_jpg/') : `${SITIO}/og-upgames.jpg`);
     const esVideo = it.category === 'Video';
     // Ficha informativa: UpGames indexa metadatos, no aloja archivos (el título no promete "Descargar")
     const titulo = `${it.title} — ${esVideo ? 'Video' : cat} en UpGames`;
@@ -66,10 +66,10 @@ function pagina(it, grupo) {
     } : {
         '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: it.title, description: corta, image: img, url,
         applicationCategory: ['Juego', 'Mod'].includes(it.category) ? 'GameApplication' : 'UtilitiesApplication',
-        operatingSystem: 'Windows, Android', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, author: { '@type': 'Person', name: '@' + it.usuario }, datePublished: it.fecha,
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, author: { '@type': 'Person', name: '@' + it.usuario }, datePublished: it.fecha,
     };
     const migas = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'UpGames', item: `${SITIO}/biblioteca.html` },
+        { '@type': 'ListItem', position: 1, name: 'UpGames', item: 'https://upgames.games/' },
         { '@type': 'ListItem', position: 2, name: cat, item: `${SITIO}/biblioteca.html?cat=${encodeURIComponent(it.category || '')}` },
         { '@type': 'ListItem', position: 3, name: it.title, item: url }] };
     const json = o => JSON.stringify(o).replace(/</g, '\\u003c');
@@ -98,7 +98,7 @@ h1{margin:10px 0 6px;font-size:1.6rem;line-height:1.25}.meta{color:#9aa1af;font-
 .desc{white-space:pre-line;color:#c9ced8}.pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../biblioteca.html"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar</a></div>
+<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar</a></div>
 <article class="hero">
 ${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/w_960,q_auto,f_auto/'))}" alt="${esc(it.title)}" width="960" height="540">` : ''}
 <div class="c"><span class="cat">${esc(cat)}</span>
@@ -109,7 +109,7 @@ ${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/w_960
 <p class="desc">${esc(desc.slice(0, 3000))}</p>
 ${grupo ? `<p><a href="../j/${esc(grupo.slug)}.html">Ver más: ${esc(grupo.titulo)} →</a></p>` : ''}
 </div></article>
-<p class="pie">UpGames · descargas, videos, lives, red social e IA en un solo lugar · <a href="../terminos_condiciones.html">Términos</a></p>
+<p class="pie"><a href="../../">UpGames</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes · <a href="../terminos_condiciones.html">Términos</a></p>
 </div></body></html>
 `;
 }
@@ -123,10 +123,10 @@ const fmt = n => Number(n || 0).toLocaleString('es-CO');
 function paginaPerfil(p) {
     const url = urlPerfil(p.usuario), app = `${SITIO}/perfil-publico.html?usuario=${encodeURIComponent(p.usuario)}`;
     const bio = String(p.bio || '').replace(/\s+/g, ' ').trim();
-    const desc = (bio ? bio.slice(0, 120) + ' · ' : '') + `${fmt(p.publicaciones)} publicaciones y ${fmt(p.descargas)} descargas en UpGames. Juegos, mods y apps de @${p.usuario}.`;
+    const desc = (bio ? bio.slice(0, 120) + ' · ' : '') + `Creador en UpGames: ${fmt(p.publicaciones)} publicaciones y ${fmt(p.descargas)} descargas. Juegos, mods, apps y contenido de @${p.usuario}.`;
     const corta = desc.slice(0, 158) + (desc.length > 158 ? '…' : '');
     const avatar = esImg(p.avatar) ? p.avatar.replace('/upload/', '/upload/w_400,h_400,c_fill,g_face,q_auto,f_jpg/') : '';
-    const og = esImg(p.banner) ? p.banner.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_jpg/') : avatar || `${SITIO}/og-cover.png`;
+    const og = esImg(p.banner) ? p.banner.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_jpg/') : avatar || `${SITIO}/og-upgames.jpg`;
     const ld = { '@context': 'https://schema.org', '@type': 'ProfilePage', url, mainEntity: { '@type': 'Person', name: '@' + p.usuario, alternateName: p.usuario, description: bio || undefined, image: avatar || undefined,
         interactionStatistic: [{ '@type': 'InteractionCounter', interactionType: 'https://schema.org/FollowAction', userInteractionCount: p.seguidores || 0 }] } };
     const json = o => JSON.stringify(o).replace(/</g, '\\u003c');
@@ -134,7 +134,7 @@ function paginaPerfil(p) {
     return `<!doctype html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>@${esc(p.usuario)} — Juegos, mods y apps | UpGames</title>
+<title>@${esc(p.usuario)} — Creador en UpGames</title>
 <meta name="description" content="${esc(corta)}">
 <link rel="canonical" href="${esc(url)}">
 <meta property="og:type" content="profile"><meta property="og:site_name" content="UpGames"><meta property="profile:username" content="${esc(p.usuario)}">
@@ -156,7 +156,7 @@ h1{margin:12px 0 4px;font-size:1.4rem}.st{display:flex;gap:18px;color:#c9ced8;fo
 .pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../biblioteca.html"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar</a></div>
+<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar</a></div>
 <div class="cv"${esImg(p.banner) ? ` style="background-image:url('${esc(p.banner.replace('/upload/', '/upload/w_1200,q_auto,f_auto/'))}')"` : ''}></div>
 <div class="hd">${avatar ? `<img class="av" src="${esc(avatar)}" alt="@${esc(p.usuario)}" width="92" height="92">` : '<div class="av"></div>'}</div>
 <h1>@${esc(p.usuario)}</h1>
@@ -164,7 +164,7 @@ h1{margin:12px 0 4px;font-size:1.4rem}.st{display:flex;gap:18px;color:#c9ced8;fo
 ${bio ? `<p class="bio">${esc(bio.slice(0, 600))}</p>` : ''}
 <a class="btn" href="${esc(app)}">Ver el perfil completo en UpGames</a>
 ${items.length ? `<div class="g">${items.map(it => `<a href="${esc(urlPagina(it))}">${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/w_300,h_300,c_fill,q_auto,f_auto/'))}" alt="" loading="lazy">` : ''}<span>${esc(it.title)}</span></a>`).join('')}</div>` : ''}
-<p class="pie">UpGames · descargas, videos, lives, red social e IA en un solo lugar</p>
+<p class="pie"><a href="../../">UpGames</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes</p>
 </div></body></html>
 `;
 }
@@ -206,12 +206,12 @@ function paginaGrupo(g, todos) {
     const url = urlGrupo(g), lista = g.items.slice(0, 60);
     const total = g.items.reduce((a, it) => a + (it.descargas || 0), 0);
     const desc = `${g.intro} ${g.items.length} publicaciones · ${fmt(total)} descargas.`.slice(0, 158);
-    const og = g.items.map(tarjeta).find(Boolean) || `${SITIO}/og-cover.png`;
+    const og = g.items.map(tarjeta).find(Boolean) || `${SITIO}/og-upgames.jpg`;
     const json = o => JSON.stringify(o).replace(/</g, '\\u003c');
     const ld = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: g.titulo, description: desc, url,
         mainEntity: { '@type': 'ItemList', numberOfItems: lista.length, itemListElement: lista.map((it, i) => ({ '@type': 'ListItem', position: i + 1, url: urlPagina(it), name: it.title })) } };
     const migas = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'UpGames', item: `${SITIO}/biblioteca.html` },
+        { '@type': 'ListItem', position: 1, name: 'UpGames', item: 'https://upgames.games/' },
         { '@type': 'ListItem', position: 2, name: g.titulo, item: url }] };
     const otros = (todos || []).filter(x => x.slug !== g.slug).slice(0, 12);
     return `<!doctype html>
@@ -241,16 +241,38 @@ h1{margin:6px 0 6px;font-size:1.7rem;line-height:1.2}.intro{color:#c9ced8;margin
 .pie{margin:26px 0 10px;color:#6c7180;font-size:.8rem;text-align:center}
 </style></head>
 <body><div class="w">
-<div class="top"><a class="logo" href="../biblioteca.html"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar todo</a></div>
+<div class="top"><a class="logo" href="../../"><span>UP</span>GAMES</a><a href="../biblioteca.html">Explorar todo</a></div>
 <h1>${esc(g.h1)}</h1>
 <p class="intro">${esc(g.intro)}</p>
 <div class="st">${fmt(g.items.length)} publicaciones · ${fmt(total)} descargas</div>
 <div class="g">${lista.map(it => `<a class="c" href="${esc(urlPagina(it))}">${esImg(it.image) ? `<img src="${esc(it.image.replace('/upload/', '/upload/c_fill,g_auto,w_480,h_300,q_auto,f_auto/'))}" alt="${esc(it.title)}" loading="lazy" width="480" height="300">` : '<span class="ph"></span>'}<b>${esc(it.title)}</b><small>${esc(CAT[it.category] || it.category || '')} · @${esc(it.usuario)} · ⬇️ ${fmt(it.descargas)}</small></a>`).join('')}</div>
 <a class="btn" href="../biblioteca.html">Explorar más en UpGames</a>
 ${otros.length ? `<div class="mas">${otros.map(o => `<a href="${esc(o.slug)}.html">${esc(o.titulo)}</a>`).join('')}</div>` : ''}
-<p class="pie">UpGames · descargas, videos, lives, red social e IA en un solo lugar · <a href="../terminos_condiciones.html">Términos</a></p>
+<p class="pie"><a href="../../">UpGames</a> · el ecosistema digital para gamers, creadores y desarrolladores independientes · <a href="../terminos_condiciones.html">Términos</a></p>
 </div></body></html>
 `;
 }
 
-module.exports = { SITIO, slug, archivo, urlPagina, pagina, usuarioValido, urlPerfil, paginaPerfil, tarjeta, grupos, urlGrupo, paginaGrupo };
+// ── Enlaces de la portada (index.html, entre <!--SEO:ENLACES--> y <!--/SEO:ENLACES-->) ──
+// La portada es la página con más autoridad; antes no enlazaba a ninguna página de la comunidad y estas solo se
+// descubrían por el sitemap. Rutas relativas a la raíz del sitio.
+function enlacesPortada({ grupos: gs = [], items = [], perfiles = [] } = {}) {
+    const li = (href, txt) => `    <li><a href="${esc(href)}">${esc(txt)}</a></li>`;
+    const rel = u => './public/' + u.slice(SITIO.length + 1);
+    const lista = (titulo, filas) => filas.length ? `  <h3>${titulo}</h3>\n  <ul class="links">\n${filas.join('\n')}\n  </ul>` : '';
+    const temas = gs.slice().sort((a, b) => b.items.length - a.items.length).slice(0, 16).map(g => li(rel(urlGrupo(g)), g.titulo || g.h1 || g.slug));
+    const recientes = items.slice().sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || ''))).slice(0, 12).map(it => li(rel(urlPagina(it)), recorta(it.title, 60)));
+    const creadores = perfiles.filter(p => usuarioValido(p.usuario)).sort((a, b) => (b.descargas || 0) - (a.descargas || 0)).slice(0, 12).map(p => li(rel(urlPerfil(p.usuario)), '@' + p.usuario));
+    return [
+        lista('Secciones', [li('./public/biblioteca.html', 'Biblioteca'), li('./public/live.html', 'En vivo'), li('./public/blogs-guia.html', 'Guía de UpGames Blogs')]),
+        lista('Juegos y temas', temas), lista('Publicaciones recientes', recientes), lista('Creadores', creadores),
+    ].filter(Boolean).join('\n');
+}
+function ponerEnlacesPortada(html, bloque) {
+    const a = '<!--SEO:ENLACES-->', b = '<!--/SEO:ENLACES-->';
+    const i = html.indexOf(a), j = html.indexOf(b);
+    if (i < 0 || j < i) return html;
+    return html.slice(0, i + a.length) + '\n' + bloque + '\n  ' + html.slice(j);
+}
+
+module.exports = { SITIO, slug, archivo, urlPagina, pagina, usuarioValido, urlPerfil, paginaPerfil, tarjeta, grupos, urlGrupo, paginaGrupo, enlacesPortada, ponerEnlacesPortada };

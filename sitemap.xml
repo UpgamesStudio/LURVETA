@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Índice para quien pida /sitemap.xml (antes daba 404). El sitemap real lo escribe cada hora .github/workflows/sitemap.yml -->
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap><loc>https://upgames.games/public/sitemap.xml</loc></sitemap>
+</sitemapindex>

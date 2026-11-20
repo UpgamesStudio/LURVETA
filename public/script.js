@@ -7,6 +7,8 @@ window.UG_PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http
 // ═══════════════════════════════════════════════════════════
 
 const API_URL = "https://upgames-production.up.railway.app";
+// Ya usó la biblioteca: la próxima vez que abra upgames.games entra directo aquí (la portada es para quien llega por primera vez)
+try { localStorage.setItem('ug_entro', String(Date.now())); } catch (_) {}
 
 // ── Sesión caducada o revocada: salir limpio en vez de quedar "conectado" con todo fallando ──
 // (pasa al cambiar la contraseña en otro dispositivo, o cuando el token vence a los 30 días)
@@ -1103,7 +1105,7 @@ function ugSeo(item) {
     const estatica = (!item.status || item.status === 'aprobado') && item.createdAt && Date.now() - new Date(item.createdAt) > UG_PAGINA_LISTA_MS;
     const url = estatica ? `https://upgames.games/public/p/${slug}-${item._id}.html` : `${UG_SEO_BASE.url}?id=${item._id}`;
     const desc = String(item.description || `${item.category || 'Contenido'} compartido por @${item.usuario} en UpGames.`).replace(/\s+/g, ' ').slice(0, 160);
-    const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://upgames.games/public/og-cover.png');
+    const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://upgames.games/public/og-upgames.jpg');
     document.title = `${item.title} — ${item.category || 'Descargar'} | UpGames`;
     canon.href = url;
     ugMeta('name', 'description', desc);
@@ -5516,6 +5518,7 @@ document.getElementById('btut-close').addEventListener('click', finishTutorial);
   const t = new URLSearchParams(location.search).get('tab');
   if (t === 'perfil' && LS.get('token')) setTimeout(() => switchTab('profile'), 300);
   if (t === 'new') setTimeout(() => switchTab('new'), 300);   // biblioteca.html?tab=new abre NEW
+  if (t === 'publicar') setTimeout(() => switchTab('upload'), 600);   // «Publicar mi proyecto» de la portada (pide sesión si no hay)
 })();
 (function abrirAjustesDesdeURL() {
   const tab = new URLSearchParams(location.search).get('ajustes');

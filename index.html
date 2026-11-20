@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<!-- Entrada de upgames.games: lleva directo a la biblioteca (navegar y descargar es libre).
-     El login es opcional y vive en login.html. Los enlaces de los correos
-     (?reset_token=, ?verif=) siguen llegando aquí y se reenvían al login. -->
+<!-- Portada de upgames.games: página real e indexable (canónica en la raíz, como antes del 2026-11-08).
+     Quien ya usa UpGames entra directo a la biblioteca; los enlaces de los correos (?reset_token=, ?verif=…)
+     siguen yendo al login y ?ref= se guarda para el registro. La primera visita (y los buscadores) ven esta página. -->
 <script>
   (function () {
     var q = location.search, p = new URLSearchParams(q);
@@ -12,36 +12,211 @@
     var ref = (p.get('ref') || '').replace(/[^\w.-]/g, '').slice(0, 40);
     try { if (ref) localStorage.setItem('ug_ref', JSON.stringify({ c: ref, t: Date.now() })); } catch (e) {}
     if (p.get('reset_token') || p.get('verif') || p.get('volver') || p.has('login') || p.has('registro')) {
-      location.replace('./login.html' + q + location.hash);
-    } else {
-      location.replace('./public/biblioteca.html' + location.hash);
+      location.replace('./login.html' + q + location.hash); return;
     }
+    if (location.hash.length > 1) { location.replace('./public/biblioteca.html' + location.hash); return; }   // enlaces viejos con #sección
+    var vuelve = false;
+    try { vuelve = !!(localStorage.getItem('token') || localStorage.getItem('ug_entro')); } catch (e) {}
+    if (vuelve && !p.has('inicio')) location.replace('./public/biblioteca.html');
   })();
 </script>
-<noscript><meta http-equiv="refresh" content="0; url=./public/biblioteca.html"></noscript>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0A0B0F">
-<title>UpGames — Juegos, mods y apps gratis, sin registrarte</title>
-<meta name="description" content="Juegos, mods de rendimiento y apps para PC y Android, gratis y sin registrarte. Descarga al instante y gana dinero compartiendo lo tuyo.">
-<link rel="canonical" href="https://upgames.games/public/biblioteca.html">
+<meta name="theme-color" content="#05080E">
+<title>UpGames — El ecosistema de gamers, creadores y desarrolladores</title>
+<meta name="description" content="Ecosistema digital para gamers, creadores y desarrolladores independientes: descubre juegos, mods y apps, publica tus proyectos, crea comunidad y monetiza tu trabajo.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://upgames.games/">
 <link rel="icon" type="image/png" sizes="96x96" href="./public/icons/icon-96.png?v=2">
+<link rel="apple-touch-icon" href="./public/icons/apple-touch-icon.png">
+<link rel="manifest" href="./public/manifest.json">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="UpGames">
-<meta property="og:url" content="https://upgames.games/public/biblioteca.html">
-<meta property="og:title" content="UpGames — Juegos, mods y apps gratis, sin registrarte">
-<meta property="og:description" content="Juegos, mods de rendimiento y apps para PC y Android, gratis y sin registrarte. Descarga al instante y gana dinero compartiendo lo tuyo.">
-<meta property="og:image" content="https://upgames.games/public/og-cover.png">
+<meta property="og:locale" content="es_LA">
+<meta property="og:url" content="https://upgames.games/">
+<meta property="og:title" content="UpGames — El ecosistema digital para gamers, creadores y desarrolladores independientes">
+<meta property="og:description" content="Descubre juegos, mods, apps y contenido; publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.">
+<meta property="og:image" content="https://upgames.games/public/og-upgames.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="UpGames: el ecosistema digital para gamers, creadores y desarrolladores independientes">
 <meta name="twitter:card" content="summary_large_image">
-<style>html,body{margin:0;background:#0A0B0F;color:#f0f0f8;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}a{color:#32D583}main{min-height:100vh;display:grid;place-items:center;text-align:center;padding:16px}</style>
+<meta name="twitter:title" content="UpGames — El ecosistema digital para gamers, creadores y desarrolladores independientes">
+<meta name="twitter:description" content="Descubre juegos, mods, apps y contenido; publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.">
+<meta name="twitter:image" content="https://upgames.games/public/og-upgames.jpg">
+<meta name="twitter:image:alt" content="UpGames: el ecosistema digital para gamers, creadores y desarrolladores independientes">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://upgames.games/#org","name":"UpGames","url":"https://upgames.games/","logo":"https://upgames.games/public/icons/icon-512.png","image":"https://upgames.games/public/og-upgames.jpg","description":"UpGames es un ecosistema digital que conecta a gamers, creadores de contenido y desarrolladores independientes: descubrimiento y descarga de juegos, mods y apps, publicación y distribución de proyectos, videos, blogs, asistencia con Nexus IA y monetización para creadores.","email":"upgames.games.up@gmail.com"},{"@type":"WebSite","@id":"https://upgames.games/#website","url":"https://upgames.games/","name":"UpGames","inLanguage":"es","publisher":{"@id":"https://upgames.games/#org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://upgames.games/public/biblioteca.html?q={search_term_string}"},"query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://upgames.games/#inicio","url":"https://upgames.games/","name":"UpGames — El ecosistema de gamers, creadores y desarrolladores","isPartOf":{"@id":"https://upgames.games/#website"},"about":{"@id":"https://upgames.games/#org"},"inLanguage":"es","primaryImageOfPage":"https://upgames.games/public/og-upgames.jpg"}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+:root{--bg:#05080E;--s:#0B0F17;--s2:#101521;--l:rgba(255,255,255,.08);--tx:#F4F7FA;--tx2:#B7C1CE;--tx3:#7A8594;--g:#39FF88;--c:#5CE1FF;--grad:linear-gradient(120deg,#39FF88,#5CE1FF)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Manrope,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.6}
+a{color:inherit}
+.c{width:min(1120px,100%);margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:5;background:rgba(5,8,14,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--l)}
+header .c{display:flex;align-items:center;gap:10px;height:60px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:1.1rem;letter-spacing:-.01em;margin-right:auto}
+.logo img{width:32px;height:32px;border-radius:50%}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:12px;font-weight:700;text-decoration:none;border:1px solid var(--l);background:var(--s2);color:var(--tx);white-space:nowrap}
+.btn.pri{background:var(--grad);color:#031109;border-color:transparent}
+.btn.sm{min-height:38px;padding:8px 14px;font-size:.92rem}
+.hero{padding:48px 0 32px;background:radial-gradient(60% 70% at 85% 0%,rgba(57,255,136,.14),transparent 70%),radial-gradient(50% 60% at 0% 100%,rgba(92,225,255,.08),transparent 70%)}
+.eyebrow{color:var(--g);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px}
+h1{font-size:clamp(1.9rem,6.4vw,3.4rem);line-height:1.08;letter-spacing:-.025em;margin:0 0 16px;font-weight:800;max-width:20ch}
+h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(1.02rem,2.6vw,1.2rem);color:var(--tx2);max-width:62ch;margin:0 0 24px}
+.ctas{display:flex;flex-wrap:wrap;gap:10px}
+section{padding:36px 0;border-top:1px solid var(--l)}
+h2{font-size:clamp(1.35rem,4vw,1.9rem);letter-spacing:-.02em;line-height:1.2;margin:0 0 10px}
+h3{font-size:1.08rem;margin:0 0 6px}
+.sub{color:var(--tx2);margin:0 0 20px;max-width:65ch}
+.g3{display:grid;gap:12px}
+.card{background:var(--s);border:1px solid var(--l);border-radius:16px;padding:18px}
+.card p{margin:0;color:var(--tx2);font-size:.96rem}
+.card ul{margin:8px 0 0;padding-left:18px;color:var(--tx2);font-size:.95rem}
+.card li{margin:4px 0}
+.dev{background:linear-gradient(160deg,rgba(57,255,136,.08),rgba(92,225,255,.04));border-color:rgba(57,255,136,.25)}
+.pasos{display:grid;gap:12px;counter-reset:p}
+.pasos .card{position:relative;padding-left:58px}
+.pasos .card::before{counter-increment:p;content:counter(p);position:absolute;left:18px;top:18px;width:28px;height:28px;border-radius:50%;background:var(--grad);color:#031109;font-weight:800;display:grid;place-items:center;font-size:.9rem}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.links a{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid var(--l);background:var(--s);text-decoration:none;font-size:.92rem;color:var(--tx2)}
+.links a:hover{color:var(--tx);border-color:rgba(57,255,136,.45)}
+.hub h3{margin-top:22px}
+footer{padding:28px 0 40px;border-top:1px solid var(--l);color:var(--tx3);font-size:.9rem}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
+footer a{text-decoration:none;color:var(--tx2)}
+@media (min-width:720px){
+  .c{padding:0 24px}
+  .hero{padding:80px 0 56px}
+  section{padding:56px 0}
+  .g3{grid-template-columns:repeat(3,1fr);gap:16px}
+  .pasos{grid-template-columns:repeat(2,1fr)}
+}
+@media (min-width:1000px){ .pasos{grid-template-columns:repeat(4,1fr)} }
+</style>
 </head>
 <body>
+<header><div class="c">
+  <a class="logo" href="https://upgames.games/"><img src="./public/icons/icon-96.png?v=2" alt="" width="32" height="32">UpGames</a>
+  <a class="btn sm" href="./login.html?registro=1">Crear cuenta</a>
+  <a class="btn sm pri" href="./public/biblioteca.html">Entrar</a>
+</div></header>
+
 <main>
-  <div>
-    <h1>UpGames</h1>
-    <p>Abriendo la biblioteca… <a href="./public/biblioteca.html">Entrar a UpGames</a></p>
+<div class="hero"><div class="c">
+  <p class="eyebrow">UpGames</p>
+  <h1>El ecosistema digital para gamers, creadores y <span>desarrolladores independientes</span></h1>
+  <p class="lead">UpGames conecta a gamers, creadores de contenido y desarrolladores independientes. Descubre juegos, mods, apps y contenido; publica tus proyectos, construye una comunidad y monetiza tu trabajo, todo en una sola plataforma.</p>
+  <div class="ctas">
+    <a class="btn pri" href="./public/biblioteca.html">Explorar UpGames</a>
+    <a class="btn" href="./public/biblioteca.html?tab=publicar">Publicar mi proyecto</a>
   </div>
+</div></div>
+
+<section aria-labelledby="quien"><div class="c">
+  <h2 id="quien">Un lugar para cada parte de la comunidad</h2>
+  <p class="sub">Explorar es libre y no necesitas cuenta. Con una cuenta gratuita puedes publicar, comentar, seguir a otros y ganar con lo que compartes.</p>
+  <div class="g3">
+    <article class="card">
+      <h3>Para gamers</h3>
+      <p>Descubre juegos, mods de rendimiento, apps y herramientas para PC y Android que comparte la comunidad.</p>
+      <ul><li>Fichas con capturas, videos, reseñas y guías de instalación</li><li>Recomendaciones de Nexus según lo que te gusta</li><li>Videos, transmisiones en vivo y lecturas en NEW</li></ul>
+    </article>
+    <article class="card dev">
+      <h3>Para desarrolladores independientes</h3>
+      <p>Publica y distribuye tus juegos, mods y herramientas, llega a quienes buscan proyectos como el tuyo y construye una comunidad alrededor de tu trabajo.</p>
+      <ul><li>Página propia para cada proyecto, con capturas, videos y guía de instalación</li><li>Seguidores, comentarios, reseñas y avisos de novedades</li><li>Ingresos por la publicidad que ve quien llega a descargar</li></ul>
+    </article>
+    <article class="card">
+      <h3>Para creadores de contenido</h3>
+      <p>Comparte videos, guías y reseñas, crea tu blog con dominio propio y transmite en vivo.</p>
+      <ul><li>Monetización por visualizaciones de publicidad y blogs</li><li>Regalos y apoyos con UpCoins en tus lives</li><li>Estadísticas de tus publicaciones en tu panel</li></ul>
+    </article>
+  </div>
+</div></section>
+
+<section aria-labelledby="devs"><div class="c">
+  <h2 id="devs">Publica tu proyecto independiente en cuatro pasos</h2>
+  <p class="sub">UpGames no aloja tus archivos: tú mantienes tu enlace de descarga y UpGames te da la vitrina, la comunidad y la monetización.</p>
+  <div class="pasos">
+    <div class="card"><h3>Crea tu cuenta</h3><p>Gratis, con tu correo. Tu perfil público reúne todo lo que publicas.</p></div>
+    <div class="card"><h3>Publica</h3><p>Título, descripción, capturas, video y el enlace de descarga. El equipo revisa cada publicación antes de mostrarla.</p></div>
+    <div class="card"><h3>Llega a tu público</h3><p>Nexus recomienda tu proyecto a quienes les gusta ese tipo de contenido y tus seguidores reciben aviso de lo nuevo.</p></div>
+    <div class="card"><h3>Monetiza</h3><p>Ganas UpCoins por las visualizaciones de publicidad en la página de descarga, regalos en lives y tu blog, y puedes retirarlos como dinero.</p></div>
+  </div>
+</div></section>
+
+<section aria-labelledby="todo"><div class="c">
+  <h2 id="todo">Todo lo que reúne UpGames</h2>
+  <div class="g3">
+    <div class="card"><h3>Juegos, mods y apps</h3><p>Un catálogo de la comunidad con categorías, búsqueda y fichas detalladas para PC y Android.</p></div>
+    <div class="card"><h3>Videos y lives</h3><p>Un feed de videos de creadores y transmisiones en vivo con chat y regalos.</p></div>
+    <div class="card"><h3>NEW y blogs</h3><p>Guías, reseñas y noticias escritas por la comunidad, y la herramienta para crear tu propio blog.</p></div>
+    <div class="card"><h3>Nexus IA</h3><p>Un asistente que busca, recomienda y responde dudas sobre lo que hay en UpGames.</p></div>
+    <div class="card"><h3>UpCoins y Premium</h3><p>La moneda de UpGames para regalos, apoyos y extras, y Premium para usar la plataforma sin anuncios ni esperas.</p></div>
+    <div class="card"><h3>Comunidad</h3><p>Perfiles, seguidores, comentarios, reseñas, colecciones y mensajes entre creadores.</p></div>
+  </div>
+</div></section>
+
+<section class="hub" aria-labelledby="explora"><div class="c">
+  <h2 id="explora">Explora UpGames</h2>
+  <p class="sub">Algunas páginas de la comunidad. El catálogo completo está en la <a href="./public/biblioteca.html">biblioteca</a>.</p>
+  <!--SEO:ENLACES-->
+  <h3>Secciones</h3>
+  <ul class="links">
+    <li><a href="./public/biblioteca.html">Biblioteca</a></li>
+    <li><a href="./public/live.html">En vivo</a></li>
+    <li><a href="./public/blogs-guia.html">Guía de UpGames Blogs</a></li>
+  </ul>
+  <h3>Juegos y temas</h3>
+  <ul class="links">
+    <li><a href="./public/j/juegos-y-mods-para-android.html">Juegos, mods y apps para Android</a></li>
+    <li><a href="./public/j/juegos-para-winlator.html">Juegos y mods para Winlator</a></li>
+    <li><a href="./public/j/mods-de-rendimiento.html">Mods de rendimiento y optimización</a></li>
+    <li><a href="./public/j/mods-de-project-zomboid.html">Mods y juegos de Project Zomboid</a></li>
+    <li><a href="./public/j/juegos-para-gamehub.html">Juegos y configuraciones para GameHub</a></li>
+    <li><a href="./public/j/mods-de-need-for-speed-most-wanted-2005.html">Mods y juegos de Need for Speed: Most Wanted (2005)</a></li>
+    <li><a href="./public/j/mods-de-resident-evil.html">Mods y juegos de Resident Evil</a></li>
+  </ul>
+  <h3>Publicaciones recientes</h3>
+  <ul class="links">
+    <li><a href="./public/p/tutorial-6afa720b2e20e42d7f78e3d9.html">Tutorial</a></li>
+    <li><a href="./public/p/upgames-crea-tu-primera-publicacion-6af6a1a7917a3083f39493a0.html">UPGAMES crea tu primera publicación</a></li>
+    <li><a href="./public/p/candy-s-sweet-nightmare-6af68cc9b7d5adc792c553fa.html">Candy&#39;s Sweet Nightmare</a></li>
+    <li><a href="./public/p/upgames-racing-6aee9550d50e6d2754da3616.html">UPGAMES RACING</a></li>
+    <li><a href="./public/p/upgames-6aedeb7281c7add0fef07b1f.html">UPGAMES</a></li>
+    <li><a href="./public/p/upgames-6aed638281c7add0fef073d0.html">UPGAMES</a></li>
+    <li><a href="./public/p/gran-velocita-mod-offline-6aea367681c7add0fef0570b.html">Gran Velocita mod offline</a></li>
+    <li><a href="./public/p/grid-autosport-mobile-6ae9ea0481c7add0fef05196.html">Grid Autosport mobile</a></li>
+    <li><a href="./public/p/f1-racing-mobile-mod-6ae9cd5781c7add0fef04f9f.html">F1 Racing mobile mod</a></li>
+    <li><a href="./public/p/real-racing-3-mod-dinero-ilimitado-6ae9738d81c7add0fef04b9f.html">Real Racing 3 mod Dinero ilimitado</a></li>
+    <li><a href="./public/p/halo-ce-mod-compatibilidad-6ae2948b0e686a57d884c50c.html">halo ce mod compatibilidad</a></li>
+    <li><a href="./public/p/formula-1-2014-mod-optimizado-6ae2412b0cf9b4888bd16b32.html">Formula 1 2014 mod optimizado</a></li>
+  </ul>
+  <h3>Creadores</h3>
+  <ul class="links">
+    <li><a href="./public/u/keroxenee.html">@keroxenee</a></li>
+    <li><a href="./public/u/spring_candies.html">@spring_candies</a></li>
+    <li><a href="./public/u/kale_ab.html">@kale_ab</a></li>
+    <li><a href="./public/u/upgames.html">@upgames</a></li>
+  </ul>
+  <!--/SEO:ENLACES-->
+</div></section>
 </main>
+
+<footer><div class="c">
+  <nav aria-label="Enlaces legales y de ayuda">
+    <a href="./public/biblioteca.html">Biblioteca</a>
+    <a href="./public/blogs-guia.html">UpGames Blogs</a>
+    <a href="./public/live.html">En vivo</a>
+    <a href="./public/terminos_condiciones.html">Términos y condiciones</a>
+    <a href="./public/politica-privacidad.html">Política de privacidad</a>
+    <a href="mailto:upgames.games.up@gmail.com">Contacto</a>
+  </nav>
+  <p>UpGames es un directorio comunitario: no aloja los archivos que comparten sus usuarios. No es un casino ni un sitio de apuestas.</p>
+</div></footer>
 </body>
 </html>

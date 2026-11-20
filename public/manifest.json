@@ -1,7 +1,7 @@
 {
-  "name": "UpGames — La Nube de Contenido",
+  "name": "UpGames — Ecosistema para gamers, creadores y desarrolladores",
   "short_name": "UpGames",
-  "description": "Biblioteca de juegos, mods, apps y software indexada por la comunidad. Publica, comparte y gana con tus descargas.",
+  "description": "El ecosistema digital para gamers, creadores y desarrolladores independientes: descubre juegos, mods y apps, publica tus proyectos, crea comunidad y monetiza tu trabajo.",
   "start_url": "/public/biblioteca.html",
   "scope": "/",
   "display": "standalone",
