@@ -36,7 +36,7 @@ async function contexto(b, web, { sesion = false, vp = { width: 390, height: 844
     if (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u)) return r.continue();
     if (u.startsWith(API) && m === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
     if (u.startsWith(`${API}/items/${ID}`) && m === 'GET') {   // la ficha real; sin red, una copia mínima con el mismo ID
-      if (!ficha) { try { const x = await r.fetch({ headers: { ...r.request().headers(), origin: 'https://upgames.games', referer: 'https://upgames.games/' }, timeout: 8000 }); if (x.ok()) ficha = await x.json(); } catch (_) {} ficha = ficha || FICHA; }
+      if (!ficha) { try { const x = await r.fetch({ headers: { ...r.request().headers(), origin: 'https://upgames.games', referer: 'https://upgames.games/' }, timeout: 5000 }); if (x.ok()) ficha = await x.json(); } catch (_) {} ficha = ficha || FICHA; }
       return json(r, ficha);
     }
     if (u.startsWith(`${API}/auth/email-estado`)) return json(r, { success: true, verificado: false, email: 'tester@example.com' });
@@ -57,6 +57,8 @@ async function abrir(ctx, web, ruta, ms = 2500) {
   return { p, pedidas, marcos, errores, url: rel(p.url()) };
 }
 
+const fichaAbierta = p => p.waitForFunction(() => document.getElementById('detail-sheet')?.classList.contains('open'), null, { timeout: 15000 }).catch(() => {});
+
 function versionAnterior() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ug-anterior-'));
   const sh = c => execSync(c, { cwd: REPO, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -76,7 +78,8 @@ function versionAnterior() {
       && /<noscript><meta http-equiv="refresh" content="0; url=\/"><\/noscript>/.test(puente) && (puente.match(/http-equiv="refresh"/g) || []).length === 1
       && !/serviceWorker|redirect_from|noindex/.test(puente));
     let ctx = await contexto(b, web);
-    let r = await abrir(ctx, web, `/public/biblioteca.html?id=${ID}`, 4000);
+    let r = await abrir(ctx, web, `/public/biblioteca.html?id=${ID}`, 1500);
+    await fichaAbierta(r.p);   // la ficha real llega de producción: se espera a que abra, no un tiempo fijo
     const ficha = await r.p.evaluate(() => ({ abierta: !!document.getElementById('detail-sheet')?.classList.contains('open'), titulo: document.getElementById('ds-title')?.textContent || '', hist: history.length }));
     C.prueba(`?id= con ID real: llega a /?id=${ID} y abre la ficha`, r.marcos.includes(`/?id=${ID}`) && ficha.abierta && ficha.titulo.trim().length > 0, JSON.stringify({ marcos: r.marcos, ficha }));
     C.prueba('un solo salto: puente → portada', r.pedidas.length === 2 && r.pedidas[0].startsWith('/public/biblioteca.html'), JSON.stringify(r.pedidas));
@@ -135,7 +138,8 @@ function versionAnterior() {
     const slug = fs.readdirSync(dirP).find(f => f.endsWith(`-${ID}.html`));
     C.prueba('la ficha indexable lleva a la ficha completa en la portada', slug && fs.readFileSync(path.join(dirP, slug), 'utf8').includes(`href="https://upgames.games/?id=${ID}"`), slug);
     ctx = await contexto(b, web);
-    r = await abrir(ctx, web, `/public/p/${ID}.html`, 4500);
+    r = await abrir(ctx, web, `/public/p/${ID}.html`, 1500);
+    await fichaAbierta(r.p);
     const f2 = await r.p.evaluate(() => !!document.getElementById('detail-sheet')?.classList.contains('open')).catch(() => false);
     C.prueba('/public/p/<id>.html → https://upgames.games/?id=<id> directo (sin pasar por el puente) y abre la ficha',
       r.pedidas[1] === `https://upgames.games/?id=${ID}` && !r.pedidas.some(u => u.includes('biblioteca.html')) && f2, JSON.stringify({ pedidas: r.pedidas, f2 }));
