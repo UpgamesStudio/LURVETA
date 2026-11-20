@@ -54,6 +54,29 @@ test('SEO: slug estable y sin acentos; la página escapa el HTML', () => {
     assert.ok(!/<script>x/.test(h) && !/<img src=x/.test(h) && !/javascript:alert/.test(h));
     assert.ok(h.includes('<link rel="canonical" href="https://upgames.games/public/p/script-x-script-6ae0192a31af3f254562d255.html">'));
 });
+test('SEO ficha: capturas, videos, relacionados y perfil del creador (solo con datos reales)', () => {
+    const base = { id: '6ae0192a31af3f254562d255', title: 'Mod F1', description: 'Mod de prueba', category: 'Mod', usuario: 'kero', fecha: new Date().toISOString(),
+        image: 'https://res.cloudinary.com/x/image/upload/v1/portada.jpg' };
+    // images mezcla capturas y enlaces de YouTube; la portada no se repite; un enlace raro no se cuela
+    const m = Seo.medios(['https://youtu.be/5pABxBWf7Ec?si=abc', 'https://www.youtube.com/watch?v=3ZKK8nzuOuE&t=3', base.image,
+        'https://res.cloudinary.com/x/image/upload/v1/cap1.jpg', 'javascript:alert(1)', 'https://res.cloudinary.com/x/video/upload/v1/a.mp4', 'https://youtu.be/5pABxBWf7Ec'], base.image);
+    assert.deepStrictEqual(m.youtube, ['5pABxBWf7Ec', '3ZKK8nzuOuE']);
+    assert.deepStrictEqual(m.capturas, ['https://res.cloudinary.com/x/image/upload/v1/cap1.jpg']);
+    const rel = [{ id: '6ae0192a31af3f254562d256', title: 'Otro <b>mod</b>', category: 'Mod', usuario: 'kero', image: '' }, { ...base }];   // la propia no se lista
+    const h = Seo.pagina({ ...base, images: ['https://youtu.be/5pABxBWf7Ec', 'https://res.cloudinary.com/x/image/upload/v1/cap1.jpg'] }, null, { relacionados: rel, perfil: true });
+    assert.ok(h.includes('src="https://www.youtube-nocookie.com/embed/5pABxBWf7Ec"') && h.includes('<h2>Capturas</h2>') && h.includes('alt="Captura 1 de Mod F1"'));
+    assert.ok(h.includes('href="https://upgames.games/public/p/otro-b-mod-b-6ae0192a31af3f254562d256.html"') && !/<b>mod<\/b>/.test(h) && (h.match(/class="rel"/g) || []).length === 1);
+    assert.ok(h.includes('Publicado por <a href="../u/kero.html">'), 'enlaza la página estática del creador');
+    assert.ok(/"screenshot":\["https:\/\/res\.cloudinary\.com\/x\/image\/upload\/v1\/cap1\.jpg"\]/.test(h));
+    // Sin datos: nada de secciones vacías ni inventadas; sin página estática, el perfil de la app
+    const v = Seo.pagina(base);
+    assert.ok(!/<h2>(Video|Capturas|También)/.test(v) && !v.includes('youtube') && v.includes('href="../perfil-publico.html?usuario=kero"') && !/"screenshot"/.test(v));
+    // Video subido (categoría Video): reproductor y contentUrl; un link que no es video de Cloudinary no se usa
+    const vid = Seo.pagina({ ...base, category: 'Video', video: 'https://res.cloudinary.com/x/video/upload/v1/clip.mp4' });
+    assert.ok(vid.includes('<video controls preload="none"') && vid.includes('"contentUrl":"https://res.cloudinary.com/x/video/upload/v1/clip.mp4"'));
+    assert.ok(!Seo.pagina({ ...base, category: 'Video', video: 'https://evil.example/x.mp4' }).includes('<video'));
+    assert.ok(!Seo.pagina({ ...base, category: 'Mod', video: 'https://res.cloudinary.com/x/video/upload/v1/clip.mp4' }).includes('<video'), 'en las demás categorías no se muestra');
+});
 test('promoción de lives: rendimiento decreciente (no se compra el primer puesto)', () => {
     assert.strictEqual(L.puntosPromo(0), 0);
     assert.ok(Math.abs(L.puntosPromo(30) - 12) < 0.01);

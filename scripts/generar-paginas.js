@@ -23,9 +23,24 @@ const Seo = require('../modulos/seo');
     // Cada publicación enlaza a su juego (o, si no tiene, a su primer tema)
     const grupoDe = new Map();
     for (const g of [...grupos.filter(g => g.juego), ...grupos.filter(g => !g.juego)]) for (const it of g.items) if (!grupoDe.has(it.id)) grupoDe.set(it.id, g);
+    // Perfiles de creadores (también para enlazar cada ficha a la página estática de su creador)
+    const fuenteP = process.argv[3] || fuente.replace(/paginas\.json$/, 'perfiles.json');
+    let dp = null;
+    try { dp = /^https?:/.test(fuenteP) ? await (await fetch(fuenteP)).json() : JSON.parse(fs.readFileSync(fuenteP, 'utf8')); } catch (e) { console.warn('Perfiles: ' + e.message); }
+    const conPerfil = new Set(dp?.success && Array.isArray(dp.perfiles) ? dp.perfiles.map(p => p.usuario).filter(Seo.usuarioValido) : []);
+    // Relacionadas: primero las de su juego o tema, luego las del mismo creador, luego las de su categoría (más descargadas primero)
+    const orden = (a, b) => (b.descargas || 0) - (a.descargas || 0) || String(b.fecha).localeCompare(String(a.fecha)) || a.id.localeCompare(b.id);
+    const porDescargas = [...validos].sort(orden);
+    const relacionados = it => {
+        const vistos = new Set([it.id]), out = [];
+        const g = grupoDe.get(it.id);
+        for (const lista of [g ? g.items : [], porDescargas.filter(x => x.usuario === it.usuario), porDescargas.filter(x => x.category === it.category)])
+            for (const x of lista) { if (out.length >= 6) return out; if (!vistos.has(x.id)) { vistos.add(x.id); out.push(x); } }
+        return out;
+    };
     for (const it of validos) {
         const f = Seo.archivo(it); quedan.add(f);
-        const html = Seo.pagina(it, grupoDe.get(it.id)), ruta = path.join(dir, f);
+        const html = Seo.pagina(it, grupoDe.get(it.id), { relacionados: relacionados(it), perfil: conPerfil.has(it.usuario) }), ruta = path.join(dir, f);
         if (!fs.existsSync(ruta) || fs.readFileSync(ruta, 'utf8') !== html) fs.writeFileSync(ruta, html);
         // Copia con nombre fijo (<id>.html): es el enlace que se comparte. No depende del título, así que
         // sigue funcionando aunque el autor lo cambie (antes el enlace compartido daba 404). Su canónica es la de arriba.
@@ -53,10 +68,7 @@ const Seo = require('../modulos/seo');
     for (const f of fs.readdirSync(dirJ)) if (f.endsWith('.html') && !quedanJ.has(f)) { fs.unlinkSync(path.join(dirJ, f)); bj++; }
     console.log(`Juegos y temas: ${quedanJ.size} · borradas: ${bj}`);
 
-    // Perfiles de creadores → public/u/<usuario>.html
-    const fuenteP = process.argv[3] || fuente.replace(/paginas\.json$/, 'perfiles.json');
-    let dp = null;
-    try { dp = /^https?:/.test(fuenteP) ? await (await fetch(fuenteP)).json() : JSON.parse(fs.readFileSync(fuenteP, 'utf8')); } catch (e) { console.warn('Perfiles: ' + e.message); }
+    // Perfiles de creadores → public/u/<usuario>.html (datos ya descargados arriba)
     if (dp?.success && Array.isArray(dp.perfiles)) {
         const dirU = process.env.SEO_DIR_U || path.join(dir, '..', 'u');
         fs.mkdirSync(dirU, { recursive: true });

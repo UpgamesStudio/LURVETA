@@ -41,13 +41,17 @@ app.get('/seo/sitemap.xml', async (req, res) => {
 function datosPaginasSeo() {
     return cacheado('seo:paginas', 600, async () => {
         const items = await Juego.find({ status: 'aprobado', linkStatus: { $in: ['online', 'revision'] } })
-            .select('_id title description image category usuario createdAt descargasEfectivas vistas likesCount extraData').sort({ createdAt: -1 }).limit(20000).lean();
+            .select('_id title description image images link category usuario createdAt descargasEfectivas vistas likesCount extraData').sort({ createdAt: -1 }).limit(20000).lean();
         return items.map(j => {
             const ex = j.extraData || {};
             const juego = ex.detectedGame?.gameName || gameDetector.detectGame(j.title, j.description)?.gameName || '';
             return { id: String(j._id), title: j.title || '', description: String(j.description || '').slice(0, 3000), image: j.image || '', category: j.category || '',
                 usuario: j.usuario, fecha: (j.createdAt || new Date()).toISOString(), descargas: j.descargasEfectivas || 0, vistas: j.vistas || 0, likes: j.likesCount || 0,
-                juego, plataforma: [ex.plataforma, ex.so].filter(Boolean).join(' ') };
+                juego, plataforma: [ex.plataforma, ex.so].filter(Boolean).join(' '),
+                // Capturas y videos de YouTube que agregó el creador; el video subido solo en la categoría Video
+                // (en las demás, `link` es la descarga: no se publica aquí, va por la página puente con anuncios)
+                images: (j.images || []).filter(u => typeof u === 'string').slice(0, 12),
+                video: j.category === 'Video' && /^https:\/\/res\.cloudinary\.com\/[^/]+\/video\/upload\//i.test(j.link || '') ? j.link : '' };
         });
     });
 }
