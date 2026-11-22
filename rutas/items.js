@@ -138,6 +138,7 @@ const LINKS_PERMITIDOS = ['mediafire.com', 'mega.nz', 'mega.co.nz', 'drive.googl
     'gofile.io', 'onedrive.live.com', 'icloud.com', 'proton.me', 'pcloud.com',
     'pixeldrain.com', '1fichier.com', 'qiwi.gg', 'krakenfiles.com', 'dropbox.com',
     'github.com', 'github.io', 'sto.romsfast.com', 'clarodrive.com',
+    'cdn-icons-png.flaticon.com',
     // descargas oficiales de Lurveta (APK de Lurveta RACING): solo este servidor, no todo railway.app
     'upgames-production.up.railway.app'];
 
