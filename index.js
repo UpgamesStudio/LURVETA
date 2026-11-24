@@ -352,7 +352,7 @@ if (process.env.NODE_ENV === 'production' && (!JWT_REFRESH_SECRET || JWT_REFRESH
     process.exit(1);
 }
 
-const APP_URL = process.env.APP_URL || 'https://upgames.games';
+const APP_URL = process.env.APP_URL || 'https://lurveta.com';
 const API_URL_SELF = process.env.RAILWAY_PUBLIC_DOMAIN
     ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
     : `http://localhost:${process.env.PORT || 10000}`;

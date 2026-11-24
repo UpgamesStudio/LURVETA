@@ -37,8 +37,8 @@ const config = {
     // Dominios del frontend. Además se permiten el de APP_URL y los de CORS_ORIGINS
     // (separados por comas), para que un cambio de dominio no deje la web sin API.
     ALLOWED_ORIGINS: [...new Set([
-        'https://upgames.games',
-        'https://www.upgames.games',
+        'https://lurveta.com',
+        'https://www.lurveta.com',
         'https://roucedevstudio.github.io',
         // la cuenta de GitHub pasó de RouceDevStudio a UpgamesStudio: GitHub Pages cambia de dominio
         'https://upgamesstudio.github.io',
