@@ -1076,7 +1076,7 @@ function registrarVista(item) {
 // Las páginas estáticas /p/ se generan cada hora y al aprobar una publicación (ver sitemap.yml):
 // pasadas 3 h ya existen seguro.
 const UG_PAGINA_LISTA_MS = 3 * 3600e3;
-const UG_SEO_BASE = { title: document.title, url: 'https://upgames.games/' };
+const UG_SEO_BASE = { title: document.title, url: 'https://lurveta.com/' };
 function ugMeta(attr, key, val) {
   let m = document.head.querySelector(`meta[${attr}="${key}"]`);
   if (!m) { m = document.createElement('meta'); m.setAttribute(attr, key); document.head.appendChild(m); }
@@ -1126,9 +1126,9 @@ function ugSeo(item) {
     // Si ya tiene su página estática (public/p/, se genera a diario) esa es la canónica: evita contenido duplicado
     const slug = String(item.title || 'publicacion').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '') || 'publicacion';
     const estatica = (!item.status || item.status === 'aprobado') && item.createdAt && Date.now() - new Date(item.createdAt) > UG_PAGINA_LISTA_MS;
-    const url = estatica ? `https://upgames.games/public/p/${slug}-${item._id}.html` : `${UG_SEO_BASE.url}?id=${item._id}`;
+    const url = estatica ? `https://lurveta.com/public/p/${slug}-${item._id}.html` : `${UG_SEO_BASE.url}?id=${item._id}`;
     const desc = String(item.description || `${item.category || 'Contenido'} compartido por @${item.usuario} en Lurveta.`).replace(/\s+/g, ' ').slice(0, 160);
-    const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://upgames.games/public/og-upgames.jpg');
+    const img = ugTarjeta(item) || (/^https:\/\//.test(item.image || '') ? item.image : 'https://lurveta.com/public/og-upgames.jpg');
     document.title = `${item.title} — ${item.category || 'Descargar'} | Lurveta`;
     canon.href = url;
     ugMeta('name', 'description', desc);
@@ -1137,7 +1137,7 @@ function ugSeo(item) {
     ugMeta('name', 'twitter:card', 'summary_large_image');
     const tipo = item.category === 'Video' ? 'VideoObject' : (item.category === 'Juego' ? 'VideoGame' : 'SoftwareApplication');
     const datos = { '@context': 'https://schema.org', '@type': tipo, name: item.title, description: desc, image: img, url,
-      author: { '@type': 'Person', name: item.usuario, url: `https://upgames.games/public/perfil-publico.html?usuario=${encodeURIComponent(item.usuario)}` },
+      author: { '@type': 'Person', name: item.usuario, url: `https://lurveta.com/public/perfil-publico.html?usuario=${encodeURIComponent(item.usuario)}` },
       ...(item.createdAt ? { datePublished: item.createdAt } : {}),
       ...(tipo === 'VideoObject' ? { thumbnailUrl: img, uploadDate: item.createdAt || undefined, contentUrl: item.link } : { applicationCategory: tipo === 'VideoGame' ? 'Game' : 'Utilities', operatingSystem: 'Windows, Android', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } }),
       interactionStatistic: { '@type': 'InteractionCounter', interactionType: 'https://schema.org/DownloadAction', userInteractionCount: item.descargasEfectivas || 0 } };
@@ -1901,7 +1901,7 @@ function ugUrlCompartir(it) {
   if (!it) return '';
   const estatica = (!it.status || it.status === 'aprobado') && it.createdAt && Date.now() - new Date(it.createdAt) > UG_PAGINA_LISTA_MS;
   // Nombre fijo por id: no depende del título (si el autor lo cambiaba, el enlace ya compartido daba 404)
-  return estatica ? `https://upgames.games/public/p/${it._id}.html` : `https://upgames.games/?id=${it._id}`;
+  return estatica ? `https://lurveta.com/public/p/${it._id}.html` : `https://lurveta.com/?id=${it._id}`;
 }
 async function share(id) {
   const it = (currentItem && currentItem._id === id) ? currentItem : todosLosItems.find(i => i._id === id);
