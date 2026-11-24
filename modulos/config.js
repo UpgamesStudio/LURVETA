@@ -13,7 +13,14 @@ if (!process.env.MONGODB_URI || !process.env.JWT_SECRET) {
 
 const limpio = v => String(v ?? '').trim().replace(/^(['"])(.*)\1$/s, '$2').trim();
 
+const URL_PUBLICA = 'https://lurveta.com';
+const urlEntorno = limpio(process.env.APP_URL).replace(/\/+$/, '');
+const APP_URL = !urlEntorno || /^https?:\/\/(?:www\.)?upgames\.games$/i.test(urlEntorno)
+    ? URL_PUBLICA
+    : urlEntorno;
+
 const config = {
+    APP_URL,
     // ========== SERVIDOR ==========
     PORT: process.env.PORT || 10000,
     NODE_ENV: process.env.NODE_ENV || 'development',
@@ -37,8 +44,9 @@ const config = {
     // Dominios del frontend. Además se permiten el de APP_URL y los de CORS_ORIGINS
     // (separados por comas), para que un cambio de dominio no deje la web sin API.
     ALLOWED_ORIGINS: [...new Set([
-        'https://lurveta.com',
-        'https://www.lurveta.com',
+        URL_PUBLICA,
+        'https://upgames.games',
+        'https://www.upgames.games',
         'https://roucedevstudio.github.io',
         // la cuenta de GitHub pasó de RouceDevStudio a UpgamesStudio: GitHub Pages cambia de dominio
         'https://upgamesstudio.github.io',
@@ -49,7 +57,7 @@ const config = {
         // app Android de Lurveta RACING (Capacitor sirve el juego desde este origen)
         'https://localhost',
         'capacitor://localhost',
-        ...[process.env.APP_URL, ...String(process.env.CORS_ORIGINS || '').split(',')]
+        ...[APP_URL, ...String(process.env.CORS_ORIGINS || '').split(',')]
             .map(u => { try { return new URL(String(u).trim()).origin; } catch (_) { return null; } }).filter(Boolean),
     ])],
     

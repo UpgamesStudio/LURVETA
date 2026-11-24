@@ -352,7 +352,7 @@ if (process.env.NODE_ENV === 'production' && (!JWT_REFRESH_SECRET || JWT_REFRESH
     process.exit(1);
 }
 
-const APP_URL = process.env.APP_URL || 'https://lurveta.com';
+const { APP_URL } = config;
 const API_URL_SELF = process.env.RAILWAY_PUBLIC_DOMAIN
     ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
     : `http://localhost:${process.env.PORT || 10000}`;
@@ -1035,7 +1035,7 @@ app.get('/admin/seguridad/incidentes/:id/expediente', verificarAdmin, async (req
             Juego.find({ usuario: x.usuario }).select('title link category status createdAt').sort({ createdAt: -1 }).limit(100).lean(),
         ]);
         logger.warn(`[cero-tolerancia] expediente de @${x.usuario} generado por @${req.admin?.usuario || '?'}`);
-        res.json({ success: true, generado: new Date(), plataforma: 'LURVETA · upgames.games · upgames.games.up@gmail.com', incidente: incidenteVista(x, true),
+        res.json({ success: true, generado: new Date(), plataforma: 'LURVETA · lurveta.com · upgames.games.up@gmail.com', incidente: incidenteVista(x, true),
             cuentaActual: { ...actual, datosCobroCompletos: cobro }, otrosIncidentes: otros, historial: { mensajesPrivados: mensajes, publicaciones } });
     } catch (e) { logger.error(`admin/seguridad expediente: ${e.message}`); res.status(500).json({ success: false, error: 'No se pudo generar' }); }
 });
@@ -1115,7 +1115,7 @@ require('./rutas/fraude')({ app, body, fraudDetector, logger, param, validationR
 
 // ========== NOTIFICACIONES ==========
 
-require('./rutas/notificaciones')({ Juego, Notificacion, Usuario, app, logger, mongoose, nexusMemoria, push, verificarToken });   // Notificaciones y push
+require('./rutas/notificaciones')({ Juego, Notificacion, Usuario, app, logger, mongoose, nexusMemoria, push, verificarToken, APP_URL });   // Notificaciones y push
 
 // ========== CHAT ==========
 

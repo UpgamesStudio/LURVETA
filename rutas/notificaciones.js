@@ -4,7 +4,7 @@
  * Campana de notificaciones, marcar leídas y suscripción push del dispositivo.
  * Extraído de index.js: recibe sus dependencias explícitas (ver la llamada en index.js).
  */
-module.exports = function notificaciones({ Juego, Notificacion, Usuario, app, logger, mongoose, nexusMemoria, push, verificarToken }) {
+module.exports = function notificaciones({ Juego, Notificacion, Usuario, app, logger, mongoose, nexusMemoria, push, verificarToken, APP_URL }) {
 app.get('/notificaciones/:usuario', verificarToken, async (req, res) => {
     try {
         const { usuario } = req.params;
@@ -96,7 +96,7 @@ app.put('/push/prefs', verificarToken, async (req, res) => {
     res.json({ success: true });
 });
 app.post('/push/prueba', verificarToken, async (req, res) => {
-    const n = await push.enviarA([req.usuario], () => ({ title: '🔔 ¡Listo!', body: 'Así te llegarán los avisos de Lurveta aunque no estés en la app.', url: (process.env.APP_URL || 'https://lurveta.com').replace(/\/+$/, '') + '/', tag: 'prueba', icon: './icons/icon-192.png?v=3', badge: './icons/icon-96.png?v=2' }));
+    const n = await push.enviarA([req.usuario], () => ({ title: '🔔 ¡Listo!', body: 'Así te llegarán los avisos de Lurveta aunque no estés en la app.', url: APP_URL + '/', tag: 'prueba', icon: './icons/icon-192.png?v=3', badge: './icons/icon-96.png?v=2' }));
     res.json({ success: true, enviados: n });
 });
 
