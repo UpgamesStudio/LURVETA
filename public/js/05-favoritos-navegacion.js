@@ -124,7 +124,7 @@ function ugUrlCompartir(it) {
   if (!it) return '';
   const estatica = (!it.status || it.status === 'aprobado') && it.createdAt && Date.now() - new Date(it.createdAt) > UG_PAGINA_LISTA_MS;
   // Nombre fijo por id: no depende del título (si el autor lo cambiaba, el enlace ya compartido daba 404)
-  return estatica ? `https://upgames.games/public/p/${it._id}.html` : `https://upgames.games/?id=${it._id}`;
+  return estatica ? `https://lurveta.com/public/p/${it._id}.html` : `https://lurveta.com/?id=${it._id}`;
 }
 async function share(id) {
   const it = (currentItem && currentItem._id === id) ? currentItem : todosLosItems.find(i => i._id === id);

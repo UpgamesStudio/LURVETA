@@ -129,7 +129,7 @@
   async function referidos() {
     const caja = document.getElementById('ugx-referidos'); if (!caja || !tok()) return;
     const r = await api('/referidos/mio'); if (!r.ok || !r.d.activo) { caja.innerHTML = ''; return; }
-    const d = r.d, link = `https://upgames.games/?ref=${encodeURIComponent(d.codigo)}`;
+    const d = r.d, link = `https://lurveta.com/?ref=${encodeURIComponent(d.codigo)}`;
     const est = { pendiente: ['⏳', 'Falta que verifique su email'], procesando: ['⏳', 'Procesando'], pagado: ['✅', `+${d.recompensa.invitador} UC`], tope: ['⏸', 'Tope del mes alcanzado'], misma_red: ['⚠️', 'Misma red: no cuenta'], bloqueado: ['⛔', 'No cuenta'] };
     caja.innerHTML = `<div class="ugx-ref">
       <div class="ugx-ref-h"><span class="ugx-ref-ic">🤝</span><div><b>Invita y ganen los dos</b><small>Tú recibes <b>${d.recompensa.invitador} UC</b> y tu amigo <b>${d.recompensa.invitado} UC</b> cuando verifique su email.</small></div></div>

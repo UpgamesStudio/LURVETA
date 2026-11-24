@@ -13,13 +13,13 @@
     <meta property="og:site_name"   content="Lurveta">
     <meta property="og:title"       content="Perfil — Lurveta">
     <meta property="og:description" content="Perfil de un creador en Lurveta, el ecosistema digital para gamers, creadores y desarrolladores independientes: sus juegos, mods, apps, videos y publicaciones.">
-    <meta property="og:image"       content="https://upgames.games/public/og-upgames.jpg">
+    <meta property="og:image"       content="https://lurveta.com/public/og-upgames.jpg">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <!-- Twitter Card -->
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title"       content="Perfil — Lurveta">
-    <meta name="twitter:image"       content="https://upgames.games/public/og-upgames.jpg">
+    <meta name="twitter:image"       content="https://lurveta.com/public/og-upgames.jpg">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0A0B0F">
     <title>Perfil de Usuario — Lurveta</title>
@@ -548,7 +548,7 @@ a { text-decoration: none; color: inherit; }
                     if (md) md.setAttribute('content', `Publicaciones de @${user.usuario || usuarioViendo} en Lurveta${user.bio ? ': ' + String(user.bio).slice(0, 120) : ''}. Descarga gratis y síguelo para no perderte nada.`);
                     let c = document.querySelector('link[rel="canonical"]');
                     if (!c) { c = document.createElement('link'); c.rel = 'canonical'; document.head.appendChild(c); }
-                    c.href = `https://upgames.games/public/perfil-publico.html?usuario=${encodeURIComponent(user.usuario || usuarioViendo)}`;
+                    c.href = `https://lurveta.com/public/perfil-publico.html?usuario=${encodeURIComponent(user.usuario || usuarioViendo)}`;
                 } catch (_) {}
 
                 // ¿Está en vivo ahora? → aviso que lleva a su directo
