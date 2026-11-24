@@ -43,12 +43,12 @@ function categoriaFuente(ref, hostPropio = '', base = '') {
     let h = '', ruta = '';
     try { const u = new URL(ref); h = u.hostname.toLowerCase().replace(/^www\./, ''); ruta = u.pathname; } catch (_) { return 'rd'; }
     if (!h) return 'rd';
-    // Mismo sitio: dentro del blog es navegación interna; en otra parte de upgames.games (la biblioteca) es Lurveta
+    // Mismo sitio: dentro del blog es navegación interna; en otra parte de lurveta.com (la biblioteca) es Lurveta
     if (h === String(hostPropio).toLowerCase().replace(/^www\./, '')) return !base || ruta === base || ruta.startsWith(base + '/') ? '' : 'ru';
     const es = d => h === d || h.endsWith('.' + d);
     if (/(^|\.)(google|bing|duckduckgo|yahoo|yandex|ecosia|search\.brave|baidu)\.[a-z.]{2,}$/.test(h)) return 'rb';
     if (REDES_SOCIALES.some(es)) return 'rs';
-    if (es('upgames.games') || /upgames/.test(h)) return 'ru';
+    if (es('lurveta.com') || es('upgames.games') || /upgames/.test(h)) return 'ru';
     return 'ro';
 }
 

@@ -10,7 +10,7 @@ const LS = {
   set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* sin almacenamiento */ } },
 };
 
-// La web comparte la sesión de upgames.games (mismo origen); la app usa la suya
+// La web comparte la sesión de lurveta.com (mismo origen); la app usa la suya
 export function token() {
   const t = LS.get('apexgp.token') || LS.get('token');
   return t && t !== 'null' && t !== 'undefined' && t.length > 20 ? t : null;

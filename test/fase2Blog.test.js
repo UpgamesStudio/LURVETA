@@ -42,7 +42,7 @@ assert.ok(html.includes('href="mailto:a@b.co"'));
 assert.ok(!R.bloquesHtml(V.limpiarBloques([{ tipo: 'boton', texto: 'Ir', url: 'https://tienda.com' }]), {}).includes('/_c'), 'sin ctx.clic, enlace directo');
 
 // ── Kit de marca: color secundario y letra del texto llegan a las variables del sitio ──
-const pag = R.entrada({ blog: { _id: 'b', titulo: 'K', tema: 'claro', ajustes: { acento: '#123456', acento2: '#abcdef', fuente: 'poppins', fuenteTexto: 'lora' }, direccion: 'k', usuario: 'k', visibilidad: 'publico' }, base: '', origen: 'https://k.com', appUrl: 'https://upgames.games', paginas: [], juegos: {} }, { _id: 'e', tipo: 'pagina', titulo: 'x', slug: 'x', bloques: [] });
+const pag = R.entrada({ blog: { _id: 'b', titulo: 'K', tema: 'claro', ajustes: { acento: '#123456', acento2: '#abcdef', fuente: 'poppins', fuenteTexto: 'lora' }, direccion: 'k', usuario: 'k', visibilidad: 'publico' }, base: '', origen: 'https://k.com', appUrl: 'https://lurveta.com', paginas: [], juegos: {} }, { _id: 'e', tipo: 'pagina', titulo: 'x', slug: 'x', bloques: [] });
 assert.ok(pag.includes('--acento:#123456') && pag.includes('--acento2:#abcdef'));
 assert.ok(pag.includes("--f-tit:'Poppins'") && pag.includes("--f-txt:'Lora'") && pag.includes('family=Poppins') && pag.includes('family=Lora'));
 for (const id of ['poppins', 'montserrat', 'inter', 'grotesk', 'lora']) assert.ok(T.FUENTES[id]?.google, id);

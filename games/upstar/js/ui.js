@@ -111,7 +111,7 @@ export function abrirMenu(pest = 'mapa') {
       window.__upstarBorrando = true; location.reload();
     };
   } else if (pest === 'cuenta') {
-    c.innerHTML = `<div class="col"><h4>Cuenta de Lurveta</h4>${token() ? '<p>Sesión iniciada: tu partida se guarda en la nube, tus descubrimientos llevan tu nombre y te ven los demás jugadores.</p>' : '<p>Inicia sesión en <a href="https://upgames.games" target="_blank">upgames.games</a> para guardar en la nube, registrar descubrimientos y jugar online.</p>'}
+    c.innerHTML = `<div class="col"><h4>Cuenta de Lurveta</h4>${token() ? '<p>Sesión iniciada: tu partida se guarda en la nube, tus descubrimientos llevan tu nombre y te ven los demás jugadores.</p>' : '<p>Inicia sesión en <a href="https://lurveta.com" target="_blank">lurveta.com</a> para guardar en la nube, registrar descubrimientos y jugar online.</p>'}
       <p class="tenue">Jugadores en tu sector: ${juego.online?.otros.size || 0}${juego.online?.conectado ? '' : ' (sin conexión)'}</p></div>
       <div class="col"><h4>Controles</h4><p class="tenue">Teclado: W/S acelerador (se queda donde lo dejas) · X parar · ratón o ↑↓←→ dirección · Q/E alabeo · Mayús turbo · Espacio pulso · clic o K disparar · L aterrizar · F bajar/subir · R escanear · J salto · M mapa · I inventario · C cámara · T visión térmica.</p></div>`;
   }

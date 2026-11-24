@@ -51,7 +51,7 @@ function fetchFalso(log = []) {
         assert.strictEqual(B.fuenteDe('https://m.youtube.com/watch?v=1'), 'youtube');
         assert.strictEqual(B.fuenteDe('https://vm.tiktok.com/x'), 'tiktok');
         assert.strictEqual(B.fuenteDe('https://fb.watch/x'), 'facebook');
-        assert.strictEqual(B.fuenteDe('https://upgames.games'), 'web');
+        assert.strictEqual(B.fuenteDe('https://lurveta.com'), 'web');
     });
     await test('sin IA amplía la consulta por reglas (es + en)', () => {
         const c = B.consultasPorReglas('busca juegos port o emuladores para Android');

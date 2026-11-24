@@ -21,6 +21,6 @@ Vista previa en Chrome: `video.html?play` (tiempo real) o `video.html?t=15` (un 
 | 0:10.5 | **Paso 2** · Cuéntanos de tu proyecto. | El formulario se rellena solo (nombre, descripción, portada, enlace de descarga) y a la derecha la tarjeta «así se verá» se completa a la vez |
 | 0:20 | **Paso 3** · Toca Publicar. Listo. | Clic en PUBLICAR AHORA; estados: enviado → en revisión (Nexus IA y el equipo) → aprobada; la tarjeta aparece «en línea» |
 | 0:26 | Tu proyecto empieza a ganar. | Tarifa de creador: sube hasta **US$1,50 por cada 1.000 visualizaciones de publicidad** |
-| 0:31 | Publica hoy. Es gratis. | Logo, se escribe `upgames.games`, clic en PUBLICAR MI PROYECTO |
+| 0:31 | Publica hoy. Es gratis. | Logo, se escribe `lurveta.com`, clic en PUBLICAR MI PROYECTO |
 
 Los campos del formulario son los reales de la web (nombre, descripción, imágenes, enlace de descarga). El proyecto de ejemplo («Neon Drift») es inventado y el video lo indica. La tarifa y el mínimo de retiro son los de la plataforma.

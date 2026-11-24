@@ -48,7 +48,7 @@ Sacada de `public/upgames-cyber.css` (tema por defecto) y del logo:
 3. **Caída** (golpe, logo, rejilla a toda velocidad): Lurveta patrocina creadores.
 4. **Beneficios** en interfaces tipo SaaS: profesionalismo, visibilidad, comunidad, reconocimiento.
 5. **Oferta**: gratis, sin costo, promoción exclusiva/oficial.
-6. **Llamada a la acción**: upgames.games y botón final.
+6. **Llamada a la acción**: lurveta.com y botón final.
 
 ### Video 1 — hoja de tiempos
 
@@ -67,9 +67,9 @@ Sacada de `public/upgames-cyber.css` (tema por defecto) y del logo:
 | 0:25.0 | …y construyas tu propia comunidad desde cero. | Clic en SEGUIR; seguidores de 0 a 1.280 |
 | 0:27.5 | Tu trabajo merece ser **reconocido**. | Medalla hexagonal con rayos y chispas |
 | 0:29.4 | ¿Qué esperas…? …totalmente **gratis** | $49.99 tachado → **$0** y sello 100 % GRATIS |
-| 0:33.3 | Entra ya a upgames.games… | Se escribe la dirección; clic en ENTRAR |
+| 0:33.3 | Entra ya a lurveta.com… | Se escribe la dirección; clic en ENTRAR |
 | 0:35.2 | …o escríbenos por mensaje directo… | Chat en el celular; cupón PROMOCIÓN EXCLUSIVA; sello SIN COSTO |
-| 0:41.6 | ¡Únete a Lurveta ahora! | Cierre: logo, botón ÚNETE AHORA con clic, upgames.games |
+| 0:41.6 | ¡Únete a Lurveta ahora! | Cierre: logo, botón ÚNETE AHORA con clic, lurveta.com |
 
 ### Video 2 — hoja de tiempos
 
@@ -89,7 +89,7 @@ Sacada de `public/upgames-cyber.css` (tema por defecto) y del logo:
 | 0:25.5 | Si quieres que el mundo por fin descubra… | Globo de alambre girando con arcos hacia tu juego |
 | 0:28.8 | …esta es tu oportunidad. | Golpe y destello |
 | 0:30.0 | ¿Qué esperas? Publica tu trabajo totalmente gratis… | Panel PUBLICAR: clic → ¡PUBLICADO! 100 % GRATIS |
-| 0:33.1 | …entrando a upgames.games | Se escribe la dirección |
+| 0:33.1 | …entrando a lurveta.com | Se escribe la dirección |
 | 0:34.8 | …o comunícate por nuestras redes… promoción oficial sin costo alguno. | Chat, redes en órbita; certificado PROMOCIÓN OFICIAL con sello SIN COSTO |
 | 0:40.2 | ¡El ecosistema Lurveta te está esperando! | Logo con órbita: Juegos, Apps, Mods, En vivo, Comunidad, Nexus IA; ÚNETE GRATIS |
 

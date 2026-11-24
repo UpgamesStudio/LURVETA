@@ -58,7 +58,7 @@ html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--
   <div id="malla"></div>
   <div id="escenas"></div>
   <div id="vin"></div><div id="destello"></div>
-  <div id="nota">Interfaz real de Lurveta · contenido y cifras de demostración · upgames.games</div>
+  <div id="nota">Interfaz real de Lurveta · contenido y cifras de demostración · lurveta.com</div>
 </div>
 <script>
 'use strict';
@@ -245,7 +245,7 @@ escena(59.95, DUR + 1, r => {
   return { logo, t1, t2, url, btn, on, u: url.querySelector('#u'), cr: url.querySelector('#c') };
 }, (t, r, c) => {
   const k = en(t, 60.0, .9, E.spr); S(c.logo, { o: en(t, 60.0, .3), s: lerp(.7, 1, k), y: (1 - k) * -40 }); kin(c.t1, t, 60.5, .1, .85, 90); kin(c.t2, t, 61.2, .12, .85, 90);
-  pop(c.url, t, 62.6, { dy: 40 }); teclear(c.u, 'upgames.games', (t - 63.0) / .9); c.cr.style.opacity = Math.floor(t * 2.6) % 2 ? 1 : .15;
+  pop(c.url, t, 62.6, { dy: 40 }); teclear(c.u, 'lurveta.com', (t - 63.0) / .9); c.cr.style.opacity = Math.floor(t * 2.6) % 2 ? 1 : .15;
   const b = en(t, 63.8, .7, E.spr), cl = Math.max(0, 1 - Math.abs(t - 64.8) / .12); S(c.btn, { o: clamp(b * 2), s: lerp(.6, 1, b) * (1 - cl * .06) * (1 + pulso(t) * .0) });
   c.on.forEach((o, i) => { const q = en(t, 64.8 + i * .16, 1.1); o.style.opacity = t > 64.8 ? (1 - q) * .8 : 0; o.style.transform = `scale(${1 + q * 7})`; });
   S(r, { o: Math.min(clamp((t - 59.95) / .2), clamp((DUR - t) / .8)) });

@@ -22,7 +22,7 @@ Animación vertical **1080×1920, 30 fps, sin audio** (la locución se agrega de
 | 1:00.2 | …nuestra IA exclusiva organice y posicione tu trabajo… | Nexus IA busca «juegos de carreras para Android» y pone tu juego en el #1 |
 | 1:06.4 | Únete a los miles de creadores… | Muro de creadores; +MILES DE CREADORES |
 | 1:10.8 | ¿Qué esperas para dar el salto profesional? Cambia tu forma de crear | Flecha que sube de AMATEUR a PRO |
-| 1:15.5 | Entra a upgames.games… número uno en Latinoamérica… | Se escribe upgames.games; mapa de Latinoamérica que se enciende; #1 |
-| 1:21.6 – 1:25.5 | …y empieza a ganar hoy mismo. | Cierre: logo, upgames.games y botón EMPIEZA A GANAR HOY |
+| 1:15.5 | Entra a lurveta.com… número uno en Latinoamérica… | Se escribe lurveta.com; mapa de Latinoamérica que se enciende; #1 |
+| 1:21.6 – 1:25.5 | …y empieza a ganar hoy mismo. | Cierre: logo, lurveta.com y botón EMPIEZA A GANAR HOY |
 
 Los nombres de creadores, juegos y cifras del anuncio son ilustrativos.

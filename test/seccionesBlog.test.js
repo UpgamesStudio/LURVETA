@@ -47,13 +47,13 @@ const div = R.bloquesHtml(V.limpiarBloques([{ tipo: 'heroe', titulo: 'T', varian
 assert.ok(div.includes('h-dividido') && div.includes('h-fondo') && div.includes('f-imagen'));
 
 // ── Landing: una página que empieza con sección no lleva título arriba; como inicio, ruta «/» ──
-const ctx = { blog: { _id: 'b1', titulo: 'Kero', tema: 'neon', ajustes: { inicio: 'p1' }, direccion: 'kero', usuario: 'kero', visibilidad: 'publico' }, base: '/b/kero', origen: 'https://upgames.games', appUrl: 'https://upgames.games',
+const ctx = { blog: { _id: 'b1', titulo: 'Kero', tema: 'neon', ajustes: { inicio: 'p1' }, direccion: 'kero', usuario: 'kero', visibilidad: 'publico' }, base: '/b/kero', origen: 'https://lurveta.com', appUrl: 'https://lurveta.com',
   paginas: [{ _id: 'p1', titulo: 'Inicio landing', slug: 'inicio' }, { _id: 'p2', titulo: 'Contacto', slug: 'contacto' }], populares: [], nube: [], autor: null, juegos: {}, hayEntradas: true };
 const pag = { _id: 'p1', tipo: 'pagina', titulo: 'Inicio landing', slug: 'inicio', bloques: [heroe, cta] };
 const casa = R.entrada(ctx, pag, { inicio: true });
 assert.ok(casa.includes('<main class="landing sin-final">'));
 assert.ok(casa.includes('<h1 class="oculto">Inicio landing</h1>'));
-assert.ok(casa.includes('<link rel="canonical" href="https://upgames.games/b/kero/">'));
+assert.ok(casa.includes('<link rel="canonical" href="https://lurveta.com/b/kero/">'));
 assert.ok(casa.includes('href="/b/kero/blog"'), 'menú con «Blog» cuando el inicio es una landing');
 assert.ok(!casa.includes('href="/b/kero/p/inicio"'), 'la página de inicio no se repite en el menú');
 assert.ok(casa.includes('href="/b/kero/p/contacto"'));
@@ -89,8 +89,8 @@ assert.strictEqual(cf('https://t.co/abc'), 'rs');
 assert.strictEqual(cf('https://box.com/x'), 'ro');
 assert.strictEqual(cf('https://fbi.gov/'), 'ro');
 assert.strictEqual(cf('https://kero.com/p/x', 'kero.com'), '', 'navegar dentro del blog no cuenta');
-assert.strictEqual(cf('https://upgames.games/b/kero/e/a', 'upgames.games', '/b/kero'), '');
-assert.strictEqual(cf('https://upgames.games/public/biblioteca.html', 'upgames.games', '/b/kero'), 'ru');
+assert.strictEqual(cf('https://lurveta.com/b/kero/e/a', 'lurveta.com', '/b/kero'), '');
+assert.strictEqual(cf('https://lurveta.com/public/biblioteca.html', 'lurveta.com', '/b/kero'), 'ru');
 
 // ── Retoque de diseño de Nexus: héroe amplio, CTA con color, fondos alternos ──
 const pul = E.pulirSecciones(V.limpiarBloques([{ tipo: 'heroe', titulo: 'a' }, { tipo: 'columnas', fondo: 'suave', items: [{ titulo: 'x' }] }, { tipo: 'precios', fondo: 'suave', items: [{ nombre: 'p' }] }, { tipo: 'texto', texto: 't' }, { tipo: 'cta', titulo: 'c' }]));

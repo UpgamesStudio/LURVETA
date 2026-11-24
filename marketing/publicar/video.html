@@ -93,7 +93,7 @@ html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--
   <div id="vin"></div>
   <div id="destello"></div>
   <svg id="cursor" viewBox="0 0 24 24"><path d="M4 2l15 9-7 2-3 7z" fill="#fff" stroke="#04060B" stroke-width="1.6" stroke-linejoin="round"/></svg>
-  <div id="nota">Proyecto y cifras de ejemplo · upgames.games</div>
+  <div id="nota">Proyecto y cifras de ejemplo · lurveta.com</div>
 </div>
 <script>
 'use strict';
@@ -161,7 +161,7 @@ escena(4.2, 10.7, r => {
   const p = $('div', 'paso', '<b>1</b><span>Paso uno</span>', r);
   const t1 = pal(r, 'Entra a tu perfil y toca [Publicar.]', 'abs tit', 'left:150px;top:190px;font-size:84px');
   const nav = $('div', 'abs cristal filo', null, r, 'left:150px;top:330px;width:1620px;height:660px;transform-origin:50% 100%');
-  $('div', 'nav-top', '<i></i><i></i><i></i><div class="nav-url">upgames.games &nbsp;›&nbsp; Mi perfil</div>', nav);
+  $('div', 'nav-top', '<i></i><i></i><i></i><div class="nav-url">lurveta.com &nbsp;›&nbsp; Mi perfil</div>', nav);
   const cuerpo = $('div', 'abs', null, nav, 'left:0;right:0;top:64px;bottom:0');
   $('div', 'abs', null, cuerpo, 'left:50px;top:44px;width:150px;height:150px;border-radius:50%;background:linear-gradient(135deg,#39FF88,#5CE1FF 60%,#8F7BFF);box-shadow:0 0 50px rgba(57,255,136,.4)');
   $('div', 'abs tit', '@tu_estudio', cuerpo, 'left:236px;top:62px;font-size:52px');
@@ -288,7 +288,7 @@ escena(30.7, 35, r => {
   S(c.logo, { o: en(t, 30.85, .25), s: lerp(1.8, 1, k), b: (1 - en(t, 30.85, .5)) * 20 });
   c.on.forEach((o, i) => { const q = en(t, 30.87 + i * .16, 1.3); o.style.opacity = (1 - q) * .8; o.style.transform = `scale(${1 + q * 7})`; });
   kin(c.t1, t, 31.3, .1);
-  escribe(c.url, 'upgames.games', t, 32.2, 14);
+  escribe(c.url, 'lurveta.com', t, 32.2, 14);
   S(c.btn, { o: en(t, 33.0, .4), y: (1 - en(t, 33.0, .6, E.out5)) * 40, s: 1 - Math.sin(Math.PI * clamp((t - 33.6) / .3)) * .06 });
   mover(t, [[33.0, 1500, 1100], [33.5, 1000, 890], [35, 1000, 890]]); if (t < 33) cursor.style.opacity = 0;
   S(r, { o: win(t, 30.7, 35, .1, .01) });

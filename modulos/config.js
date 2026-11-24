@@ -45,6 +45,7 @@ const config = {
     // (separados por comas), para que un cambio de dominio no deje la web sin API.
     ALLOWED_ORIGINS: [...new Set([
         URL_PUBLICA,
+        "https://www.lurveta.com",
         'https://upgames.games',
         'https://www.upgames.games',
         'https://roucedevstudio.github.io',

@@ -16,7 +16,7 @@ Vídeo de **76 s** rodado con el propio juego (`games/monoplaza/tools/trailer.js
 | 0:28.8 – 1:04.8 | Música a tope | Tomas rápidas cada 2 s: a ras de suelo, de frente, en la rueda, a bordo, teleobjetivo, dron; atardecer, noche y lluvia; tarjetas con las características |
 | 1:04.8 – 1:07.2 | Corte: la música cae | **Cámara lenta** alrededor del coche · «¿Estás listo?» |
 | 1:07.2 | Golpe | Pasada a ras de suelo |
-| 1:12.0 | Golpe final | Logotipo y **«Juega gratis en upgames.games»** |
+| 1:12.0 | Golpe final | Logotipo y **«Juega gratis en lurveta.com»** |
 | 1:14.5 – 1:16 | Final | Fundido a negro |
 
 ## Narración (voz femenina)
@@ -58,7 +58,7 @@ Las frases van en los huecos de la música. Los tiempos son el **inicio** de cad
 - 0:28.8 · **Lurveta RACING** · SIMULADOR DE MONOPLAZAS
 - Tarjetas (cada 4 s desde 0:32): Física real a 300 Hz · El aire también corre · 22 pilotos con IA humana · Daños de verdad · Día, atardecer y noche · Multijugador en línea · La lluvia lo cambia todo · Campeonato y carrera profesional
 - 1:05 · *¿Estás listo?*
-- 1:12 · **Lurveta RACING** · Juega gratis en upgames.games · ANDROID · NAVEGADOR · MULTIJUGADOR
+- 1:12 · **Lurveta RACING** · Juega gratis en lurveta.com · ANDROID · NAVEGADOR · MULTIJUGADOR
 
 ## Cómo se monta la voz cuando esté grabada
 

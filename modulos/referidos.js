@@ -1,7 +1,7 @@
 /**
  * Referidos: invita a un amigo y ganan los dos.
  *
- *   1. El enlace es upgames.games/?ref=<tu usuario> (también sirven los códigos viejos de `referrals`).
+ *   1. El enlace es lurveta.com/?ref=<tu usuario> (también sirven los códigos viejos de `referrals`).
  *   2. Al registrarse, la cuenta nueva queda con `referidoPor` y estado 'pendiente'.
  *   3. Cuando verifica su email, se paga UNA vez: UpCoins de regalo (no retirables) para
  *      quien invitó y para el invitado. Montos y tope mensual se editan en Admin → Extras UC.

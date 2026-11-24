@@ -76,7 +76,7 @@ html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--
   <div id="vin"></div>
   <div id="destello"></div>
   <svg id="cursor" viewBox="0 0 24 24"><path d="M4 2l15 9-7 2-3 7z" fill="#fff" stroke="#04060B" stroke-width="1.6" stroke-linejoin="round"/></svg>
-  <div id="nota">Cifras ilustrativas · upgames.games</div>
+  <div id="nota">Cifras ilustrativas · lurveta.com</div>
 </div>
 <script>
 'use strict';
@@ -154,7 +154,7 @@ escena(8.9, 15.7, r => {
   const k = $('div', 'abs kick', 'Publica gratis', r, 'left:150px;top:118px');
   const t1 = pal(r, 'Tu vitrina, lista en [minutos.]', 'abs tit', 'left:150px;top:160px;font-size:88px');
   const nav = $('div', 'abs cristal filo', null, r, 'left:150px;top:300px;width:1620px;height:690px;transform-origin:50% 100%');
-  $('div', 'nav-top', '<i></i><i></i><i></i><div class="nav-url">upgames.games</div>', nav);
+  $('div', 'nav-top', '<i></i><i></i><i></i><div class="nav-url">lurveta.com</div>', nav);
   const cuerpo = $('div', 'abs', null, nav, 'left:0;right:0;top:64px;bottom:0');
   $('div', 'abs disp', '<span class="au">Lur</span>veta', cuerpo, 'left:40px;top:30px;font-size:34px;letter-spacing:.06em');
   $('div', 'abs', 'Busca o pregúntale a Nexus…', cuerpo, 'left:300px;top:24px;width:900px;height:54px;border-radius:16px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);padding:13px 24px;font-size:20px;color:#6C7686');
@@ -276,7 +276,7 @@ escena(34.9, DUR + 1, r => {
   const k = en(t, 35.0, .8, E.spr); S(c.logo, { o: en(t, 35.0, .25), s: lerp(1.5, 1, k), b: (1 - en(t, 35.0, .4)) * 16 });
   kin(c.t1, t, 35.4, .1); kin(c.t2, t, 35.95, .12);
   S(c.url, { o: en(t, 36.5, .4), y: (1 - en(t, 36.5, .5, E.out5)) * 30 });
-  const s = 'upgames.games'; c.url.querySelector('#url').textContent = s.slice(0, Math.round(en(t, 36.6, 1.0, x => x) * s.length)); c.url.querySelector('#car').style.opacity = Math.floor(t * 2.5) % 2 ? 1 : .15;
+  const s = 'lurveta.com'; c.url.querySelector('#url').textContent = s.slice(0, Math.round(en(t, 36.6, 1.0, x => x) * s.length)); c.url.querySelector('#car').style.opacity = Math.floor(t * 2.5) % 2 ? 1 : .15;
   const b = en(t, 37.1, .7, E.spr), clic = en(t, 38.2, .1) - en(t, 38.32, .2);
   S(c.btn, { o: en(t, 37.1, .25), s: lerp(.6, 1, b) * (1 - clic * .06) * (1 + Math.max(0, Math.sin((t - 38.5) * 3.2)) * .018 * (t > 38.5 ? 1 : 0)) });
   const m = en(t, 37.4, .85, E.io); cursor.style.opacity = win(t, 37.3, 39.2, .25, .35) || (t < 20 ? cursor.style.opacity : 0);

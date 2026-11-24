@@ -65,7 +65,7 @@ function validarDominio(v) {
     let d = String(v ?? '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/\.$/, '');
     if (!d || d.length > 253) return { error: 'Escribe tu dominio, por ejemplo www.misitio.com' };
     if (!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/.test(d)) return { error: 'Ese dominio no es válido. Escríbelo así: www.misitio.com (sin https:// ni barras).' };
-    if (/(^|\.)(upgames\.games|upgames\.site|railway\.app|github\.io|localhost)$/.test(d)) return { error: 'Ese dominio no se puede conectar.' };
+    if (/(^|\.)(lurveta\.com|upgames\.games|upgames\.site|railway\.app|github\.io|localhost)$/.test(d)) return { error: 'Ese dominio no se puede conectar.' };
     return { valor: d };
 }
 

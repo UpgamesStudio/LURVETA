@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Migración de la portada: la biblioteca pasó de /public/biblioteca.html a https://upgames.games/
+ * Migración de la portada: la biblioteca pasó de /public/biblioteca.html a https://lurveta.com/
  *  - el puente /public/biblioteca.html conserva query string y fragmento (codificados, varios parámetros, ID real)
  *  - cada parámetro (?id ?tab=perfil ?plan=1 ?verificar=1 ?q ?ref ?reset_token ?verif ?volver ?login ?registro)
  *    se atiende igual entrando por / o por el puente, sin bucles de redirección
- *  - las fichas /public/p/<id>.html van directo a https://upgames.games/?id=<id>
+ *  - las fichas /public/p/<id>.html van directo a https://lurveta.com/?id=<id>
  *  - la portada no pide recursos inexistentes
  *  - service worker: instalación limpia en / y ACTUALIZACIÓN desde la versión en producción (6bc94d3, último main antes de la migración), cachés
  *    viejas de Lurveta borradas, las de los juegos conservadas, funciona sin conexión
@@ -31,12 +31,12 @@ async function contexto(b, web, { sesion = false, vp = { width: 390, height: 844
   let ficha = null;
   await ctx.route('**/*', async r => {
     const u = r.request().url(), m = r.request().method();
-    // https://upgames.games/… (adonde van las fichas) se sirve desde esta copia del repo
-    if (u.startsWith('https://upgames.games/')) { const resp = await r.fetch({ url: web.url + u.slice('https://upgames.games'.length) }); return r.fulfill({ response: resp }); }
+    // https://lurveta.com/… (adonde van las fichas) se sirve desde esta copia del repo
+    if (u.startsWith('https://lurveta.com/')) { const resp = await r.fetch({ url: web.url + u.slice('https://lurveta.com'.length) }); return r.fulfill({ response: resp }); }
     if (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u)) return r.continue();
     if (u.startsWith(API) && m === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
     if (u.startsWith(`${API}/items/${ID}`) && m === 'GET') {   // la ficha real; sin red, una copia mínima con el mismo ID
-      if (!ficha) { try { const x = await r.fetch({ headers: { ...r.request().headers(), origin: 'https://upgames.games', referer: 'https://upgames.games/' }, timeout: 5000 }); if (x.ok()) ficha = await x.json(); } catch (_) {} ficha = ficha || FICHA; }
+      if (!ficha) { try { const x = await r.fetch({ headers: { ...r.request().headers(), origin: 'https://lurveta.com', referer: 'https://lurveta.com/' }, timeout: 5000 }); if (x.ok()) ficha = await x.json(); } catch (_) {} ficha = ficha || FICHA; }
       return json(r, ficha);
     }
     if (u.startsWith(`${API}/auth/email-estado`)) return json(r, { success: true, verificado: false, email: 'tester@example.com' });
@@ -73,8 +73,8 @@ function versionAnterior() {
   try {
     C.seccion('Puente /public/biblioteca.html');
     const puente = fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8');
-    C.prueba('canónica a https://upgames.games/, un solo replace() y meta refresh 0 solo en <noscript>',
-      /<link rel="canonical" href="https:\/\/upgames\.games\/">/.test(puente) && (puente.match(/location\.replace\(/g) || []).length === 1
+    C.prueba('canónica a https://lurveta.com/, un solo replace() y meta refresh 0 solo en <noscript>',
+      /<link rel="canonical" href="https:\/\/lurveta\.com\/">/.test(puente) && (puente.match(/location\.replace\(/g) || []).length === 1
       && /<noscript><meta http-equiv="refresh" content="0; url=\/"><\/noscript>/.test(puente) && (puente.match(/http-equiv="refresh"/g) || []).length === 1
       && !/serviceWorker|redirect_from|noindex/.test(puente));
     let ctx = await contexto(b, web);
@@ -131,18 +131,18 @@ function versionAnterior() {
 
     C.seccion('Fichas generadas (/public/p/)');
     const dirP = path.join(REPO, 'public/p'), porId = fs.readdirSync(dirP).filter(f => /^[a-f\d]{24}\.html$/.test(f));
-    const malas = porId.filter(f => !fs.readFileSync(path.join(dirP, f), 'utf8').includes(`location.replace("https://upgames.games/?id=${f.slice(0, 24)}")`));
-    C.prueba(`las ${porId.length} fichas por ID van a https://upgames.games/?id=<su id>`, porId.length > 0 && !malas.length, malas.slice(0, 5).join(', '));
+    const malas = porId.filter(f => !fs.readFileSync(path.join(dirP, f), 'utf8').includes(`location.replace("https://lurveta.com/?id=${f.slice(0, 24)}")`));
+    C.prueba(`las ${porId.length} fichas por ID van a https://lurveta.com/?id=<su id>`, porId.length > 0 && !malas.length, malas.slice(0, 5).join(', '));
     const conViejo = ['p', 'j', 'u'].flatMap(d => fs.readdirSync(path.join(REPO, 'public', d)).map(f => `${d}/${f}`)).filter(f => fs.readFileSync(path.join(REPO, 'public', f), 'utf8').includes('biblioteca.html'));
     C.prueba('ninguna página generada enlaza a biblioteca.html', !conViejo.length, conViejo.slice(0, 5).join(', '));
     const slug = fs.readdirSync(dirP).find(f => f.endsWith(`-${ID}.html`));
-    C.prueba('la ficha indexable lleva a la ficha completa en la portada', slug && fs.readFileSync(path.join(dirP, slug), 'utf8').includes(`href="https://upgames.games/?id=${ID}"`), slug);
+    C.prueba('la ficha indexable lleva a la ficha completa en la portada', slug && fs.readFileSync(path.join(dirP, slug), 'utf8').includes(`href="https://lurveta.com/?id=${ID}"`), slug);
     ctx = await contexto(b, web);
     r = await abrir(ctx, web, `/public/p/${ID}.html`, 1500);
     await fichaAbierta(r.p);
     const f2 = await r.p.evaluate(() => !!document.getElementById('detail-sheet')?.classList.contains('open')).catch(() => false);
-    C.prueba('/public/p/<id>.html → https://upgames.games/?id=<id> directo (sin pasar por el puente) y abre la ficha',
-      r.pedidas[1] === `https://upgames.games/?id=${ID}` && !r.pedidas.some(u => u.includes('biblioteca.html')) && f2, JSON.stringify({ pedidas: r.pedidas, f2 }));
+    C.prueba('/public/p/<id>.html → https://lurveta.com/?id=<id> directo (sin pasar por el puente) y abre la ficha',
+      r.pedidas[1] === `https://lurveta.com/?id=${ID}` && !r.pedidas.some(u => u.includes('biblioteca.html')) && f2, JSON.stringify({ pedidas: r.pedidas, f2 }));
     await ctx.close();
 
     C.seccion('Recursos de la portada');

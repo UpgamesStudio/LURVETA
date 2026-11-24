@@ -1,6 +1,6 @@
 # Lurveta Studio
 
-Modelador 3D táctil para el celular (y el PC), en `upgames.games/studio`. Plan completo en
+Modelador 3D táctil para el celular (y el PC), en `lurveta.com/studio`. Plan completo en
 [`docs/upgames-studio.md`](../../docs/upgames-studio.md).
 
 ## Hecho: etapa 1, sprint 1 (esqueleto)

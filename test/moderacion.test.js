@@ -52,7 +52,7 @@ test('SEO: slug estable y sin acentos; la página escapa el HTML', () => {
     const it = { id: '6ae0192a31af3f254562d255', title: '<script>x</script>', description: '"><img src=x onerror=1>', image: 'javascript:alert(1)', category: 'Mod', usuario: 'a', fecha: new Date().toISOString() };
     const h = Seo.pagina(it);
     assert.ok(!/<script>x/.test(h) && !/<img src=x/.test(h) && !/javascript:alert/.test(h));
-    assert.ok(h.includes('<link rel="canonical" href="https://upgames.games/public/p/script-x-script-6ae0192a31af3f254562d255.html">'));
+    assert.ok(h.includes('<link rel="canonical" href="https://lurveta.com/public/p/script-x-script-6ae0192a31af3f254562d255.html">'));
 });
 test('SEO ficha: capturas, videos, relacionados y perfil del creador (solo con datos reales)', () => {
     const base = { id: '6ae0192a31af3f254562d255', title: 'Mod F1', description: 'Mod de prueba', category: 'Mod', usuario: 'kero', fecha: new Date().toISOString(),
@@ -65,7 +65,7 @@ test('SEO ficha: capturas, videos, relacionados y perfil del creador (solo con d
     const rel = [{ id: '6ae0192a31af3f254562d256', title: 'Otro <b>mod</b>', category: 'Mod', usuario: 'kero', image: '' }, { ...base }];   // la propia no se lista
     const h = Seo.pagina({ ...base, images: ['https://youtu.be/5pABxBWf7Ec', 'https://res.cloudinary.com/x/image/upload/v1/cap1.jpg'] }, null, { relacionados: rel, perfil: true });
     assert.ok(h.includes('src="https://www.youtube-nocookie.com/embed/5pABxBWf7Ec"') && h.includes('<h2>Capturas</h2>') && h.includes('alt="Captura 1 de Mod F1"'));
-    assert.ok(h.includes('href="https://upgames.games/public/p/otro-b-mod-b-6ae0192a31af3f254562d256.html"') && !/<b>mod<\/b>/.test(h) && (h.match(/class="rel"/g) || []).length === 1);
+    assert.ok(h.includes('href="https://lurveta.com/public/p/otro-b-mod-b-6ae0192a31af3f254562d256.html"') && !/<b>mod<\/b>/.test(h) && (h.match(/class="rel"/g) || []).length === 1);
     assert.ok(h.includes('Publicado por <a href="../u/kero.html">'), 'enlaza la página estática del creador');
     assert.ok(/"screenshot":\["https:\/\/res\.cloudinary\.com\/x\/image\/upload\/v1\/cap1\.jpg"\]/.test(h));
     // Sin datos: nada de secciones vacías ni inventadas; sin página estática, el perfil de la app

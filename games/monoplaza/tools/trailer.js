@@ -241,7 +241,7 @@ function capa(t) {
     g.fillStyle = `rgba(0,0,0,${0.45 * suave((t - 71.8) / 0.4)})`; g.fillRect(0, 0, W, H);
     if (golpe > 0 && k > 0) { g.fillStyle = `rgba(255,255,255,${golpe * 0.5})`; g.fillRect(0, 0, W, H); }
     logoApex(cx, cy - 30 * u, 92 * u, entra(t, 72, 0.3), golpe);
-    texto('Juega gratis en  upgames.games', cx, cy + 62 * u, 26 * u, { peso: 800, a: entra(t, 72.6, 0.5) });
+    texto('Juega gratis en  lurveta.com', cx, cy + 62 * u, 26 * u, { peso: 800, a: entra(t, 72.6, 0.5) });
     texto('ANDROID  ·  NAVEGADOR  ·  MULTIJUGADOR', cx, cy + 100 * u, 13 * u, { peso: 600, a: entra(t, 73.1, 0.5), color: '#c8ced8', esp: 3 * u, sombra: false });
     texto('LURVETA', cx, H - fr - 28 * u, 14 * u, { peso: 800, a: entra(t, 73.4, 0.5) * 0.8, esp: 6 * u, sombra: false });
   }

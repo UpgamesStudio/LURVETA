@@ -12,7 +12,7 @@
  *    (cuenta descargas reales en las publicaciones que indiques), así que nunca contra producción:
  *      API=https://staging.ejemplo.app JUEGO_ID=<id aprobado> [JUEGO_ID_2=<otro id>] CONFIRMO_STAGING=si \
  *        node test/real/economia.js
- *    Se niega a correr contra upgames.games o upgames-production.up.railway.app.
+ *    Se niega a correr contra lurveta.com o upgames-production.up.railway.app.
  *
  * Códigos de salida: 0 todo bien · 1 algún ataque funcionó (o algo no cuadra).
  */
@@ -21,7 +21,7 @@ const path = require('path');
 const REPO = path.join(__dirname, '..', '..');
 const API_REMOTA = (process.env.API || '').replace(/\/+$/, '');
 const REMOTO = !!API_REMOTA;
-const PROHIBIDOS = ['upgames.games', 'upgames-production.up.railway.app'];
+const PROHIBIDOS = ['lurveta.com', 'upgames.games', 'upgames-production.up.railway.app'];
 
 let ok = 0, mal = 0; const fallos = [];
 const prueba = (n, c, extra = '') => { c ? ok++ : (mal++, fallos.push(n)); console.log(`${c ? '  ✓' : '  ✗'} ${n}${!c && extra ? ' → ' + extra : ''}`); };
@@ -49,7 +49,7 @@ const hoy = () => new Date().toISOString().slice(0, 10);
         SECRET = 'e2e-secreto-largo-para-pruebas-0123456789abcdef'; A = `http://127.0.0.1:${PORT}`;
         T = require(REPO + '/modulos/ticketPuente');
         const m = await MongoMemoryServer.create(); const uri = m.getUri('upgames');
-        const srv = spawn('node', ['index.js'], { cwd: REPO, env: { ...process.env, MONGODB_URI: uri, JWT_SECRET: SECRET, PORT: String(PORT), NODE_ENV: 'development', GROQ_API_KEY: '', APP_URL: 'https://upgames.games', HTTPS_PROXY: '', HTTP_PROXY: '', PUENTE_TICKET_OBLIGATORIO: '1', BLOGS_DESCARGAS_MAX_DIA: String(TOPE_BLOG), BLOGS_DESCARGA_CPM: '0.50' }, stdio: ['ignore', 'pipe', 'pipe'] });
+        const srv = spawn('node', ['index.js'], { cwd: REPO, env: { ...process.env, MONGODB_URI: uri, JWT_SECRET: SECRET, PORT: String(PORT), NODE_ENV: 'development', GROQ_API_KEY: '', APP_URL: 'https://lurveta.com', HTTPS_PROXY: '', HTTP_PROXY: '', PUENTE_TICKET_OBLIGATORIO: '1', BLOGS_DESCARGAS_MAX_DIA: String(TOPE_BLOG), BLOGS_DESCARGA_CPM: '0.50' }, stdio: ['ignore', 'pipe', 'pipe'] });
         let log = ''; srv.stdout.on('data', d => log += d); srv.stderr.on('data', d => log += d);
         cerrar = async () => { srv.kill(); await mongoose.disconnect().catch(() => {}); await m.stop().catch(() => {}); };
         for (let i = 0; i < 60; i++) { try { await fetch(A + '/blogs/temas'); break; } catch (_) { await espera(500); } }

@@ -2,7 +2,7 @@
 'use strict';
 const assert = require('assert');
 const R = require('../modulos/blogs/render');
-const ctx = { blog: { _id: 'b', titulo: 'Kero', tema: 'neon', ajustes: {}, direccion: 'k', usuario: 'k', visibilidad: 'publico' }, base: '', origen: 'https://k.com', appUrl: 'https://upgames.games', paginas: [], juegos: {} };
+const ctx = { blog: { _id: 'b', titulo: 'Kero', tema: 'neon', ajustes: {}, direccion: 'k', usuario: 'k', visibilidad: 'publico' }, base: '', origen: 'https://k.com', appUrl: 'https://lurveta.com', paginas: [], juegos: {} };
 const e = { _id: 'e', tipo: 'entrada', titulo: 'Mi reseña de un juego', slug: 'resena', bloques: [{ tipo: 'texto', texto: 'hola' }], publicadaEn: new Date() };
 let h = R.entrada(ctx, { ...e, tituloSeo: 'Reseña de Juego X para Android' });
 assert.ok(h.includes('<title>Reseña de Juego X para Android · Kero</title>') && h.includes('<meta property="og:title" content="Reseña de Juego X para Android">'));

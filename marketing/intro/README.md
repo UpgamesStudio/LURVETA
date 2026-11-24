@@ -51,6 +51,6 @@ La música (*Toxic Love*, libre de derechos, 123 BPM) tiene 30 s de ambiente y s
 | 0:52.6 | «Crea tu comunidad» | Constelación de personas conectándose; +1.280 miembros |
 | 0:56.3 | «Obtén tu primera monetización y empieza a crear tu comunidad» | Monedas UC cayendo en espiral a una plataforma; la red la rodea |
 | 1:00.4 | — | Ascenso vertical sobre la ciudad |
-| 1:04.5 | «Esto es Lurveta» | Las luces convergen al centro y el logo estalla en el golpe; upgames.games, botón ENTRAR |
+| 1:04.5 | «Esto es Lurveta» | Las luces convergen al centro y el logo estalla en el golpe; lurveta.com, botón ENTRAR |
 
 Las cifras que aparecen son ilustrativas.

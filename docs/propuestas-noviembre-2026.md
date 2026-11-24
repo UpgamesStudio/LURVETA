@@ -13,7 +13,7 @@ Documento de trabajo. Lo implementado en esta tanda está al final, en «Hecho»
 - **DATA (`Android/data/<paquete>`):** es el caso difícil.
   - Android 11–12: con el permiso de carpeta del sistema (SAF), en la mayoría de equipos.
   - Android 13 y superior: está bloqueado para apps normales. Hace falta **Shizuku** (permiso de nivel ADB por depuración inalámbrica, sin root) o root. Si no hay ninguno, el instalador guía al usuario paso a paso.
-- **Google Play:** `REQUEST_INSTALL_PACKAGES` está restringido. La app se distribuiría como el APK de Studio (GitHub Releases o upgames.games).
+- **Google Play:** `REQUEST_INSTALL_PACKAGES` está restringido. La app se distribuiría como el APK de Studio (GitHub Releases o lurveta.com).
 
 ### Diseño propuesto
 1. **Fase 1 · App «Lurveta Instalador»**

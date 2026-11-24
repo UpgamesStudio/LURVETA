@@ -23,7 +23,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     if (u.startsWith(web.url) || /res\.cloudinary|fonts\.g|unpkg|ytimg|youtube/.test(u)) return r.continue();
     if (process.env.DEPURAR && u.startsWith(API)) console.log('    API', r.request().method(), u);
     if (u.startsWith(API) && r.request().method() === 'GET' && !/\/(m|errores)\//.test(u)) {   // toda lectura va a producción (catálogo, fichas, reseñas…)
-      try { const h = { ...r.request().headers(), origin: 'https://upgames.games', referer: 'https://upgames.games/' };   // producción solo acepta su propio origen
+      try { const h = { ...r.request().headers(), origin: 'https://lurveta.com', referer: 'https://lurveta.com/' };   // producción solo acepta su propio origen
         const resp = await r.fetch({ headers: h }); return r.fulfill({ status: resp.status(), body: await resp.body(), contentType: 'application/json', headers: { 'access-control-allow-origin': '*' } }); } catch (e) { console.log('    (no se pudo pedir ' + u + ': ' + e.message.split('\n')[0] + ')'); return r.abort(); }
     }
     return r.fulfill({ status: 200, body: '[]', contentType: 'application/json', headers: { 'access-control-allow-origin': '*' } });

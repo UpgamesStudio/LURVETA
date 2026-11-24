@@ -2769,7 +2769,7 @@ async function comprar(id, despues) {
     if (id.startsWith('mejora:')) { sesion.jugador.coche.ef = (await import('./config.js')).efectosMejoras(perfilApex.mejoras); }
     pintarGaraje();
   } catch (e) {
-    avisoG(e.status === 402 ? `${e.message}. Consigue UpCoins en upgames.games` : e.message || 'No se pudo comprar');
+    avisoG(e.status === 402 ? `${e.message}. Consigue UpCoins en lurveta.com` : e.message || 'No se pudo comprar');
   }
 }
 
@@ -2968,7 +2968,7 @@ $('#bSalaListo').addEventListener('click', () => { const j = salaActual?.jugador
 $('#bSalaEmpezar').addEventListener('click', async () => { const r = await multi.iniciar(); if (!r?.ok) $('#salaInfo').textContent = r?.error || 'No se pudo empezar'; });
 $('#bSalaSalir').addEventListener('click', () => { if (espectando) multi.dejarEspectar(); multi.salir(); espectando = false; salaActual = null; abrirMulti(); });
 $('#bSalaCompartir').addEventListener('click', async () => {
-  const t = `¡Corre contra mí en Lurveta RACING! Código de sala: ${salaActual?.codigo} · https://upgames.games/games/monoplaza/`;
+  const t = `¡Corre contra mí en Lurveta RACING! Código de sala: ${salaActual?.codigo} · https://lurveta.com/games/monoplaza/`;
   try { if (navigator.share) await navigator.share({ title: 'Lurveta RACING', text: t }); else { await navigator.clipboard.writeText(t); $('#salaInfo').textContent = 'Código copiado'; } } catch { /* cancelado */ }
 });
 
@@ -3951,7 +3951,7 @@ $('#bRetar').addEventListener('click', async () => {
   if (!cuenta.conectado()) { mensaje('INICIA SESIÓN', 'Necesitas tu cuenta Lurveta para crear retos', 2); return; }
   try {
     const d = await cuenta.crearReto({ circuito: circuito.id, tiempo: f.tiempo, fantasma: fantasmaAServidor(f) });
-    const url = `https://upgames.games/games/monoplaza/?reto=${d.id}`;
+    const url = `https://lurveta.com/games/monoplaza/?reto=${d.id}`;
     const txt = `¿Me ganas? ${fmt(d.tiempo)} en ${circuito.def.corto} · Lurveta RACING`;
     if (navigator.share) await navigator.share({ title: 'Reto Lurveta RACING', text: txt, url }).catch(() => {});
     else { await navigator.clipboard?.writeText(`${txt} ${url}`).catch(() => {}); }

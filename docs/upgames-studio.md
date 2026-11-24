@@ -1,7 +1,7 @@
 # Lurveta Studio: plan completo
 
 App para **crear modelos 3D, animarlos y hacer juegos desde el celular** (y desde
-upgames.games en el PC), sin instalar nada más. Es «el intento de Blender en Android»,
+lurveta.com en el PC), sin instalar nada más. Es «el intento de Blender en Android»,
 hecho a nuestra medida: Blender no corre en Android y su interfaz no sirve para dedos, así
 que se construye un modelador propio, web y táctil, que exporta a los formatos de Blender
 (GLB/OBJ) para que los modelos vayan y vuelvan entre los dos.
@@ -23,7 +23,7 @@ que se construye un modelador propio, web y táctil, que exporta a los formatos 
 | Guardado | IndexedDB local, automático cada 10 s y al salir; nube opcional con la cuenta Lurveta | Funciona sin conexión |
 | Formatos | Propio `.ups` (JSON comprimido) + exportar/importar **GLB**, **OBJ**, **STL** | GLB entra en Lurveta RACING, Blender, Unity y Godot |
 | Cuenta y servidor | Los de Lurveta (Railway, Express) | Login, UpCoins y publicar ya existen |
-| Carpeta | `apps/upgames-studio/` (web en `games/studio/` para servirla en upgames.games/studio) | Mismo patrón que `games/monoplaza` + `apps/apex-gp-android` |
+| Carpeta | `apps/upgames-studio/` (web en `games/studio/` para servirla en lurveta.com/studio) | Mismo patrón que `games/monoplaza` + `apps/apex-gp-android` |
 
 ---
 
@@ -154,7 +154,7 @@ modulos/studio.js + rutas/studio.js   en el servidor: proyectos en la nube y pub
 
 ## 4. Plan de trabajo de la etapa 1 (sprints cortos)
 
-1. ✅ **Esqueleto** (publicado en upgames.games/studio, con «Desde foto»):
+1. ✅ **Esqueleto** (publicado en lurveta.com/studio, con «Desde foto»):
    - página, PWA, Three.js, cámara orbital táctil y cuadrícula;
    - primitivas y selección;
    - gizmo mover, girar y escalar;
@@ -173,7 +173,7 @@ modulos/studio.js + rutas/studio.js   en el servidor: proyectos en la nube y pub
 9. ✅ **Prueba real:** modelar el monoplaza y cargarlo en Lurveta RACING.
 
 En cada sprint: pruebas automáticas de las operaciones de malla (sin navegador, con Node), prueba
-en el móvil (gestos y FPS) y publicación en upgames.games/studio.
+en el móvil (gestos y FPS) y publicación en lurveta.com/studio.
 
 ---
 
@@ -190,4 +190,4 @@ en el móvil (gestos y FPS) y publicación en upgames.games/studio.
 
 > «Empezamos Lurveta Studio siguiendo `docs/upgames-studio.md` del repo RouceDevStudio/UpGames.
 > Haz la etapa 1, sprint 1 (esqueleto con cámara táctil, primitivas, gizmo y deshacer) en
-> `games/studio/`, publícalo en upgames.games/studio y dame el enlace. Respóndeme en español.»
+> `games/studio/`, publícalo en lurveta.com/studio y dame el enlace. Respóndeme en español.»

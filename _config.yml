@@ -1,6 +1,6 @@
 # GitHub Pages (Jekyll): solo se publica el sitio (index.html, public/, admin/, games/, studio/).
 # El código del servidor (Railway), las pruebas, los scripts y los documentos internos NO se
-# publican en upgames.games: antes cualquiera podía leer index.js, rutas/ y modulos/.
+# publican en lurveta.com: antes cualquiera podía leer index.js, rutas/ y modulos/.
 exclude:
   - index.js
   - rutas/

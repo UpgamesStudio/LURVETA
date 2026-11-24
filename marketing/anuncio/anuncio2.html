@@ -93,7 +93,7 @@ const T = {
   a9: 57.2,    // y deja que NEXUS, tu IA asistente personal…
   a10: 64.1,   // Únete a los miles de usuarios…
   a11: 67.8,   // ¿Qué esperas para subir de nivel? Cambia tu ecosistema.
-  a12: 71.2,   // Entra a upgames.games… número uno en toda Latinoamérica…
+  a12: 71.2,   // Entra a lurveta.com… número uno en toda Latinoamérica…
   fin: 75.9,   // …y descubre tu nuevo hogar digital hoy mismo.
   total: 83.4,
 };
@@ -541,7 +541,7 @@ function esA11(t) {
   pon(a11cam, { y: 520, o: P(lt, 2.0, 2.3), s: lerp(1.5, 1, P(lt, 2.0, 2.5, E.out5)) });
 }
 
-/* ════════ A12 · upgames.games · Latinoamérica · cierre ════════ */
+/* ════════ A12 · lurveta.com · Latinoamérica · cierre ════════ */
 const a12 = capa(10);
 const a12url = h('div', 'c bisel-s', '<span style="color:#39FF88">🔒</span><span class="mono" id="a12u"></span><span id="a12c" style="display:inline-block;width:6px;height:70px;background:#39FF88;vertical-align:middle"></span>', a12);
 Object.assign(a12url.style, { width: '900px', height: '150px', background: '#0C1424', border: '4px solid #39FF88', display: 'flex', alignItems: 'center', gap: '26px', padding: '0 44px', fontSize: '70px', boxShadow: '0 0 50px rgba(57,255,136,.35)' });
@@ -559,12 +559,12 @@ const a12t = h('div', 'c', '<div class="orb glow" style="font-size:150px;text-al
 const a12casa = h('div', 'c', `<svg viewBox="0 0 200 200" width="360" height="360"><path d="M100 20 L180 80 L180 180 L20 180 L20 80 Z" fill="none" stroke="#39FF88" stroke-width="8" stroke-linejoin="round"/><path d="M75 180 V120 H125 V180" fill="none" stroke="#F2F5F7" stroke-width="8"/><text x="100" y="100" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="34" fill="#39FF88">UP</text></svg>`, a12);
 const a12logo = h('div', 'c orb', '<span class="glow" style="color:#39FF88">LUR</span>VETA', a12); a12logo.style.fontSize = '150px';
 const a12hog = h('div', 'c', '<div class="mono" style="font-size:40px;letter-spacing:.25em;color:#C9CED6;text-align:center">TU NUEVO</div><div class="orb glow" style="font-size:84px;text-align:center">HOGAR DIGITAL</div>', a12);
-const a12dom = h('div', 'c mono', 'upgames.games', a12); Object.assign(a12dom.style, { fontSize: '62px', letterSpacing: '.06em' });
+const a12dom = h('div', 'c mono', 'lurveta.com', a12); Object.assign(a12dom.style, { fontSize: '62px', letterSpacing: '.06em' });
 const a12btn = h('div', 'c boton bisel-s', 'ENTRA HOY · GRATIS', a12);
 function esA12(t) {
   const a = vis(t, T.a12, T.total + 1, .3, .1); a12.style.opacity = a; if (!a) return;
   const lt = t - T.a12, lf = t - T.fin, b = beat(t);
-  a12u.textContent = tipo('upgames.games', lt, .4, 1.3); a12c.style.opacity = Math.floor(lt * 3) % 2;
+  a12u.textContent = tipo('lurveta.com', lt, .4, 1.3); a12c.style.opacity = Math.floor(lt * 3) % 2;
   pon(a12url, { y: lerp(-80, -820, P(lt, 1.6, 2.2, E.io)), s: lerp(.85, 1, P(lt, 0, .6, E.back)) * lerp(1, .75, P(lt, 1.6, 2.2, E.io)), o: P(lt, 0, .3) * (1 - P(lf, 0, .4)) });
   const km = P(lt, 2.0, 3.8, E.lin);
   mctx.clearRect(0, 0, 1000, 1060);

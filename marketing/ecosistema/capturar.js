@@ -89,7 +89,7 @@ const quiere = n => !solo.length || solo.includes(n);
     const it = items.find(i => i.title === 'Neon Drift'), it2 = items.find(i => i.title === 'Turbo Circuit');
     const juegos = { [it._id]: { title: it.title, image: it.image, usuario: it.usuario }, [it2._id]: { title: it2.title, image: it2.image, usuario: it2.usuario } };
     const base = { usuario: 'kale_ab', titulo: 'Kale · Mods y trucos', descripcion: 'Reseñas, guías y noticias de mods para móvil', direccion: 'kale-mods', ajustes: { acento: '' }, tema: 'neon' };
-    const ctxB = tema => ({ blog: { ...base, tema }, base: '/b/kale-mods', origen: 'https://upgames-production.up.railway.app', appUrl: 'https://upgames.games', paginas: [{ titulo: 'Sobre mí', slug: 'sobre-mi' }], autor: { usuario: 'kale_ab', avatar: '', bio: 'Pruebo mods en gama media' }, populares: [], nube: ['android', 'mods', 'guías'], juegos, sinMarca: tema !== 'neon' });
+    const ctxB = tema => ({ blog: { ...base, tema }, base: '/b/kale-mods', origen: 'https://upgames-production.up.railway.app', appUrl: 'https://lurveta.com', paginas: [{ titulo: 'Sobre mí', slug: 'sobre-mi' }], autor: { usuario: 'kale_ab', avatar: '', bio: 'Pruebo mods en gama media' }, populares: [], nube: ['android', 'mods', 'guías'], juegos, sinMarca: tema !== 'neon' });
     const entrada = { _id: 'a'.repeat(24), titulo: 'Reseña: Neon Drift en gama media', slug: 'resena', tipo: 'entrada', publicadaEn: new Date(), etiquetas: ['android', 'reseña'], portada: it.image, bloques: [
       { tipo: 'texto', texto: 'Lo probé en un celular de **4 GB de RAM** y corre mejor de lo que esperaba. Esto fue lo que encontré.', grande: true },
       { tipo: 'titulo', texto: 'Lo mejor' }, { tipo: 'texto', texto: '- Corre fluido a 30 FPS\n- La instalación toma 5 minutos\n- Los controles táctiles son cómodos' },
@@ -104,7 +104,7 @@ const quiere = n => !solo.length || solo.includes(n);
     // 2) Editor por bloques REAL (API simulada)
     const H = { success: true };
     mock.set(/\/blogs\/temas/, { success: true, temas: [{ id: 'neon', nombre: 'Neón', descripcion: '', colores: { bg: '#05080F', tarjeta: '#0B1019', txt: '#fff', acento: '#39FF88' } }], fuentes: [], fondos: [], cpm: 0.3 });
-    mock.set(/\/blogs\/mios/, { success: true, blogs: [{ id: 'b1', titulo: 'Kale · Mods y trucos', direccion: 'kale-mods', url: 'https://upgames.games/b/kale-mods/', ajustes: {}, tema: 'neon', entradas: 3, estado: 'activo', visibilidad: 'publico' }], maximo: 3, premium: true });
+    mock.set(/\/blogs\/mios/, { success: true, blogs: [{ id: 'b1', titulo: 'Kale · Mods y trucos', direccion: 'kale-mods', url: 'https://lurveta.com/b/kale-mods/', ajustes: {}, tema: 'neon', entradas: 3, estado: 'activo', visibilidad: 'publico' }], maximo: 3, premium: true });
     mock.set(/\/items\/[a-f0-9]{24}$/, it);
     const e = await ctx.newPage(); await e.addInitScript(() => { localStorage.setItem('token', 'x'.repeat(48)); localStorage.setItem('user_admin', 'kale_ab'); });
     await e.goto(`${web.url}/blog.html?juego=${it._id}`, { waitUntil: 'domcontentloaded' }); await espera(3500);

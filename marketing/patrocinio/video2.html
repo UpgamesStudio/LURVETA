@@ -263,7 +263,7 @@ M.escena(17.9, 25.55, r => {
   r.t2 = titular(r, 'VISIBILIDAD\nMASIVA', 't-xl verde glow', TY, { modo: 'zoom', stag: .03 });
   r.t3 = titular(r, 'COMUNIDAD\nDE FANS', 't-xl', TY, { stag: .03 });
   // página del proyecto
-  const w = r.web = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>upgames.games/p/neon-runner</span></div>`, r);
+  const w = r.web = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>lurveta.com/p/neon-runner</span></div>`, r);
   M.pos(w, 90, 520, 900, 820);
   r.portada = h('div', 'abs', null, w); M.pos(r.portada, 0, 64, 900, 330); r.arte = arte(r.portada, '');
   r.nombre = h('div', 'abs orb', 'NEON RUNNER', w); M.pos(r.nombre, 40, 420); r.nombre.style.fontSize = '60px';
@@ -361,10 +361,10 @@ M.escena(25.5, 30.05, r => {
   explotar(r.cs, t, 28.78, 540, 880, 1.2);
 });
 
-/* ════════ 10 · ¿Qué esperas? Publica gratis en upgames.games (30.0 – 34.85) ════════ */
+/* ════════ 10 · ¿Qué esperas? Publica gratis en lurveta.com (30.0 – 34.85) ════════ */
 M.escena(30.0, 34.9, r => {
   r.t1 = titular(r, '¿QUÉ\nESPERAS?', 't-xxl', 860, { modo: 'zoom', stag: .045 });
-  const v = r.pub = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>upgames.games / publicar</span></div>
+  const v = r.pub = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>lurveta.com / publicar</span></div>
     <div class="abs" style="left:40px;right:40px;top:110px;display:flex;align-items:center;gap:24px;padding:22px;border:2px solid rgba(57,255,136,.3)">${ic('zip', 70, '#39FF88')}<div style="flex:1"><div class="mono" style="font-size:32px">neon_runner.zip</div><div class="mono verde" style="font-size:26px">✓ verificado · 412 MB</div></div></div>
     <div class="abs mono" style="left:40px;right:40px;top:290px;display:flex;justify-content:space-between;font-size:34px;color:#A9B1BC"><span>Costo de publicación</span><b class="verde orb" style="font-size:44px">GRATIS</b></div>`, r);
   M.pos(v, 110, 620, 860, 560);
@@ -397,7 +397,7 @@ M.escena(30.0, 34.9, r => {
   const uk = en(t, 33.1, .45, E.out5), us = en(t, 34.65, .25, E.in);
   st(r.u, { c: true, o: uk * (1 - us), s: lerp(.8, 1, uk) * (1 + us * .8), b: us * 10 });
   const n = Math.floor(clamp((t - 33.5) / 1.0) * 13.999);
-  r.u.querySelector('.tx').innerHTML = 'upgames.games'.slice(0, n).replace('upgames', '<span style="color:#fff">upgames</span>').replace('.games', '<span class="verde">.games</span>');
+  r.u.querySelector('.tx').innerHTML = 'lurveta.com'.slice(0, n).replace('upgames', '<span style="color:#fff">upgames</span>').replace('.games', '<span class="verde">.games</span>');
   r.u.querySelector('.cur').style.opacity = Math.floor(t * 4) % 2;
   if (t > 33.1) st(r.t1.el, { c: true, y: -520, s: .55, o: 1 - en(t, 33.1, .3) });
 });
@@ -499,7 +499,7 @@ M.subtitulos([
   ['Si', 25.54], ['quieres', 25.68], ['que', 25.90], ['el', 26.06], ['mundo', 26.22], ['por', 26.46], ['fin', 26.78], ['descubra', 27.00], ['lo', 27.46], ['que', 27.64], ['has', 27.66], ['creado,', 27.92],
   ['esta', 28.78], ['es', 28.84], ['tu', 29.04], ['oportunidad.', 29.12],
   ['¿Qué', 30.04], ['esperas?', 30.22],
-  ['Publica', 30.90], ['tu', 31.26], ['trabajo', 31.44], ['totalmente', 31.84], ['gratis', 32.44], ['entrando', 33.08], ['a', 33.42], ['upgames.games', 33.68],
+  ['Publica', 30.90], ['tu', 31.26], ['trabajo', 31.44], ['totalmente', 31.84], ['gratis', 32.44], ['entrando', 33.08], ['a', 33.42], ['lurveta.com', 33.68],
   ['o', 34.84], ['comunícate', 35.22], ['con', 35.72], ['nosotros', 35.88], ['por', 36.28], ['nuestras', 36.50], ['redes', 36.80],
   ['para', 37.06], ['hacerte', 37.40], ['una', 37.64], ['promoción', 37.88], ['oficial', 38.30], ['sin', 38.78], ['costo', 39.18], ['alguno.', 39.56],
   ['¡El', 40.20], ['ecosistema', 40.38], ['Lurveta', 40.98], ['te', 41.50], ['está', 41.74], ['esperando!', 42.00],

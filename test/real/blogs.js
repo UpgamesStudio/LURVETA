@@ -16,7 +16,7 @@ let ok = 0, mal = 0; const prueba = (n, c, extra = '') => { c ? ok++ : mal++; co
 const espera = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const m = await MongoMemoryServer.create(); const uri = m.getUri('upgames');
-  const srv = spawn('node', ['index.js'], { cwd: REPO, env: { ...process.env, MONGODB_URI: uri, JWT_SECRET: SECRET, PORT: String(PORT), NODE_ENV: 'development', GROQ_API_KEY: '', APP_URL: 'https://upgames.games', HTTPS_PROXY: '', HTTP_PROXY: '' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const srv = spawn('node', ['index.js'], { cwd: REPO, env: { ...process.env, MONGODB_URI: uri, JWT_SECRET: SECRET, PORT: String(PORT), NODE_ENV: 'development', GROQ_API_KEY: '', APP_URL: 'https://lurveta.com', HTTPS_PROXY: '', HTTP_PROXY: '' }, stdio: ['ignore', 'pipe', 'pipe'] });
   let log = ''; srv.stdout.on('data', d => log += d); srv.stderr.on('data', d => log += d);
   for (let i = 0; i < 60; i++) { try { await fetch(A + '/blogs/temas'); break; } catch (_) { await espera(500); } }
   await mongoose.connect(uri); const db = mongoose.connection.db;
@@ -57,7 +57,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   const html2 = await (await fetch(`${A}/b/kale-mods/e/${ent.slug}?x=1`)).text();
   prueba('página de la entrada responde 200', pag.status === 200, pag.status);
   prueba('marco de comentarios en la página', html.includes('/public/blog-comentarios.html?e=' + ent.id), html.slice(0, 100));
-  prueba('CSP permite el marco de Lurveta', /frame-src[^;]*https:\/\/upgames\.games/.test(csp), csp);
+  prueba('CSP permite el marco de Lurveta', /frame-src[^;]*https:\/\/lurveta\.com/.test(csp), csp);
   prueba('bloque Descarga → página puente', /puente\.html\?id=/.test(html2), '');
   prueba('«Hecho con Lurveta» en blog gratis', html.includes('Hecho con'));
   const vipHtml = await (await fetch(`${A}/b/vip-blog/`)).text();

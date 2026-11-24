@@ -29,7 +29,7 @@ trabajos.push({ archivo: 'public/og-upgames.jpg', w: 1200, h: 630, html: pagina(
     <div style="font-weight:800;letter-spacing:.18em;color:#32D583;font-size:22px">LURVETA</div>
     <div style="font-weight:800;font-size:46px;line-height:1.16;margin-top:20px;letter-spacing:-.01em">El ecosistema digital para gamers, creadores y <span style="background:linear-gradient(90deg,#32D583,#5AC8FA);-webkit-background-clip:text;color:transparent">desarrolladores independientes</span></div>
     <div style="font-size:22px;color:#c3c8d0;margin-top:30px">Juegos · Mods · Apps · Videos · Blogs · Nexus IA</div></div>
-  <div style="position:absolute;right:72px;bottom:44px;color:#c3c8d0;font-size:22px;font-weight:600">upgames.games</div>`, '#07090d') });
+  <div style="position:absolute;right:72px;bottom:44px;color:#c3c8d0;font-size:22px;font-weight:600">lurveta.com</div>`, '#07090d') });
 
 (async () => {
   const b = await chromium.launch();

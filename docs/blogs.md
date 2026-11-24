@@ -14,7 +14,7 @@ Herramienta para que cualquier usuario cree su sitio o blog desde Lurveta. **Lur
 | Temas (incluidos los exclusivos Premium) | `modulos/blogs/temas.js` |
 | Anuncios del blog (ticket firmado, marco aislado) | `modulos/blogs/anuncios.js` |
 | Nexus escritor (prompt y armado del borrador) | `modulos/blogs/escritor.js` |
-| Marco de comentarios (vive en upgames.games, donde está la sesión) | `public/blog-comentarios.html`, `.js`, `.css` |
+| Marco de comentarios (vive en lurveta.com, donde está la sesión) | `public/blog-comentarios.html`, `.js`, `.css` |
 | Guía pública | `public/blogs-guia.html` |
 
 ## Cómo funciona

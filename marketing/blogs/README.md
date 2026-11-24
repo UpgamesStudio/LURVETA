@@ -23,6 +23,6 @@ Vista previa en Chrome: `video.html?play` (tiempo real) o `video.html?t=18.8` (u
 | 0:15,7 | Elige cómo se ve | Tres mini-blogs (Neón, Cristal, Lienzo); los dos últimos son Premium (sin «Hecho con Lurveta», hasta 10 blogs) |
 | 0:21,3 | Tus lectores responden | Comentarios y notificación «@kale publicó en su blog» con el contador de seguidores avisados |
 | 0:26,5 | Cada descarga suma | Entrada → página puente (30 s) → descarga; el contador de anuncios vistos suma al CPM |
-| 0:31,3 | Lurveta Blogs | Logo, `upgames.games/blog` y clic en «Crear mi blog» |
+| 0:31,3 | Lurveta Blogs | Logo, `lurveta.com/blog` y clic en «Crear mi blog» |
 
 Los nombres, cifras y comentarios son ilustrativos (el video lo indica). Lo que se muestra existe en la plataforma.

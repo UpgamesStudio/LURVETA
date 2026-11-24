@@ -4,7 +4,7 @@ import { mascaraDesdeImagen, mascaraDePlano, limpiarMascara, relieveDesdeMascara
 import * as ia from './ia.js';
 import { importar } from '../archivo/proyecto.js';
 
-// IA en la nube (servidor de Lurveta → TRELLIS). La web comparte la sesión de upgames.games.
+// IA en la nube (servidor de Lurveta → TRELLIS). La web comparte la sesión de lurveta.com.
 const API = new URLSearchParams(location.search).get('api')?.match(/^http:\/\/(localhost|127\.0\.0\.1):\d+$/)?.[0] || 'https://upgames-production.up.railway.app';
 function tokenUpGames() {
   try { const t = localStorage.getItem('token') || localStorage.getItem('apexgp.token'); return t && t.length > 20 && t !== 'null' ? t : null; } catch { return null; }
@@ -168,7 +168,7 @@ export function instalarDialogoFoto({ alCrear, aviso }) {
       const est = await fetch(`${API}/studio/ia3d/estado`).then((r) => r.json()).catch(() => ({}));
       if (!est.disponible) { aviso('La IA en la nube aún no está activada en el servidor (falta la clave HF_TOKEN).'); return; }
       const t = tokenUpGames();
-      if (!t) { aviso('Inicia sesión en Lurveta (upgames.games) para usar la IA en la nube.'); return; }
+      if (!t) { aviso('Inicia sesión en Lurveta (lurveta.com) para usar la IA en la nube.'); return; }
       const cab = { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' };
       const datos = fotos.filter(valida).map((f) => { const c = document.createElement('canvas'); c.width = f.img.width; c.height = f.img.height; c.getContext('2d').putImageData(f.img, 0, 0); return c.toDataURL('image/png'); });
       const r = await fetch(`${API}/studio/ia3d`, { method: 'POST', headers: cab, body: JSON.stringify({ fotos: datos }) }).then((x) => x.json());

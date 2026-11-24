@@ -30,6 +30,6 @@ Vista previa en Chrome: `video.html?play` (tiempo real) o `video.html?t=20.6` (u
 | 0:15.5 | No pagamos por ~~descargas~~. Pagamos por cada anuncio visto. | Tarjeta «Tu tarifa de creador»: sube hasta **US$1,50 por cada 1.000 visualizaciones de publicidad**, contador de anuncios vistos y +75 UpCoins |
 | 0:23.2 | Todo lo que un creador indie necesita. | Seis tarjetas: Nexus IA, lives con regalos (25 %), estadísticas reales, comunidad, UpCoins y Premium, retiros |
 | 0:29.9 | Mira crecer tus ingresos, en tiempo real. | Creator Studio: indicadores contando, gráfica dibujándose, meta de retiro al 100 % (desde US$10) |
-| 0:34.9 | Publica una vez. Gana siempre. | Logo, se escribe `upgames.games`, clic en EMPIEZA GRATIS |
+| 0:34.9 | Publica una vez. Gana siempre. | Logo, se escribe `lurveta.com`, clic en EMPIEZA GRATIS |
 
 Los juegos, nombres y cifras del panel son ilustrativos (el video lo indica). La tarifa, el porcentaje de regalos, el mínimo de retiro y los métodos de cobro son los reales de la plataforma.

@@ -23,7 +23,7 @@ for (const d of ['kale-mods', 'abc', 'blog2026']) test(`dirección válida: ${d}
 for (const d of ['ab', '-kale', 'kale-', 'ka--le', 'kale mods', 'admin', 'upgames', 'paypal', 'a'.repeat(31), 'ñandú'])
     test(`dirección rechazada: ${d}`, () => assert.ok(V.validarDireccion(d).error));
 test('dominio: limpia https y barras', () => assert.strictEqual(V.validarDominio('https://WWW.MiSitio.com/').valor, 'www.misitio.com'));
-for (const d of ['misitio', 'http://1.2.3.4', 'upgames.games', 'blog.upgames.games', 'x.up.railway.app', 'mi sitio.com', 'a..com', ''])
+for (const d of ['misitio', 'http://1.2.3.4', 'lurveta.com', 'blog.lurveta.com', 'upgames.games', 'blog.upgames.games', 'x.up.railway.app', 'mi sitio.com', 'a..com', ''])
     test(`dominio rechazado: «${d}»`, () => assert.ok(V.validarDominio(d).error));
 
 console.log('bloques');
@@ -50,11 +50,11 @@ test('enlaces de una entrada', () => assert.deepStrictEqual(V.enlacesDe([{ tipo:
 test('enlaces prohibidos: acortadores e IP', () => {
     assert.ok(enlaceProhibido(['https://bit.ly/abc']));
     assert.ok(enlaceProhibido(['https://192.168.1.1/x']));
-    assert.strictEqual(enlaceProhibido(['https://upgames.games/x', 'https://www.mediafire.com/file/x']), '');
+    assert.strictEqual(enlaceProhibido(['https://lurveta.com/x', 'https://www.mediafire.com/file/x']), '');
 });
 
 console.log('render');
-const ctx = { blog: { titulo: 'Blog "de" <Kale>', usuario: 'kale', direccion: 'kale', tema: 'neon', ajustes: {}, visibilidad: 'publico', descripcion: '' }, base: '/b/kale', origen: 'https://x.test', appUrl: 'https://upgames.games', paginas: [{ titulo: 'Sobre mí', slug: 'sobre-mi' }] };
+const ctx = { blog: { titulo: 'Blog "de" <Kale>', usuario: 'kale', direccion: 'kale', tema: 'neon', ajustes: {}, visibilidad: 'publico', descripcion: '' }, base: '/b/kale', origen: 'https://x.test', appUrl: 'https://lurveta.com', paginas: [{ titulo: 'Sobre mí', slug: 'sobre-mi' }] };
 test('el texto se escapa: no sale HTML del autor', () => {
     const html = R.bloquesHtml(V.limpiarBloques([{ tipo: 'texto', texto: '<script>alert(1)</script> <img src=x onerror=alert(1)>' }, { tipo: 'titulo', texto: '<b>x</b>' }, { tipo: 'codigo', texto: '</code><script>x</script>' }]), ctx);
     assert.ok(!/<script|<img|<b>/.test(html), html);

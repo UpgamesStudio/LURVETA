@@ -282,7 +282,7 @@ M.escena(20.15, 27.45, r => {
   r.t2 = titular(r, 'MILES DE\nPERSONAS', 't-xl verde glow', TY, { modo: 'zoom', stag: .03 });
   r.t3 = titular(r, 'TU PROPIA\nCOMUNIDAD', 't-l', TY, { stag: .03 });
   // panel
-  const v = r.panel = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>upgames.games / panel del creador</span></div>`, r);
+  const v = r.panel = h('div', 'vent bisel', `<div class="barra"><i></i><i></i><i></i><span>lurveta.com / panel del creador</span></div>`, r);
   M.pos(v, 90, 520, 900, 760);
   r.k1 = h('div', 'kpi', `<small>${ic('ojo', 30)} Vistas</small><b>0</b><em>▲ 0%</em>`, v); M.pos(r.k1, 30, 94, 410);
   r.k2 = h('div', 'kpi', `<small>${ic('mando', 30)} Jugadas</small><b>0</b><em>▲ 0%</em>`, v); M.pos(r.k2, 460, 94, 410);
@@ -391,7 +391,7 @@ M.escena(29.4, 33.3, r => {
   choque(r.anl, t, 32.4, 540, 830, 1500);
 });
 
-/* ════════ 9 · Entra ya a upgames.games (33.25 – 35.3) ════════ */
+/* ════════ 9 · Entra ya a lurveta.com (33.25 – 35.3) ════════ */
 M.escena(33.25, 35.3, r => {
   r.u = h('div', 'url bisel', `${ic('globo', 70, '#39FF88')}<span class="tx"></span><span class="cur"></span>`, r); r.u.style.left = '540px'; r.u.style.top = '800px';
   r.et = h('div', 'abs etq c', 'ENTRA YA', r); r.et.style.top = '620px';
@@ -402,7 +402,7 @@ M.escena(33.25, 35.3, r => {
   const k = en(t, 33.25, .5, E.out5), sal = en(t, 35.05, .25, E.in);
   st(r.u, { c: true, o: k * (1 - sal), s: lerp(.8, 1, k) * (1 + sal * 1.5), b: sal * 12 });
   const n = Math.floor(clamp((t - 33.6) / 1.1) * 13.999);
-  r.u.querySelector('.tx').innerHTML = 'upgames.games'.slice(0, n).replace('upgames', '<span style="color:#fff">upgames</span>').replace('.games', '<span class="verde">.games</span>');
+  r.u.querySelector('.tx').innerHTML = 'lurveta.com'.slice(0, n).replace('upgames', '<span style="color:#fff">upgames</span>').replace('.games', '<span class="verde">.games</span>');
   r.u.querySelector('.cur').style.opacity = Math.floor(t * 4) % 2;
   st(r.et, { c: true, o: en(t, 33.4, .3) * (1 - sal) });
   const bk = en(t, 34.3, .4, E.back);
@@ -509,7 +509,7 @@ M.subtitulos([
   ['descubran', 23.14], ['tus', 23.64], ['creaciones', 23.88], ['y', 24.38], ['puedas', 24.64], ['construir', 25.0], ['tu', 25.4], ['propia', 25.7], ['comunidad', 26.02], ['desde', 26.48], ['cero.', 26.8],
   ['Tu', 27.46], ['trabajo', 27.66], ['merece', 28.1], ['ser', 28.62], ['reconocido.', 28.82],
   ['¿Qué', 29.42], ['esperas', 30.0], ['para', 30.34], ['dar', 30.56], ['a', 30.72], ['conocer', 30.9], ['tu', 31.14], ['proyecto', 31.38], ['totalmente', 31.74], ['gratis?', 32.4],
-  ['Entra', 33.3], ['ya', 33.62], ['a', 33.9], ['upgames.games', 34.08],
+  ['Entra', 33.3], ['ya', 33.62], ['a', 33.9], ['lurveta.com', 34.08],
   ['o', 35.24], ['escríbenos', 35.6], ['por', 36.04], ['mensaje', 36.2], ['directo', 36.6], ['en', 36.92], ['nuestras', 37.14], ['redes', 37.26], ['sociales', 37.54],
   ['para', 37.94], ['darte', 38.26], ['una', 38.48], ['promoción', 38.76], ['exclusiva', 39.16], ['y', 39.88], ['sin', 40.2], ['ningún', 40.44], ['costo.', 40.78],
   ['¡Únete', 41.6], ['a', 41.84], ['Lurveta', 41.92], ['ahora!', 42.32],

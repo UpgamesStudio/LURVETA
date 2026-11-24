@@ -2,7 +2,7 @@
 
 Juego de carreras de monoplazas en 3D que corre en el navegador (WebGL con Three.js) y como app Android (Capacitor). Está pensado primero para el celular: dirección inclinando el teléfono o táctil, pedales analógicos y también teclado y mando.
 
-- Web: `https://upgames.games/games/monoplaza/`
+- Web: `https://lurveta.com/games/monoplaza/`
 - Android: el workflow `APK Lurveta RACING` compila el APK (ver más abajo).
 
 ## HUD
@@ -139,5 +139,5 @@ En GitHub, el workflow `.github/workflows/apk-monoplaza.yml` lo compila en cada 
 
 - Mejoras de rendimiento (motor, aerodinámica, frenos, chasis, neumáticos, ERS) de 5 niveles y cosméticos (diseños, acabados, cascos, librea propia) se compran con UpCoins en `rutas/apexgp.js`; el cobro es atómico e idempotente (`modulos/upcoins.js`).
 - La librea es una textura con tres vistas (arriba, lado derecho, lado izquierdo). En el Garaje se descarga la plantilla con el contorno real de cada pieza, se pinta en cualquier editor y se sube como imagen cuadrada.
-- En la web se usa la sesión de upgames.games; en la app se inicia sesión desde el juego.
+- En la web se usa la sesión de lurveta.com; en la app se inicia sesión desde el juego.
 - Para probar el multijugador contra un servidor local: `index.html?api=http://localhost:PUERTO`.
