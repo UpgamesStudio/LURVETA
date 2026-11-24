@@ -214,7 +214,7 @@ function registrar(app, { verificarAdmin, Usuario, Juego, Comentario, Pago, Repo
             const html = `<div style="font-family:system-ui,sans-serif;max-width:600px;color:#111"><h2 style="margin:0 0 4px">Informe de ${inf.nombre}</h2>
                 <p style="color:#555;margin:0 0 14px">Resumen de la actividad de Lurveta, comparado con ${inf.anterior}.</p>
                 <table style="border-collapse:collapse;font-size:14px">${filas}</table>
-                <p style="margin:18px 0"><a href="https://upgames.games/admin/#informes" style="background:#16a34a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">Abrir y descargar el informe completo</a></p>
+                <p style="margin:18px 0"><a href="https://lurveta.com/admin/#informes" style="background:#16a34a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">Abrir y descargar el informe completo</a></p>
                 <p style="color:#888;font-size:12px">El informe completo (día a día, creadores, publicaciones, búsquedas, pagos y acciones del equipo) se descarga en Excel desde el panel → Informes.</p></div>`;
             for (const to of (ownerEmails?.() || [])) await sendEmail({ to, subject: `Lurveta · Informe de ${inf.nombre}`, html });
         } catch (e) { logger?.warn?.(`[informes] aviso mensual: ${e.message}`); }

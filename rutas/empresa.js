@@ -319,7 +319,7 @@ function estadoChequeo({ ok, configurado = true, ms = 0, lentoMs = 2500 }) {
     return ms >= lentoMs ? 'lento' : 'ok';
 }
 
-function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger, correo, mercadoPago, getPayPalAccessToken, cloudinary, puerto, sitioUrl = 'https://upgames.games/' }) {
+function registrar(app, { verificarAdmin, Usuario, Juego, Pago, LiveTx, logger, correo, mercadoPago, getPayPalAccessToken, cloudinary, puerto, sitioUrl = 'https://lurveta.com/' }) {
     const monitor = require('../modulos/monitor');
     const nexusLLM = require('../modulos/nexus/llm');
     const db = () => mongoose.connection;

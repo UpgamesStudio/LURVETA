@@ -61,7 +61,7 @@ async function iniciar(opts = {}) {
 const decodificar = s => String(s || '').replace(/<[^>]*>/g, '')
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
 const recorta = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
-const RAIZ = (process.env.APP_URL || 'https://upgames.games').replace(/\/+$/, '');
+const RAIZ = (process.env.APP_URL || 'https://lurveta.com').replace(/\/+$/, '');
 const BASE = RAIZ + '/public/';
 const INICIO = RAIZ + '/';   // la biblioteca es la portada (antes /public/biblioteca.html)
 
