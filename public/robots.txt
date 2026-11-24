@@ -36,4 +36,4 @@ User-agent: DotBot
 Disallow: /
 
 # Sitemap
-Sitemap: https://upgames.games/public/sitemap.xml
+Sitemap: https://lurveta.com/public/sitemap.xml

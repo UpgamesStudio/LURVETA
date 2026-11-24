@@ -12,8 +12,8 @@
 'use strict';
 const { filtrarPublicacion } = require('./textoPublico');   // títulos y descripciones sin palabras vetadas
 
-const SITIO = 'https://upgames.games/public';
-const INICIO = 'https://upgames.games/';   // la biblioteca es la portada (antes /public/biblioteca.html, hoy un puente)
+const SITIO = 'https://lurveta.com/public';
+const INICIO = 'https://lurveta.com/';   // la biblioteca es la portada (antes /public/biblioteca.html, hoy un puente)
 const esc = v => String(v ?? '').replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&#39;', '"': '&quot;' }[c]));
 
 function slug(t) {
@@ -88,7 +88,7 @@ function pagina(it, grupo, op = {}) {
         ...(capturas.length ? { screenshot: capturas } : {}),
     };
     const migas = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Lurveta', item: 'https://upgames.games/' },
+        { '@type': 'ListItem', position: 1, name: 'Lurveta', item: 'https://lurveta.com/' },
         // Nivel intermedio solo si es una página real (su juego o tema); la portada no filtra por ?cat=
         ...(grupo ? [{ '@type': 'ListItem', position: 2, name: grupo.titulo, item: urlGrupo(grupo) }] : []),
         { '@type': 'ListItem', position: grupo ? 3 : 2, name: it.title, item: url }] };
@@ -240,7 +240,7 @@ function paginaGrupo(g, todos) {
     const ld = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: g.titulo, description: desc, url,
         mainEntity: { '@type': 'ItemList', numberOfItems: lista.length, itemListElement: lista.map((it, i) => ({ '@type': 'ListItem', position: i + 1, url: urlPagina(it), name: it.title })) } };
     const migas = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Lurveta', item: 'https://upgames.games/' },
+        { '@type': 'ListItem', position: 1, name: 'Lurveta', item: 'https://lurveta.com/' },
         { '@type': 'ListItem', position: 2, name: g.titulo, item: url }] };
     const otros = (todos || []).filter(x => x.slug !== g.slug).slice(0, 12);
     return `<!doctype html>
@@ -306,12 +306,13 @@ function ponerEnlacesPortada(html, bloque) {
 
 /**
  * Limpia un sitemap ya generado: quita /public/biblioteca.html (hoy un puente hacia la portada; con o sin parámetros)
- * y se asegura de que la portada https://upgames.games/ sea la primera URL. Idempotente.
+ * y se asegura de que la portada https://lurveta.com/ sea la primera URL. Idempotente.
  */
 function limpiarSitemap(xml) {
     if (!/<urlset/.test(xml)) return xml;
-    let out = xml.replace(/\s*<url>\s*<loc>https:\/\/upgames\.games\/public\/biblioteca\.html[^<]*<\/loc>[\s\S]*?<\/url>/g, '');
-    if (!/<loc>https:\/\/upgames\.games\/<\/loc>/.test(out))
+    let out = xml.replace(/(<loc>)https?:\/\/(?:www\.)?upgames\.games(?=\/|<)/gi, '$1' + INICIO.slice(0, -1));
+    out = out.replace(/\s*<url>\s*<loc>https:\/\/lurveta\.com\/public\/biblioteca\.html[^<]*<\/loc>[\s\S]*?<\/url>/g, '');
+    if (!/<loc>https:\/\/lurveta\.com\/<\/loc>/.test(out))
         out = out.replace(/(<urlset[^>]*>)/, `$1\n<url><loc>${INICIO}</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`);
     return out;
 }

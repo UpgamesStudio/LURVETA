@@ -5,7 +5,7 @@
  * Extraído de index.js: recibe sus dependencias explícitas (ver la llamada en index.js).
  */
 module.exports = function seo({ Juego, Seo, Usuario, app, cacheado, gameDetector, logger, memCache }) {
-const SITIO = 'https://upgames.games/public';
+const SITIO = 'https://lurveta.com/public';
 const xmlEsc = v => String(v).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 app.get('/seo/sitemap.xml', async (req, res) => {
     try {
@@ -19,7 +19,7 @@ app.get('/seo/sitemap.xml', async (req, res) => {
             const url = (loc, lastmod, freq, prio) => `<url><loc>${xmlEsc(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>${freq}</changefreq><priority>${prio}</priority></url>`;
             return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + [
                 // Portada = la biblioteca. /public/biblioteca.html es solo un puente hacia aquí: no va en el sitemap
-                url('https://upgames.games/', dia(items[0]?.createdAt), 'hourly', '1.0'),
+                url('https://lurveta.com/', dia(items[0]?.createdAt), 'hourly', '1.0'),
                 url(`${SITIO}/live.html`, null, 'hourly', '0.8'),
                 // Páginas por juego y por tema (public/j/…): mismas reglas que scripts/generar-paginas.js
                 ...Seo.grupos(await datosPaginasSeo()).map(g => url(Seo.urlGrupo(g), dia(g.items.reduce((m, it) => (it.fecha > m ? it.fecha : m), '')), 'daily', '0.8')),
