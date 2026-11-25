@@ -73,4 +73,10 @@ function contador(titulo) {
   };
 }
 
-module.exports = { servir, servirRaiz, requerir, navegador, contador, PUBLIC };
+// Playwright 1.48 inyecta la desactivación de workers también en marcos sandbox.
+function esErrorSandboxPlaywright(error) {
+  return /serviceWorker.*Service worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag/.test(error.message)
+    && /at <anonymous>/.test(error.stack || '');
+}
+
+module.exports = { servir, servirRaiz, requerir, navegador, contador, esErrorSandboxPlaywright, PUBLIC };

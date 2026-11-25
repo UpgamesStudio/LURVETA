@@ -16,7 +16,7 @@ let ok = 0, mal = 0; const prueba = (n, c, extra = '') => { c ? ok++ : mal++; co
 const espera = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const m = await MongoMemoryServer.create(); const uri = m.getUri('upgames');
-  const srv = spawn('node', ['index.js'], { cwd: REPO, env: { ...process.env, MONGODB_URI: uri, JWT_SECRET: SECRET, PORT: String(PORT), NODE_ENV: 'development', GROQ_API_KEY: '', APP_URL: 'https://lurveta.com', HTTPS_PROXY: '', HTTP_PROXY: '' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const srv = spawn('node', ['index.js'], { cwd: REPO, env: { ...process.env, MONGODB_URI: uri, JWT_SECRET: SECRET, PORT: String(PORT), NODE_ENV: 'development', RAILWAY_PUBLIC_DOMAIN: '', GROQ_API_KEY: '', APP_URL: 'https://lurveta.com', HTTPS_PROXY: '', HTTP_PROXY: '' }, stdio: ['ignore', 'pipe', 'pipe'] });
   let log = ''; srv.stdout.on('data', d => log += d); srv.stderr.on('data', d => log += d);
   for (let i = 0; i < 60; i++) { try { await fetch(A + '/blogs/temas'); break; } catch (_) { await espera(500); } }
   await mongoose.connect(uri); const db = mongoose.connection.db;
@@ -38,8 +38,10 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   const tokenHash = require('node:crypto').createHash('sha256').update(tokenAlta).digest('hex');
   const pendiente = await registro.updateOne({ usuario: 'altanueva' }, { $set: { tokenHash } });
   prueba('el registro nuevo espera verificación', pendiente.modifiedCount === 1 && !(await db.collection('usuarios').findOne({ usuario: 'altanueva' })));
-  const activada = await fetch(A + '/auth/verify-email/' + tokenAlta, { redirect: 'manual' });
-  prueba('el enlace crea la cuenta verificada', activada.status === 302 && activada.headers.get('location')?.includes('verif=ok') && (await db.collection('usuarios').findOne({ usuario: 'altanueva' }))?.emailVerificado === true);
+  const confirmacion = await fetch(A + '/auth/verify-email/' + tokenAlta, { redirect: 'manual' });
+  prueba('abrir el enlace muestra confirmación y no activa la cuenta', confirmacion.status === 200 && (await confirmacion.text()).includes('Confirmar registro') && !(await db.collection('usuarios').findOne({ usuario: 'altanueva' })));
+  const activada = await fetch(A + '/auth/activar-registro', { method: 'POST', headers: { Origin: `http://localhost:${PORT}` }, body: new URLSearchParams({ token: tokenAlta }), redirect: 'manual' });
+  prueba('confirmar el registro crea la cuenta verificada', activada.status === 303 && activada.headers.get('location')?.includes('verif=ok') && (await db.collection('usuarios').findOne({ usuario: 'altanueva' }))?.emailVerificado === true);
   const sesionWeb = await fetch(A + '/auth/login', { method: 'POST', headers: { Origin: 'https://lurveta.com', 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario: 'altanueva', password: 'clave-de-prueba' }) }).then(r => r.json());
   const datosWeb = sesionWeb.token && jwt.decode(sesionWeb.token);
   prueba('el login web emite un JWT de 24 h sin correo', datosWeb && datosWeb.exp - datosWeb.iat === 86400 && !datosWeb.email);

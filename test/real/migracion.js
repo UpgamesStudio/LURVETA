@@ -12,7 +12,7 @@
  */
 'use strict';
 const path = require('path'), fs = require('fs'), os = require('os'), { execSync } = require('child_process');
-const { servirRaiz, navegador, contador } = require('./util');
+const { servirRaiz, navegador, contador, esErrorSandboxPlaywright } = require('./util');
 const REPO = path.join(__dirname, '..', '..');
 const API = 'https://upgames-production.up.railway.app';
 const dirP = path.join(REPO, 'public/p');
@@ -55,7 +55,7 @@ async function abrir(ctx, web, ruta, ms = 2500) {
   const rel = u => { const x = new URL(u); return (x.origin === web.url ? '' : x.origin) + x.pathname + x.search + x.hash; };
   p.on('request', q => { if (q.isNavigationRequest() && q.frame() === p.mainFrame()) pedidas.push(rel(q.url())); });
   p.on('framenavigated', f => { if (f === p.mainFrame()) marcos.push(rel(f.url())); });
-  p.on('pageerror', e => errores.push(e.message));
+  p.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) errores.push(e.message); });
   await p.goto(web.url + ruta).catch(() => {}); await espera(ms);
   return { p, pedidas, marcos, errores, url: rel(p.url()) };
 }
@@ -151,7 +151,7 @@ function versionAnterior() {
     for (const [n, vp] of [['móvil', { width: 390, height: 844 }], ['escritorio', { width: 1440, height: 900 }]]) {
       const c = await contexto(b, web, { vp }), p = await c.newPage(), rotos = [], err = [];
       p.on('response', x => { if (x.url().startsWith(web.url) && x.status() >= 400) rotos.push(`${x.status()} ${x.url().slice(web.url.length)}`); });
-      p.on('pageerror', e => err.push(e.message));
+      p.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) err.push(e.message); });
       await p.goto(web.url + '/'); await espera(3000);
       const v = await p.evaluate(() => ({ base: document.baseURI, main: !!document.getElementById('main-view'), sobra: document.documentElement.scrollWidth - innerWidth }));
       const conocidos = err.filter(e => e === 'undefined');   // rechazo sin motivo con la API simulada: igual en ${ANTERIOR} (ver navegacion.js)

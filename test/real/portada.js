@@ -5,7 +5,7 @@
  * que abría otra publicación). Uso: node test/real/portada.js   (API=https://… para otro servidor)
  */
 'use strict';
-const { servirRaiz, navegador, contador } = require('./util');
+const { servirRaiz, navegador, contador, esErrorSandboxPlaywright } = require('./util');
 const API = (process.env.API || 'https://upgames-production.up.railway.app').replace(/\/+$/, '');
 const espera = ms => new Promise(r => setTimeout(r, ms));
 
@@ -15,7 +15,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   const ctx = await b.newContext({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true, ignoreHTTPSErrors: true, serviceWorkers: 'block' });
   const p = await ctx.newPage();
   const errores = [], imgsMal = new Set();
-  p.on('pageerror', e => errores.push(e.message));
+  p.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) errores.push(e.message); });
   p.on('response', r => { if (/res\.cloudinary\.com\/.+\/image\/upload\//.test(r.url()) && r.status() >= 400) imgsMal.add(`${r.status()} ${r.url()}`); });
   // El catálogo y las fichas vienen de producción; el resto de la API (sesión, notificaciones…) se responde vacío
   await ctx.route('**/*', async r => {
@@ -107,7 +107,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   C.prueba('cerrar con la X limpia la URL', await p.evaluate(() => !location.search.includes('id=')));
 
   C.seccion('Enlace compartido');
-  const p2 = await ctx.newPage(); p2.on('pageerror', e => errores.push(e.message));
+  const p2 = await ctx.newPage(); p2.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) errores.push(e.message); });
   await p2.goto(`${web.url}/?id=${item.id}`, { waitUntil: 'domcontentloaded' });
   await p2.waitForFunction(() => document.getElementById('detail-sheet')?.classList.contains('open'), null, { timeout: 25000 }).catch(() => {});
   const abre = await p2.evaluate(() => ({ url: location.href, hoja: !!document.getElementById('detail-sheet'), abierta: !!document.getElementById('detail-sheet')?.classList.contains('open'), titulo: document.getElementById('ds-title')?.textContent || '' }));

@@ -200,7 +200,7 @@ app.options('*', cors());
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
+        if (!origin || origin === API_URL_SELF) return callback(null, true);
         if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed + '/'))) {
             callback(null, true);
         } else {
@@ -857,14 +857,16 @@ const RegistroPendiente = mongoose.model('RegistroPendiente', new mongoose.Schem
     vence: { type: Date, required: true, expires: 0 },
 }));
 
-async function activarRegistro(token) {
-    if (!/^[a-f0-9]{64}$/.test(token)) return null;
+function buscarRegistro(token) {
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) return null;
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    const pendiente = await RegistroPendiente.findOne({ tokenHash, vence: { $gt: new Date() } }).lean();
-    if (!pendiente) return null;
+    return RegistroPendiente.findOne({ tokenHash, vence: { $gt: new Date() } }).lean();
+}
+
+async function activarRegistro(pendiente) {
     const { usuario, email, password, registrationIP, referido, _id } = pendiente;
     const cuenta = await Usuario.create({ usuario, email, password, registrationIP, emailVerificado: true });
-    await RegistroPendiente.deleteOne({ _id });
+    await RegistroPendiente.deleteOne({ _id }).catch(() => {});
     if (referido) {
         await Referidos.alRegistrar(Usuario, usuario, referido, registrationIP).catch(() => {});
         require('./modulos/socialFeed').registrarReferido(referido, usuario).catch(() => {});
@@ -875,18 +877,44 @@ async function activarRegistro(token) {
 app.get('/auth/verify-email/:token', async (req, res) => {
     try {
         const { token } = req.params;
-        let usuario = await Usuario.findOneAndUpdate({
+        const usuario = await Usuario.findOneAndUpdate({
             emailVerifToken: token,
             emailVerifExpires: { $gt: new Date() }
         }, { $set: { emailVerificado: true, emailVerifToken: null, emailVerifExpires: null } }, { new: true });
-        usuario ||= await activarRegistro(token);
-        if (!usuario) return res.redirect(`${APP_URL}?verif=error`);
+        if (!usuario) {
+            if (!(await buscarRegistro(token))) return res.redirect(`${APP_URL}?verif=error`);
+            // Los escáneres de correo pueden abrir el enlace GET. Solo el formulario activa el alta.
+            return res.set({
+                'Cache-Control': 'no-store',
+                'Referrer-Policy': 'no-referrer',
+                'Content-Security-Policy': `default-src 'none'; form-action 'self' ${origenWeb}; base-uri 'none'; frame-ancestors 'none'; style-src 'unsafe-inline'`,
+            }).type('html').send(`<!doctype html><html lang="es"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirma tu cuenta de Lurveta</title>
+<style>body{font:1rem system-ui;max-width:32rem;margin:4rem auto;padding:0 1rem}button{font:inherit;padding:.6rem 1rem}</style>
+<h1>Confirma tu cuenta</h1><p>Si solicitaste una cuenta de Lurveta con este correo, confirma el registro.</p>
+<form method="post" action="/auth/activar-registro"><input type="hidden" name="token" value="${token}"><button>Confirmar registro</button></form></html>`);
+        }
         logger.info(`Email verificado: @${usuario.usuario}`);
         Referidos.alVerificar(Usuario, usuario.usuario, { crearNotif, logger }).catch(() => {});
         res.redirect(`${APP_URL}?verif=ok&u=${encodeURIComponent(usuario.usuario)}`);
     } catch (err) {
         if (err.code !== 11000) logger.error(`Error verificando email: ${err.name} (${err.code || "sin código"})`);
         res.redirect(`${APP_URL}?verif=error`);
+    }
+});
+
+app.post('/auth/activar-registro', async (req, res) => {
+    try {
+        const pendiente = await buscarRegistro(req.body?.token);
+        if (!pendiente) return res.redirect(`${APP_URL}?verif=error`);
+        const usuario = await activarRegistro(pendiente);
+        logger.info(`Registro verificado: @${usuario.usuario}`);
+        Referidos.alVerificar(Usuario, usuario.usuario, { crearNotif, logger }).catch(() => {});
+        return res.redirect(303, `${APP_URL}?verif=ok&u=${encodeURIComponent(usuario.usuario)}`);
+    } catch (err) {
+        if (err.code !== 11000) logger.error(`Error activando registro: ${err.name} (${err.code || "sin código"})`);
+        return res.redirect(303, `${APP_URL}?verif=error`);
     }
 });
 

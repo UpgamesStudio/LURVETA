@@ -978,7 +978,7 @@
                 const data = await res.json();
 
                 if (res.status === 202 && data.success) {
-                    els.toggle.click();
+                    if (!isLoginMode) els.toggle.click();
                     els.user.value = email;
                     els.pass.value = '';
                     showMsg(data.mensaje, "#32D583");

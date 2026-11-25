@@ -15,7 +15,7 @@
 'use strict';
 const path = require('path'), fs = require('fs'), http = require('http');
 const { spawn } = require('child_process');
-const { navegador, contador, requerir } = require('./util');
+const { navegador, contador, requerir, esErrorSandboxPlaywright } = require('./util');
 const REPO = path.join(__dirname, '..', '..');
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const CAPT = process.env.CAPTURAS;
@@ -108,7 +108,7 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
   try {
     for (const [n, vp] of [['móvil', { width: 390, height: 844 }], ['escritorio', { width: 1440, height: 900 }]]) {
       const ctx = await b.newContext({ viewport: vp, serviceWorkers: 'block' }); await ctx.route(/fonts\.(googleapis|gstatic)\.com|unpkg\.com|railway\.app/, r => r.abort());
-      const p = await ctx.newPage(); const err = []; p.on('pageerror', e => err.push(e.message));
+      const p = await ctx.newPage(); const err = []; p.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) err.push(e.message); });
       await p.goto(web.url + '/', { waitUntil: 'load' }); await espera(700);
       const vis = await p.evaluate(() => {
         // checkVisibility: lo que está dentro de un <details> cerrado no se pinta (aunque tenga tamaño)
