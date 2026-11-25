@@ -16,7 +16,7 @@
 // No toca /admin/ (datos privados del panel), /games/ ni /studio/ (tienen su propio service worker).
 // ========================================
 
-const CACHE_VERSION = 'upgames-v8.2.1';   // v8.2: rediseño de la portada y Nexus (v8.1: marca Lurveta)
+const CACHE_VERSION = 'upgames-v8.2.2';   // Actualiza la portada que carga los anuncios aislados.
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_RUNTIME = `${CACHE_VERSION}-runtime`;
 const CACHE_API     = `${CACHE_VERSION}-api`;
@@ -28,6 +28,7 @@ const IMG_REVALIDAR = 7 * 24 * 3600 * 1000;      // las que no son de Cloudinary
 // Assets esenciales que se precachean
 const PRECACHE_URLS = [
     '/',
+    '/public/upgames-anuncios-aislados.js',
     '/public/upgames-app.css',
     '/public/upgames-estilo.css',
     '/public/upgames-cyber.css',

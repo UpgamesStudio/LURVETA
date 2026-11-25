@@ -125,6 +125,11 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
       orden: [...document.querySelectorAll('.container script')].map(s => s.textContent.match(/ugAnuncio\('([^']+)'/)?.[1]).filter(Boolean) }));
     C.prueba('el botón empieza debajo de la primera pantalla (hay que bajar)', m.zona >= m.alto, `zona ${Math.round(m.zona)} · pantalla ${m.alto}`);
     C.prueba('los anuncios quedan antes del botón, en el mismo orden', m.orden.length === 3 && await p.evaluate(() => { const z = document.querySelector('.ug-zona-boton'); return [...document.querySelectorAll('.container script')].filter(s => /ugAnuncio\(/.test(s.textContent)).every(s => s.compareDocumentPosition(z) & Node.DOCUMENT_POSITION_FOLLOWING); }), JSON.stringify(m.orden));
+    const marcos = await p.locator('.ug-antes-boton iframe[src*="anuncio-aislado"]').evaluateAll(ifs => ifs.map(f => [...f.sandbox]));
+    const csp = await p.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
+    C.prueba('la publicidad usa marcos con origen aislado y la página restringe scripts externos',
+      marcos.length === 3 && marcos.every(permisos => permisos.includes('allow-scripts') && !permisos.includes('allow-same-origin'))
+        && csp.includes('script-src') && !/highperformanceformat|bellnewyork|accountut/.test(csp));
     await espera(2200);
     C.prueba('la cuenta atrás sigue corriendo', (await p.evaluate(() => document.getElementById('timer').textContent)) !== m.timer, m.timer);
     if (CAPT && nombre === 'móvil') await p.screenshot({ path: path.join(CAPT, 'puente-movil.png'), fullPage: true });

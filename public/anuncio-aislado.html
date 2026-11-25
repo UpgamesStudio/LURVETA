@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<title>Publicidad</title>
+</head>
+<body style="margin:0">
+<div id="container-bee2b46adf997334693eadeec583df85"></div>
+<script>
+(function () {
+    const slots = new Map([
+        ['rectangulo', ['https://www.highperformanceformat.com/0af19e39530f3a17d0722c5f0c91735a/invoke.js', '0af19e39530f3a17d0722c5f0c91735a', 300, 250]],
+        ['vertical', ['https://www.highperformanceformat.com/247173c86298a1f5a8e01a0e1c5889cd/invoke.js', '247173c86298a1f5a8e01a0e1c5889cd', 160, 600]],
+        ['social', ['https://bellnewyork.org/21/bee2b46adf997334693eadeec583df85']],
+        ['puente-1', ['https://accountut.com/1/2003702e1a31c9198496ac0b4c3722b9']],
+        ['puente-2', ['https://bellnewyork.org/14/0971a949df00a3362bf3db1a56e5c2b4']],
+    ]);
+    const anuncio = slots.get(new URLSearchParams(location.search).get('slot'));
+    if (self === top || self.origin !== 'null' || !anuncio) return;
+    const [url, key, width, height] = anuncio;
+    if (key) window.atOptions = { key, format: 'iframe', height, width, params: {} };
+    document.write('<script data-cfasync="false" src="' + url + '"><\/script>');
+})();
+</script>
+</body>
+</html>

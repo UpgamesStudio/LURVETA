@@ -251,7 +251,7 @@ app.put('/usuarios/update-username', [verificarToken, body('nuevoUsuario').trim(
         if (cobroNombre) {
             mongoose.models.LiveTx?.create({ tipo: 'compra', usuario: newName, monedas: precioNombre, usd: Math.round(precioNombre * UCmod.UC_USD * 100) / 100, planId: 'nombre', metodo: 'upcoins', ref: `nombre:${oldName}:${newName}:${Date.now()}`, estado: 'completada' }).catch(() => {});
         }
-        const nuevoToken = firmarToken({ ...usuario.toObject?.() ?? usuario, usuario: newName });
+        const nuevoToken = firmarToken({ ...usuario.toObject?.() ?? usuario, usuario: newName }, req);
         logger.info(`[update-username] ${oldName} → ${newName} | Cascada completada`);
         res.json({ success: true, nuevoToken, nuevoUsuario: newName });
     } catch (err) {
@@ -282,7 +282,7 @@ app.put('/usuarios/update-email', [verificarToken, body('nuevoEmail').isEmail().
         if (existe) return res.status(409).json({ success: false, error: 'Ese email ya está registrado en otra cuenta' });
         const verifToken = crypto.randomBytes(32).toString('hex');
         await Usuario.updateOne({ usuario: req.usuario.toLowerCase() }, { $set: { email: nuevoEmail.toLowerCase(), lastEmailChange: new Date(), emailVerificado: false, emailVerifToken: verifToken, emailVerifExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) } });
-        const nuevoToken = firmarToken({ usuario: req.usuario.toLowerCase(), email: nuevoEmail.toLowerCase(), sesionVer: req.userTokenData.sv || 0 });
+        const nuevoToken = firmarToken({ usuario: req.usuario.toLowerCase(), email: nuevoEmail.toLowerCase(), sesionVer: req.userTokenData.sv || 0 }, req);
         logger.info(`Usuario ${req.usuario} cambió su email a ${nuevoEmail}`);
         const verifLink = `${API_URL_SELF}/auth/verify-email/${verifToken}`;
         sendEmail({ to: nuevoEmail, subject: '✅ Verifica tu nuevo email en Lurveta', html: emailVerifTemplate(req.usuario.toLowerCase(), verifLink) }).catch(() => {});
@@ -313,7 +313,7 @@ app.put('/usuarios/update-password', [verificarToken, body('passwordActual').not
         ).select('usuario email sesionVer').lean();
         if (!actualizado) return res.status(409).json({ success: false, error: 'La contraseña cambió. Vuelve a iniciar sesión.' });
         logger.info(`Usuario ${req.usuario} cambió su contraseña (otras sesiones cerradas)`);
-        res.json({ success: true, token: firmarToken(actualizado), mensaje: 'Contraseña actualizada. Se cerró tu sesión en los demás dispositivos.' });
+        res.json({ success: true, token: firmarToken(actualizado, req), mensaje: 'Contraseña actualizada. Se cerró tu sesión en los demás dispositivos.' });
     } catch (err) {
         logger.error(`Error en update-password: ${err.message}`);
         res.status(500).json({ success: false, error: 'Error al actualizar contraseña' });

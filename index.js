@@ -213,15 +213,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-token']
 }));
 
-app.use(express.json({ limit: '25mb' }));
 // Los listados públicos no llevan el enlace de descarga (solo la página puente lo entrega): modulos/sinEnlace.js
 // La antigua categoría de copias de consola («ROM») ya no existe: no se puede publicar ni pasar una publicación a ella
 const esCategoriaRom = c => /^\s*roms?\s*$/i.test(String(c ?? ''));
-app.use((req, res, next) => {
-    if ((req.method === 'POST' || req.method === 'PUT') && /^\/(admin\/)?items(\/|$)/.test(req.path) && req.body && esCategoriaRom(req.body.category))
-        return res.status(400).json({ success: false, error: 'Esa categoría ya no existe en Lurveta. Elige otra categoría.', code: 'SIN_ROMS' });
-    next();
-});
+
 
 // ========== ENLACES DE DESCARGA PROTEGIDOS ==========
 // El enlace real solo se entrega por POST /economia/validar-descarga (página
@@ -246,7 +241,6 @@ function limpiarPublico(v, yo, prof) {
     }
     return out;
 }
-app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // ========== RATE LIMITING ==========
 // El general queda en memoria a propósito: es grueso y en Mongo sumaría una escritura a CADA petición.
@@ -294,7 +288,13 @@ const downloadValidationLimiter = rateLimit({
 });
 
 app.use('/auth/login', authLimiter);
-app.use('/auth/register', authLimiter);
+app.use('/auth/register', rateLimit({
+    store: new Limites.MongoStore('rl-registro'),
+    windowMs: config.RATE_LIMIT.AUTH.windowMs,
+    max: config.RATE_LIMIT.AUTH.max,
+    message: { success: false, error: 'Demasiadas solicitudes de registro. Inténtalo más tarde.' },
+    skip: () => config.NODE_ENV === 'development'
+}));
 app.use('/items/add', createLimiter);
 app.use('/economia/validar-descarga', downloadValidationLimiter);
 app.use(generalLimiter);
@@ -306,6 +306,36 @@ app.use((req, res, next) => {
         req.sesion = sesion;
         next();
     }, next);
+});
+const limiteCarga = rateLimit({
+    windowMs: 60000, max: 20,
+    message: { success: false, error: 'Demasiadas cargas seguidas. Inténtalo en un minuto.' },
+});
+const jsonNormal = express.json({ limit: '1mb' });
+const jsonWebhook = express.json({ limit: '32kb' });
+const limiteWebhookMP = rateLimit({
+    windowMs: 60000, max: 120, standardHeaders: true, legacyHeaders: false,
+});
+
+const cargasJSON = [
+    ['POST', /^\/chat\/imagen\/?$/i, express.json({ limit: '6mb' })],
+    ['POST', /^\/grupos\/[^/]+\/mensajes\/?$/i, express.json({ limit: '5mb' })],
+    ['POST', /^\/stories\/crear\/?$/i, express.json({ limit: '25mb' })],
+    ['POST', /^\/studio\/ia3d\/?$/i, express.json({ limit: '25mb' })],
+];
+app.use((req, res, next) => {
+    if (req.method === 'POST' && /^\/pagos\/mercadopago\/webhook\/?$/i.test(req.path))
+        return limiteWebhookMP(req, res, () => jsonWebhook(req, res, next));
+    const carga = cargasJSON.find(([metodo, ruta]) => req.method === metodo && ruta.test(req.path));
+    if (!carga || !req.is('application/json')) return jsonNormal(req, res, next);
+    if (!req.sesion?.datos) return verificarToken(req, res, next);
+    return limiteCarga(req, res, () => carga[2](req, res, next));
+});
+app.use(express.urlencoded({ extended: true, limit: '128kb' }));
+app.use((req, res, next) => {
+    if ((req.method === 'POST' || req.method === 'PUT') && /^\/(admin\/)?items(\/|$)/.test(req.path) && req.body && esCategoriaRom(req.body.category))
+        return res.status(400).json({ success: false, error: 'Esa categoría ya no existe en Lurveta. Elige otra categoría.', code: 'SIN_ROMS' });
+    next();
 });
 app.use(require('./modulos/sinEnlace').middleware({ usuarioOpcional }));
 app.use((req, res, next) => {
@@ -768,7 +798,11 @@ const Story = mongoose.model('Story', StorySchema);
 // Todo token lleva la versión de sesión del usuario (sv). Al cambiar o restablecer la
 // contraseña la versión sube y los tokens anteriores dejan de valer (antes un token
 // robado seguía sirviendo 30 días aunque cambiaras la contraseña).
-const firmarToken = u => jwt.sign({ usuario: u.usuario, email: u.email, sv: u.sesionVer || 0 }, JWT_SECRET, { expiresIn: '30d' });
+const origenWeb = new URL(config.APP_URL).origin;
+const firmarToken = (u, req) => {
+    const web = req?.userTokenData?.web === true || [origenWeb, 'https://lurveta.com', 'https://www.lurveta.com'].includes(req?.get('origin'));
+    return jwt.sign({ usuario: u.usuario, sv: u.sesionVer || 0, ...(web ? { web: true } : {}) }, JWT_SECRET, { expiresIn: web ? '24h' : '30d' });
+};
 const validarSesion = require('./modulos/sesiones').crear({
     secreto: JWT_SECRET,
     buscarCuenta: usuario => Usuario.findOne({ usuario }).select('sesionVer suspendido').lean(),
@@ -813,21 +847,45 @@ const MAX_DOWNLOADS_PER_IP_PER_DAY = config.MAX_DOWNLOADS_PER_IP_PER_DAY;
 //  EMAIL VERIFICACIÓN
 // ══════════════════════════════════════════════════════════════
 
+const RegistroPendiente = mongoose.model('RegistroPendiente', new mongoose.Schema({
+    usuario: { type: String, required: true },
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    registrationIP: String,
+    referido: String,
+    tokenHash: { type: String, required: true, unique: true },
+    vence: { type: Date, required: true, expires: 0 },
+}));
+
+async function activarRegistro(token) {
+    if (!/^[a-f0-9]{64}$/.test(token)) return null;
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const pendiente = await RegistroPendiente.findOne({ tokenHash, vence: { $gt: new Date() } }).lean();
+    if (!pendiente) return null;
+    const { usuario, email, password, registrationIP, referido, _id } = pendiente;
+    const cuenta = await Usuario.create({ usuario, email, password, registrationIP, emailVerificado: true });
+    await RegistroPendiente.deleteOne({ _id });
+    if (referido) {
+        await Referidos.alRegistrar(Usuario, usuario, referido, registrationIP).catch(() => {});
+        require('./modulos/socialFeed').registrarReferido(referido, usuario).catch(() => {});
+    }
+    return cuenta;
+}
+
 app.get('/auth/verify-email/:token', async (req, res) => {
     try {
         const { token } = req.params;
-        const usuario = await Usuario.findOne({
+        let usuario = await Usuario.findOneAndUpdate({
             emailVerifToken: token,
             emailVerifExpires: { $gt: new Date() }
-        });
+        }, { $set: { emailVerificado: true, emailVerifToken: null, emailVerifExpires: null } }, { new: true });
+        usuario ||= await activarRegistro(token);
         if (!usuario) return res.redirect(`${APP_URL}?verif=error`);
-        // updateOne: save() revalida toda la cuenta y una cuenta antigua podía fallar al verificar
-        await Usuario.updateOne({ _id: usuario._id }, { $set: { emailVerificado: true, emailVerifToken: null, emailVerifExpires: null } });
         logger.info(`Email verificado: @${usuario.usuario}`);
         Referidos.alVerificar(Usuario, usuario.usuario, { crearNotif, logger }).catch(() => {});
         res.redirect(`${APP_URL}?verif=ok&u=${encodeURIComponent(usuario.usuario)}`);
     } catch (err) {
-        logger.error(`Error verificando email: ${err.message}`);
+        if (err.code !== 11000) logger.error(`Error verificando email: ${err.name} (${err.code || "sin código"})`);
         res.redirect(`${APP_URL}?verif=error`);
     }
 });
@@ -1046,7 +1104,7 @@ require('./rutas/tarjetas')({ Juego, Pago, Usuario, app, body, config, paypalPay
 // El nombre se guarda en minúsculas, así "Pepe" y "pepe" son la MISMA cuenta.
 // Solo a-z, 0-9 y _ (evita nombres casi idénticos con espacios, puntos o
 // letras de otros alfabetos que se ven iguales, ej. "pеpe" con е cirílica).
-const { errorNombreUsuario, mensajeDuplicado } = require('./rutas/auth')({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Limites, Referidos, Usuario, app, bcrypt, body, crypto, emailVerifTemplate, firmarToken, gamification, gmailLegacyEmail, logger, sendEmail, twoFactor, validationResult });   // Autenticación: registro, login y sesión
+const { errorNombreUsuario, mensajeDuplicado } = require('./rutas/auth')({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Limites, RegistroPendiente, Usuario, app, bcrypt, body, crypto, correoPermitido, emailVerifTemplate, firmarToken, gamification, gmailLegacyEmail, logger, sendEmail, twoFactor, validationResult });   // Autenticación: registro, login y sesión
 
 // ==========================================
 // ⭐ ADMIN DASHBOARD
@@ -1271,6 +1329,10 @@ app.use((err, req, res, next) => {
         }
         return res.status(403).json({ error: 'Origen no permitido' });
     }
+    if (err?.type === 'entity.too.large')
+        return res.status(413).json({ success: false, error: 'La solicitud supera el tamaño permitido.', code: 'BODY_TOO_LARGE' });
+    if (err?.type === 'entity.parse.failed')
+        return res.status(400).json({ success: false, error: 'El cuerpo de la solicitud no es válido.' });
     logger.error(`Error: ${err?.message || "unknown"}`);
     res.status(500).json({ error: "Error interno del servidor" });
 });

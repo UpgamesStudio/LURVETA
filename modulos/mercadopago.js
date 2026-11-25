@@ -9,11 +9,13 @@
  *   USD y se convierten con MERCADOPAGO_TASA_USD (moneda local por 1 USD).
  *
  * Variables: MERCADOPAGO_ACCESS_TOKEN y MERCADOPAGO_PUBLIC_KEY (se aceptan también
- * MP_ACCESS_TOKEN / MP_PUBLIC_KEY). Opcional: MERCADOPAGO_TASA_USD.
+ * MP_ACCESS_TOKEN / MP_PUBLIC_KEY), más MERCADOPAGO_WEBHOOK_SECRET de la aplicación.
+ * Opcional: MERCADOPAGO_TASA_USD.
  */
 'use strict';
 
 const https = require('https');
+const { createHmac, timingSafeEqual } = require('node:crypto');
 
 const limpio = v => String(v ?? '').trim().replace(/^(['"])(.*)\1$/s, '$2').trim();
 // Moneda de cada país de Mercado Pago (site_id de la cuenta)
@@ -27,6 +29,26 @@ function crear({ transporte, env = process.env } = {}) {
     const token = () => limpio(env.MERCADOPAGO_ACCESS_TOKEN || env.MP_ACCESS_TOKEN);
     const publicKey = () => limpio(env.MERCADOPAGO_PUBLIC_KEY || env.MP_PUBLIC_KEY);
     const configurado = () => !!(token() && publicKey());
+
+    const secretoWebhook = () => limpio(env.MERCADOPAGO_WEBHOOK_SECRET);
+    const webhookConfigurado = () => Boolean(secretoWebhook());
+    function firmaWebhookValida(id, requestId, firma) {
+        const secreto = secretoWebhook();
+        if (!secreto || typeof id !== 'string' || !/^\d{5,20}$/.test(id)
+            || typeof requestId !== 'string' || !/^[\w.-]{1,128}$/.test(requestId)
+            || typeof firma !== 'string' || firma.length > 256) return false;
+
+        const campos = new Map();
+        for (const par of firma.split(',')) {
+            const [clave, valor, extra] = par.trim().split('=');
+            if (!valor || extra !== undefined || campos.has(clave)) return false;
+            campos.set(clave, valor);
+        }
+        const ts = campos.get('ts'), v1 = campos.get('v1');
+        if (!/^\d{10}(?:\d{3})?$/.test(ts || '') || !/^[a-f0-9]{64}$/i.test(v1 || '')) return false;
+        const esperado = createHmac('sha256', secreto).update(`id:${id};request-id:${requestId};ts:${ts};`).digest();
+        return timingSafeEqual(esperado, Buffer.from(v1, 'hex'));
+    }
 
     function req(method, path, body, extra = {}) {
         if (transporte) return transporte(method, path, body, extra);
@@ -113,7 +135,7 @@ function crear({ transporte, env = process.env } = {}) {
         return { id: String(r.data.id), status: r.data.status, detalle: r.data.status_detail, monto: r.data.transaction_amount, moneda: r.data.currency_id, referencia: r.data.external_reference };
     }
 
-    return { activo, configurado, verificar, estado: () => ({ ...estado }), publicKey, tasa, tasaConfigurada, montoLocal, pagar, obtener, req };
+    return { activo, configurado, verificar, webhookConfigurado, firmaWebhookValida, estado: () => ({ ...estado }), publicKey, tasa, tasaConfigurada, montoLocal, pagar, obtener, req };
 }
 
 /** Motivo de rechazo en lenguaje claro (status_detail de Mercado Pago). */

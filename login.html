@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://upgames-production.up.railway.app; frame-src 'none'; worker-src 'self'">
     <!-- No cachear — el estado de sesión puede haber cambiado -->
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -667,44 +668,37 @@
             emailHint: document.getElementById("email-hint")
         };
 
-        // ── Disponibilidad en vivo (solo en modo registro) ─────────────
-        // Nombre y email son únicos: avisamos ANTES de enviar si ya existen.
-        const disp = { usuario: null, email: null };   // null = sin comprobar · true/false
-        const _dispTimers = {};
+        // Solo se comprueba el nombre público. El correo se valida localmente.
+        const disp = { usuario: null };
+        let dispTimer;
         function setHint(el, input, text, state) {
             el.textContent = text || '';
             el.className = 'field-hint' + (state ? ' ' + state : '') + (el === els.userHint && isLoginMode ? ' hidden' : '');
             input.classList.toggle('bad', state === 'bad');
         }
-        function checkDisp(campo) {
+        els.user.addEventListener('input', () => {
+            clearTimeout(dispTimer);
             if (isLoginMode) return;
-            const input = campo === 'usuario' ? els.user : els.email;
-            const hint  = campo === 'usuario' ? els.userHint : els.emailHint;
-            let v = input.value.trim();
-            if (campo === 'usuario') {
-                v = v.toLowerCase();
-                if (input.value !== v && !/\s$/.test(input.value)) input.value = v;
-                if (v && !/^[a-z0-9_]*$/.test(v)) { disp.usuario = false; return setHint(hint, input, 'Solo letras (a-z), números y _ — sin espacios ni tildes', 'bad'); }
-                if (v && v.length < 3) { disp.usuario = null; return setHint(hint, input, 'Mínimo 3 caracteres', ''); }
-            }
-            disp[campo] = null;
+            const input = els.user, hint = els.userHint, v = input.value.trim().toLowerCase();
+            disp.usuario = null;
             if (!v) return setHint(hint, input, '', '');
+            if (!/^[a-z0-9_]+$/.test(v)) {
+                disp.usuario = false;
+                return setHint(hint, input, 'Solo letras, números y guion bajo', 'bad');
+            }
+            if (v.length < 3) return setHint(hint, input, 'Mínimo 3 caracteres', '');
             setHint(hint, input, 'Comprobando…', '');
-            clearTimeout(_dispTimers[campo]);
-            _dispTimers[campo] = setTimeout(async () => {
+            dispTimer = setTimeout(async () => {
                 try {
-                    const r = await fetch(`${API_URL}/auth/disponibilidad?${campo}=${encodeURIComponent(v)}`);
-                    const d = await r.json();
-                    const info = d[campo];
-                    if ((campo === 'usuario' ? els.user : els.email).value.trim().toLowerCase() !== v.toLowerCase()) return; // ya cambió
+                    const r = await fetch(`${API_URL}/auth/disponibilidad?usuario=${encodeURIComponent(v)}`);
+                    const { usuario: info } = await r.json();
+                    if (isLoginMode || input.value.trim().toLowerCase() !== v) return;
                     if (!info) return setHint(hint, input, '', '');
-                    disp[campo] = !!info.disponible;
-                    setHint(hint, input, info.disponible ? (campo === 'usuario' ? `✓ @${v} está disponible` : '✓ Email disponible') : info.motivo, info.disponible ? 'ok' : 'bad');
+                    disp.usuario = !!info.disponible;
+                    setHint(hint, input, info.disponible ? `✓ @${v} está disponible` : info.motivo, info.disponible ? 'ok' : 'bad');
                 } catch (_) { setHint(hint, input, '', ''); }
             }, 450);
-        }
-        els.user.addEventListener('input', () => checkDisp('usuario'));
-        els.email.addEventListener('input', () => checkDisp('email'));
+        });
 
         // ── Leer parámetros de URL ─────────────────────────
         const _urlP       = new URLSearchParams(window.location.search);
@@ -866,7 +860,7 @@
             els.user.value = "";
             els.email.value = "";
             els.pass.value = "";
-            disp.usuario = disp.email = null;
+            disp.usuario = null;
             setHint(els.userHint, els.user, '', '');
             setHint(els.emailHint, els.email, '', '');
         };
@@ -903,8 +897,8 @@
                     return;
                 }
 
-                if (disp.usuario === false || disp.email === false) {
-                    showMsg("⚠️ " + (disp.usuario === false ? "Ese nombre de usuario no está disponible" : "Ese email ya tiene una cuenta"), "#ff4343");
+                if (disp.usuario === false) {
+                    showMsg("⚠️ Ese nombre de usuario no está disponible", "#ff4343");
                     return;
                 }
 
@@ -983,29 +977,15 @@
 
                 const data = await res.json();
 
-                if (data.success) {
-                    // Validar que el token es una cadena real antes de guardar
-                    if (!data.token || typeof data.token !== 'string' || data.token.length < 20) {
-                        showMsg("❌ Error de autenticación — intenta de nuevo", "#ff4343");
-                        setLoading(false);
-                        return;
-                    }
-                    // Prueba A/B de la bienvenida: ¿esta cuenta viene de haberla visto?
-                    try { const v = localStorage.getItem('ug_ab_bienv'), env = JSON.parse(localStorage.getItem('ug_ab_env') || '{}');
-                      if ((v === 'A' || v === 'B') && env['visto:inv']) fetch(`${API_URL}/ab/evento`, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exp: 'bienvenida', variante: v, evento: 'cuenta', modo: 'inv' }) }).catch(() => {}); } catch (_) {}
-                    // Limpiar sesión anterior antes de guardar la nueva (se conserva la variante A/B del dispositivo)
-                    ugLimpiarSesion();
-                    try { window.UGM?.evento('registro'); } catch (_) {}
-                    localStorage.setItem("token", data.token);
-                    localStorage.setItem("user_admin", data.usuario);
-                    localStorage.setItem("email", data.email);
-                    
-                    showMsg("✅ REGISTRO EXITOSO", "#32D583");
-                    setTimeout(() => window.location.replace(REDIRECT_URL), 500);
+                if (res.status === 202 && data.success) {
+                    els.toggle.click();
+                    els.user.value = email;
+                    els.pass.value = '';
+                    showMsg(data.mensaje, "#32D583");
+                    setLoading(false);
                 } else {
                     showMsg("❌ " + (data.error || "Error al registrar"), "#ff4343");
                     if (data.campo === 'usuario') { disp.usuario = false; setHint(els.userHint, els.user, data.error, 'bad'); }
-                    if (data.campo === 'email')   { disp.email = false;   setHint(els.emailHint, els.email, data.error, 'bad'); }
                     setLoading(false);
                 }
             } catch (error) {

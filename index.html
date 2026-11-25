@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://upload-widget.cloudinary.com https://widget.cloudinary.com https://sdk.mercadopago.com https://www.paypal.com https://www.paypalobjects.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src 'self' https: blob:; media-src 'self' https: blob: data:; worker-src 'self' blob:">
+<script src="/public/upgames-anuncios-aislados.js"></script>
 <!-- Portada de lurveta.com: es la biblioteca (antes /public/biblioteca.html, que ahora es un puente hacia aquí).
      Lo primero, antes de cargar nada: los enlaces de los correos y del login se atienden en /login.html
      (?reset_token, ?verif, ?volver, ?login, ?registro) y la invitación ?ref= se guarda 30 días para el registro. -->
@@ -2414,11 +2416,11 @@ if (_pfLoadProfileOrig) {
 (function () {
     var sin = false; try { var v = String(localStorage.getItem('ug_pase_hasta') || '').split('|'); sin = !!localStorage.getItem('token') && v[0] === localStorage.getItem('user_admin') && +v[1] > Date.now(); } catch (_) {}
     if (sin) return;
-    var w = function (h) { document.write(h); };
-    w('<script>atOptions={"key":"0af19e39530f3a17d0722c5f0c91735a","format":"iframe","height":250,"width":300,"params":{}};<\/script><script data-cfasync="false" src="https://www.highperformanceformat.com/0af19e39530f3a17d0722c5f0c91735a/invoke.js"><\/script>');
-    w('<div id="container-bee2b46adf997334693eadeec583df85"></div>');
-    var s = document.createElement('script'); s.async = true; s.setAttribute('data-cfasync', 'false'); s.src = 'https://bellnewyork.org/21/bee2b46adf997334693eadeec583df85'; document.body.appendChild(s);
-    w('<script>atOptions={"key":"247173c86298a1f5a8e01a0e1c5889cd","format":"iframe","height":600,"width":160,"params":{}};<\/script><script data-cfasync="false" src="https://www.highperformanceformat.com/247173c86298a1f5a8e01a0e1c5889cd/invoke.js"><\/script>');
+    document.getElementById('ug-banners-fondo').append(
+        ugMarcoAnuncio('rectangulo', 300, 250),
+        ugMarcoAnuncio('social', 300, 250),
+        ugMarcoAnuncio('vertical', 160, 600)
+    );
 })();
 </script>
 </div>

@@ -4,7 +4,7 @@
  * Identidad única (usuario y email), registro, inicio de sesión y verificación.
  * Extraído de index.js: recibe sus dependencias explícitas (ver la llamada en index.js).
  */
-module.exports = function auth({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Limites, Referidos, Usuario, app, bcrypt, body, crypto, emailVerifTemplate, firmarToken, gamification, gmailLegacyEmail, logger, sendEmail, twoFactor, validationResult }) {
+module.exports = function auth({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Limites, RegistroPendiente, Usuario, app, bcrypt, body, crypto, correoPermitido, emailVerifTemplate, firmarToken, gamification, gmailLegacyEmail, logger, sendEmail, twoFactor, validationResult }) {
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 const NOMBRES_RESERVADOS = new Set(['admin', 'administrador', 'upgames', 'nexus', 'soporte', 'support',
     'moderador', 'mod', 'staff', 'sistema', 'system', 'root', 'oficial', 'official', 'coral', 'rouce', 'roucedev']);
@@ -21,7 +21,7 @@ function mensajeDuplicado(err) {
     const campo = Object.keys(err.keyPattern || err.keyValue || {})[0] || '';
     return campo === 'email' ? 'Ese email ya está registrado en otra cuenta' : 'Ese nombre de usuario ya está en uso';
 }
-// GET /auth/disponibilidad?usuario=&email= — comprobación en vivo al escribir
+// GET /auth/disponibilidad?usuario= — solo comprueba nombres públicos.
 app.get('/auth/disponibilidad', async (req, res) => {
     if (!(await Limites.permitir(`disp:${req.ip || ''}`, [[Limites.MIN, 40]]))) return res.status(429).json({ success: false, error: 'Demasiadas consultas, espera un momento' });
     try {
@@ -35,19 +35,16 @@ app.get('/auth/disponibilidad', async (req, res) => {
                 out.usuario = existe ? { disponible: false, motivo: `@${n} ya existe. Prueba con otro nombre` } : { disponible: true };
             }
         }
-        if (typeof req.query.email === 'string' && req.query.email.trim()) {
-            const e = req.query.email.trim().toLowerCase();
-            if (!/^\S+@\S+\.\S+$/.test(e)) out.email = { disponible: false, motivo: 'Email inválido' };
-            else {
-                const existe = await Usuario.exists({ email: e });
-                out.email = existe ? { disponible: false, motivo: 'Ese email ya tiene una cuenta. ¿Quieres iniciar sesión?' } : { disponible: true };
-            }
-        }
         res.json(out);
     } catch (err) {
         logger.error(`[disponibilidad] ${err.message}`);
         res.status(500).json({ success: false, error: 'No se pudo comprobar' });
     }
+});
+
+const registroRecibido = res => res.status(202).json({
+    success: true, ok: true,
+    mensaje: 'Revisa tu correo para verificar la cuenta. Si ya tienes una, inicia sesión o recupera tu contraseña.',
 });
 
 app.post('/auth/register', [
@@ -64,40 +61,30 @@ app.post('/auth/register', [
         if (errNombre) return res.status(400).json({ success: false, error: errNombre, campo: 'usuario' });
         const registrationIP = req.ip;
 
-        const [existeUsuario, existeEmail] = await Promise.all([
-            Usuario.findOne({ usuario: usuario.toLowerCase() }).select('_id').lean(),
-            Usuario.findOne({ email: email.toLowerCase() }).select('_id').lean()
-        ]);
+        const existeUsuario = await Usuario.exists({ usuario });
         if (existeUsuario) return res.status(409).json({ success: false, error: `El nombre @${usuario.toLowerCase()} ya está en uso. Elige otro`, campo: 'usuario' });
-        if (existeEmail) return res.status(409).json({ success: false, error: "Ese email ya tiene una cuenta. Inicia sesión o recupera tu contraseña", campo: 'email' });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const emailClave = crypto.createHash('sha256').update(email).digest('hex');
+        if (!(await correoPermitido('registro', emailClave))) return registroRecibido(res);
+        const passwordHash = await bcrypt.hash(password, 10);
+        if (await Usuario.exists({ email })) return registroRecibido(res);
+
         const verifToken = crypto.randomBytes(32).toString('hex');
-
-        const nuevoUsuario = new Usuario({
-            usuario: usuario.toLowerCase(), email: email.toLowerCase(), password: hashedPassword,
-            registrationIP, emailVerifToken: verifToken, emailVerifExpires: new Date(Date.now() + 24 * 60 * 60 * 1000), emailVerificado: false
+        const ref = typeof req.body.ref === 'string' ? req.body.ref : req.body.codigoReferral;
+        await RegistroPendiente.create({
+            usuario, email, password: passwordHash, registrationIP,
+            referido: typeof ref === 'string' ? ref.slice(0, 40) : '',
+            tokenHash: crypto.createHash('sha256').update(verifToken).digest('hex'),
+            vence: new Date(Date.now() + 24 * 60 * 60 * 1000),
         });
-        await nuevoUsuario.save();
-        logger.info(`Nuevo usuario registrado: @${usuario} (${email})`);
-
-        // ── Referidos: ?ref=<usuario> (o código viejo). Se paga al verificar el email ──
-        const ref = typeof req.body.ref === 'string' ? req.body.ref : (typeof req.body.codigoReferral === 'string' ? req.body.codigoReferral : '');
-        if (ref) {
-            Referidos.alRegistrar(Usuario, nuevoUsuario.usuario, ref, registrationIP).catch(() => {});
-            require('../modulos/socialFeed').registrarReferido(ref, nuevoUsuario.usuario).catch(() => {});
-        }
-
         const verifLink = `${API_URL_SELF}/auth/verify-email/${verifToken}`;
         sendEmail({ to: email, subject: '✅ Verifica tu email en Lurveta', html: emailVerifTemplate(usuario, verifLink) }).catch(() => {});
-
-        const token = firmarToken(nuevoUsuario);
-        res.status(201).json({ success: true, ok: true, token, usuario: nuevoUsuario.usuario, email: nuevoUsuario.email, emailVerificado: false, mensaje: 'Cuenta creada. Revisa tu email para verificar tu cuenta.', datosUsuario: { usuario: nuevoUsuario.usuario, email: nuevoUsuario.email, verificadoNivel: nuevoUsuario.verificadoNivel, isVerificado: nuevoUsuario.isVerificado, emailVerificado: false } });
+        return registroRecibido(res);
     } catch (error) {
         // Dos registros simultáneos con el mismo nombre/email: el índice único lo frena
         const dup = mensajeDuplicado(error);
-        if (dup) return res.status(409).json({ success: false, error: dup, campo: /email/i.test(dup) ? 'email' : 'usuario' });
-        logger.error(`Error en register: ${error.message}`);
+        if (dup) return res.status(409).json({ success: false, error: dup, campo: 'usuario' });
+        logger.error(`Error en register: ${error.name} (${error.code || "sin código"})`);
         res.status(500).json({ success: false, error: "Error al registrar usuario" });
     }
 });
@@ -133,7 +120,7 @@ app.post('/auth/login', [body('usuario').isString().notEmpty(), body('password')
             }
         }
 
-        const token = firmarToken(usuario);
+        const token = firmarToken(usuario, req);
         logger.info(`Login exitoso: @${usuario.usuario}`);
 
         // ── Hook gamificación: racha diaria (fire & forget) ──

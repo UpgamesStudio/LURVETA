@@ -96,6 +96,7 @@ function registrar(app, deps) {
     const avisar = (destinatario, itemTitle, mensaje) => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'Lurveta', itemTitle, mensaje, leida: false, fecha: new Date() }).catch(() => {});
     const olvidarPerfil = deps.olvidarPerfil || (() => {});
     const mp = deps.mp || MP.crear();
+    if (mp.configurado() && !mp.webhookConfigurado()) logger.warn('[pagos] Configura MERCADOPAGO_WEBHOOK_SECRET para exigir la firma del webhook.');
     const ok = (res, d) => res.json({ success: true, ...d });
     const err = (res, code, error, extra) => res.status(code).json({ success: false, error, ...extra });
 
@@ -350,7 +351,11 @@ function registrar(app, deps) {
     });
 
     // ── Mercado Pago: tarjeta con Card Payment Brick ────────────────────────
-    const notificacionMP = () => (apiUrlSelf && /^https:/.test(apiUrlSelf)) ? `${apiUrlSelf}/pagos/mercadopago/webhook` : undefined;
+    const notificacionMP = () => {
+        // Con firma, la URL y el evento Pagos se configuran en la aplicación de Mercado Pago.
+        if (mp.webhookConfigurado() || !apiUrlSelf || !/^https:/.test(apiUrlSelf)) return undefined;
+        return `${apiUrlSelf}/pagos/mercadopago/webhook`;
+    };
     app.post('/pagos/mp/pagar', verificarToken, async (req, res) => {
         try {
             if (!mp.activo()) return err(res, 503, 'El pago con tarjeta no está disponible en este momento');
@@ -390,9 +395,14 @@ function registrar(app, deps) {
     // primero y un fallo pasajero dejaba un pago aprobado sin entregar). Entregar es idempotente (ref única).
     app.post('/pagos/mercadopago/webhook', async (req, res) => {
         try {
-            if (!mp.activo()) return res.sendStatus(200);
-            const tipo = req.body?.type || req.body?.topic || req.query.type || req.query.topic;
-            const id = req.body?.data?.id || req.query['data.id'] || req.query.id;
+            if (!mp.configurado()) return res.sendStatus(204);
+            if (!mp.activo()) return res.sendStatus(503);
+            const exigirFirma = mp.webhookConfigurado();
+            const idURL = req.query['data.id'];
+            if (exigirFirma && !mp.firmaWebhookValida(idURL, req.get('x-request-id'), req.get('x-signature')))
+                return res.sendStatus(401);
+            const tipo = req.query.type || req.body?.type || req.body?.topic || req.query.topic;
+            const id = exigirFirma ? idURL : (idURL || req.body?.data?.id || req.query.id);
             if (tipo !== 'payment' || !/^\d{5,20}$/.test(String(id || ''))) return res.sendStatus(200);
             const pago = await mp.obtener(id);
             if (!pago) return res.sendStatus(500);   // no se pudo consultar: que Mercado Pago reintente

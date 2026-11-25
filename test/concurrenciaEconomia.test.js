@@ -101,9 +101,11 @@ const silencio = { info() {}, warn() {}, error() {} };
         // Tienda real (rutas/tienda.js) con Mercado Pago simulado: COP a 4.000 por dólar, cambiable en la prueba
         const MP = require('../modulos/mercadopago');
         const mpPagos = new Map();
-        const mpEnv = { MERCADOPAGO_ACCESS_TOKEN: 'APP_USR-x', MERCADOPAGO_PUBLIC_KEY: 'APP_USR-pk', MERCADOPAGO_TASA_USD: '4000' };
+        const mpEnv = { MERCADOPAGO_ACCESS_TOKEN: 'APP_USR-x', MERCADOPAGO_PUBLIC_KEY: 'APP_USR-pk', MERCADOPAGO_TASA_USD: '4000', MERCADOPAGO_WEBHOOK_SECRET: 'secreto-webhook-de-prueba' };
+        let consultasPago = 0;
         const mp = MP.crear({ env: mpEnv, transporte: async (m, ruta) => {
             if (ruta === '/users/me') return { status: 200, data: { site_id: 'MCO' } };
+            consultasPago++;
             const pg = mpPagos.get(ruta.split('/').pop());
             return pg ? { status: 200, data: pg } : { status: 404, data: {} };
         } });
@@ -395,14 +397,30 @@ const silencio = { info() {}, warn() {}, error() {} };
         });
 
         // Webhook de Mercado Pago contra las rutas reales de la tienda
-        const webhook = id => fetch(`${base}/pagos/mercadopago/webhook`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'payment', data: { id } }) }).then(r => r.status);
+        const webhook = (id, { enviarFirma = true, idCuerpo = id, idFirmado = id } = {}) => {
+            const ts = String(Math.floor(Date.now() / 1000));
+            const requestId = 'aviso-de-prueba';
+            const v1 = require('node:crypto').createHmac('sha256', mpEnv.MERCADOPAGO_WEBHOOK_SECRET)
+                .update(`id:${idFirmado};request-id:${requestId};ts:${ts};`).digest('hex');
+            return fetch(`${base}/pagos/mercadopago/webhook?data.id=${id}&type=payment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...(enviarFirma ? { 'x-request-id': requestId, 'x-signature': `ts=${ts},v1=${v1}` } : {}) },
+                body: JSON.stringify({ type: 'payment', data: { id: idCuerpo } }),
+            }).then(r => r.status);
+        };
+        await test('Mercado Pago rechaza antes de consultar si falta la firma o el ID firmado difiere', async () => {
+            const antes = consultasPago;
+            assert.strictEqual(await webhook('55500011', { enviarFirma: false }), 401);
+            assert.strictEqual(await webhook('55500011', { idFirmado: '55500012' }), 401);
+            assert.strictEqual(consultasPago, antes);
+        });
         await test('Mercado Pago aprobado TARDE con otra tasa: se entrega lo cobrado, una sola vez aunque el aviso se repita', async () => {
             await Usuario.create({ usuario: 'rosa', monedas: 0 });
             const p = Tienda.parsear('monedas:p500'), usd = Tienda.precioUsd(p, 'tarjeta_mp');
             const cobrado = Math.ceil(usd * 4000 / 100) * 100;   // monto con la tasa del momento del pago
             mpEnv.MERCADOPAGO_TASA_USD = '4400';                 // la tasa cambió antes de que el banco aprobara
             mpPagos.set('55500011', { id: 55500011, status: 'approved', transaction_amount: cobrado, currency_id: 'COP', external_reference: `rosa|${p.id}|${cobrado}|${usd}` });
-            const estados = await Promise.all([webhook('55500011'), webhook('55500011'), webhook('55500011')]);
+            const estados = await Promise.all([webhook('55500011', { idCuerpo: '55599999' }), webhook('55500011'), webhook('55500011')]);
             assert.deepStrictEqual(estados, [200, 200, 200]);
             assert.strictEqual((await Usuario.findOne({ usuario: 'rosa' }).lean()).monedas, p.paquete.monedas);
             mpEnv.MERCADOPAGO_TASA_USD = '4000';
