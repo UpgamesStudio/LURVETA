@@ -42,13 +42,14 @@ const NO_VACIAN = /^\/(items\/vistas|misiones\/evento|nexus\/evento|errores\/cli
 const MAX_ENTRADAS = 600;
 const MAX_BYTES = 400 * 1024;       // respuestas más grandes no se guardan
 
-function crear({ secreto, ahora = () => Date.now() } = {}) {
+function crear({ secreto, usuarioOpcional, ahora = () => Date.now() } = {}) {
     const mapa = new Map();         // clave → { exp, cuerpo, tipo, cc }
     const est = { hits: 0, misses: 0, vaciados: 0 };
 
     const ttlDe = (ruta) => { for (const [re, s] of RUTAS) if (re.test(ruta)) return s; return 0; };
     const usuarioDe = (req) => {
         const t = String(req.headers.authorization || '').split(' ')[1];
+        if (usuarioOpcional) return usuarioOpcional(req) || (t ? '?' : '');
         if (!t || t.length < 20 || !secreto) return '';
         try { return jwt.verify(t, secreto).usuario || ''; } catch (_) { return '?'; }
     };

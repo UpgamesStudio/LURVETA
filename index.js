@@ -222,7 +222,6 @@ app.use((req, res, next) => {
         return res.status(400).json({ success: false, error: 'Esa categoría ya no existe en Lurveta. Elige otra categoría.', code: 'SIN_ROMS' });
     next();
 });
-app.use(require('./modulos/sinEnlace').middleware({ usuarioOpcional: req => usuarioOpcional(req) }));
 
 // ========== ENLACES DE DESCARGA PROTEGIDOS ==========
 // El enlace real solo se entrega por POST /economia/validar-descarga (página
@@ -247,15 +246,6 @@ function limpiarPublico(v, yo, prof) {
     }
     return out;
 }
-app.use((req, res, next) => {
-    if (req.method !== 'GET' || /^\/(admin|auth|economia|nexus)\b/.test(req.path)) return next();
-    let yo = null;
-    const t = req.headers.authorization?.split(' ')[1];
-    if (t && t.length > 20) { try { yo = jwt.verify(t, JWT_SECRET).usuario; } catch (_) {} }
-    const json = res.json.bind(res);
-    res.json = body => json(limpiarPublico(body, yo, 0));
-    next();
-});
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // ========== RATE LIMITING ==========
@@ -308,6 +298,23 @@ app.use('/auth/register', authLimiter);
 app.use('/items/add', createLimiter);
 app.use('/economia/validar-descarga', downloadValidationLimiter);
 app.use(generalLimiter);
+
+app.use((req, res, next) => {
+    const token = tokenDePeticion(req);
+    if (!token) return next();
+    validarSesion(token).then(sesion => {
+        req.sesion = sesion;
+        next();
+    }, next);
+});
+app.use(require('./modulos/sinEnlace').middleware({ usuarioOpcional }));
+app.use((req, res, next) => {
+    if (req.method !== 'GET' || /^\/(admin|auth|economia|nexus)\b/.test(req.path)) return next();
+    const yo = usuarioOpcional(req);
+    const json = res.json.bind(res);
+    res.json = body => json(limpiarPublico(body, yo, 0));
+    next();
+});
 // Lurveta Blogs con dominio propio: en el dominio de un creador TODAS las rutas son de su blog,
 // así que se decide aquí, por el encabezado Host, antes que cualquier otra ruta (rutas/blogs.js)
 let blogsPorHost = null;
@@ -333,7 +340,7 @@ const JWT_SECRET  = config.JWT_SECRET;
 
 // Caché corta de lecturas públicas (perfil, ficha, favoritos, comentarios, rankings…):
 // cada consulta a Mongo cuesta ~200 ms; las escrituras la vacían al momento (modulos/cacheRespuestas.js)
-const cacheRespuestas = require('./modulos/cacheRespuestas').crear({ secreto: JWT_SECRET });
+const cacheRespuestas = require('./modulos/cacheRespuestas').crear({ usuarioOpcional });
 app.use(cacheRespuestas.middleware);
 
 cloudinary.config({
@@ -762,76 +769,37 @@ const Story = mongoose.model('Story', StorySchema);
 // contraseña la versión sube y los tokens anteriores dejan de valer (antes un token
 // robado seguía sirviendo 30 días aunque cambiaras la contraseña).
 const firmarToken = u => jwt.sign({ usuario: u.usuario, email: u.email, sv: u.sesionVer || 0 }, JWT_SECRET, { expiresIn: '30d' });
-const versionSesion = new Map();   // usuario → { v, t } (caché 60 s: no consultar Mongo en cada petición)
-async function versionActual(usuario) {
-    const c = versionSesion.get(usuario);
-    if (c && Date.now() - c.t < 60000) return c.v;
-    const u = await Usuario.findOne({ usuario }).select('sesionVer').lean();
-    const v = u ? (u.sesionVer || 0) : -1;
-    if (versionSesion.size > 50000) versionSesion.clear();
-    versionSesion.set(usuario, { v, t: Date.now() });
-    return v;
-}
-async function cerrarOtrasSesiones(usuario) {
-    const u = await Usuario.findOneAndUpdate({ usuario }, { $inc: { sesionVer: 1 } }, { new: true }).select('usuario email sesionVer').lean();
-    versionSesion.delete(usuario);
-    return u;
+const validarSesion = require('./modulos/sesiones').crear({
+    secreto: JWT_SECRET,
+    buscarCuenta: usuario => Usuario.findOne({ usuario }).select('sesionVer suspendido').lean(),
+    estaSuspendido: usuario => adminPanel.estaSuspendido(usuario),
+});
+function tokenDePeticion(req) {
+    return /^Bearer (\S+)$/i.exec(req.headers.authorization || '')?.[1];
 }
 
 // ========== MIDDLEWARE JWT ==========
 const presenciaEscrita = new Map();   // usuario → ms de la última escritura de ultimoLogin
 const verificarToken = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(' ')[1];
+    const { datos, status = 401, error = 'Sesión no iniciada', code = 'NO_TOKEN' } = req.sesion || {};
+    if (!datos) return res.status(status).json({ success: false, error, code });
 
-    // Detectar "Bearer null" o "Bearer undefined" que llegan del frontend
-    if (!token || token === 'null' || token === 'undefined' || token.length < 20) {
-        return res.status(401).json({ success: false, error: "Sesión no iniciada", code: "NO_TOKEN" });
+    req.usuario = datos.usuario;
+    req.userTokenData = datos;
+    const ahoraMs = Date.now();
+    if ((presenciaEscrita.get(datos.usuario) || 0) < ahoraMs - 60000) {
+        presenciaEscrita.set(datos.usuario, ahoraMs);
+        if (presenciaEscrita.size > 50000) presenciaEscrita.clear();
+        const ip = CeroTolerancia.ipDe(req);
+        Usuario.updateOne({ usuario: datos.usuario }, ip
+            ? [{ $set: { ultimoLogin: '$$NOW', ultimaIp: ip, ipsVistas: { $slice: [{ $setUnion: [[ip], { $ifNull: ['$ipsVistas', []] }] }, 40] } } }]
+            : { $set: { ultimoLogin: new Date() } }).catch(() => {});
     }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        if (adminPanel.estaSuspendido(decoded.usuario))
-            return res.status(403).json({ success: false, error: 'Tu cuenta está suspendida. Contacta a soporte.', code: 'SUSPENDIDO' });
-        req.usuario = decoded.usuario;
-        req.userTokenData = decoded;
-
-        // Presencia: actualizar ultimoLogin como máximo una vez por minuto
-        // (antes era una escritura en la BD en CADA petición autenticada)
-        const ahoraMs = Date.now();
-        if ((presenciaEscrita.get(decoded.usuario) || 0) < ahoraMs - 60000) {
-            presenciaEscrita.set(decoded.usuario, ahoraMs);
-            if (presenciaEscrita.size > 50000) presenciaEscrita.clear();
-            const ip = CeroTolerancia.ipDe(req);
-            Usuario.updateOne({ usuario: decoded.usuario }, ip
-                ? [{ $set: { ultimoLogin: '$$NOW', ultimaIp: ip, ipsVistas: { $slice: [{ $setUnion: [[ip], { $ifNull: ['$ipsVistas', []] }] }, 40] } } }]
-                : { $set: { ultimoLogin: new Date() } }).catch(() => {});
-        }
-
-        // Sesión revocada (cambió la contraseña en otro dispositivo) o cuenta eliminada
-        versionActual(decoded.usuario).then(v => {
-            if (v === -1) return res.status(401).json({ success: false, error: 'La cuenta ya no existe', code: 'TOKEN_INVALID' });
-            if ((decoded.sv || 0) !== v) return res.status(401).json({ success: false, error: 'Tu contraseña cambió. Vuelve a iniciar sesión.', code: 'SESSION_REVOKED' });
-            next();
-        }, () => next());   // si Mongo falla un instante, no tumbar todas las sesiones
-    } catch (error) {
-        // Distinguir expirado vs firma inválida
-        const code = error.name === 'TokenExpiredError' ? 'TOKEN_EXPIRED' : 'TOKEN_INVALID';
-        const msg  = code === 'TOKEN_EXPIRED'
-            ? 'Tu sesión expiró, vuelve a iniciar sesión'
-            : 'Sesión inválida, vuelve a iniciar sesión';
-        return res.status(401).json({ success: false, error: msg, code });
-    }
+    next();
 };
 
-// Sesión opcional: devuelve el usuario si el token es válido, o null (invitado)
 function usuarioOpcional(req) {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token || token.length < 20) return null;
-    try {
-        const u = jwt.verify(token, JWT_SECRET).usuario;
-        return u && !adminPanel.estaSuspendido(u) ? u : null;
-    } catch (_) { return null; }
+    return req.sesion?.datos?.usuario || null;
 }
 
 // ========== CONSTANTES DE ECONOMÍA ==========
@@ -972,8 +940,12 @@ app.post('/auth/reset-password', [body('token').notEmpty(), body('password').isL
         const usuario = await Usuario.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: new Date() } });
         if (!usuario) return res.status(400).json({ success: false, error: 'El link es inválido o ya expiró. Solicita uno nuevo.' });
         // updateOne (no save): una cuenta antigua que no cumpla alguna validación actual no debe quedar sin poder recuperar su contraseña
-        await Usuario.updateOne({ _id: usuario._id }, { $set: { password: await bcrypt.hash(password, 10), resetPasswordToken: null, resetPasswordExpires: null, resetCodigoHash: null, resetCodigoExpires: null, resetCodigoIntentos: 0 }, $inc: { sesionVer: 1 } });   // cierra todas las sesiones abiertas
-        versionSesion.delete(usuario.usuario);
+        const hashed = await bcrypt.hash(password, 10);
+        const resultado = await Usuario.updateOne(
+            { _id: usuario._id, resetPasswordToken: token, resetPasswordExpires: { $gt: new Date() } },
+            { $set: { password: hashed, resetPasswordToken: null, resetPasswordExpires: null, resetCodigoHash: null, resetCodigoExpires: null, resetCodigoIntentos: 0 }, $inc: { sesionVer: 1 } }
+        );
+        if (!resultado.modifiedCount) return res.status(400).json({ success: false, error: 'El link es inválido o ya expiró. Solicita uno nuevo.' });
         logger.info(`Contraseña restablecida: @${usuario.usuario}`);
         res.json({ success: true, mensaje: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.' });
     } catch (err) {
@@ -1084,7 +1056,7 @@ const _admin = require('./rutas/admin')({ Comentario, DescargaIP, Juego, Notific
 const { revisionIA } = _admin;
 
 
-const _items = require('./rutas/items')({ CeroTolerancia, ContenidoLegal, JWT_SECRET, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, jwt, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, validationResult, verificarAdmin, verificarToken });   // Publicaciones: catálogo, publicar, editar y reportes
+const _items = require('./rutas/items')({ CeroTolerancia, ContenidoLegal, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, usuarioOpcional, validationResult, verificarAdmin, verificarToken });   // Publicaciones: catálogo, publicar, editar y reportes
 const { LINKS_PERMITIDOS, errorLinkPublicacion } = _items;
 _admin.vincularTarde({ errorLinkPublicacion });   // rutas/admin.js usa estas dependencias, creadas después de registrar el módulo
 
@@ -1098,7 +1070,7 @@ require('./rutas/usuarios')({ Juego, Usuario, adminPanel, app, body, cacheado, l
 // ========== PERFIL ==========
 
 // Endpoint dedicado para Nexus — devuelve solo las stats que necesita, sin bajar lista completa
-const { urlImagenSegura } = require('./rutas/perfil')({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Extras, Juego, UCmod, Usuario, adminPanel, app, bcrypt, body, cacheado, cerrarOtrasSesiones, cloudinary, crearNotif, crypto, emailVerifTemplate, errorNombreUsuario, firmarToken, logger, mensajeDuplicado, mongoose, sendEmail, validationResult, verificarToken, versionActual });   // Perfil: datos, seguidores, ajustes y subida directa a Cloudinary
+const { urlImagenSegura } = require('./rutas/perfil')({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Extras, Juego, UCmod, Usuario, adminPanel, app, bcrypt, body, cacheado, cloudinary, crearNotif, crypto, emailVerifTemplate, errorNombreUsuario, firmarToken, logger, mensajeDuplicado, mongoose, sendEmail, validationResult, verificarToken });   // Perfil: datos, seguidores, ajustes y subida directa a Cloudinary
 
 // ========== COMENTARIOS ==========
 
@@ -1224,7 +1196,7 @@ rutasMejoras.registrar(app, { verificarToken, verificarAdmin });
 // ========== LIVE: transmisiones, chat en tiempo real, monedas y regalos ==========
 const server = require('http').createServer(app);
 const live = require('./rutas/live').registrar(app, server, {
-    verificarToken, verificarAdmin, Usuario, Notificacion, logger, config, JWT_SECRET,
+    verificarToken, verificarAdmin, Usuario, Notificacion, logger, config, validarSesion, usuarioOpcional,
     estaSuspendido: u => adminPanel.estaSuspendido(u), getPayPalAccessToken,
 });
 // Lurveta RACING (games/monoplaza): mejoras y cosméticos con UpCoins y salas multijugador (Socket.IO /apexgp)

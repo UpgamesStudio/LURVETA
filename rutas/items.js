@@ -4,7 +4,7 @@
  * GET /items (orden de Nexus), publicar con verificación de títulos comerciales, editar, reportes, vistas, series y plantillas.
  * Extraído de index.js: recibe sus dependencias explícitas (ver la llamada en index.js).
  */
-module.exports = function items({ CeroTolerancia, ContenidoLegal, JWT_SECRET, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, jwt, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, validationResult, verificarAdmin, verificarToken }) {
+module.exports = function items({ CeroTolerancia, ContenidoLegal, Juego, Limites, Moderacion, Notificacion, Ranking, Reporte, Sospecha, StatsItems, Usuario, app, body, cacheado, calcularScoreRecomendacion, cloudinary, crearNotif, esCategoriaRom, gameDetector, gamification, logger, moderarPublicacion, mongoose, nexusLLM, nexusMentor, param, recommendations, revisionIA, series, usuarioOpcional, validationResult, verificarAdmin, verificarToken }) {
 // Creadas en index.js después de registrar este módulo: llegan con vincularTarde()
 let paginasSeoPronto;
 app.put("/items/report/:id", [verificarToken, param('id').isMongoId(), body('motivo').isIn(['caido', 'viejo', 'malware'])], async (req, res) => {
@@ -121,9 +121,7 @@ app.get("/items/user/:usuario", async (req, res) => {
         // Los proyectos privados (status 'privado') no se listan en el perfil público: solo accesibles por link directo.
         // El autor ve todo lo suyo (pendiente/rechazado incluidos y cada parte por separado);
         // los demás solo lo aprobado, con las series agrupadas como en el catálogo.
-        let yo = null;
-        const t = req.headers.authorization?.split(' ')[1];
-        if (t && t.length > 20) { try { yo = jwt.verify(t, JWT_SECRET).usuario; } catch (_) {} }
+        const yo = usuarioOpcional(req);
         const propio = yo && yo === String(req.params.usuario).toLowerCase();
         const filtro = propio ? { usuario: req.params.usuario, status: { $ne: 'privado' } } : { usuario: req.params.usuario, status: 'aprobado' };
         const aportes = await Juego.find(filtro).select('_id title description image images link category usuario reportes reportesDesglose linkStatus descargasEfectivas vistas likesCount status createdAt scoreRecomendacion extraData videoType featuredItemId serie guiaInstalacion tutorialId motivoRechazo nexusMentor destacadoHasta promoNivel promoUCDia meGustaCount prioridadDesde prioridadReembolso').sort({ scoreRecomendacion: -1, createdAt: -1 }).lean();
@@ -443,13 +441,16 @@ app.delete("/items/:id", async (req, res) => {
                 res.json({ success: true, ok: true });
             });
         } else if (bearerToken) {
-            try {
-                const decoded = jwt.verify(bearerToken, JWT_SECRET);
-                if (item.usuario !== decoded.usuario) return res.status(403).json({ success: false, error: "No tienes permiso para eliminar esta publicación" });
-                await Juego.findByIdAndDelete(req.params.id);
-                logger.info(`Usuario @${decoded.usuario} eliminó su publicación: ${item.title}`);
-                return res.json({ success: true, ok: true });
-            } catch { return res.status(401).json({ success: false, error: "Token inválido o expirado" }); }
+            return verificarToken(req, res, async () => {
+                try {
+                    if (item.usuario !== req.usuario) return res.status(403).json({ success: false, error: "No tienes permiso para eliminar esta publicación" });
+                    await Juego.findByIdAndDelete(req.params.id);
+                    logger.info(`Usuario @${req.usuario} eliminó su publicación: ${item.title}`);
+                    res.json({ success: true, ok: true });
+                } catch (error) {
+                    res.status(500).json({ success: false, error: "Error al eliminar" });
+                }
+            });
         } else {
             return res.status(401).json({ success: false, error: "Se requiere autenticación para eliminar" });
         }

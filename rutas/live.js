@@ -12,7 +12,6 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 const L = require('../modulos/live');
 const Moderacion = require('../modulos/moderacion');
@@ -73,7 +72,7 @@ const Live = mongoose.models.Live || mongoose.model('Live', LiveSchema);
 const LiveTx = mongoose.models.LiveTx || mongoose.model('LiveTx', TxSchema);
 
 function registrar(app, server, deps) {
-    const { verificarToken, verificarAdmin, Usuario, Notificacion, logger, config, JWT_SECRET, estaSuspendido, getPayPalAccessToken } = deps;
+    const { verificarToken, verificarAdmin, Usuario, Notificacion, logger, config, validarSesion, usuarioOpcional, estaSuspendido, getPayPalAccessToken } = deps;
     const paypal = PayPal.crear(config, getPayPalAccessToken);
     const pp = paypal.req;
     const ppActivo = paypal.activo;
@@ -104,15 +103,9 @@ function registrar(app, server, deps) {
         maxHttpBufferSize: 64 * 1024,     // SDP/ICE caben de sobra; nada de archivos
     });
 
-    io.use((socket, next) => {
-        const t = socket.handshake.auth?.token;
-        socket.data.usuario = null;
-        if (t && typeof t === 'string' && t.length > 20) {
-            try {
-                const u = jwt.verify(t, JWT_SECRET).usuario;
-                if (u && !estaSuspendido(u)) socket.data.usuario = u;
-            } catch (_) { /* invitado */ }
-        }
+    io.use(async (socket, next) => {
+        const { datos } = await validarSesion(socket.handshake.auth?.token);
+        socket.data.usuario = datos?.usuario || null;
         next();
     });
 
@@ -229,6 +222,24 @@ function registrar(app, server, deps) {
     io.on('connection', socket => {
         const yo = () => socket.data.usuario;
         socket.data.lives = new Set();
+        if (yo()) {
+            const token = socket.handshake.auth.token;
+            let comprobacion;
+            const comprobar = () => {
+                comprobacion ??= validarSesion(token).finally(() => { comprobacion = undefined; });
+                return comprobacion;
+            };
+            socket.use(async (_packet, continuar) => {
+                if ((await comprobar()).datos) continuar();
+                else socket.disconnect();
+            });
+            // Revoca también las conexiones que solo reciben eventos.
+            const revisar = setInterval(async () => {
+                if (!(await comprobar()).datos) socket.disconnect();
+            }, 30000).unref();
+            socket.once('disconnect', () => clearInterval(revisar));
+        }
+
 
         socket.on('unirse', async (p = {}, ack) => {
             const responder = typeof ack === 'function' ? ack : () => {};
@@ -394,7 +405,7 @@ function registrar(app, server, deps) {
             const perfiles = new Map((await Usuario.find({ usuario: { $in: lives.map(l => l.creador) } }).select('usuario avatar verificadoNivel descargasTotales listaSeguidores').lean()).map(u => [u.usuario, u]));
             // Posición: lo orgánico pesa más (espectadores, seguidores, descargas, likes) y los
             // UpCoins de promoción son un plus que crece cada vez menos (no se compra el primer puesto)
-            const yo = (() => { try { const t = String(req.headers.authorization || '').split(' ')[1]; return t && t.length > 20 ? jwt.verify(t, JWT_SECRET).usuario : null; } catch (_) { return null; } })();
+            const yo = usuarioOpcional(req);
             const lista = lives.map(l => {
                 const p = perfiles.get(l.creador) || {}, x = publico(l, sala(l._id));
                 const seg = (p.listaSeguidores || []).length;

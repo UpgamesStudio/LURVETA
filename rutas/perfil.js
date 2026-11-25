@@ -4,7 +4,7 @@
  * Perfil público, seguir/dejar de seguir, cambios de avatar/portada/bio/nombre/email/contraseña y firma para subir imágenes y videos desde el navegador.
  * Extraído de index.js: recibe sus dependencias explícitas (ver la llamada en index.js).
  */
-module.exports = function perfil({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Extras, Juego, UCmod, Usuario, adminPanel, app, bcrypt, body, cacheado, cerrarOtrasSesiones, cloudinary, crearNotif, crypto, emailVerifTemplate, errorNombreUsuario, firmarToken, logger, mensajeDuplicado, mongoose, sendEmail, validationResult, verificarToken, versionActual }) {
+module.exports = function perfil({ API_URL_SELF, EMAIL_NORMALIZE_OPTS, Extras, Juego, UCmod, Usuario, adminPanel, app, bcrypt, body, cacheado, cloudinary, crearNotif, crypto, emailVerifTemplate, errorNombreUsuario, firmarToken, logger, mensajeDuplicado, mongoose, sendEmail, validationResult, verificarToken }) {
 app.get('/usuarios/nexus-stats/:usuario', async (req, res) => {
     try {
         const username = req.params.usuario.toLowerCase().trim();
@@ -282,7 +282,7 @@ app.put('/usuarios/update-email', [verificarToken, body('nuevoEmail').isEmail().
         if (existe) return res.status(409).json({ success: false, error: 'Ese email ya está registrado en otra cuenta' });
         const verifToken = crypto.randomBytes(32).toString('hex');
         await Usuario.updateOne({ usuario: req.usuario.toLowerCase() }, { $set: { email: nuevoEmail.toLowerCase(), lastEmailChange: new Date(), emailVerificado: false, emailVerifToken: verifToken, emailVerifExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) } });
-        const nuevoToken = firmarToken({ usuario: req.usuario.toLowerCase(), email: nuevoEmail.toLowerCase(), sesionVer: await versionActual(req.usuario.toLowerCase()) });
+        const nuevoToken = firmarToken({ usuario: req.usuario.toLowerCase(), email: nuevoEmail.toLowerCase(), sesionVer: req.userTokenData.sv || 0 });
         logger.info(`Usuario ${req.usuario} cambió su email a ${nuevoEmail}`);
         const verifLink = `${API_URL_SELF}/auth/verify-email/${verifToken}`;
         sendEmail({ to: nuevoEmail, subject: '✅ Verifica tu nuevo email en Lurveta', html: emailVerifTemplate(req.usuario.toLowerCase(), verifLink) }).catch(() => {});
@@ -306,8 +306,12 @@ app.put('/usuarios/update-password', [verificarToken, body('passwordActual').not
         if (!passOk) return res.status(401).json({ success: false, error: 'La contraseña actual es incorrecta' });
         if (await bcrypt.compare(nuevaPassword, usuario.password)) return res.status(400).json({ success: false, error: 'La nueva contraseña no puede ser igual a la actual' });
         const hashed = await bcrypt.hash(nuevaPassword, 10);
-        await Usuario.updateOne({ usuario: req.usuario.toLowerCase() }, { $set: { password: hashed } });
-        const actualizado = await cerrarOtrasSesiones(req.usuario.toLowerCase());
+        const actualizado = await Usuario.findOneAndUpdate(
+            { _id: usuario._id, password: usuario.password },
+            { $set: { password: hashed }, $inc: { sesionVer: 1 } },
+            { new: true }
+        ).select('usuario email sesionVer').lean();
+        if (!actualizado) return res.status(409).json({ success: false, error: 'La contraseña cambió. Vuelve a iniciar sesión.' });
         logger.info(`Usuario ${req.usuario} cambió su contraseña (otras sesiones cerradas)`);
         res.json({ success: true, token: firmarToken(actualizado), mensaje: 'Contraseña actualizada. Se cerró tu sesión en los demás dispositivos.' });
     } catch (err) {

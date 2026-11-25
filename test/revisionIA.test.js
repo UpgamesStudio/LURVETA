@@ -5,7 +5,11 @@
 'use strict';
 
 const assert = require('assert');
-const { analizar, ipPrivada, PIRATERIA, SENSIBLE } = require('../modulos/revisionIA');
+const dns = require('node:dns').promises;
+const https = require('node:https');
+const { EventEmitter } = require('node:events');
+const { Readable } = require('node:stream');
+const { analizar, ipPrivada, PIRATERIA, SENSIBLE, sondear } = require('../modulos/revisionIA');
 
 let passed = 0;
 async function test(name, fn) {
@@ -31,6 +35,44 @@ const item = (extra = {}) => ({ _id: 'x', usuario: 'ana', title: 'Pack de textur
     console.log('ipPrivada');
     await test('bloquea redes privadas', () => ['127.0.0.1', '10.1.2.3', '192.168.0.5', '172.20.1.1', '169.254.169.254', '::1'].forEach(ip => assert.ok(ipPrivada(ip), ip)));
     await test('permite IPs públicas', () => ['8.8.8.8', '140.82.112.3'].forEach(ip => assert.ok(!ipPrivada(ip), ip)));
+
+    await test('cada conexión reutiliza la IP validada y comprueba el destino de la redirección', async () => {
+        const lookup = dns.lookup;
+        const get = https.get;
+        const hosts = [];
+        const conexiones = [];
+        try {
+            dns.lookup = async host => {
+                hosts.push(host);
+                return [{ address: host === 'publico.example' ? '8.8.8.8' : '10.0.0.1', family: 4 }];
+            };
+            https.get = (url, opciones, recibir) => {
+                assert.equal(url.hostname, 'publico.example');
+                assert.equal(opciones.agent, false);
+                opciones.lookup(url.hostname, {}, (error, ip, familia) => {
+                    assert.ifError(error);
+                    conexiones.push([ip, familia]);
+                });
+                const respuesta = Readable.from([]);
+                respuesta.statusCode = 302;
+                respuesta.headers = { location: 'https://no-publico.example/' };
+                queueMicrotask(() => recibir(respuesta));
+                return new EventEmitter();
+            };
+            const resultado = await sondear('https://publico.example/');
+            assert.equal(resultado.ok, false);
+            assert.match(resultado.error, /IP pública/);
+            assert.deepStrictEqual(hosts, ['publico.example', 'no-publico.example']);
+            assert.deepStrictEqual(conexiones, [['8.8.8.8', 4]]);
+        } finally {
+            dns.lookup = lookup;
+            https.get = get;
+        }
+        assert.equal((await sondear('https://[::1]/')).ok, false);
+        assert.ok(ipPrivada('::ffff:172.16.0.1'));
+        assert.ok(ipPrivada('fe90::1'));
+        assert.ok(!ipPrivada('2606:4700:4700::1111'));
+    });
 
     console.log('piratería');
     await test('detecta crack/keygen', () => { assert.ok(PIRATERIA.test('GTA V Full Crack')); assert.ok(PIRATERIA.test('incluye keygen')); });

@@ -21,6 +21,8 @@
 
 const dns = require('dns').promises;
 const net = require('net');
+const http = require('node:http');
+const https = require('node:https');
 
 const PIRATERIA = /\b(crack(ed|eado|eo)?|pirat(a|eado|ear|eria)|keygen|warez|serial(es)? (gratis|crack)|activador|full gratis|premium gratis|repack)\b/i;
 // ROMs, ISOs y ports: aunque estén modificados (skins, parches) suelen llevar dentro el
@@ -34,17 +36,48 @@ const ARCHIVO_MUERTO = [
 ];
 const UA = 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Mobile Safari/537.36';
 
+const rangosNoPublicos = new net.BlockList();
+for (const [ip, prefijo] of [
+    ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8],
+    ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.0.2.0', 24],
+    ['192.88.99.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15], ['198.51.100.0', 24],
+    ['203.0.113.0', 24], ['224.0.0.0', 3],
+]) rangosNoPublicos.addSubnet(ip, prefijo, 'ipv4');
+
+const unicastGlobalV6 = new net.BlockList();
+unicastGlobalV6.addSubnet('2000::', 3, 'ipv6');
+for (const [ip, prefijo] of [['2001::', 23], ['2001:db8::', 32], ['2002::', 16], ['3fff::', 20]])
+    rangosNoPublicos.addSubnet(ip, prefijo, 'ipv6');
+
 function ipPrivada(ip) {
-    if (net.isIPv6(ip)) return /^(::1|fc|fd|fe80|::ffff:(10\.|127\.|192\.168\.|169\.254\.))/i.test(ip) || ip === '::';
-    const [a, b] = ip.split('.').map(Number);
-    return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+    const familia = net.isIP(ip);
+    if (familia === 4) return rangosNoPublicos.check(ip, 'ipv4');
+    if (familia === 6) return !unicastGlobalV6.check(ip, 'ipv6') || rangosNoPublicos.check(ip, 'ipv6');
+    return true;
 }
+
+async function direccionPublica(host) {
+    host = host.replace(/^\[|\]$/g, '');
+    const familia = net.isIP(host);
+    const direcciones = familia ? [{ address: host, family: familia }] : await dns.lookup(host, { all: true });
+    return direcciones.length && direcciones.every(d => !ipPrivada(d.address)) ? direcciones[0] : null;
+}
+
 async function hostPublico(host) {
-    try {
-        if (net.isIP(host)) return !ipPrivada(host);
-        const r = await dns.lookup(host, { all: true });
-        return r.length > 0 && r.every(x => !ipPrivada(x.address));
-    } catch (_) { return false; }
+    try { return !!(await direccionPublica(host)); } catch (_) { return false; }
+}
+
+function abrir(u, direccion, signal) {
+    const transporte = u.protocol === 'https:' ? https : http;
+    return new Promise((resolve, reject) => {
+        // Se conserva el host original para Host, SNI y TLS. El socket usa la IP validada.
+        const req = transporte.get(u, {
+            agent: false, autoSelectFamily: false, signal,
+            lookup: (_host, _opciones, cb) => cb(null, direccion.address, direccion.family),
+            headers: { 'User-Agent': UA, Accept: '*/*', 'Accept-Language': 'es,en;q=0.8' },
+        }, resolve);
+        req.on('error', reject);
+    });
 }
 
 /**
@@ -58,26 +91,34 @@ async function sondear(url, { leerTexto = false, timeout = 9000 } = {}) {
         let u;
         try { u = new URL(actual); } catch (_) { return { ok: false, error: 'URL inválida', ms: Date.now() - t0 }; }
         if (!/^https?:$/.test(u.protocol)) return { ok: false, error: 'Protocolo no permitido', ms: Date.now() - t0 };
-        if (!(await hostPublico(u.hostname))) return { ok: false, error: 'El dominio no resuelve a una IP pública', ms: Date.now() - t0 };
+        if (u.username || u.password) return { ok: false, error: 'URL con credenciales no permitida', ms: Date.now() - t0 };
         const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), timeout);
         try {
-            const r = await fetch(actual, { redirect: 'manual', signal: ctl.signal, headers: { 'User-Agent': UA, Accept: '*/*', 'Accept-Language': 'es,en;q=0.8' } });
-            if (r.status >= 300 && r.status < 400 && r.headers.get('location')) {
-                actual = new URL(r.headers.get('location'), actual).href;
-                r.body?.cancel?.().catch?.(() => {});
+            const direccion = await direccionPublica(u.hostname).catch(() => null);
+            if (!direccion) return { ok: false, error: 'El dominio no resuelve a una IP pública', ms: Date.now() - t0 };
+            const r = await abrir(u, direccion, ctl.signal);
+            const status = r.statusCode;
+            if (status >= 300 && status < 400 && r.headers.location) {
+                r.destroy();
+                actual = new URL(r.headers.location, actual).href;
                 continue;
             }
-            const tipo = r.headers.get('content-type') || '';
+            const tipo = r.headers['content-type'] || '';
             let texto = '';
-            if (leerTexto && /text|html|json/i.test(tipo) && r.body) {
-                const reader = r.body.getReader(); let leido = 0; const partes = [];
-                while (leido < 200000) { const { done, value } = await reader.read(); if (done) break; partes.push(value); leido += value.length; }
-                reader.cancel().catch(() => {});
-                texto = Buffer.concat(partes.map(p => Buffer.from(p))).toString('utf8');
-            } else r.body?.cancel?.().catch?.(() => {});
-            return { ok: r.ok, status: r.status, finalUrl: actual, tipo, texto, ms: Date.now() - t0, tamano: +r.headers.get('content-length') || null };
+            if (leerTexto && /text|html|json/i.test(tipo)) {
+                const limite = 200000, partes = [];
+                let leido = 0;
+                for await (const chunk of r) {
+                    const parte = chunk.subarray(0, limite - leido);
+                    partes.push(parte);
+                    leido += parte.length;
+                    if (leido === limite) break;
+                }
+                texto = Buffer.concat(partes, leido).toString('utf8');
+            } else r.destroy();
+            return { ok: status >= 200 && status < 300, status, finalUrl: actual, tipo, texto, ms: Date.now() - t0, tamano: +r.headers['content-length'] || null };
         } catch (e) {
-            return { ok: false, error: e.name === 'AbortError' ? 'Tiempo de espera agotado' : e.message, ms: Date.now() - t0 };
+            return { ok: false, error: ctl.signal.aborted ? 'Tiempo de espera agotado' : e.message, ms: Date.now() - t0 };
         } finally { clearTimeout(to); }
     }
     return { ok: false, error: 'Demasiadas redirecciones', ms: Date.now() - t0 };
