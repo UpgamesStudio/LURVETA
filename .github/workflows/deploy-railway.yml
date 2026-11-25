@@ -1,13 +1,5 @@
-# Despliegue de respaldo del servidor en Railway.
-# Railway despliega solo con su conexión a GitHub, pero si esa conexión se rompe
-# (permisos de la app de Railway, repositorio movido a otra organización…) los commits
-# dejan de llegar y nadie se entera. Este workflow sube el código con la CLI de Railway
-# cada vez que cambian archivos del backend en main, y después comprueba que el
-# servidor responde con el commit nuevo.
-#
-# Necesita en Settings → Secrets and variables → Actions:
-#   RAILWAY_TOKEN    token de proyecto (Railway → proyecto → Settings → Tokens, entorno production)
-#   RAILWAY_SERVICE  (variable, opcional) nombre del servicio; por defecto "UpGames"
+# Verifica el despliegue automático y usa la CLI si todavía no llega el commit.
+# RAILWAY_TOKEN habilita el respaldo. RAILWAY_SERVICE identifica el servicio.
 name: Deploy Railway
 
 on:
@@ -23,10 +15,14 @@ on:
       - 'nixpacks.toml'
       - 'railway.toml'
       - 'public/pb2-touch.js'
-      - 'public/upgames-ranking.js'
       - 'public/pb2-touch.css'
+      - 'public/upgames-ranking.js'
+      - 'public/upgames-redes.js'
       - '.github/workflows/deploy-railway.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: deploy-railway
@@ -34,47 +30,58 @@ concurrency:
 
 jobs:
   pruebas:
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/pruebas-reales.yml
+    with:
+      omitir-catalogo: true
 
   desplegar:
-    needs: pruebas   # si las pruebas fallan, el respaldo no sube nada
+    needs: pruebas
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-      - name: Comprobar token
-        id: token
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "::warning::Falta el secreto RAILWAY_TOKEN: no se despliega desde aquí (solo queda la conexión GitHub de Railway)."
-            echo "hay=no" >> "$GITHUB_OUTPUT"
-          else
-            echo "hay=si" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Subir a Railway
-        if: steps.token.outputs.hay == 'si'
+      - name: Confirmar la revisión publicada y desplegar si hace falta
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           SERVICIO: ${{ vars.RAILWAY_SERVICE || 'UpGames' }}
+          SALUD_URL: https://upgames-production.up.railway.app/salud
         run: |
-          npm install -g @railway/cli@4
-          # el commit queda en /salud aunque el despliegue no venga de la conexión GitHub
-          railway variables --service "$SERVICIO" --set "UPGAMES_COMMIT=${GITHUB_SHA}" --skip-deploys || true
-          railway up --ci --service "$SERVICIO"
+          esperar_revision() {
+            for ((i=1; i<=$1; i++)); do
+              if curl --fail --silent --show-error --max-time 10 "$SALUD_URL" |
+                jq -e --arg commit "$revision" '.ok == true and .db == true and .commit == $commit' >/dev/null; then
+                echo "Producción sirve $revision"
+                return 0
+              fi
+              if (( i < $1 )); then sleep 15; fi
+            done
+            return 1
+          }
 
-      - name: Verificar que el servidor nuevo responde
-        if: steps.token.outputs.hay == 'si'
-        run: |
-          corto="${GITHUB_SHA::7}"
-          for i in $(seq 1 30); do
-            r=$(curl -s --max-time 20 https://upgames-production.up.railway.app/salud || true)
-            echo "$r"
-            case "$r" in *"\"version\":\"$corto\""*) echo "Desplegado $corto"; exit 0;; esac
-            sleep 20
-          done
-          echo "::error::El servidor no responde con el commit $corto tras 10 minutos"
-          exit 1
+          revision=$(git rev-parse HEAD)
+          test "$revision" = "$GITHUB_SHA"
+          if esperar_revision 7; then exit 0; fi
+
+          if [ -n "$RAILWAY_TOKEN" ]; then
+            # Un redeploy antiguo nunca debe reemplazar un main más reciente.
+            remoto=$(git ls-remote origin refs/heads/main | cut -f1)
+            if [ "$remoto" != "$revision" ]; then
+              echo "::error::main avanzó desde $revision hasta $remoto; se omite el despliegue de esta revisión."
+              exit 1
+            fi
+            npm install --global @railway/cli@4.68.0
+            printf '%s\n' "$revision" > .lurveta-build-commit
+            railway up --ci --service "$SERVICIO"
+          else
+            echo "::warning::Falta RAILWAY_TOKEN. Se seguirá esperando el despliegue automático."
+          fi
+
+          if ! esperar_revision 20; then
+            echo "::error::La API de producción no confirmó la revisión $revision."
+            exit 1
+          fi

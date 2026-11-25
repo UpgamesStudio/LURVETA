@@ -13,4 +13,9 @@ watchPatterns = [
   "railway.toml",
   "public/pb2-touch.js",
   "public/pb2-touch.css",
+  "public/upgames-ranking.js",
+  "public/upgames-redes.js",
 ]
+
+[deploy]
+healthcheckPath = "/salud"
