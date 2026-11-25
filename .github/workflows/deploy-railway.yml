@@ -46,6 +46,7 @@ jobs:
           node-version: 22
 
       - name: Confirmar la revisión publicada y desplegar si hace falta
+        shell: bash
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           SERVICIO: ${{ vars.RAILWAY_SERVICE || 'UpGames' }}

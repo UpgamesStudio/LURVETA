@@ -15,12 +15,19 @@ const path = require('path'), fs = require('fs'), os = require('os'), { execSync
 const { servirRaiz, navegador, contador } = require('./util');
 const REPO = path.join(__dirname, '..', '..');
 const API = 'https://upgames-production.up.railway.app';
-const ID = '69b47e904f3f676b7f4a93d3';   // publicación real (NFS Most Wanted 2005; la anterior, Silencio Hill 2, se borró)
+const dirP = path.join(REPO, 'public/p');
+const fichas = fs.readdirSync(dirP).sort();
+const slug = fichas.find(nombre => {
+  const id = nombre.match(/-([a-f\d]{24})\.html$/)?.[1];
+  return id && fichas.includes(`${id}.html`);
+});
+if (!slug) throw new Error('No hay fichas generadas con un slug y un puente por ID');
+const ID = slug.slice(-29, -5);
 const ANTERIOR = process.env.VERSION_ANTERIOR || '6bc94d36d696f462aa473165474e97015cc05433';   // último main antes de la migración
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type', 'access-control-allow-methods': 'GET, POST, OPTIONS' };
 const json = (r, body) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body), headers: cors });
-const FICHA = { _id: ID, title: 'NFS Most Wanted 2005', description: 'Ficha de prueba', image: '', category: 'Mod', usuario: 'creador', status: 'aprobado', link: 'https://example.com/x' };
+const FICHA = { _id: ID, title: 'Publicación de prueba', description: 'Ficha de prueba', image: '', category: 'Mod', usuario: 'creador', status: 'aprobado', link: 'https://example.com/x' };
 
 async function contexto(b, web, { sesion = false, vp = { width: 390, height: 844 }, js = true } = {}) {
   const ctx = await b.newContext({ viewport: vp, serviceWorkers: 'block', javaScriptEnabled: js });
@@ -28,17 +35,13 @@ async function contexto(b, web, { sesion = false, vp = { width: 390, height: 844
     localStorage.setItem('upgames_tutorial_done', '1'); localStorage.setItem('ug_onb_hecho', '1');
     if (s) { localStorage.setItem('token', 'x'.repeat(40)); localStorage.setItem('user_admin', 'tester'); }
   } catch (_) {} }, sesion);
-  let ficha = null;
   await ctx.route('**/*', async r => {
     const u = r.request().url(), m = r.request().method();
     // https://lurveta.com/… (adonde van las fichas) se sirve desde esta copia del repo
     if (u.startsWith('https://lurveta.com/')) { const resp = await r.fetch({ url: web.url + u.slice('https://lurveta.com'.length) }); return r.fulfill({ response: resp }); }
     if (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u)) return r.continue();
     if (u.startsWith(API) && m === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
-    if (u.startsWith(`${API}/items/${ID}`) && m === 'GET') {   // la ficha real; sin red, una copia mínima con el mismo ID
-      if (!ficha) { try { const x = await r.fetch({ headers: { ...r.request().headers(), origin: 'https://lurveta.com', referer: 'https://lurveta.com/' }, timeout: 5000 }); if (x.ok()) ficha = await x.json(); } catch (_) {} ficha = ficha || FICHA; }
-      return json(r, ficha);
-    }
+    if (u.startsWith(`${API}/items/${ID}`) && m === 'GET') return json(r, FICHA);
     if (u.startsWith(`${API}/auth/email-estado`)) return json(r, { success: true, verificado: false, email: 'tester@example.com' });
     if (u.startsWith(API)) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]', headers: cors });
     return r.abort();
@@ -130,12 +133,11 @@ function versionAnterior() {
     }
 
     C.seccion('Fichas generadas (/public/p/)');
-    const dirP = path.join(REPO, 'public/p'), porId = fs.readdirSync(dirP).filter(f => /^[a-f\d]{24}\.html$/.test(f));
+    const porId = fichas.filter(f => /^[a-f\d]{24}\.html$/.test(f));
     const malas = porId.filter(f => !fs.readFileSync(path.join(dirP, f), 'utf8').includes(`location.replace("https://lurveta.com/?id=${f.slice(0, 24)}")`));
     C.prueba(`las ${porId.length} fichas por ID van a https://lurveta.com/?id=<su id>`, porId.length > 0 && !malas.length, malas.slice(0, 5).join(', '));
     const conViejo = ['p', 'j', 'u'].flatMap(d => fs.readdirSync(path.join(REPO, 'public', d)).map(f => `${d}/${f}`)).filter(f => fs.readFileSync(path.join(REPO, 'public', f), 'utf8').includes('biblioteca.html'));
     C.prueba('ninguna página generada enlaza a biblioteca.html', !conViejo.length, conViejo.slice(0, 5).join(', '));
-    const slug = fs.readdirSync(dirP).find(f => f.endsWith(`-${ID}.html`));
     C.prueba('la ficha indexable lleva a la ficha completa en la portada', slug && fs.readFileSync(path.join(dirP, slug), 'utf8').includes(`href="https://lurveta.com/?id=${ID}"`), slug);
     ctx = await contexto(b, web);
     r = await abrir(ctx, web, `/public/p/${ID}.html`, 1500);
@@ -201,7 +203,9 @@ function versionAnterior() {
     C.prueba('A) queda solo el SW raíz (alcance /), sin el de /public/', JSON.stringify(d.regs) === '["/"]', JSON.stringify(d.regs));
     C.prueba('A) cachés viejas de Lurveta borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
     await v.q.reload(); await espera(1500);
-    C.prueba('A) tras recargar, /service-worker.js controla la portada y llena su caché nueva', (await ctl(v.q)) === `${web.url}/service-worker.js` && (await cachés(v.q)).some(n => n.startsWith('upgames-v8.2.0')), JSON.stringify({ ctl: await ctl(v.q), c: await cachés(v.q) }));
+    const sw = fs.readFileSync(path.join(REPO, 'service-worker.js'), 'utf8');
+    const cacheVersion = sw.match(/const CACHE_VERSION = ['"]([^'"]+)['"]/)?.[1];
+    C.prueba('A) tras recargar, /service-worker.js controla la portada y llena su caché nueva', (await ctl(v.q)) === `${web.url}/service-worker.js` && (await cachés(v.q)).includes(`${cacheVersion}-static`), JSON.stringify({ ctl: await ctl(v.q), c: await cachés(v.q) }));
     await v.c.close();
 
     // B) Tras el despliegue abre un marcador / la app instalada vieja (/public/biblioteca.html?…)
