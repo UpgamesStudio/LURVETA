@@ -2,7 +2,7 @@
 <html lang="es" data-portada="terminal">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://upgames-production.up.railway.app; worker-src 'self'">
 <script>
   (function () {
     var q = location.search, p = new URLSearchParams(q);
@@ -54,6 +54,8 @@
 <link rel="icon" href="public/icons/icon-192.png">
 <link rel="manifest" href="public/manifest.json?v=3">
 <script src="public/upgames-pwa.js?v=20261126a" defer></script>
+<link rel="stylesheet" href="public/portada-populares.css?v=1">
+<script src="public/portada-populares.js?v=1" defer></script>
 </head>
 <body class="ug-portada">
 <header class="ug-portada-cabecera">
@@ -78,6 +80,24 @@
     <a href="public/biblioteca.html?tab=new"><ion-icon name="newspaper-outline" aria-hidden="true"></ion-icon> <span>Blogs<small class="ug-variante-descripcion">Guías y publicaciones</small></span></a>
     <a href="/public/j/mods-de-rendimiento.html"><ion-icon name="speedometer-outline" aria-hidden="true"></ion-icon> <span>Mods de rendimiento<small class="ug-variante-descripcion">Optimización para tus juegos</small></span></a>
   </nav>
+
+  <section class="ug-populares" aria-labelledby="ug-populares-titulo" data-carrusel="profundidad">
+    <header class="ug-populares-cabecera">
+      <h2 id="ug-populares-titulo">Populares en la biblioteca</h2>
+      <button class="ug-populares-pausa" type="button" hidden>Detener movimiento</button>
+    </header>
+    <div class="ug-populares-ventana">
+      <div class="ug-populares-pista">
+        <ul class="ug-populares-lista">
+        <li><a href="/public/biblioteca.html?id=698f9e920570f431e283acad"><img src="https://res.cloudinary.com/dd4w2plxn/image/upload/v1793115103/images_m69qqr.jpg" alt="" loading="lazy"><span>Project Zomdroid launcher para Android</span></a></li>
+        <li><a href="/public/biblioteca.html?id=698c1045c3da7e6da551dc00"><img src="https://res.cloudinary.com/dd4w2plxn/image/upload/v1793116226/images_aomyis.jpg" alt="" loading="lazy"><span>Dar souls 3 Mod de rendimiento</span></a></li>
+        <li><a href="/public/biblioteca.html?id=6990e969b6c8236b537e385c"><img src="https://res.cloudinary.com/dd4w2plxn/image/upload/v1793116227/images_ssnoss.jpg" alt="" loading="lazy"><span>DMC4 (EL DEUDAS)</span></a></li>
+        <li><a href="/public/biblioteca.html?id=69911a423d9f57fc5761c1a1"><img src="https://res.cloudinary.com/dd4w2plxn/image/upload/v1793115110/9842eec3b6622968cd5857cd30cf26cd39925e69_ps4xsl.jpg" alt="" loading="lazy"><span>Red dead redemption mod 60fps</span></a></li>
+        <li><a href="/public/biblioteca.html?id=6aee9550d50e6d2754da3616"><img src="https://res.cloudinary.com/dd4w2plxn/image/upload/v1794509814/image_3_xhxush.png" alt="" loading="lazy"><span>LURVETA RACING</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
   <!-- Información para creadores y enlaces rastreables del sitio. -->
   <details class="ug-sobre" id="ug-sobre">
