@@ -270,9 +270,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
   const anim = ugBienvAnim(document.getElementById('oba-escena'), document.getElementById('oba-prog'), { alTerminar: () => _goTo(1) });
   slides[0].classList.add('active');
   _syncFooter(0);
-  // Si la intro «Entrar a la red» está en pantalla, la bienvenida espera a que se cierre
-  if (window.UG_INTRO_ACTIVA) addEventListener('ug:intro-fin', () => anim.iniciar(), { once: true });
-  else anim.iniciar();
+  anim.iniciar();
 
   function _goTo(idx) {
     if (idx < 0 || idx >= TOTAL || idx === current) return;

@@ -74,33 +74,20 @@ function versionAnterior() {
   const C = contador('Migración de la portada: puente, parámetros, fichas y service worker');
   const web = await servirRaiz(), b = await navegador();
   try {
-    C.seccion('Puente /public/biblioteca.html');
-    const puente = fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8');
-    C.prueba('canónica a https://lurveta.com/, un solo replace() y meta refresh 0 solo en <noscript>',
-      /<link rel="canonical" href="https:\/\/lurveta\.com\/">/.test(puente) && (puente.match(/location\.replace\(/g) || []).length === 1
-      && /<noscript><meta http-equiv="refresh" content="0; url=\/"><\/noscript>/.test(puente) && (puente.match(/http-equiv="refresh"/g) || []).length === 1
-      && !/serviceWorker|redirect_from|noindex/.test(puente));
+    C.seccion('Portada independiente y enlaces heredados');
     let ctx = await contexto(b, web);
-    let r = await abrir(ctx, web, `/public/biblioteca.html?id=${ID}`, 1500);
-    await fichaAbierta(r.p);   // la ficha real llega de producción: se espera a que abra, no un tiempo fijo
-    const ficha = await r.p.evaluate(() => ({ abierta: !!document.getElementById('detail-sheet')?.classList.contains('open'), titulo: document.getElementById('ds-title')?.textContent || '', hist: history.length }));
-    C.prueba(`?id= con ID real: llega a /?id=${ID} y abre la ficha`, r.marcos.includes(`/?id=${ID}`) && ficha.abierta && ficha.titulo.trim().length > 0, JSON.stringify({ marcos: r.marcos, ficha }));
-    C.prueba('un solo salto: puente → portada', r.pedidas.length === 2 && r.pedidas[0].startsWith('/public/biblioteca.html'), JSON.stringify(r.pedidas));
+    let r = await abrir(ctx, web, '/');
+    C.prueba('la bienvenida abre antes de la biblioteca', r.url === '/' && await r.p.locator('#ug-explorar-biblioteca').count() === 1);
+    await Promise.all([r.p.waitForURL('**/public/biblioteca.html', { waitUntil: 'domcontentloaded' }), r.p.locator('#ug-explorar-biblioteca').click()]);
+    C.prueba('Explorar abre la aplicación', await r.p.locator('#main-view').count() === 1);
     await r.p.close();
-    r = await abrir(ctx, web, '/public/biblioteca.html?q=gta', 1500);   // (la ficha añade su propia entrada al historial; aquí no hay ficha)
-    const hPuente = await r.p.evaluate(() => history.length); await r.p.close();
-    r = await abrir(ctx, web, '/?q=gta', 1500); const hDirecto = await r.p.evaluate(() => history.length); await r.p.close();
-    C.prueba('el puente no queda en el historial («atrás» no vuelve a él)', hPuente === hDirecto, `por el puente ${hPuente} · directo ${hDirecto}`);
-    const COMPLEJO = `?q=mods%20de%20%C3%B1and%C3%BA&ref=amigo_1&x=a%26b%3Dc&id=${ID}&vacio=#seccion-2`;
-    r = await abrir(ctx, web, `/public/biblioteca.html${COMPLEJO}`, 1500);
-    C.prueba('varios parámetros codificados y el #fragmento llegan idénticos', r.marcos.find(u => u.startsWith('/?')) === '/' + COMPLEJO, JSON.stringify(r.marcos));
-    await r.p.close(); await ctx.close();
-    ctx = await contexto(b, web, { js: false });
-    r = await abrir(ctx, web, `/public/biblioteca.html?id=${ID}`, 1500);
-    C.prueba('sin JavaScript, el meta refresh lleva a la portada', new URL(r.p.url()).pathname === '/', r.url);
+
+    const complejo = `?q=mods%20de%20%C3%B1and%C3%BA&ref=amigo_1&x=a%26b%3Dc#seccion-2`;
+    r = await abrir(ctx, web, '/' + complejo);
+    C.prueba('la URL antigua conserva parámetros y fragmento', r.url === '/public/biblioteca.html' + complejo, r.url);
     await ctx.close();
 
-    C.seccion('Parámetros: igual por / que por el puente');
+    C.seccion('Parámetros desde la raíz y la biblioteca');
     const CASOS = [
       ['?tab=perfil abre el perfil', '?tab=perfil', true, async x => (await x.p.evaluate(() => currentTab)) === 'profile'],
       ['?plan=1 abre Mi plan', '?plan=1', true, async x => (await x.p.evaluate(() => currentTab)) === 'economia', 3500],
@@ -118,7 +105,7 @@ function versionAnterior() {
         const c = await contexto(b, web, { sesion });
         const x = await abrir(c, web, desde + q, ms || 2500);
         let bien = false; try { bien = !!(await ok(x)); } catch (e) { x.errores.push(e.message); }
-        C.prueba(`${nombre} (${desde === '/' ? 'portada' : 'puente'})`, bien && x.pedidas.length <= 3, JSON.stringify({ url: x.url, pedidas: x.pedidas, errores: x.errores.slice(0, 2) }));
+        C.prueba(`${nombre} (${desde === '/' ? 'portada' : 'biblioteca'})`, bien && x.pedidas.length <= 3, JSON.stringify({ url: x.url, pedidas: x.pedidas, errores: x.errores.slice(0, 2) }));
         await c.close();
       }
     }
@@ -128,7 +115,7 @@ function versionAnterior() {
       const c = await contexto(b, web, { sesion: true });
       const x = await abrir(c, web, '/public/biblioteca.html' + q, 4500);
       const fin = new URL(x.p.url());
-      C.prueba(`${q} termina en una página estable (${x.pedidas.length} documentos)`, x.pedidas.length <= 4 && ['/', '/login.html', '/public/chats.html'].includes(fin.pathname), x.pedidas.join(' → '));
+      C.prueba(`${q} termina en una página estable (${x.pedidas.length} documentos)`, x.pedidas.length <= 4 && ['/', '/login.html', '/public/chats.html', '/public/biblioteca.html'].includes(fin.pathname), x.pedidas.join(' → '));
       await c.close();
     }
 
@@ -144,7 +131,7 @@ function versionAnterior() {
     await fichaAbierta(r.p);
     const f2 = await r.p.evaluate(() => !!document.getElementById('detail-sheet')?.classList.contains('open')).catch(() => false);
     C.prueba('/public/p/<id>.html → https://lurveta.com/?id=<id> directo (sin pasar por el puente) y abre la ficha',
-      r.pedidas[1] === `https://lurveta.com/?id=${ID}` && !r.pedidas.some(u => u.includes('biblioteca.html')) && f2, JSON.stringify({ pedidas: r.pedidas, f2 }));
+      r.pedidas[1] === `https://lurveta.com/?id=${ID}` && r.pedidas[2] === `/public/biblioteca.html?id=${ID}` && f2, JSON.stringify({ pedidas: r.pedidas, f2 }));
     await ctx.close();
 
     C.seccion('Recursos de la portada');
@@ -176,7 +163,7 @@ function versionAnterior() {
     const man = await p.evaluate(async () => { const l = document.querySelector('link[rel=manifest]'); const m = await (await fetch(l.href)).json(); return { href: new URL(l.href).pathname, start: m.start_url, scope: m.scope }; });
     C.prueba('manifest: start_url / y scope /', man.start === '/' && man.scope === '/', JSON.stringify(man));
     await ctx.setOffline(true); await p.reload().catch(() => {}); await espera(1500);
-    C.prueba('sin conexión la portada abre desde la caché', await p.evaluate(() => !!document.getElementById('main-view') && /Lurveta/.test(document.title)).catch(() => false));
+    C.prueba('sin conexión la portada abre desde la caché', await p.evaluate(() => !!document.getElementById('ug-explorar-biblioteca') && /Lurveta/.test(document.title)).catch(() => false));
     await ctx.close();
 
     // Actualización desde la versión anterior
@@ -196,10 +183,10 @@ function versionAnterior() {
     await v.q.goto(web.url + '/public/biblioteca.html?q=winlator'); await espera(1500);
     web.usar(REPO);
     await v.q.evaluate(() => navigator.serviceWorker.getRegistration().then(r => r.update())).catch(() => {});
-    for (let i = 0; i < 30 && new URL(v.q.url()).pathname !== '/'; i++) await espera(500);
+    await v.q.reload();
     await listo(v.q); await espera(2500);
     let d = { url: v.q.url(), ctl: await ctl(v.q), regs: await regs(v.q), cachés: await cachés(v.q) };
-    C.prueba('A) el SW de migración lleva la ventana abierta a / conservando el query', new URL(d.url).pathname === '/' && new URL(d.url).search === '?q=winlator', d.url);
+    C.prueba('A) la biblioteca permanece abierta con su búsqueda', new URL(d.url).pathname === '/public/biblioteca.html' && new URL(d.url).search === '?q=winlator', d.url);
     C.prueba('A) queda solo el SW raíz (alcance /), sin el de /public/', JSON.stringify(d.regs) === '["/"]', JSON.stringify(d.regs));
     C.prueba('A) cachés viejas de Lurveta borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
     await v.q.reload(); await espera(1500);
@@ -212,18 +199,17 @@ function versionAnterior() {
     v = await instalarViejo();
     web.usar(REPO);
     await v.q.goto(`${web.url}/public/biblioteca.html?id=${ID}#comentarios`).catch(() => {});
-    for (let i = 0; i < 20 && new URL(v.q.url()).pathname !== '/'; i++) await espera(500);
     await listo(v.q); await espera(3000);
     d = { url: v.q.url(), regs: await regs(v.q), cachés: await cachés(v.q) };
-    C.prueba('B) marcador viejo con ?id= y #: llega a /?id=…#comentarios', d.url === `${web.url}/?id=${ID}#comentarios`, d.url);
+    C.prueba('B) marcador viejo con ?id= y #: conserva su destino y fragmento', d.url === `${web.url}/public/biblioteca.html?id=${ID}#comentarios`, d.url);
     C.prueba('B) el SW de /public/ se da de baja y el raíz toma su lugar', JSON.stringify(d.regs) === '["/"]', JSON.stringify(d.regs));
     C.prueba('B) cachés viejas de Lurveta borradas; las de los juegos intactas', !d.cachés.some(n => /^upgames-v7/.test(n)) && ['apexgp-prueba', 'studio-prueba'].every(n => d.cachés.includes(n)), JSON.stringify(d.cachés));
     await v.q.reload(); await espera(1500);
     await v.c.setOffline(true);
     await v.q.goto(web.url + '/').catch(() => {}); await espera(1500);
-    C.prueba('B) después de actualizar, sin conexión la portada abre', await v.q.evaluate(() => !!document.getElementById('main-view')).catch(() => false));
+    C.prueba('B) después de actualizar, sin conexión la portada abre', await v.q.evaluate(() => !!document.getElementById('ug-explorar-biblioteca')).catch(() => false));
     await v.q.goto(web.url + '/public/biblioteca.html?tab=perfil').catch(() => {}); await espera(2000);
-    C.prueba('B) sin conexión, el puente viejo también termina en la portada', new URL(v.q.url()).pathname === '/' && await v.q.evaluate(() => !!document.getElementById('main-view')).catch(() => false), v.q.url());
+    C.prueba('B) sin conexión, la biblioteca abre desde el marcador', new URL(v.q.url()).pathname === '/public/biblioteca.html' && await v.q.evaluate(() => !!document.getElementById('main-view')).catch(() => false), v.q.url());
     await v.c.close();
 
     // C) El SW viejo se actualiza sin que nadie abra la portada (otra página de /public/, o un aviso push que

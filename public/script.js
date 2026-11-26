@@ -2015,7 +2015,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) ugGua
 (function ugRestaurarPosicion() {
   let p; try { p = JSON.parse(sessionStorage.getItem(UG_POS) || 'null'); } catch (_) {}
   const q = new URLSearchParams(location.search);
-  if (!p || p.y < 200 || Date.now() - p.t > 30 * 60e3 || q.has('id') || q.has('v') || q.has('tab')) return;
+  if (location.hash || !p || p.y < 200 || Date.now() - p.t > 30 * 60e3 || q.has('id') || q.has('v') || q.has('tab')) return;
   try { history.scrollRestoration = 'manual'; } catch (_) {}
   const t0 = Date.now();
   (function intentar() {
@@ -5094,9 +5094,7 @@ function ugBienvAnim(escena, prog, { alTerminar } = {}) {
   const anim = ugBienvAnim(document.getElementById('oba-escena'), document.getElementById('oba-prog'), { alTerminar: () => _goTo(1) });
   slides[0].classList.add('active');
   _syncFooter(0);
-  // Si la intro «Entrar a la red» está en pantalla, la bienvenida espera a que se cierre
-  if (window.UG_INTRO_ACTIVA) addEventListener('ug:intro-fin', () => anim.iniciar(), { once: true });
-  else anim.iniciar();
+  anim.iniciar();
 
   function _goTo(idx) {
     if (idx < 0 || idx >= TOTAL || idx === current) return;
@@ -5567,6 +5565,7 @@ document.getElementById('btut-close').addEventListener('click', finishTutorial);
   // Acceso directo de la app instalada: biblioteca.html?tab=perfil
   const t = new URLSearchParams(location.search).get('tab');
   if (t === 'perfil' && LS.get('token')) setTimeout(() => switchTab('profile'), 300);
+  if (t === 'videos') document.addEventListener('DOMContentLoaded', () => window.UGVideos?.abrir(), { once: true });
   if (t === 'new') setTimeout(() => switchTab('new'), 300);   // biblioteca.html?tab=new abre NEW
   if (t === 'publicar') setTimeout(() => switchTab('upload'), 600);   // «Publicar mi proyecto» de la portada (pide sesión si no hay)
 })();

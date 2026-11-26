@@ -29,7 +29,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     return r.fulfill({ status: 200, body: '[]', contentType: 'application/json', headers: { 'access-control-allow-origin': '*' } });
   });
 
-  await p.goto(`${web.url}/`, { waitUntil: 'domcontentloaded' });
+  await p.goto(`${web.url}/public/biblioteca.html`, { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => document.querySelectorAll('#output .game-tile').length > 3, null, { timeout: 30000 }).catch(() => {});
   const n = await p.evaluate(() => typeof todosLosItems !== 'undefined' ? todosLosItems.length : 0);
   if (!C.prueba('el catálogo real cargó', n > 3, `publicaciones: ${n}`)) { await b.close(); web.cerrar(); process.exit(1); }

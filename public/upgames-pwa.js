@@ -18,7 +18,7 @@
 
     // Relativo a este script (public/): íconos y demás recursos de la PWA
     const BASE = (document.currentScript && document.currentScript.src) || location.href;
-    // El service worker vive en la raíz con alcance "/" (la portada / es la biblioteca). El viejo de /public/
+    // El service worker vive en la raíz con alcance "/". El viejo de /public/
     // (alcance /public/) se da de baja aquí mismo; si queda alguno, su versión nueva lo migra al actualizarse.
     const SW_URL = '/service-worker.js';
     const SW_SCOPE = '/';
@@ -52,7 +52,7 @@
                 swRegistration = await navigator.serviceWorker.register(SW_URL, { scope: SW_SCOPE });
                 // Registro viejo (/public/): se da de baja solo desde la portada y, si tenía avisos push, cuando el de la
                 // raíz ya tiene su propia suscripción (la crea ugnSuscribir(true) al abrir la app). Así nadie se queda sin avisos.
-                if (location.pathname === '/') retirarRegistroViejo().catch(() => {});
+                if (['/', '/public/biblioteca.html'].includes(location.pathname)) retirarRegistroViejo().catch(() => {});
                 console.log('[PWA] Service Worker registrado:', swRegistration.scope);
 
                 // Detectar updates

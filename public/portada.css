@@ -1,0 +1,258 @@
+/* Bienvenida de la biblioteca */
+.ug-bienvenida,
+.ug-categorias-portada,
+.ug-biblioteca-titulo {
+  width: min(1160px, calc(100% - 32px));
+  margin-inline: auto;
+}
+.ug-bienvenida {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+  align-items: center;
+  overflow: hidden;
+  margin-top: 18px;
+  min-height: 330px;
+  border: 1px solid #292441;
+  border-radius: 24px;
+  background: #100e1b;
+}
+.ug-bienvenida-texto {
+  grid-area: 1 / 1;
+  padding: clamp(24px, 3.6vw, 48px);
+}
+.ug-bienvenida h1 {
+  margin: 0;
+  color: #faf8ff;
+  font: 800 clamp(2rem, 3.8vw, 3.4rem)/1.04 var(--ff, system-ui);
+  letter-spacing: -.06em;
+  text-wrap: balance;
+}
+.ug-bienvenida p {
+  max-width: 42ch;
+  margin: 14px 0 0;
+  color: #ccc6dd;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.ug-bienvenida-arte {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 0 38%;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, #100e1b, transparent 48%),
+    radial-gradient(ellipse at 72% 62%, #c2a5ff 0%, #6c44b7 13%, #28204c 42%, #100e1b 78%);
+}
+/* Siluetas y una franja de luz para el fondo sin imagen. */
+.ug-bienvenida-arte::before,
+.ug-bienvenida-arte::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.ug-bienvenida-arte::before {
+  background: linear-gradient(130deg, #17122c, #392763 63%, #17122c);
+  clip-path: polygon(0 100%, 0 90%, 24% 64%, 35% 70%, 53% 42%, 64% 64%, 83% 31%, 100% 55%, 100% 100%);
+}
+.ug-bienvenida-arte::after {
+  background: linear-gradient(156deg, #18122c 48%, #0d0c17 80%);
+  clip-path: polygon(0 100%, 0 80%, 28% 74%, 45% 83%, 61% 66%, 76% 80%, 91% 65%, 100% 72%, 100% 100%);
+}
+.ug-bienvenida-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-top: 22px;
+}
+.ug-bienvenida-acciones a,
+.ug-categorias-portada a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: 700;
+}
+.ug-bienvenida-cta {
+  justify-content: center;
+  padding: 0 16px;
+  border-radius: 11px;
+  background: #cbb5ff;
+  color: #21143b;
+}
+.ug-bienvenida-cta:hover { background: #e1d3ff; }
+.ug-bienvenida-publicar { color: #e0d4fc; text-underline-offset: .2em; }
+.ug-bienvenida-publicar:hover { text-decoration: underline; }
+.ug-categorias-portada {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.ug-categorias-portada a {
+  padding: 8px 12px;
+  border: 1px solid #322a48;
+  border-radius: 12px;
+  background: #181426;
+  color: #efe9fb;
+  line-height: 1.2;
+}
+.ug-categorias-portada a:hover { border-color: #a48ace; background: #241b37; }
+.ug-categorias-portada ion-icon { flex: none; color: #cbb5ff; font-size: 1.2rem; }
+.ug-bienvenida a:focus-visible,
+.ug-categorias-portada a:focus-visible,
+.ug-biblioteca-titulo:focus-visible {
+  outline: 2px solid #e1d3ff;
+  outline-offset: 3px;
+}
+#main-view #category-row { max-width: 1192px; margin-inline: auto; }
+.ug-biblioteca-titulo {
+  margin-block: 22px 4px;
+  scroll-margin-top: calc(var(--hdr-h, 60px) + 12px);
+  color: var(--txt, #faf8ff);
+  font-size: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .ug-bienvenida {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: clamp(78px, 24vw, 145px) auto;
+    margin-top: 10px;
+    min-height: 0;
+    border-radius: 18px;
+  }
+  .ug-bienvenida-arte { inset: 0 0 auto; height: clamp(78px, 24vw, 145px); }
+  .ug-bienvenida-texto { grid-area: 2 / 1; padding: 14px 14px 6px; }
+  .ug-bienvenida h1 { font-size: clamp(1.75rem, 7.1vw, 2.5rem); }
+  .ug-bienvenida p { margin-top: 8px; font-size: .9rem; }
+  .ug-bienvenida-acciones { display: grid; gap: 0; margin-top: 12px; }
+  .ug-bienvenida-publicar { justify-content: center; font-size: .875rem; }
+  .ug-categorias-portada { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .ug-categorias-portada a { padding-inline: 8px; font-size: .8125rem; }
+  .ug-biblioteca-titulo { margin-top: 16px; }
+}
+
+.ug-portada {
+  background: #0a0912;
+  color: #faf8ff;
+  font-family: Inter, system-ui, sans-serif;
+  padding-bottom: 24px;
+}
+.ug-portada-cabecera {
+  width: min(1160px, calc(100% - 32px));
+  min-height: 68px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ug-portada-cabecera a {
+  color: #e0d4fc;
+  font-weight: 700;
+  text-underline-offset: .22em;
+}
+.ug-portada-cabecera a:focus-visible { outline: 2px solid #e1d3ff; outline-offset: 4px; }
+.ug-portada .ug-sobre { width: min(1160px, calc(100% - 32px)); margin: 22px auto 0; }
+
+html[data-portada] { --ancho-portada: min(1200px, calc(100% - 48px)); --acento-portada: #d8c5ff; }
+html[data-portada] .ug-portada {
+  min-height: 100vh;
+  padding: 0 0 48px;
+}
+html[data-portada] .ug-portada-cabecera,
+html[data-portada] .ug-bienvenida,
+html[data-portada] .ug-categorias-portada,
+html[data-portada] .ug-sobre { width: var(--ancho-portada); }
+html[data-portada] .ug-portada-cabecera { min-height: 72px; }
+html[data-portada] .ug-portada a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+html[data-portada] .ug-bienvenida-cta:focus-visible { outline-color: var(--acento-portada); }
+html[data-portada] .ug-categorias-portada a::after {
+  content: "↗";
+  margin-left: auto;
+  font-weight: 400;
+}
+html[data-portada] .ug-bienvenida-arte::before,
+html[data-portada] .ug-bienvenida-arte::after { content: none; }
+
+/* Directorio */
+[data-portada="terminal"] .ug-portada { background: #11141d; color: #f1eff7; }
+[data-portada="terminal"] .ug-portada main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, .9fr);
+  align-items: center;
+  width: var(--ancho-portada);
+  margin: 48px auto 0;
+  gap: 22px 44px;
+}
+[data-portada="terminal"] .ug-bienvenida,
+[data-portada="terminal"] .ug-categorias-portada,
+[data-portada="terminal"] .ug-sobre { width: 100%; margin: 0; }
+[data-portada="terminal"] .ug-bienvenida {
+  grid-template: auto / minmax(0, 1fr);
+  overflow: visible;
+  min-height: 350px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+[data-portada="terminal"] .ug-bienvenida-arte { display: none; }
+[data-portada="terminal"] .ug-bienvenida-texto { padding: 0; }
+[data-portada="terminal"] .ug-bienvenida h1 {
+  font: 800 clamp(2.4rem, 5vw, 4.3rem)/1.02 Inter, system-ui;
+  letter-spacing: -.065em;
+  text-wrap: unset;
+}
+[data-portada="terminal"] .ug-bienvenida-cta { background: #d9c6ff; }
+[data-portada="terminal"] .ug-categorias-portada {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+[data-portada="terminal"] .ug-categorias-portada a {
+  position: relative;
+  display: grid;
+  align-content: end;
+  min-height: 148px;
+  padding: 18px;
+  border: 1px solid #ffffff1f;
+  border-radius: 12px;
+  background: #252039;
+  color: #f9f5ff;
+}
+[data-portada="terminal"] .ug-categorias-portada a:nth-child(2) { background: #262a3e; }
+[data-portada="terminal"] .ug-categorias-portada a:nth-child(3) { background: #242e30; }
+[data-portada="terminal"] .ug-categorias-portada a:nth-child(4) { background: #332635; }
+[data-portada="terminal"] .ug-categorias-portada a:hover { border-color: #c9aafa; }
+[data-portada="terminal"] .ug-categorias-portada a::after { position: absolute; top: 15px; right: 15px; }
+[data-portada="terminal"] .ug-categorias-portada ion-icon { font-size: 1.75rem; margin-bottom: 11px; }
+[data-portada="terminal"] .ug-sobre { grid-column: 1 / -1; }
+
+@media (max-width: 720px) {
+  html[data-portada] { --ancho-portada: calc(100% - 32px); }
+  html[data-portada] .ug-portada-cabecera { min-height: 60px; }
+  [data-portada="terminal"] .ug-portada main { grid-template-columns: minmax(0, 1fr); margin-top: 26px; }
+  [data-portada="terminal"] .ug-bienvenida { min-height: 0; }
+  [data-portada="terminal"] .ug-bienvenida-texto { grid-area: 1 / 1; }
+  [data-portada="terminal"] .ug-categorias-portada a { min-height: 110px; padding: 12px; font-size: .875rem; }
+}
+html[data-portada] .ug-portada-cabecera img {
+  display: block;
+  flex: 0 0 auto;
+  width: 146px;
+  height: 34px;
+  object-fit: contain;
+}
+html[data-portada] .ug-portada-cabecera a { flex: 0 0 auto; white-space: nowrap; }
+html[data-portada] .ug-sobre:not([open]) { padding-block: 10px; }
+.ug-variante-descripcion { display: none; }
+[data-portada="terminal"] .ug-variante-descripcion {
+  display: block;
+  margin-top: 5px;
+  color: #e0d8ed;
+  font-size: .75rem;
+  font-weight: 400;
+  line-height: 1.3;
+}

@@ -238,7 +238,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) ugGua
 (function ugRestaurarPosicion() {
   let p; try { p = JSON.parse(sessionStorage.getItem(UG_POS) || 'null'); } catch (_) {}
   const q = new URLSearchParams(location.search);
-  if (!p || p.y < 200 || Date.now() - p.t > 30 * 60e3 || q.has('id') || q.has('v') || q.has('tab')) return;
+  if (location.hash || !p || p.y < 200 || Date.now() - p.t > 30 * 60e3 || q.has('id') || q.has('v') || q.has('tab')) return;
   try { history.scrollRestoration = 'manual'; } catch (_) {}
   const t0 = Date.now();
   (function intentar() {

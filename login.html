@@ -12,10 +12,9 @@
         var ref = (p.get('ref') || '').replace(/[^\w.-]/g, '').slice(0, 40);
         try { if (ref) localStorage.setItem('ug_ref', JSON.stringify({ c: ref, t: Date.now() })); } catch (e) {}
         // ?volver=./ o ./public/... → tras iniciar sesión vuelve a donde estaba (solo rutas internas).
-        // La biblioteca es la portada (./): un ?volver=./public/biblioteca.html viejo vuelve también a la portada.
-        var v = (p.get('volver') || '').replace(/^\.\/public\/biblioteca\.html/, './');
+        var v = p.get('volver') || '';
         if (/[?&](volver|login|registro|reset_token|verif)(=|&|$)/.test(v)) v = '';   // la portada los reenvía aquí: evitaría un bucle
-        window.UG_VOLVER = /^\.\/((public\/[\w.-]+\.html)?(\?[\w=&%.~+-]*)?)$/.test(v) ? v : './';
+        window.UG_VOLVER = /^\.\/((public\/[\w.-]+\.html)?(\?[\w=&%.~+-]*)?)$/.test(v) ? v : './public/biblioteca.html';
         if (!p.get('reset_token') && !p.get('verif')) {
           if (localStorage.getItem('user_admin') && localStorage.getItem('token')) {
             location.replace(window.UG_VOLVER);

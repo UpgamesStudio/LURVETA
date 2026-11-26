@@ -56,7 +56,7 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
     C.seccion(`Biblioteca · ${nombre}`);
     const ctx = await contexto(b, web, vp, { sesion: true });
     const p = await ctx.newPage(); p.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) errores.push(`${nombre}: ${e.message} ${String(e.stack || '').split('\n').slice(0, 3).join(' | ')}`); });
-    await p.goto(`${web.url}/`, { waitUntil: 'domcontentloaded' }); await espera(2500);
+    await p.goto(`${web.url}/public/biblioteca.html`, { waitUntil: 'domcontentloaded' }); await espera(2500);
     await p.evaluate(() => { document.getElementById('preloader')?.remove(); document.querySelectorAll('.modal, #onboarding-modal, .btut, #tutorial-overlay').forEach(m => m.remove?.()); });
 
     const nav = await p.$$eval('#bottom-nav .nav-tab', bs => bs.map(x => x.querySelector('span')?.textContent.trim()));

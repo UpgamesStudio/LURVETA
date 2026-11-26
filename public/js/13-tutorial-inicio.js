@@ -161,6 +161,7 @@ document.getElementById('btut-close').addEventListener('click', finishTutorial);
   // Acceso directo de la app instalada: biblioteca.html?tab=perfil
   const t = new URLSearchParams(location.search).get('tab');
   if (t === 'perfil' && LS.get('token')) setTimeout(() => switchTab('profile'), 300);
+  if (t === 'videos') document.addEventListener('DOMContentLoaded', () => window.UGVideos?.abrir(), { once: true });
   if (t === 'new') setTimeout(() => switchTab('new'), 300);   // biblioteca.html?tab=new abre NEW
   if (t === 'publicar') setTimeout(() => switchTab('upload'), 600);   // «Publicar mi proyecto» de la portada (pide sesión si no hay)
 })();

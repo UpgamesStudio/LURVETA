@@ -17,7 +17,7 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const PUB = path.join(__dirname, '..', 'public');
 const FUENTES = ['biblioteca.css', 'upgames-glass.css', 'upgames-estilo.css', 'upgames-cyber.css', 'upgames-videos.css', 'upgames-ux.css', 'upgames-neo.css', 'upgames-hero.css', 'upgames-v6.css', 'lurveta-ui.css'];
 const SALIDA = path.join(PUB, 'upgames-app.css');
-const HTML = path.join(PUB, '..', 'index.html');   // la biblioteca es la portada (antes public/biblioteca.html)
+const paginas = [[path.join(PUB, '..', 'index.html'), 'public/'], [path.join(PUB, 'biblioteca.html'), '']];
 
 /** Minificador conservador: respeta cadenas y url(); solo quita comentarios y espacios sobrantes. */
 function minificar(css) {
@@ -52,19 +52,23 @@ function minificar(css) {
 const unido = FUENTES.map(f => `/* ${f} */\n` + fs.readFileSync(path.join(PUB, f), 'utf8')).join('\n');
 const min = minificar(unido);
 const hash = crypto.createHash('sha1').update(min).digest('hex').slice(0, 10);
-const linea = `<link rel="stylesheet" href="upgames-app.css?v=${hash}">`;
-
-const html = fs.readFileSync(HTML, 'utf8');
-const re = /<!-- css:inicio -->[\s\S]*?<!-- css:fin -->/;
-if (!re.test(html)) { console.error('index.html no tiene los marcadores <!-- css:inicio --> / <!-- css:fin -->'); process.exit(1); }
-const htmlNuevo = html.replace(re, `<!-- css:inicio -->\n<!-- Paquete de: ${FUENTES.join(', ')} (scripts/unir-css.js) -->\n${linea}\n<!-- css:fin -->`);
+const marcador = /<!-- css:inicio -->[\s\S]*?<!-- css:fin -->/;
+const cambios = paginas.map(([archivo, prefijo]) => {
+  const html = fs.readFileSync(archivo, 'utf8');
+  if (!marcador.test(html)) throw new Error(`${archivo}: faltan los marcadores CSS`);
+  const enlace = `<link rel="stylesheet" href="${prefijo}upgames-app.css?v=${hash}">`;
+  const actualizado = html.replace(marcador, `<!-- css:inicio -->\n<!-- Paquete de: ${FUENTES.join(', ')} (scripts/unir-css.js) -->\n${enlace}\n<!-- css:fin -->`);
+  return { archivo, actualizado, cambió: actualizado !== html };
+});
 
 if (process.argv.includes('--check')) {
   const actual = fs.existsSync(SALIDA) ? fs.readFileSync(SALIDA, 'utf8') : '';
-  if (actual !== min || html !== htmlNuevo) { console.error('upgames-app.css no está al día: corre node scripts/unir-css.js'); process.exit(1); }
+  if (actual !== min || cambios.some(pagina => pagina.cambió)) { console.error('CSS desactualizado: corre node scripts/unir-css.js'); process.exit(1); }
   console.log('CSS al día'); process.exit(0);
 }
 fs.writeFileSync(SALIDA, min);
-if (html !== htmlNuevo) fs.writeFileSync(HTML, htmlNuevo);
+for (const { archivo, actualizado, cambió } of cambios) {
+  if (cambió) fs.writeFileSync(archivo, actualizado);
+}
 const kb = b => (b / 1024).toFixed(0) + ' KB';
 console.log(`upgames-app.css: ${kb(Buffer.byteLength(unido))} → ${kb(Buffer.byteLength(min))} (${FUENTES.length} archivos → 1) · v=${hash}`);
