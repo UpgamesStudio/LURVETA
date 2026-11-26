@@ -16,7 +16,7 @@
 // No toca /admin/ (datos privados del panel), /games/ ni /studio/ (tienen su propio service worker).
 // ========================================
 
-const CACHE_VERSION = 'upgames-v8.2.7';   // Portada de bienvenida y paquetes de la biblioteca.
+const CACHE_VERSION = 'upgames-v8.2.8';   // Categorías de la portada.
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_RUNTIME = `${CACHE_VERSION}-runtime`;
 const CACHE_API     = `${CACHE_VERSION}-api`;
@@ -28,7 +28,7 @@ const IMG_REVALIDAR = 7 * 24 * 3600 * 1000;      // las que no son de Cloudinary
 // Assets esenciales que se precachean
 const PRECACHE_URLS = [
     '/',
-    '/public/portada.css?v=1',
+    '/public/portada.css?v=2',
     '/public/portada-populares.css?v=1',
     '/public/portada-populares.js?v=1',
     '/public/upgames-anuncios-aislados.js',

@@ -101,7 +101,6 @@
   line-height: 1.2;
 }
 .ug-categorias-portada a:hover { border-color: #a48ace; background: #241b37; }
-.ug-categorias-portada ion-icon { flex: none; color: #cbb5ff; font-size: 1.2rem; }
 .ug-bienvenida a:focus-visible,
 .ug-categorias-portada a:focus-visible,
 .ug-biblioteca-titulo:focus-visible {
@@ -207,27 +206,66 @@ html[data-portada] .ug-bienvenida-arte::after { content: none; }
   text-wrap: unset;
 }
 [data-portada="terminal"] .ug-bienvenida-cta { background: #d9c6ff; }
-[data-portada="terminal"] .ug-categorias-portada {
+html[data-portada="terminal"] .ug-categorias-portada {
+  width: 100%;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 [data-portada="terminal"] .ug-categorias-portada a {
+  --color-categoria: #d8b8ff;
   position: relative;
   display: grid;
-  align-content: end;
-  min-height: 148px;
-  padding: 18px;
-  border: 1px solid #ffffff1f;
-  border-radius: 12px;
-  background: #252039;
+  align-content: start;
+  min-height: 154px;
+  gap: 13px;
+  padding: 14px 16px;
+  border: 1px solid #414052;
+  border-color: color-mix(in srgb, var(--color-categoria) 23%, #252538);
+  border-radius: 18px;
+  background: #171724;
+  background:
+    repeating-radial-gradient(circle at 100% 0, transparent 0 19px, #ffffff0b 20px 21px, transparent 22px 35px),
+    radial-gradient(ellipse at 100% 0, color-mix(in srgb, var(--color-categoria) 18%, #171724), #171724 72%);
   color: #f9f5ff;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
-[data-portada="terminal"] .ug-categorias-portada a:nth-child(2) { background: #262a3e; }
-[data-portada="terminal"] .ug-categorias-portada a:nth-child(3) { background: #242e30; }
-[data-portada="terminal"] .ug-categorias-portada a:nth-child(4) { background: #332635; }
-[data-portada="terminal"] .ug-categorias-portada a:hover { border-color: #c9aafa; }
-[data-portada="terminal"] .ug-categorias-portada a::after { position: absolute; top: 15px; right: 15px; }
-[data-portada="terminal"] .ug-categorias-portada ion-icon { font-size: 1.75rem; margin-bottom: 11px; }
+[data-portada="terminal"] .ug-categorias-portada .ug-categoria-android { --color-categoria: #b9f58a; }
+[data-portada="terminal"] .ug-categorias-portada .ug-categoria-blogs { --color-categoria: #9ce4ff; }
+[data-portada="terminal"] .ug-categorias-portada .ug-categoria-mods { --color-categoria: #ffc5a2; }
+[data-portada="terminal"] .ug-categorias-portada a::after {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  color: var(--color-categoria);
+}
+.ug-icono-categoria {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 10px;
+  border: 1px solid #414052;
+  border-color: color-mix(in srgb, var(--color-categoria) 45%, transparent);
+  border-radius: 15px;
+  background: #232332;
+  background: color-mix(in srgb, var(--color-categoria) 14%, #171724);
+  box-shadow: inset 0 1px 0 #ffffff25;
+  color: var(--color-categoria);
+  transition: transform .2s ease;
+}
+.ug-icono-categoria svg { display: block; width: 100%; height: 100%; }
+[data-portada="terminal"] .ug-categorias-portada a:is(:hover, :focus-visible) {
+  border-color: var(--color-categoria);
+  box-shadow: 0 10px 24px #08091280;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-portada="terminal"] .ug-categorias-portada a:is(:hover, :focus-visible) { transform: translateY(-3px); }
+  .ug-categorias-portada a:is(:hover, :focus-visible) .ug-icono-categoria { transform: rotate(-8deg) scale(1.07); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-portada="terminal"] .ug-categorias-portada a,
+  .ug-icono-categoria { transition: none; }
+}
 [data-portada="terminal"] .ug-sobre { grid-column: 1 / -1; }
 
 @media (max-width: 720px) {
@@ -236,7 +274,11 @@ html[data-portada] .ug-bienvenida-arte::after { content: none; }
   [data-portada="terminal"] .ug-portada main { grid-template-columns: minmax(0, 1fr); margin-top: 26px; }
   [data-portada="terminal"] .ug-bienvenida { min-height: 0; }
   [data-portada="terminal"] .ug-bienvenida-texto { grid-area: 1 / 1; }
-  [data-portada="terminal"] .ug-categorias-portada a { min-height: 110px; padding: 12px; font-size: .875rem; }
+  [data-portada="terminal"] .ug-categorias-portada a { font-size: .875rem; }
+}
+@media (max-width: 420px) {
+  [data-portada="terminal"] .ug-categorias-portada a { min-height: 130px; padding: 12px; gap: 9px; }
+  .ug-icono-categoria { width: 42px; height: 42px; padding: 8px; }
 }
 html[data-portada] .ug-portada-cabecera img {
   display: block;
