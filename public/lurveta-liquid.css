@@ -1,0 +1,96 @@
+/* Lurveta / Discovery 02 — library home only; existing routes and data stay intact. */
+html body.lv-discovery { --ld-bg:#090e12; --ld-fg:#eef5f3; --ld-muted:#9eadaf; --ld-green:#71edba; --ld-line:rgba(219,249,240,.15); --ld-glass:linear-gradient(155deg,rgba(195,235,220,.17),rgba(35,53,57,.48) 42%,rgba(15,26,31,.78)); --ld-shadow:inset 0 1px 0 rgba(255,255,255,.27),inset 0 -1px 0 rgba(255,255,255,.07),0 12px 32px #0006; --ld-ease:cubic-bezier(.2,.8,.2,1); --ld-gutter:clamp(16px,3vw,42px); }
+html body.lv-discovery.lv-home { background:radial-gradient(ellipse at 75% 0%,#16352f 0%,transparent 36rem),radial-gradient(ellipse at 5% 24rem,#17222f 0%,transparent 30rem),var(--ld-bg)!important; color:var(--ld-fg); }
+html body.lv-discovery.lv-home #main-view { width:min(100%,1440px); max-width:1440px!important; margin:0 auto!important; padding:calc(88px + env(safe-area-inset-top,0px)) 0 calc(110px + env(safe-area-inset-bottom,0px))!important; box-sizing:border-box; min-width:0; }
+/* Keep the old anchor and h1 available to scripts and assistive technology. */
+html body.lv-discovery.lv-home #biblioteca { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip-path:inset(50%)!important; white-space:nowrap!important; border:0!important; }
+/* Detached chrome. No inherited rectangular theme border or neon halo. */
+html[data-tema] body.lv-discovery.lv-home #app-header,html body.lv-discovery.lv-home #app-header { position:fixed!important; top:calc(10px + env(safe-area-inset-top,0px))!important; left:0!important; right:0!important; width:min(calc(100% - 24px), 1160px)!important; max-width:none!important; margin:0 auto!important; min-height:62px!important; height:auto!important; padding:8px 10px 8px 15px!important; display:flex!important; flex-wrap:nowrap!important; align-items:center!important; gap:8px!important; background:var(--ld-glass)!important; border:1px solid var(--ld-line)!important; border-radius:25px!important; box-shadow:var(--ld-shadow)!important; backdrop-filter:blur(25px) saturate(160%)!important; -webkit-backdrop-filter:blur(25px) saturate(160%)!important; overflow:visible!important; clip-path:none!important; transform:translateY(0)!important; opacity:1; transition:transform .32s var(--ld-ease),opacity .26s,visibility .32s!important; }
+html body.lv-discovery.lv-home #app-header::before,html body.lv-discovery.lv-home #app-header::after { display:none!important; }
+html body.lv-discovery.lv-home #app-header .hdr-logo { width:clamp(88px,25vw,136px)!important; height:27px!important; flex:0 0 auto!important; margin-right:auto!important; background:url(icons/logo-lurveta.svg) left center/contain no-repeat!important; }
+html body.lv-discovery.lv-home #app-header .hdr-logo > span { opacity:0!important;font-size:0!important; }
+html body.lv-discovery.lv-home #app-header .hdr-actions { gap:5px!important; flex:0 0 auto!important; align-items:center!important; }
+html body.lv-discovery.lv-home #app-header :is(.hdr-orb,#notif-btn,#hdr-entrar) { box-shadow:none!important; border:1px solid var(--ld-line)!important; background:rgba(255,255,255,.07)!important; color:var(--ld-fg)!important; border-radius:999px!important; clip-path:none!important; }
+html body.lv-discovery.lv-home #app-header #hdr-entrar { padding:0 12px!important; min-width:0!important; height:42px!important; font-size:13px!important; background:var(--ld-green)!important; color:#08231a!important; }
+html body.lv-discovery.lv-home #app-header #hdr-uc { min-width:0!important; padding-inline:5px!important; }
+.lv-search-toggle { display:none; }
+html body.lv-discovery.lv-home #app-header .lv-search-toggle { display:grid!important; place-items:center; flex:0 0 44px; width:44px; height:44px; color:var(--ld-fg); border-radius:50%; border:1px solid rgba(230,255,250,.26); background:linear-gradient(145deg,#cdeee52c,#ffffff08 45%,#101e24a6); box-shadow:inset 0 1px 0 #ffffff40,0 5px 14px #0003; cursor:pointer; order:0; }
+.lv-search-toggle svg { width:21px;height:21px;display:block; }
+.lv-search-toggle[aria-expanded=true] { color:var(--ld-green)!important; }
+/* Keep the real #buscador, its autocomplete, and Nexus shortcut in their original parent. */
+html[data-tema] body.lv-discovery.lv-home #app-header .search-bar:not(.editorial-search),html body.lv-discovery.lv-home #app-header .search-bar:not(.editorial-search) { position:absolute!important; top:calc(100% + 9px)!important; left:auto!important; right:0!important; width:min(100%,560px)!important; min-width:0!important; max-width:none!important; height:56px!important; padding:0 8px!important; display:flex!important; flex:initial!important; opacity:0; visibility:hidden; pointer-events:none; transform:translateY(-8px) scale(.92); transform-origin:top right; transition:transform .25s var(--ld-ease),opacity .2s,visibility .25s!important; background:linear-gradient(140deg,#344842f5,#132128f2)!important; border:1px solid #d5f8ee45!important; border-radius:22px!important; box-shadow:var(--ld-shadow)!important; overflow:visible!important; }
+html body.lv-discovery.lv-home.lv-search-open #app-header .search-bar:not(.editorial-search) { opacity:1;visibility:visible;pointer-events:auto;transform:none; }
+html body.lv-discovery.lv-home #app-header #buscador { background:transparent!important; border:0!important; box-shadow:none!important; height:46px!important; width:100%!important; min-width:0!important; padding-left:34px!important; color:#f5fbf9!important; }
+html body.lv-discovery.lv-home #app-header .search-bar > svg { left:14px!important; color:var(--ld-green)!important; }
+html body.lv-discovery.lv-home #app-header #autocomplete-dropdown { top:calc(100% + 5px)!important; border-radius:17px!important; background:#17252a!important; border:1px solid var(--ld-line)!important; }
+html body.lv-discovery.lv-home #app-header .nxb-btn { background:#72e6b822!important; border:1px solid #72e6b83d!important; color:var(--ld-green)!important; box-shadow:none!important; border-radius:15px!important; }
+/* Bottom dock: floating with inset space, rounded glass and an active capsule. */
+html[data-tema] body.lv-discovery.lv-home #bottom-nav,html body.lv-discovery.lv-home #bottom-nav { position:fixed!important; left:0!important; right:0!important; bottom:calc(12px + env(safe-area-inset-bottom,0px))!important; width:min(calc(100% - 24px),520px)!important; max-width:none!important; margin:0 auto!important; transform:translateY(0)!important; height:66px!important; padding:5px 6px!important; background:var(--ld-glass)!important; border:1px solid var(--ld-line)!important; border-radius:26px!important; box-shadow:var(--ld-shadow)!important; backdrop-filter:blur(28px) saturate(165%)!important; -webkit-backdrop-filter:blur(28px) saturate(165%)!important; clip-path:none!important; opacity:1; overflow:visible!important; transition:transform .32s var(--ld-ease),opacity .26s,visibility .32s!important; }
+html body.lv-discovery.lv-home #bottom-nav::before,html body.lv-discovery.lv-home #bottom-nav .nav-tab::before,html body.lv-discovery.lv-home #bottom-nav .nav-dot { display:none!important; }
+html body.lv-discovery.lv-home #bottom-nav .ug-nav-pill { display:block!important; top:5px!important; bottom:5px!important; height:auto!important; left:0!important; border-radius:20px!important; background:linear-gradient(145deg,#b0f8da38,#54bfa718)!important; border:1px solid #a7ffdb36!important; box-shadow:inset 0 1px 0 #ffffff21!important; pointer-events:none!important; }
+html body.lv-discovery.lv-home #bottom-nav .nav-tab { flex:1 1 0!important; min-width:0!important; position:relative!important; z-index:1; gap:4px!important; margin:0!important; padding:0!important; border-radius:19px!important; color:#c3cece!important; }
+html body.lv-discovery.lv-home #bottom-nav .nav-tab.active,html body.lv-discovery.lv-home #bottom-nav .nav-tab.active ion-icon { color:var(--ld-green)!important; }
+html body.lv-discovery.lv-home #bottom-nav .nav-tab span { font-size:10px!important;font-weight:600!important; }
+html body.lv-discovery.lv-home #bottom-nav .nav-tab ion-icon { font-size:22px!important; }
+html body.lv-discovery.lv-home #bottom-nav .nav-nexus .nav-nexus-ring { margin:0!important; width:34px!important;height:30px!important; background:transparent!important; border:0!important; box-shadow:none!important; }
+html body.lv-discovery.lv-home.lv-chrome-hidden #app-header { transform:translateY(calc(-100% - 25px - env(safe-area-inset-top,0px)))!important; opacity:0; visibility:hidden; pointer-events:none; }
+html body.lv-discovery.lv-home.lv-chrome-hidden #bottom-nav { transform:translateY(calc(100% + 25px + env(safe-area-inset-bottom,0px)))!important; opacity:0; visibility:hidden; pointer-events:none; }
+/* An editorial feed: art first, concise title below, asymmetric rows. */
+.lv-home-intro { display:flex; align-items:end; justify-content:space-between; gap:12px; padding:8px var(--ld-gutter) 16px; }
+.lv-home-intro .lv-eyebrow { display:flex;align-items:center;gap:7px;font:600 10px/1.3 'DM Mono',monospace;letter-spacing:.16em;color:#9fb9b4;text-transform:uppercase;margin-bottom:9px; }
+.lv-home-intro .lv-eyebrow::before { content:'';width:6px;height:6px;border-radius:100%;background:var(--ld-green); }
+.lv-home-intro .lv-intro-title { color:var(--ld-fg);font:750 clamp(29px,5vw,52px)/.99 Inter,system-ui,sans-serif;letter-spacing:-.06em;margin:0; }
+.lv-home-intro .lv-intro-mark { font:500 11px/1.3 'DM Mono',monospace;color:#91aaa5;text-align:right;white-space:nowrap; }
+html body.lv-discovery.lv-home #category-row { position:relative!important; top:auto!important; width:100%!important; max-width:none!important; padding:0 var(--ld-gutter) 16px!important; margin:0!important; background:transparent!important; border:0!important; box-shadow:none!important; gap:7px!important; overflow-x:auto!important; mask-image:none!important; }
+html body.lv-discovery.lv-home #category-row .chip { min-height:37px!important; padding:7px 13px!important; border:1px solid #b6d7d122!important; border-radius:100px!important; background:#d8ece708!important; color:#b9c8c8!important; font:600 13px/1.2 Inter,system-ui,sans-serif!important; text-transform:none!important; box-shadow:none!important; white-space:nowrap; }
+html body.lv-discovery.lv-home #category-row .chip.active { background:#e4f4ed!important;color:#10271e!important; border-color:transparent!important; }
+html[data-tema] body.lv-discovery.lv-home #hero-carousel,html body.lv-discovery.lv-home #hero-carousel { --hero-h:clamp(355px,82vw,470px); --hero-fin:0px; width:calc(100% - 2 * var(--ld-gutter))!important; max-width:none!important; margin:0 auto 28px!important; border:0!important; border-radius:28px!important; background:transparent!important; overflow:hidden!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-track { padding-left:0!important; height:var(--hero-h)!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-slide { width:100%!important; margin-right:0!important; border:1px solid #b6d7d12b!important; border-radius:28px!important; background:#14232a!important; box-shadow:none!important; isolation:isolate; }
+html body.lv-discovery.lv-home #hero-carousel .hero-slide :is(img,video) { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; object-fit:cover!important; object-position:center 34%; mask-image:none!important; -webkit-mask-image:none!important; transform:none!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-slide::after { background:linear-gradient(180deg,#0710154d 0%,transparent 28%,#07101530 43%,#071015e8 77%,#071015 100%)!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-top { top:15px!important;left:15px!important;right:15px!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-badge { background:#14282bd9!important; color:#e4fdf3!important; box-shadow:inset 0 1px 0 #fff3!important; border:1px solid #f3fff34a!important; border-radius:10px!important; font:600 10px/1.2 Inter,system-ui,sans-serif!important; padding:8px 10px!important; letter-spacing:.06em!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-info { left:0!important;right:0!important;bottom:0!important;padding:20px!important; max-width:none!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-title { color:#f4f9f6!important; font:750 clamp(26px,7vw,42px)/1.02 Inter,system-ui,sans-serif!important; letter-spacing:-.045em!important; max-width:100%!important; -webkit-line-clamp:3!important; text-shadow:none!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-meta { margin-top:9px!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-cta { min-height:45px!important; height:auto!important; padding:12px 17px!important; background:#b0f5d5!important; color:#09281c!important; border-radius:14px!important; box-shadow:none!important; font-weight:700!important; margin-top:15px!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-dots { margin-top:12px!important; gap:6px!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-dot.active { width:30px!important; background:#72e6b875!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-dot::after { background:var(--ld-green)!important; }
+html body.lv-discovery.lv-home #hero-carousel .hero-arrow { top:calc(var(--hero-h) - 57px)!important; }
+/* Different card sizes and proportions for the ranking, new items, and full catalog. */
+html body.lv-discovery.lv-home #output { width:100%!important; max-width:none!important; padding:0 var(--ld-gutter) 32px!important; margin:0!important; gap:12px!important; grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+html body.lv-discovery.lv-home #output .ugx-fila { grid-column:1/-1; margin:0 0 26px!important; min-width:0!important; padding:0!important; overflow:visible!important; }
+html body.lv-discovery.lv-home #output :is(.ugx-fila-h,.section-header) { padding:0 0 14px!important; margin:0!important; border:0!important; background:none!important; box-shadow:none!important; align-items:baseline!important; }
+html body.lv-discovery.lv-home #output :is(.ugx-fila h2,.section-title) { font:730 clamp(22px,4.8vw,30px)/1.13 Inter,system-ui,sans-serif!important; letter-spacing:-.04em!important; color:var(--ld-fg)!important; text-transform:none!important; }
+html body.lv-discovery.lv-home #output .ugx-fila-h small { display:block!important; color:var(--ld-muted)!important; font-size:12px!important; margin-top:4px; }
+html body.lv-discovery.lv-home #output .ugx-fila-track { display:grid!important; grid-auto-flow:column!important; grid-auto-columns:clamp(142px,44vw,210px)!important; gap:11px!important; padding:2px 1px 8px!important; margin:0!important; scroll-snap-type:x proximity; overflow-x:auto!important; overflow-y:hidden!important; overscroll-behavior-x:contain; }
+html body.lv-discovery.lv-home #output .ugx-fila-track .game-tile { width:100%!important; min-width:0!important; max-width:none!important; flex:auto!important; scroll-snap-align:start; }
+html body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) { background:#172229!important; border:1px solid #b6d7d121!important; border-radius:18px!important; box-shadow:none!important; overflow:hidden!important; padding:0!important; clip-path:none!important; }
+html body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap { border-radius:17px 17px 0 0!important; aspect-ratio:4/3!important; box-shadow:none!important; margin:0!important; }
+html body.lv-discovery.lv-home #output .ugx-fila--top .game-tile .thumb-wrap { aspect-ratio:3/4!important; }
+html body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info { padding:10px 11px 12px!important; background:transparent!important; }
+html body.lv-discovery.lv-home #output .game-tile .tile-title { font:650 14px/1.3 Inter,system-ui,sans-serif!important; color:var(--ld-fg)!important; }
+html body.lv-discovery.lv-home #output .game-tile .tile-meta { color:#a0b3b3!important; font-size:11px!important; margin-top:6px!important; }
+html body.lv-discovery.lv-home #output .ugx-fila--top .game-tile .thumb-wrap::after { top:10px!important;left:10px!important; width:34px!important;height:34px!important; background:#101e25c9!important;border:1px solid #ffffff33!important;border-radius:12px!important; color:#fff!important; box-shadow:none!important; }
+html body.lv-discovery.lv-home #output .ugc { border-radius:24px!important; }
+html body.lv-discovery.lv-home :is(#app-header,#bottom-nav) :is(a,button):focus-visible { outline:2px solid var(--ld-green)!important; outline-offset:2px; }
+@media(min-width:740px){
+ html body.lv-discovery.lv-home #hero-carousel { --hero-h:clamp(380px,42vw,530px); }
+ html body.lv-discovery.lv-home #hero-carousel .hero-slide::after { background:linear-gradient(90deg,#071015dc 0%,#0710158c 32%,transparent 75%),linear-gradient(0deg,#071015cc,transparent 48%)!important; }
+ html body.lv-discovery.lv-home #hero-carousel .hero-info { padding:34px!important;max-width:68%!important; }
+ html body.lv-discovery.lv-home #output { grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important; }
+ html body.lv-discovery.lv-home #output .ugx-fila-track { grid-auto-columns:clamp(180px,20vw,250px)!important;gap:15px!important; }
+}
+@media(max-width:380px){html body.lv-discovery.lv-home #app-header { padding-inline:8px!important;gap:4px!important; } html body.lv-discovery.lv-home #app-header .hdr-logo { width:78px!important; } html body.lv-discovery.lv-home #app-header .lv-search-toggle { width:38px;height:38px;flex-basis:38px; } html body.lv-discovery.lv-home #app-header .hdr-orb { width:36px!important;height:36px!important; } html body.lv-discovery.lv-home #app-header #hdr-entrar { padding-inline:8px!important; } }
+@media(prefers-reduced-motion:reduce){html body.lv-discovery.lv-home :is(#app-header,#bottom-nav,#app-header .search-bar) { transition:none!important; } }
+/* Compact authenticated controls without deleting notification / balance actions. */
+@media(max-width:440px){
+ html body.lv-discovery.lv-home #app-header .hdr-uc-txt small { display:none!important; }
+ html body.lv-discovery.lv-home #app-header .hdr-uc-txt b { font-size:11px!important; }
+ html body.lv-discovery.lv-home #app-header .hdr-uc { gap:3px!important; }
+ html body.lv-discovery.lv-home #app-header #notif-btn { width:34px!important;min-width:34px!important; }
+ html body.lv-discovery.lv-home #app-header #notif-btn ion-icon { font-size:20px!important; }
+}
+@supports not (backdrop-filter:blur(1px)){html body.lv-discovery.lv-home :is(#app-header,#bottom-nav) { background:#17282ef5!important; }}
