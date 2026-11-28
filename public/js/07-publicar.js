@@ -189,12 +189,11 @@ function pfRenderFeaturedList(items) {
   }
 
   list.innerHTML = items.map(item => {
-    const safeTitle = (item.title || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    const safeImg   = (item.image || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    const safeCat   = (item.category || 'General').replace(/'/g, '&#39;');
+    // Argumentos como JSON y luego escapados para el atributo: una comilla del título no sale del string de JS
+    const args = escH(JSON.stringify([String(item._id || ''), item.title || '', item.image || '', item.category || 'General']));
     return `
-      <div class="pf-featured-item" onclick="pfSelectFeaturedItem('${item._id}','${safeTitle}','${safeImg}','${safeCat}')">
-        <img src="${item.image || window.UG_PH}"
+      <div class="pf-featured-item" onclick="pfSelectFeaturedItem(...${args})">
+        <img src="${escH(item.image || window.UG_PH)}"
              alt="" loading="lazy"
              onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-featured-item-info">

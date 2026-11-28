@@ -137,6 +137,17 @@ async function opinionIA({ ia, item, hechos }) {
     return { ...resto, fuente: _fuente || 'Nexus' };
 }
 
+// Versión de las comprobaciones: si cambian las reglas, los análisis anteriores dejan de valer en el panel
+const VERSION_REVISION = 2;
+/** Firma del contenido analizado (enlace, portada, título, descripción, galería). El panel calcula la misma
+ *  para saber si el análisis corresponde a lo que hay ahora publicado. Misma función en admin/index.html. */
+function firmaContenido(it) {
+    const s = [it.link, it.image, it.title, it.description, (it.images || []).join('|')].map(v => String(v ?? '')).join('\n');
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+}
+
 /**
  * Analiza una publicación. deps: { Juego, Usuario, errorLinkPublicacion, gameDetector, logger, ia? (por defecto modulos/nexus/llm) }
  */
@@ -277,6 +288,7 @@ async function analizar(item, deps) {
         motivosDuros: duros, reglas, hechos,
         ia: ia ? { fuente: ia.fuente, decision: ia.decision, confianza: ia.confianza, razones: (ia.razones || []).slice(0, 6), sugerencias: (ia.sugerencias || []).slice(0, 5), riesgo_spam: ia.riesgo_spam, riesgo_malware: ia.riesgo_malware, calidad_estimada: ia.calidad_estimada } : null,
         enlace, portada, autor,
+        contenido: firmaContenido(item), version: VERSION_REVISION,
         fecha: new Date(),
     };
 }
@@ -293,4 +305,4 @@ async function estadoEnlace(link) {
     return s.ok ? 'vivo' : 'no_verificable';
 }
 
-module.exports = { analizar, sondear, hostPublico, ipPrivada, PIRATERIA, SENSIBLE, estadoEnlace };
+module.exports = { analizar, firmaContenido, VERSION_REVISION, sondear, hostPublico, ipPrivada, PIRATERIA, SENSIBLE, estadoEnlace };

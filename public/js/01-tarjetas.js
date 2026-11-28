@@ -154,7 +154,7 @@ function createTile(item, isFeatured=false) {
   const isFav = favIds.includes(item._id);
   const dl = item.descargasEfectivas||0;
   const lk = item.likesCount||0;
-  const extraBadges = (item.serieInfo ? `<span class="tile-extra-badge tile-serie-badge"><ion-icon name="folder-open"></ion-icon>${item.serieInfo.partes} partes</span>` : '') + getTileExtras(item);
+  const extraBadges = (item.serieInfo ? `<span class="tile-extra-badge tile-serie-badge"><ion-icon name="folder-open"></ion-icon>${Number(item.serieInfo.partes) || ''} partes</span>` : '') + getTileExtras(item);
   // Siempre hay una fila de etiquetas (vacía si no tiene): todas las tarjetas miden lo mismo
   const insignias = extraBadges.replace(/<div class="tile-extras">([\s\S]*)<\/div>\s*$/, '$1').trim();
   const extrasFila = insignias ? `<div class="tile-extras">${insignias}</div>` : '<div class="tile-extras tile-extras--vacia" aria-hidden="true"></div>';
@@ -171,7 +171,7 @@ function createTile(item, isFeatured=false) {
         ${isVideo?'<div class="tile-video-overlay"><ion-icon name="play-circle"></ion-icon></div>':''}
       </div>
       <div class="ft-info">
-        <div class="ft-badge">${isVideo?'▶ '+( item.videoType||'Video'):'⭐ Destacado'}</div>
+        <div class="ft-badge">${isVideo?'▶ '+escH(item.videoType||'Video'):'⭐ Destacado'}</div>
         <div class="ft-title">${escH(tituloT)}</div>
         <div class="ft-meta">
           <div class="ft-user">@${escH(item.usuario||'Cloud')}${getBadge(item.usuario)}</div>
@@ -179,6 +179,7 @@ function createTile(item, isFeatured=false) {
         </div>
       </div>`;
     el.addEventListener('click',()=>openDetail(item));
+    tarjetaTeclado(el, item);
     return el;
   }
 
@@ -201,7 +202,7 @@ function createTile(item, isFeatured=false) {
           <ion-icon name="${isFav?'heart':'heart-outline'}"></ion-icon>
         </button>
         ${item.videoType?`<div class="tile-vid-type-badge">${escH(item.videoType)}</div>`:''}
-        ${duracion?`<div class="tile-duration-badge">${duracion}</div>`:''}
+        ${duracion?`<div class="tile-duration-badge">${escH(duracion)}</div>`:''}
       </div>
       <div class="tile-info tile-info--yt">
         <div class="tile-yt-avatar">${avatarLetter(item.usuario)}</div>
@@ -255,7 +256,21 @@ function createTile(item, isFeatured=false) {
     e.stopPropagation();
     fav(item._id);
   });
+  tarjetaTeclado(el, item);
   return el;
+}
+
+// Teclado y lectores de pantalla: la tarjeta se enfoca con Tab y se abre con Enter o Espacio (como un botón).
+// El corazón sigue siendo su propio botón: su Enter no abre la ficha porque solo cuenta si el foco está en la tarjeta.
+function tarjetaTeclado(el, item) {
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', `${item.title || 'Publicación'} · ${catLabel(item.category)} · de @${item.usuario || 'Cloud'}`);
+  el.addEventListener('keydown', e => {
+    if (e.target !== el || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    openDetail(item);
+  });
 }
 
 // ── VIDEO CARD — siempre abre el detail sheet ────────────

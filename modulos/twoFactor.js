@@ -36,6 +36,7 @@ const TwoFactorSchema = new mongoose.Schema({
     activado:    { type: Boolean, default: false, index: true },
     backupCodes: { type: [{ code: String, usado: Boolean }], default: [] },
     ultimoUso:   { type: Date, default: null },
+    ultimoPaso:  { type: Number, default: 0 },   // paso TOTP ya usado: el mismo código no vale dos veces
     activadoEn:  { type: Date, default: null },
     intentosFallidos: { type: Number, default: 0 },
     bloqueadoHasta:   { type: Date, default: null }
@@ -123,14 +124,19 @@ function generarTOTP(secret, window = 0) {
  * Verifica un token TOTP con ventana de ±1 período (60 segundos de tolerancia).
  */
 function verificarTOTP(secret, token, windowSize = 1) {
-    if (!token || !secret) return false;
-    const clean = String(token).replace(/\s/g, '');
-    if (!/^\d{6}$/.test(clean)) return false;
+    return pasoTOTP(secret, token, windowSize) > 0;
+}
 
+/** Paso (contador de 30 s) en que el código es válido, o 0 si no lo es. */
+function pasoTOTP(secret, token, windowSize = 1) {
+    if (!token || !secret) return 0;
+    const clean = String(token).replace(/\s/g, '');
+    if (!/^\d{6}$/.test(clean)) return 0;
+    const ahora = Math.floor(Date.now() / 1000 / 30);
     for (let w = -windowSize; w <= windowSize; w++) {
-        if (generarTOTP(secret, w) === clean) return true;
+        if (generarTOTP(secret, w) === clean) return ahora + w;
     }
-    return false;
+    return 0;
 }
 
 // ======================================================================
@@ -142,6 +148,8 @@ function verificarTOTP(secret, token, windowSize = 1) {
  * NO lo activa todavía: hay que verificarlo primero con un token.
  */
 async function iniciarSetup(usuario, emailOrLabel, appName = 'Lurveta') {
+    // Con el 2FA activo, un setup nuevo lo apagaría sin pedir código: hay que desactivarlo antes (con código)
+    if (await tieneActivo(usuario)) return { ok: false, error: 'El 2FA ya está activo. Desactívalo con un código antes de configurarlo de nuevo.' };
     // Generar secret aleatorio de 20 bytes (160 bits, RFC recomienda ≥128)
     const secretBuffer = crypto.randomBytes(20);
     const secretBase32 = base32Encode(secretBuffer);
@@ -193,9 +201,11 @@ async function confirmarActivacion(usuario, token) {
     const record = await TwoFactor.findOne({ usuario });
     if (!record) return { ok: false, error: 'Debes iniciar el setup primero' };
 
-    if (!verificarTOTP(record.secret, token)) {
+    const paso = pasoTOTP(record.secret, token);
+    if (!paso) {
         return { ok: false, error: 'Código incorrecto. Verifica que la hora de tu dispositivo sea correcta.' };
     }
+    record.ultimoPaso = paso;
 
     record.activado   = true;
     record.activadoEn = new Date();
@@ -224,22 +234,23 @@ async function verificar(usuario, token) {
 
     // ¿Es un backup code?
     if (clean.length === 8 && /^[0-9A-F]+$/.test(clean)) {
-        const backup = record.backupCodes.find(b => b.code === clean && !b.usado);
-        if (backup) {
-            backup.usado = true;
-            record.ultimoUso = new Date();
-            record.intentosFallidos = 0;
-            await record.save();
+        // Atómico: un código de respaldo sirve una sola vez aunque lleguen dos peticiones a la vez
+        const r = await TwoFactor.updateOne({ _id: record._id, backupCodes: { $elemMatch: { code: clean, usado: false } } },
+            { $set: { 'backupCodes.$.usado': true, ultimoUso: new Date(), intentosFallidos: 0 } });
+        if (r.modifiedCount) {
             logger.info(`🔓 2FA: @${usuario} usó un backup code`);
             return { ok: true, backupUsado: true };
         }
     }
 
-    // Es un TOTP normal
-    if (verificarTOTP(record.secret, clean)) {
-        record.ultimoUso = new Date();
-        record.intentosFallidos = 0;
-        await record.save();
+    // Es un TOTP normal (un código ya usado no vale otra vez: alguien que lo vio no puede repetirlo)
+    const paso = pasoTOTP(record.secret, clean);
+    if (paso && paso <= (record.ultimoPaso || 0)) return { ok: false, usado: true, error: 'Ese código ya se usó. Espera a que tu app muestre el siguiente.' };
+    if (paso) {
+        // Atómico: dos peticiones simultáneas con el mismo código no pasan las dos
+        const r = await TwoFactor.updateOne({ _id: record._id, ultimoPaso: { $not: { $gte: paso } } },
+            { $set: { ultimoPaso: paso, ultimoUso: new Date(), intentosFallidos: 0 } });
+        if (!r.modifiedCount) return { ok: false, usado: true, error: 'Ese código ya se usó. Espera a que tu app muestre el siguiente.' };
         return { ok: true };
     }
 
@@ -252,7 +263,7 @@ async function verificar(usuario, token) {
     }
     await record.save();
 
-    return { ok: false, error: 'Código incorrecto' };
+    return { ok: false, error: 'Código incorrecto o vencido. Los códigos cambian cada 30 segundos.' };
 }
 
 /**
@@ -320,6 +331,7 @@ module.exports = {
     // Helpers exportados para testing
     generarTOTP,
     verificarTOTP,
+    pasoTOTP,
     base32Encode,
     base32Decode,
     TwoFactor

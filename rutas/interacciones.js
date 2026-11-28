@@ -24,10 +24,20 @@ app.post('/admin/items/:id/sospecha', [verificarAdmin, param('id').isMongoId()],
     try {
         const d = req.body?.decision;
         if (!['ok', 'mantener'].includes(d)) return res.status(400).json({ success: false, error: 'decision: ok | mantener' });
+        // Volver a pagar exige haber abierto el enlace: sin esa comprobación no se habilita la monetización
+        if (d === 'ok' && req.body?.enlaceVerificado !== true) return res.status(422).json({ success: false, code: 'ENLACE_SIN_VERIFICAR', error: 'Abre el enlace y confirma que es un mod, port o versión legítima antes de volver a habilitar los pagos.' });
         const it = await Juego.findById(req.params.id).select('title usuario image sospecha').lean();
         if (!it) return res.status(404).json({ success: false, error: 'No encontrada' });
         const sosp = { ...(it.sospecha || {}), revision: d, revisadoPor: req.admin?.usuario || req.admin?.email || 'admin', revisadoEn: new Date(), titulo: it.title };
-        await Juego.updateOne({ _id: it._id }, { $set: { pagoPausado: d !== 'ok', sospecha: sosp } });
+        // Control optimista: si el panel dice qué revisión vio y otro admin ya decidió, no se pisa
+        const filtro = { _id: it._id };
+        if (typeof req.body?.esperado?.revision === 'string') {
+            if ((it.sospecha?.revision || '') !== req.body.esperado.revision) return res.status(409).json({ success: false, code: 'CONFLICTO', error: 'Otro administrador ya decidió esta verificación.', revision: it.sospecha?.revision || '' });
+            filtro['sospecha.revision'] = it.sospecha?.revision || { $in: [null, ''] };
+        }
+        const r = await Juego.updateOne(filtro, { $set: { pagoPausado: d !== 'ok', sospecha: sosp },
+            $push: { sospechaHistorial: { $each: [{ decision: d, por: sosp.revisadoPor, en: sosp.revisadoEn }], $slice: -50 } } });
+        if (!r.matchedCount) return res.status(409).json({ success: false, code: 'CONFLICTO', error: 'Otro administrador ya decidió esta verificación.' });
         crearNotif({ destinatario: it.usuario, tipo: 'sistema', emisor: 'Lurveta', itemId: String(it._id), itemTitle: 'Revisión', itemImage: it.image || '',
             mensaje: d === 'ok' ? `✅ Revisamos "${String(it.title).slice(0, 70)}": todo en orden. Vuelve a generar UpCoins con cada descarga.`
                 : `❌ Revisamos "${String(it.title).slice(0, 70)}" y parece un juego comercial completo: seguirá sin generar UpCoins. Si es un mod o configuración, edita el título y la descripción para dejarlo claro.` });

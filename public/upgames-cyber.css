@@ -370,7 +370,6 @@ html[data-tema="cyber"] .nav-nexus-ring svg { filter: drop-shadow(0 0 5px rgba(5
 @keyframes cbNexus { 50% { filter: drop-shadow(0 0 10px rgba(140,150,160,.9)) brightness(1.25); } }
 @keyframes cbGiro { to { transform: rotate(360deg); } }
 html[data-tema="cyber"] .nav-nexus span { color: #B9F5D3 !important; }
-html[data-tema="cyber"] .hdr-orb { border-radius: var(--cb-r) !important; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: linear-gradient(135deg, rgba(57,255,136,.25), rgba(255,255,255,.25)) !important; }
 html[data-tema="cyber"] #toast-container > *, html[data-tema="cyber"] .toast {
   border-radius: var(--cb-r) !important; font-family: var(--ff-mono) !important; background: rgba(3,6,12,.95) !important;
   border: 1px solid var(--g) !important; box-shadow: var(--cb-neon) !important; color: var(--txt) !important;
@@ -433,7 +432,6 @@ html[data-tema="cyber"] .cb-glitch::after { color: var(--g); animation: cbCorte2
 @keyframes cbCorte2 { 0%, 92%, 100% { clip-path: inset(0 0 100% 0); transform: none; } 93% { clip-path: inset(40% 0 35% 0); transform: translate(3px, 0); } 96% { clip-path: inset(75% 0 5% 0); transform: translate(-2px, 0); } }
 
 /* Interruptor de tema (menú rápido) */
-.ug-tema-btn .ugr-bub { background: linear-gradient(135deg, #39FF88, #FFFFFF) !important; color: #03060C !important; }
 
 
 /* ── 11. MOVIMIENTO: transiciones rápidas y fluidas (≈0,35 s) ─────

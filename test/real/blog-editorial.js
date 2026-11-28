@@ -206,6 +206,21 @@ async function escenarios(db, media) {
     const todos = [...primerLote.entradas, ...segundo.entradas];
     assert.ok(todos.some(x => x.id === yNota.id) && todos.some(x => x.id === largo.entrada.id));
     for (const p of todos) assert.ok(!('versiones' in p) && !('bloques' in p));
+    // Relevancia sobre un conjunto representativo: la más leída gana aunque haya más de un lote de entradas más nuevas,
+    // y recorrer «todo» con el cursor no repite ni pierde entradas.
+    const entradasDb = db.collection('entradas'), base = await entradasDb.findOne({ tipo: 'entrada', estado: 'publicada' }, { sort: { publicadaEn: 1 } });
+    await entradasDb.updateOne({ _id: base._id }, { $set: { vistas: 5000 } });
+    await entradasDb.insertMany(Array.from({ length: 14 }, (_, i) => ({ ...base, _id: new (require('mongoose').Types.ObjectId)(), slug: `relleno-${i}`, titulo: `Relleno ${i}`, vistas: i, publicadaEn: new Date(Date.now() - i * 1000) })));
+    assert.equal((await feed('populares')).entradas[0].id, String(base._id), 'la más leída va primera en populares');
+    const vistos = [];
+    for (let pag = await feed('todo'), n = 0; ; pag = await feed('todo', null, '&cursor=' + encodeURIComponent(pag.siguiente)), n++) {
+        vistos.push(...pag.entradas.map(x => x.id));
+        if (!pag.siguiente || n > 20) break;
+    }
+    assert.equal(new Set(vistos).size, vistos.length, 'el cursor por relevancia no repite entradas');
+    assert.ok(vistos.includes(String(base._id)) && vistos.length >= 16, `recorre todo el conjunto (${vistos.length})`);
+    assert.equal((await llamar('/blogs/descubrir?vista=todo&cursor=xyz')).status, 400);
+    await entradasDb.deleteMany({ slug: /^relleno-/ });
     const siguiendo = await feed('siguiendo', f.token);
     assert.ok(siguiendo.entradas.length && siguiendo.entradas.every(x => x.usuario === y.usuario));
     assert.deepEqual((await feed('siguiendo', e.token)).entradas.map(x => x.blogId), siguiendo.entradas.map(x => x.blogId));

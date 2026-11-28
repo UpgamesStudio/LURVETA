@@ -163,6 +163,16 @@ app.get('/admin/payments-pending', verificarAdmin, async (req, res) => {
     }
 });
 
+// Precondiciones del control optimista: solo campos de estado conocidos, con valores simples
+function condicionesEsperadas(e) {
+    const c = {};
+    if (!e || typeof e !== 'object') return c;
+    if (['pendiente', 'aprobado', 'rechazado', 'pending', 'privado'].includes(e.status)) c.status = e.status;
+    if (['online', 'revision', 'caido'].includes(e.linkStatus)) c.linkStatus = e.linkStatus;
+    if (Number.isInteger(e.reportes) && e.reportes >= 0) c.reportes = e.reportes;
+    return c;
+}
+
 // GET /admin/items/:id/analisis-ia — recomendación de Nexus para revisar (caché 6 h; ?forzar=1 rehace)
 const revisionIA = require('../modulos/revisionIA');
 app.get('/admin/items/:id/analisis-ia', verificarAdmin, [param('id').isMongoId()], async (req, res) => {
@@ -196,10 +206,26 @@ app.put("/admin/items/:id", verificarAdmin, [
         const updates = {};
         ['title', 'description', 'link', 'image', 'images', 'category', 'status', 'linkStatus', 'reportes'].forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
         if (updates.status === 'rechazado') updates.motivoRechazo = String(req.body.motivo || '').trim().slice(0, 300);
-        const antes = await Juego.findById(req.params.id).select('status usuario').lean();
-        if (updates.title !== undefined && antes) updates.serie = series.serieDe(updates.title, antes.usuario);
-        const item = await Juego.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true, runValidators: true });
-        if (!item) return res.status(404).json({ success: false, error: "Item no encontrado" });
+        const antes = await Juego.findById(req.params.id).select('status usuario linkStatus reportes reportesDesglose').lean();
+        if (!antes) return res.status(404).json({ success: false, error: "Item no encontrado" });
+        if (updates.title !== undefined) updates.serie = series.serieDe(updates.title, antes.usuario);
+        // Decisiones con pasos (modo turno): ninguna respuesta «No» puede acabar en una aprobación
+        if (updates.status === 'aprobado' && Array.isArray(req.body.comprobaciones) && req.body.comprobaciones.some(v => v !== true))
+            return res.status(422).json({ success: false, code: 'CONTRADICCION', error: 'No se puede aprobar con una comprobación en «No». Recházala con el motivo.' });
+        const quien = req.admin?.usuario || req.admin?.email || 'admin';
+        if (updates.status && updates.status !== antes.status) Object.assign(updates, { revisadoPor: quien, revisadoEn: new Date() });
+        // Cerrar la tarea de reportes sin borrar los reportes (son la evidencia): vuelve si llega uno nuevo
+        if (req.body.resolverReportes === true) updates.revisionReportes = { estado: 'resuelta', accion: updates.status === 'rechazado' ? 'rechazado' : (updates.linkStatus || antes.linkStatus),
+            por: quien, en: new Date(), reportes: antes.reportes || 0, malware: antes.reportesDesglose?.malware || 0 };
+        // Control optimista: lo que el panel vio debe seguir igual; si otro admin decidió antes, no se pisa
+        const filtro = { _id: req.params.id, ...condicionesEsperadas(req.body.esperado) };
+        if (updates.revisionReportes) filtro.reportes = antes.reportes || 0;
+        const item = await Juego.findOneAndUpdate(filtro, { $set: updates }, { new: true, runValidators: true });
+        if (!item) {
+            const actual = await Juego.findById(req.params.id).select('status linkStatus reportes reportesDesglose revisadoPor revisionReportes').lean();
+            if (!actual) return res.status(404).json({ success: false, error: "Item no encontrado" });
+            return res.status(409).json({ success: false, code: 'CONFLICTO', error: 'Otro administrador cambió esta publicación mientras la revisabas. Se actualizó la tarea.', item: actual });
+        }
         // Avisar al autor cuando su publicación se rechaza (antes desaparecía sin explicación)
         if (updates.status === 'rechazado' && antes?.status !== 'rechazado') {
             const motivo = updates.motivoRechazo ? `: ${updates.motivoRechazo}` : '. Revisa las normas de publicación y vuelve a intentarlo.';
@@ -237,8 +263,16 @@ app.get("/admin/items", verificarAdmin, async (req, res) => {
 
 app.put("/admin/items/:id/reset-reports", verificarAdmin, [param('id').isMongoId()], async (req, res) => {
     try {
-        const item = await Juego.findByIdAndUpdate(req.params.id, { $set: { reportes: 0, linkStatus: 'online' } }, { new: true });
-        if (!item) return res.status(404).json({ success: false, error: "Item no encontrado" });
+        const antes = await Juego.findById(req.params.id).select('reportes reportesDesglose revisionReportes').lean();
+        if (!antes) return res.status(404).json({ success: false, error: "Item no encontrado" });
+        // Que el enlace funcione no dice nada del malware: los reportes de malware nuevos exigen haberlo revisado
+        const malware = antes.reportesDesglose?.malware || 0;
+        if (malware > (antes.revisionReportes?.malware || 0) && req.body?.confirmaMalware !== true)
+            return res.status(422).json({ success: false, code: 'MALWARE_SIN_REVISAR', error: `Tiene ${malware} reporte(s) de malware: revisa el archivo y confírmalo antes de dejarla online.` });
+        const filtro = { _id: req.params.id, reportes: antes.reportes || 0, ...condicionesEsperadas(req.body?.esperado) };
+        const item = await Juego.findOneAndUpdate(filtro, { $set: { reportes: 0, linkStatus: 'online',
+            revisionReportes: { estado: 'resuelta', accion: 'online', por: req.admin?.usuario || 'admin', en: new Date(), reportes: 0, malware, previos: antes.reportes || 0 } } }, { new: true });
+        if (!item) return res.status(409).json({ success: false, code: 'CONFLICTO', error: 'Llegaron reportes nuevos u otro administrador ya la revisó. Se actualizó la tarea.' });
         logger.info(`ADMIN: Reportes reseteados para ${item.title}`);
         res.json({ success: true, item });
     } catch (error) {

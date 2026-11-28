@@ -866,7 +866,7 @@ body::before{opacity:.45}body::after{display:none}
 .tn-txt b{font-size:15px;font-weight:600}
 .tn-txt small{font-size:13.5px;line-height:1.45;color:#5A625E}
 .tn-txt em{font-style:normal;font-size:12.5px;font-weight:600;color:#0F7B4A}
-.tn-txt em.mal{color:#B1361F}
+.tn-txt em.mal{color:#B1361F}.tn-txt em.aviso{color:#9A5B00}.tn-txt em.mut{color:#5A625E}
 .tn-res{flex:none;align-self:center;display:flex;gap:6px}
 .tn-si,.tn-no{height:34px;padding:0 16px;border-radius:999px;font-size:13.5px;font-weight:600}
 .tn-si{border:0;background:#101412;color:#fff}
@@ -1394,11 +1394,12 @@ body::before{opacity:.45}body::after{display:none}
 const API = (() => { try { const o = new URLSearchParams(location.search).get('api'); if (o && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o)) return o; } catch (_) {} return 'https://upgames-production.up.railway.app'; })();
 
 // ─────────── Estado ───────────
-const S = { token: null, admin: null, exp: 0 };
+const S = { token: null, admin: null, exp: 0, gen: 0 };   // gen: sube al cerrar sesión; una respuesta de una sesión anterior se descarta
 let D = { items: [], users: [], comments: [], pagos: [], tarjetas: [] };
 let FIN = { revi: null, inci: null };   // retiros en revisión e incidencias de PayPal (sección Pagos)
 let dash = null, view = 'dash', bulk = false, sel = new Set();
 let EMP = null;   // tablero Empresa (solo el dueño)
+let EST = {};     // estado de carga por fuente (entradas, pagos, sosp…): { ok, status, at: última carga buena }
 let itF = 'all', vF = 'all', uF = 'all', pF = 'pend', tF = 'all', itLimit = 60, uLimit = 60;
 let auBefore = null;
 let PERMS = {
@@ -1453,15 +1454,22 @@ let toastT;
 function toast(msg, type = '') { const t = $('toast'); t.className = type; t.textContent = msg; void t.offsetWidth; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800); }
 function cp(t) { if (!t) return; navigator.clipboard?.writeText(t).then(() => toast('📋 Copiado')).catch(() => {}); }
 
+const PEND = new Set();   // peticiones en vuelo: se cancelan al cerrar sesión
 async function api(path, { method = 'GET', body, auth = true, raw = false } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (auth && S.token) headers['x-admin-token'] = S.token;
-  const r = await fetch(API + path, { method, headers, body: body !== undefined ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined });
-  let d = null; const txt = await r.text();
-  try { d = JSON.parse(txt); } catch (_) { d = raw ? txt : {}; }
-  if (r.status === 401 && auth && S.token && !path.startsWith('/admin/auth/login')) { logout((d && d.error) || 'Tu sesión expiró. Vuelve a entrar.'); throw new Error('401'); }
-  return { ok: r.ok, status: r.status, d };
+  const gen = S.gen, ctl = new AbortController(); PEND.add(ctl);
+  try {
+    const r = await fetch(API + path, { method, headers, body: body !== undefined ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined, signal: ctl.signal });
+    let d = null; const txt = await r.text();
+    try { d = JSON.parse(txt); } catch (_) { d = raw ? txt : {}; }
+    if (gen !== S.gen) throw new Error('401');   // la sesión cambió mientras tanto: esta respuesta no repuebla nada
+    if (r.status === 401 && auth && S.token && !path.startsWith('/admin/auth/login')) { logout((d && d.error) || 'Tu sesión expiró. Vuelve a entrar.'); throw new Error('401'); }
+    return { ok: r.ok, status: r.status, d };
+  } finally { PEND.delete(ctl); }
 }
+// Respuesta correcta o error con su código HTTP (un 500 no es una lista vacía)
+const okD = r => { if (!r.ok) throw Object.assign(new Error(String(r.status)), { status: r.status }); return r.d; };
 
 function om(id) { $(id).classList.add('on'); document.body.style.overflow = 'hidden'; }
 function cm(id) { $(id).classList.remove('on'); if (!document.querySelector('.modal.on')) document.body.style.overflow = ''; if (id === 'mVideo') $('mvBox').innerHTML = ''; }
@@ -1510,15 +1518,18 @@ function guardarSesion(token, admin, exp, rec) {
 function leerSesion() { try { const v = JSON.parse(sessionStorage.getItem('ugAdmin') || localStorage.getItem('ugAdmin') || 'null'); if (v && v.e > Date.now()) return v; } catch (_) {} return null; }
 
 async function logout(msg) {
-  if (S.token) fetch(API + '/admin/auth/logout', { method: 'POST', headers: { 'x-admin-token': S.token } }).catch(() => {});
+  if (S.token) fetch(API + '/admin/auth/logout', { method: 'POST', headers: { 'x-admin-token': S.token }, keepalive: true }).catch(() => {});
+  S.gen++; PEND.forEach(c => c.abort()); PEND.clear();
   S.token = null; S.admin = null;
-  try { sessionStorage.removeItem('ugAdmin'); localStorage.removeItem('ugAdmin'); } catch (_) {}
-  $('app').classList.remove('on'); $('login').classList.remove('hide');
-  if (msg) $('lgErr').textContent = msg;
-  clearInterval(timers.sync); clearInterval(timers.exp); clearInterval(timers.nx);
-  $('nxDock')?.classList.remove('open');
-  if (TN) { TN.abierto = false; clearInterval(TN.t); TN.vistas.clear(); TN.saltadas.clear(); TN.resp = {}; TN.cobro = {}; TN.k = null; }
-  $('turno').hidden = true; try { sessionStorage.removeItem('ug_tn_off'); } catch (_) {}
+  try { sessionStorage.removeItem('ugAdmin'); localStorage.removeItem('ugAdmin'); sessionStorage.removeItem('ug_tn_off'); if (msg) sessionStorage.setItem('ugAdminMsg', String(msg).slice(0, 200)); } catch (_) {}
+  Object.values(timers).forEach(t => { clearInterval(t); clearTimeout(t); });
+  if (TN) { TN.abierto = false; clearInterval(TN.t); }
+  D = { items: [], users: [], comments: [], pagos: [], tarjetas: [] }; FIN = { revi: null, inci: null }; EMP = null; EST = {}; dash = null; sel.clear();
+  $('turno').hidden = true; $('turno').innerHTML = ''; $('app').classList.remove('on'); $('login').classList.remove('hide');
+  document.querySelectorAll('.modal.on').forEach(m => m.classList.remove('on'));
+  // Recargar borra todo lo que dejó la sesión en memoria y en pantalla (datos de cobro, Nexus, modales,
+  // temporizadores, listeners y respuestas en vuelo): el siguiente rol empieza limpio.
+  location.reload();
 }
 
 const timers = {};
@@ -1671,7 +1682,7 @@ async function fetchAll(path, key, limit) {
   const all = []; let page = 1, pages = 1;
   do {
     const { ok, status, d } = await api(`${path}${path.includes('?') ? '&' : '?'}page=${page}&limit=${limit}`);
-    if (!ok) throw new Error(`${path} ${status}`);
+    if (!ok) throw Object.assign(new Error(`${path} ${status}`), { status });
     const arr = Array.isArray(d) ? d : (Array.isArray(d[key]) ? d[key] : []);
     all.push(...arr); pages = Array.isArray(d) ? 1 : (d.pages || 1); page++;
   } while (page <= pages && page <= 200);
@@ -1681,21 +1692,28 @@ let syncing = false;
 async function sync(manual) {
   if (syncing || !S.token) return; syncing = true;
   $('syncIco').style.animation = 'spin 1s linear infinite';
-  const fallos = [];
-  const tryF = (n, p, def) => p.catch(e => { if (e.message !== '401') fallos.push(n); return def; });
+  const fallos = [], gen = S.gen;
+  // Cada fuente guarda su estado: si falla se conservan sus últimos datos buenos marcados como desactualizados
+  const tryF = (n, p, def) => p.then(v => { EST[n] = { ok: true, at: Date.now() }; return v; },
+    e => { if (e.message !== '401') { fallos.push(n); EST[n] = { ok: false, status: e.status ?? (Number(e.message.split(' ').pop()) || 0), at: EST[n]?.at || 0 }; } return def; });
   try {
     const [items, users, comments, pagos, tarj, dsh] = await Promise.all([
       can(['revision', 'contenido']) ? tryF('entradas', fetchAll('/admin/items', 'items', 200), D.items) : [],
       can(['usuarios', 'sanciones', 'finanzas']) ? tryF('usuarios', fetchAll('/auth/users', 'users', 500), D.users) : [],
-      can('comentarios') ? tryF('comentarios', api('/comentarios').then(r => Array.isArray(r.d) ? r.d : (r.d.comentarios || [])), D.comments) : [],
-      can('finanzas') ? tryF('pagos', api('/admin/finanzas/solicitudes-pendientes').then(r => r.d.solicitudes || []), D.pagos) : [],
-      can('finanzas') ? tryF('tarjetas', api('/admin/finanzas/tarjetas').then(r => r.d.tarjetas || []), D.tarjetas) : [],
-      can('estadisticas') ? tryF('inicio', api('/admin/stats/dashboard').then(r => r.d.success ? r.d.dashboard : dash), dash) : null,
+      can('comentarios') ? tryF('comentarios', api('/comentarios').then(okD).then(d => Array.isArray(d) ? d : (d.comentarios || [])), D.comments) : [],
+      can('finanzas') ? tryF('pagos', api('/admin/finanzas/solicitudes-pendientes').then(okD).then(d => d.solicitudes || []), D.pagos) : [],
+      can('finanzas') ? tryF('tarjetas', api('/admin/finanzas/tarjetas').then(okD).then(d => d.tarjetas || []), D.tarjetas) : [],
+      can('estadisticas') ? tryF('inicio', api('/admin/stats/dashboard').then(okD).then(d => d.success ? d.dashboard : dash), dash) : null,
     ]);
+    if (gen !== S.gen) return;   // se cerró la sesión mientras cargaba
     D = { items, users, comments, pagos, tarjetas: tarj, sosp: D.sosp }; dash = dsh;
-    if (can(['revision', 'contenido'])) rSosp(true).then(() => { try { buildNav?.(); } catch (_) {} });
-    updBadges(); render();
+    if (can(['revision', 'contenido'])) rSosp(true).then(() => { try { buildNav?.(); } catch (_) {} if (TN.abierto) tnPintar(); });
+    updBadges(); render(); if (TN.abierto) tnPintar();
     $('liveT').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+    // Reintento controlado: espera creciente (5 s → 2 min); sin permiso (403) no tiene sentido reintentar
+    clearTimeout(timers.retry);
+    if (fallos.some(n => EST[n]?.status !== 403)) { sync.intentos = (sync.intentos || 0) + 1; timers.retry = setTimeout(() => sync(), Math.min(120e3, 5e3 * 2 ** Math.min(sync.intentos, 5))); }
+    else sync.intentos = 0;
     if (fallos.length) toast('⚠ No cargó: ' + fallos.join(', '), 'err');
     else if (manual) toast(`✓ Sincronizado · ${num(D.items.length)} entradas · ${num(D.users.length)} usuarios`);
     if (view === 'dash') { loadCharts(); loadVivo(); }
@@ -2048,11 +2066,15 @@ async function rMetr(forzar) {
 
 // ─────────── Verificación: posibles juegos comerciales completos (sin pagos hasta decidir) ───────────
 let _sospCarga = 0;
+// Verificaciones: un error deja D.sosp como estaba (null si nunca cargó) y lo marca en EST, no como lista vacía
+async function cargarSosp() {
+  const gen = S.gen;
+  try { const d = okD(await api('/admin/items/sospechosas')); if (gen !== S.gen) return; D.sosp = d.items || []; _sospCarga = Date.now(); EST.sosp = { ok: true, at: Date.now() }; }
+  catch (e) { if (e.message !== '401' && gen === S.gen) EST.sosp = { ok: false, status: e.status || 0, at: EST.sosp?.at || 0 }; }
+}
 async function rSosp(forzar) {
   const box = $('sospList'); if (!box) return;
-  if (forzar || !D.sosp || Date.now() - _sospCarga > 60000) {
-    try { const { d } = await api('/admin/items/sospechosas'); D.sosp = d.items || []; _sospCarga = Date.now(); } catch (_) { D.sosp = D.sosp || []; }
-  }
+  if (forzar || !D.sosp || Date.now() - _sospCarga > 60000) await cargarSosp();
   const l = (D.sosp || []).filter(i => matchItem(i, qv()));
   box.innerHTML = l.length ? l.map(i => { const s = i.sospecha || {}; return `<div class="card">
     <div class="row" style="justify-content:space-between;align-items:flex-start"><div class="grow"><div style="font-weight:700">${esc(i.title)}</div>
@@ -2067,12 +2089,16 @@ async function rSosp(forzar) {
       ${can('contenido') ? `<button class="btn sm bad" onclick="delItem('${i._id}')"><ion-icon name="trash-outline"></ion-icon></button>` : ''}</div></div>`; }).join('')
     : '<div class="empty"><ion-icon name="checkmark-done-outline"></ion-icon><p>No hay publicaciones por verificar</p></div>';
 }
-async function decidirSosp(id, decision) {
-  const { ok, d } = await api(`/admin/items/${id}/sospecha`, { method: 'POST', body: { decision } });
-  if (!ok) return toast(d?.error || 'No se pudo guardar', 'bad');
+async function decidirSosp(id, decision, extra) {
+  // Fuera del turno: volver a pagar exige confirmar que se abrió el enlace (el servidor también lo exige)
+  if (!extra && decision === 'ok' && !confirm('¿Abriste el enlace y comprobaste que es un mod, port o versión legítima? Volverá a generar pagos.')) return false;
+  let r; try { r = await api(`/admin/items/${id}/sospecha`, { method: 'POST', body: { decision, ...(extra || (decision === 'ok' ? { enlaceVerificado: true } : {})) } }); } catch (_) { return false; }
+  const { ok, status, d } = r;
+  if (!ok) { toast(d?.error || 'No se pudo guardar', 'bad'); if (status === 409) { await cargarSosp(); rSosp(); } return false; }
   D.sosp = (D.sosp || []).filter(i => i._id !== id || decision === 'mantener');
   const it = (D.sosp || []).find(i => i._id === id); if (it) it.sospecha = { ...(it.sospecha || {}), revision: 'mantener' };
   toast(decision === 'ok' ? '✅ Vuelve a generar pagos' : '⏸️ Se mantiene sin pagos'); rSosp();
+  return true;
 }
 
 function rRep() {
@@ -2102,14 +2128,26 @@ async function doBulk(action) {
 }
 
 // Acciones sobre items
-async function putItem(id, upd, okMsg) {
-  try { const { ok, d } = await api(`/admin/items/${id}`, { method: 'PUT', body: upd });
-    if (ok) { const it = D.items.find(x => x._id === id); if (it) Object.assign(it, upd); updBadges(); render(); toast(okMsg || '✓ Actualizado'); } else toast(d.error || 'Error', 'err');
+// extra: datos de la decisión que no son campos de la publicación (esperado, comprobaciones, resolverReportes)
+async function putItem(id, upd, okMsg, extra = {}) {
+  try { const { ok, status, d } = await api(`/admin/items/${id}`, { method: 'PUT', body: { ...upd, ...extra } });
+    if (ok) { const it = D.items.find(x => x._id === id); if (it) Object.assign(it, upd, d.item ? { status: d.item.status, linkStatus: d.item.linkStatus, reportes: d.item.reportes, revisionReportes: d.item.revisionReportes } : {}); updBadges(); render(); toast(okMsg || '✓ Actualizado'); return true; }
+    toast(d.error || 'Error', 'err'); if (status === 409) sync();
   } catch (_) {}
+  return false;
 }
 const aprobar = id => putItem(id, { status: 'aprobado', linkStatus: 'online', reportes: 0 }, '✓ Aprobada y online');
 function setLink(id, ls) { if (ls === 'caido' && !confirm('¿Marcar el enlace como CAÍDO?')) return; putItem(id, { linkStatus: ls }, ls === 'caido' ? '⚠ Marcada como caída' : '✓ Online'); }
-async function resetRep(id) { try { const { ok, d } = await api(`/admin/items/${id}/reset-reports`, { method: 'PUT' }); if (ok) { const it = D.items.find(x => x._id === id); if (it) Object.assign(it, { reportes: 0, linkStatus: 'online', reportesDesglose: {} }); updBadges(); render(); toast('✓ Reportes limpiados'); } else toast(d.error || 'Error', 'err'); } catch (_) {} }
+async function resetRep(id, extra) {
+  const it = D.items.find(x => x._id === id);
+  // Fuera del turno: reportes de malware nuevos piden confirmar que se revisó el archivo (el servidor también lo exige)
+  if (!extra) { const m = it?.reportesDesglose?.malware || 0; if (m > (it?.revisionReportes?.malware || 0) && !confirm(`Tiene ${m} reporte(s) de malware. ¿Revisaste el archivo y está limpio?`)) return false; extra = { confirmaMalware: m > 0, esperado: it ? { reportes: it.reportes } : undefined }; }
+  try { const { ok, status, d } = await api(`/admin/items/${id}/reset-reports`, { method: 'PUT', body: extra });
+    if (ok) { if (it) Object.assign(it, { reportes: 0, linkStatus: 'online', revisionReportes: d.item?.revisionReportes || it.revisionReportes }); updBadges(); render(); toast('✓ Reportes limpiados'); return true; }
+    toast(d.error || 'Error', 'err'); if (status === 409) sync();
+  } catch (_) {}
+  return false;
+}
 async function delItem(id) {
   const it = D.items.find(x => x._id === id); if (!it) return;
   if (!confirm(`¿Eliminar "${it.title}" de @${it.usuario}? Es permanente.`)) return;
@@ -2947,7 +2985,7 @@ function rPays() {
       <div style="grid-column:1/-1" id="dc-${p._id}"><button class="btn" style="padding:6px 10px;font-size:.78rem" onclick="verDatosCobro('${p._id}')"><ion-icon name="eye-outline"></ion-icon> Ver datos para pagar</button></div><div><small>Email</small><span>${esc(du.email || '—')}</span></div><div><small>Descargas</small><span>${num(du.descargasTotales)}</span></div><div><small>Juegos +2K</small><span>${num(du.juegosElegibles)}</span></div>
       ${tj.slice(0, 2).map(t => `<div><small>Tarjeta ${esc(t.tipo)}</small><span class="mono">•••• ${esc(t.ultimos4)} ${t.esPrincipal ? '⭐' : ''}</span></div>`).join('')}</div>
       ${du.listaNegraAdmin ? '<div class="tag t-org" style="margin-bottom:10px">🚫 Usuario en lista negra — revisa antes de pagar</div>' : ''}
-      <div class="row"><button class="btn ok grow" onclick="doPago('${p._id}')"><ion-icon name="checkmark-circle"></ion-icon> Marcar pagado</button><button class="btn bad" onclick="rejPago('${p._id}')"><ion-icon name="close-circle"></ion-icon> Rechazar</button></div></div>`; }).join('')
+      <div class="row"><button class="btn ok grow" onclick="doPago('${p._id}')" ${PAGANDO.has(p._id) ? 'disabled' : ''}><ion-icon name="checkmark-circle"></ion-icon> ${PAGANDO.has(p._id) ? 'Procesando…' : p.automatico ? 'Enviar por PayPal (automático)' : 'Registrar pago manual'}</button><button class="btn bad" onclick="rejPago('${p._id}')"><ion-icon name="close-circle"></ion-icon> Rechazar</button></div></div>`; }).join('')
     : '<div class="empty"><ion-icon name="wallet-outline"></ion-icon>No hay pagos pendientes</div>';
 }
 async function loadHist() {
@@ -2964,16 +3002,43 @@ fetch(API + '/tienda/catalogo').then(r => r.json()).then(d => { TASA_COP = d?.me
 async function verDatosCobro(id) {
   const el = $('dc-' + id); if (!el) return;
   try { const { ok, d } = await api(`/admin/finanzas/datos-cobro/${id}`, { method: 'POST' }); if (!ok) { toast(d.error || 'Error', 'err'); return; }
+    TN.cobro[id] = d;   // el turno sabe que estos datos ya se vieron
     const L = { email: 'Email', celular: 'Celular', cuenta: 'Cuenta', titular: 'Titular' };
     el.innerHTML = `<div class="small" style="padding:8px 10px;border:1px dashed var(--bd);border-radius:10px"><b>${esc(d.nombre || d.metodo)}</b>${Object.entries(d.datos).map(([k, v]) => `<div>${esc(L[k] || k)}: <span class="mono" style="cursor:pointer;color:var(--g1)" onclick="cp(this.textContent)">${esc(v)}</span></div>`).join('')}<div class="muted">Toca un dato para copiarlo. Esta consulta queda registrada.</div></div>`;
   } catch (_) {}
 }
-async function doPago(id) { const p = D.pagos.find(x => x._id === id); if (!p || !confirm(`¿Confirmas que YA enviaste ${money(p.monto)} a @${p.usuario}${p.resumen ? ' (' + p.resumen + ')' : ''}?`)) return;
-  const referencia = (p.metodo && p.metodo !== 'paypal') ? (prompt('Número de comprobante o referencia de la transferencia (lo verá el creador):') || '').trim().slice(0, 120) : '';
-  try { const { ok, d } = await api(`/admin/finanzas/procesar-pago/${id}`, { method: 'POST', body: { referencia, notas: `Pagado el ${new Date().toLocaleDateString('es')} por @${S.admin.usuario}${referencia ? ' · ref. ' + referencia : ''}` } }); if (ok) { D.pagos = D.pagos.filter(x => x._id !== id); updBadges(); render(); toast(`✓ Pago a @${p.usuario} registrado`); } else toast(d.error || 'Error', 'err'); } catch (_) {} }
+// Pago automático (PayPal Payouts, lo envía el servidor) y manual (lo envía una persona y se registra con comprobante)
+// son flujos distintos: el panel no pide «envía primero» si el servidor va a pagar solo, y nada sale dos veces.
+const PAGANDO = new Set();
+async function doPago(id) {
+  const p = D.pagos.find(x => x._id === id); if (!p || PAGANDO.has(id)) return;
+  if (p.automatico) {
+    if (!confirm(`Lurveta enviará AUTOMÁTICAMENTE ${money(p.monto)} por PayPal a ${p.paypalEmail || '—'} (@${p.usuario}).\n\nNo envíes tú el dinero: lo hace el servidor una sola vez. ¿Enviar ahora?`)) return;
+    return enviarPago(p, { modo: 'automatico' });
+  }
+  txtModal({ t: 'Registrar pago manual · @' + p.usuario, s: `${money(p.monto)} · ${p.resumen || ('PayPal · ' + (p.paypalEmail || '—'))}. Regístralo solo cuando la transferencia ya esté hecha. Quedará a tu nombre con la fecha de hoy.`,
+    l: 'Número de comprobante o referencia (obligatorio, lo verá el creador)', ok: 'Ya lo envié: registrar', cls: 'btn ok',
+    fn: async ref => {
+      ref = ref.slice(0, 120);
+      if (ref.length < 4 || (ref.match(/[\p{L}\p{N}]/gu) || []).length < 4) { toast('Escribe la referencia del comprobante (mínimo 4 letras o números)', 'err'); $('mtV').focus(); return; }
+      cm('mTxt'); await enviarPago(p, { modo: 'manual', referencia: ref });
+    } });
+}
+async function enviarPago(p, extra) {
+  const id = p._id; if (PAGANDO.has(id)) return; PAGANDO.add(id); render(); if (TN.abierto) tnPintar(true);
+  try {
+    const { ok, status, d } = await api(`/admin/finanzas/procesar-pago/${id}`, { method: 'POST', body: { ...extra, notas: `${extra.modo === 'automatico' ? 'Enviado por PayPal automático' : 'Pago manual registrado'} el ${new Date().toLocaleString('es')} por @${S.admin.usuario}${extra.referencia ? ' · ref. ' + extra.referencia : ''}` } });
+    if (ok) { D.pagos = D.pagos.filter(x => x._id !== id); TN.hechas.add('pag:' + id); delete TN.cobro[id]; updBadges(); toast(extra.modo === 'automatico' ? `✓ Enviado por PayPal a @${p.usuario}` : `✓ Pago a @${p.usuario} registrado`); return true; }
+    else if (status === 504 || d.incierto) { D.pagos = D.pagos.filter(x => x._id !== id); updBadges(); loadFin(); toast('⚠ PayPal no confirmó: NO lo pagues otra vez. Revísalo en «En revisión».', 'err'); }
+    else if (status === 409) { toast(d.error || 'Otro administrador ya procesó este retiro', 'err'); if (d.code !== 'DATOS_SIN_VER') sync(); }
+    else toast(d.error || 'Error', 'err');
+  } catch (_) { toast('Sin respuesta del servidor: revisa «En revisión» antes de reintentar', 'err'); sync(); }
+  finally { PAGANDO.delete(id); render(); if (TN.abierto) tnPintar(true); }
+  return false;
+}
 function rejPago(id) { const p = D.pagos.find(x => x._id === id); if (!p) return;
   txtModal({ t: 'Rechazar pago · @' + p.usuario, s: `${money(p.monto)} · el usuario podrá volver a solicitarlo.`, l: 'Motivo (lo verá el usuario)', ok: 'Rechazar', cls: 'btn bad',
-    fn: async motivo => { const { d } = await api(`/admin/finanzas/rechazar-pago-admin/${id}`, { method: 'POST', body: { motivo } }); if (d.success) { D.pagos = D.pagos.filter(x => x._id !== id); cm('mTxt'); updBadges(); render(); toast('✗ Pago rechazado', 'warn'); } else toast(d.error || 'Error', 'err'); } }); }
+    fn: async motivo => { const { d } = await api(`/admin/finanzas/rechazar-pago-admin/${id}`, { method: 'POST', body: { motivo } }); if (d.success) { D.pagos = D.pagos.filter(x => x._id !== id); TN.hechas.add('pag:' + id); cm('mTxt'); updBadges(); render(); if (TN.abierto) tnPintar(true); toast('✗ Pago rechazado', 'warn'); } else { toast(d.error || 'Error', 'err'); if (/ya fue procesado/.test(d.error || '')) sync(); } } }); }
 
 // ─────────── Pagos: en revisión (resultado incierto) e incidencias de PayPal ───────────
 // Reutiliza las rutas de modulos/retiros.js; el servidor valida todo (permiso «finanzas», monto exacto,
@@ -3346,7 +3411,7 @@ $('nxQ').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey
 $('nxQ').addEventListener('input', () => { const q = $('nxQ'); q.style.height = 'auto'; q.style.height = Math.min(q.scrollHeight, 120) + 'px'; });
 
 function accionesHTML(lista, max) {
-  return (lista || []).slice(0, max).map(a => `<button class="nx-act" onclick="nxCerrar();go('${esc(a.vista)}')"><span class="p ${esc(a.prioridad)}"></span><span>${esc(a.icono)} ${esc(a.texto)}</span><ion-icon name="chevron-forward"></ion-icon></button>`).join('')
+  return (lista || []).slice(0, max).map(a => `<button class="nx-act" onclick="nxCerrar();go('${NAV.some(n => n.id === a.vista) ? a.vista : 'dash'}')"><span class="p ${esc(a.prioridad)}"></span><span>${esc(a.icono)} ${esc(a.texto)}</span><ion-icon name="chevron-forward"></ion-icon></button>`).join('')
     || '<div class="small" style="color:#6ff0ae;margin-top:6px">✅ Nada pendiente en tus áreas.</div>';
 }
 function pintarBrief() {
@@ -3418,6 +3483,7 @@ async function loadAudit(more) {
 
 // ─────────── Inicio de la app ───────────
 (async () => {
+  try { const m = sessionStorage.getItem('ugAdminMsg'); if (m) { sessionStorage.removeItem('ugAdminMsg'); $('lgErr').textContent = m; } } catch (_) {}
   const s = leerSesion();
   if (s) { S.token = s.t; S.exp = s.e; try { await entrar(); } catch (_) {} }
   else setTimeout(() => $('lgEmail').focus(), 200);
@@ -3426,7 +3492,7 @@ async function loadAudit(more) {
 // ─────────── Modo turno: una tarea a la vez, con la guía dentro ───────────
 // Junta Revisión, Reportes, Verificación y Retiros (según los permisos del rol) en una sola fila de trabajo.
 // Cada tarea trae sus pasos con «Sí / No»; la decisión sale de las respuestas y usa las mismas acciones del panel.
-var TN = { abierto: false, k: null, resp: {}, vistas: new Set(), saltadas: new Set(), firma: '', t: 0, cobro: {}, cola: null };
+var TN = { abierto: false, k: null, resp: {}, hechas: new Set(), saltadas: new Set(), firma: '', t: 0, cobro: {}, ocupado: null };
 const tnSvg = (d, s = 18, w = 1.9) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const TN_IC = {
   rev: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
@@ -3444,6 +3510,7 @@ const TN_IC = {
 };
 const TN_COLAS = { rev: ['Revisión', 'publicaciones nuevas'], rep: ['Reportes', 'de la comunidad'], ver: ['Verificación', 'posible juego comercial'], pag: ['Retiros', 'listos para pagar'] };
 // Pasos de cada tipo de tarea. «mal» es el motivo (o la acción) si la respuesta es «No».
+// Nexus no responde pasos: cada paso muestra su evidencia clasificada y la persona decide.
 const TN_PASOS = {
   rev: [
     { t: 'Abre el enlace', d: 'Debe descargar el archivo o llevar a la página del creador. Si no carga, marca «No».', mal: 'El enlace de descarga no funciona', area: 'enlace' },
@@ -3452,31 +3519,52 @@ const TN_PASOS = {
     { t: '¿Es un mod, app o proyecto propio?', d: 'Si es un juego comercial completo (de pago) y no un mod o port legítimo, marca «No».', mal: 'Es un juego comercial completo: no se permite publicarlo', area: 'derechos' },
   ],
   rep: [
-    { t: 'Prueba el enlace', d: 'Ábrelo como lo haría un usuario. ¿Descarga o abre la página del creador?' },
     { t: '¿Está libre de malware?', d: 'Si hay reportes de malware, revisa el archivo antes de dejarlo online. Ante la duda, marca «No».' },
+    { t: 'Prueba el enlace', d: 'Ábrelo como lo haría un usuario. ¿Descarga o abre la página del creador?' },
   ],
   ver: [
-    { t: 'Abre el enlace y la ficha', d: 'Mira qué se descarga realmente y compáralo con el juego con el que coincide.' },
+    { t: 'Abre el enlace y la ficha', d: 'Mira qué se descarga realmente y compáralo con el juego con el que coincide. Si no pudiste abrirlo, marca «No».' },
     { t: '¿Es un mod, port o versión legítima?', d: '«Sí»: vuelve a generar pagos. «No» (es el juego completo): se mantiene sin pagos y el creador recibe un aviso.' },
   ],
+  // Manual: lo envía una persona fuera de Lurveta y se registra con comprobante
   pag: [
-    { t: 'Mira los datos para pagar', d: 'Ábrelos con «Ver datos para pagar». La consulta queda en la auditoría.' },
+    { t: 'Mira los datos para pagar', d: 'Ábrelos con «Ver datos para pagar» y compáralos con el creador. La consulta queda en la auditoría.' },
     { t: '¿El usuario está libre de alertas?', d: 'Si está en lista negra o algo no cuadra, marca «No» y rechaza el pago con el motivo.' },
-    { t: '¿Ya enviaste el dinero?', d: 'Marca «Sí» solo cuando el envío esté hecho; después lo registras.' },
+    { t: '¿Ya hiciste la transferencia?', d: 'Marca «Sí» solo cuando el envío esté hecho; después lo registras con el número de comprobante.' },
+  ],
+  // Automático: lo envía el servidor por PayPal; no se envía nada a mano antes
+  pagAuto: [
+    { t: 'Revisa el destino', d: 'Lurveta enviará el dinero por PayPal al correo de arriba. ¿Corresponde a este creador?' },
+    { t: '¿El usuario está libre de alertas?', d: 'Si está en lista negra o algo no cuadra, marca «No» y rechaza el pago con el motivo.' },
   ],
 };
+const tnPasosDe = t => t.tipo === 'pag' && t.it.automatico ? TN_PASOS.pagAuto : TN_PASOS[t.tipo];
 const tnPuede = () => can(['revision', 'contenido']) || can('finanzas');
+// Reportes que aún no revisó nadie: los que llegaron después de la última resolución (los anteriores quedan como historial)
+const repPendiente = i => {
+  const rr = i.revisionReportes || {};
+  return (i.reportes || 0) > (rr.reportes || 0) || (i.reportesDesglose?.malware || 0) > (rr.malware || 0) && (i.reportes || 0) > 0;
+};
 function tnTareas() {
   const L = [];
   if (can(['revision', 'contenido'])) {
     const rev = D.items.filter(enRev).sort((a, b) => (esPrio(b) - esPrio(a)) || (esPrio(a) && esPrio(b) ? new Date(a.prioridadDesde) - new Date(b.prioridadDesde) : 0) || (b.reportes || 0) - (a.reportes || 0) || new Date(a.createdAt) - new Date(b.createdAt));
     rev.filter(esPrio).forEach(it => L.push({ k: 'rev:' + it._id, tipo: 'rev', it }));
-    D.items.filter(i => i.reportes > 0 && !enRev(i)).sort((a, b) => b.reportes - a.reportes).forEach(it => L.push({ k: 'rep:' + it._id, tipo: 'rep', it }));
+    D.items.filter(i => repPendiente(i) && !enRev(i)).sort((a, b) => b.reportes - a.reportes).forEach(it => L.push({ k: 'rep:' + it._id, tipo: 'rep', it }));
     (D.sosp || []).filter(i => (i.sospecha || {}).revision !== 'mantener').forEach(it => L.push({ k: 'ver:' + it._id, tipo: 'ver', it }));
     rev.filter(j => !esPrio(j)).forEach(it => L.push({ k: 'rev:' + it._id, tipo: 'rev', it }));
   }
   if (can('finanzas')) (D.pagos || []).forEach(it => L.push({ k: 'pag:' + it._id, tipo: 'pag', it }));
   return [...L.filter(t => !TN.saltadas.has(t.k)), ...L.filter(t => TN.saltadas.has(t.k))];
+}
+// Fuentes de las que depende cada cola: sin ellas cargadas no se puede decir «Todo al día»
+function tnFuentes() { return [...(can(['revision', 'contenido']) ? ['entradas', 'sosp'] : []), ...(can('finanzas') ? ['pagos'] : [])]; }
+const EST_TXT = { 0: 'sin conexión con el servidor', 401: 'la sesión venció', 403: 'tu rol no tiene permiso', 429: 'demasiadas peticiones seguidas', 500: 'error del servidor' };
+const estTxt = s => EST_TXT[s] || (s >= 500 ? EST_TXT[500] : `error ${s}`);
+const EST_NOM = { entradas: 'publicaciones y reportes', sosp: 'verificaciones', pagos: 'retiros' };
+function tnEstado() {
+  const f = tnFuentes(), mal = f.filter(n => EST[n] && EST[n].ok === false), faltan = f.filter(n => !EST[n]);
+  return { mal, faltan, listo: !mal.length && !faltan.length };
 }
 function tnBoton() {
   const b = $('tnBtn'); if (!b || !TN) return;
@@ -3489,7 +3577,7 @@ async function tnAbrir() {
   TN.abierto = true; $('turno').hidden = false; document.body.style.overflow = 'hidden';
   try { sessionStorage.removeItem('ug_tn_off'); } catch (_) {}
   tnPintar(true);
-  if (can(['revision', 'contenido']) && !D.sosp) { try { const { d } = await api('/admin/items/sospechosas'); D.sosp = d.items || []; } catch (_) { D.sosp = []; } tnPintar(true); }
+  if (can(['revision', 'contenido']) && !D.sosp) { await cargarSosp(); tnPintar(true); }
   clearInterval(TN.t); TN.t = setInterval(() => { if (TN.abierto) tnPintar(); }, 1000);
 }
 function tnCerrar(ir) {
@@ -3498,56 +3586,121 @@ function tnCerrar(ir) {
   try { sessionStorage.setItem('ug_tn_off', '1'); } catch (_) {}
   if (ir) go(ir);
 }
-// Nexus ya comprobó algunas áreas: esos pasos llegan respondidos (y se pueden cambiar)
+// Firma del contenido de una tarea: si cambia (enlace nuevo, reporte nuevo, monto…), las respuestas anteriores ya no valen
+function firmaContenido(it) {   // misma función que modulos/revisionIA.js
+  const s = [it.link, it.image, it.title, it.description, (it.images || []).join('|')].map(v => String(v ?? '')).join('\n');
+  let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+function tnFirmaTarea(t) {
+  const j = t.it;
+  if (t.tipo === 'rev') return [firmaContenido(j), j.status, j.linkStatus].join('·');
+  if (t.tipo === 'rep') return [j.link, j.reportes, JSON.stringify(j.reportesDesglose || {}), j.linkStatus].join('·');
+  if (t.tipo === 'ver') return [j.link, j.title, (j.sospecha || {}).revision || '', (j.sospecha || {}).desde || ''].join('·');
+  return [j.monto, j.metodo, j.paypalEmail, j.resumen, !!j.automatico, j.estado].join('·');
+}
 function tnPrefill(t) {
-  if (TN.resp[t.k]) return TN.resp[t.k];
-  const r = TN_PASOS[t.tipo].map(() => undefined);
-  if (t.tipo === 'rev' && t.it.analisisIA) {
-    const hs = t.it.analisisIA.hechos || [];
-    TN_PASOS.rev.forEach((p, i) => { const h = hs.filter(x => x.area === p.area); if (h.length && !h.some(x => x.tipo === 'bad' || x.tipo === 'warn')) r[i] = 'nx'; });
-  }
-  return (TN.resp[t.k] = r);
+  const f = tnFirmaTarea(t), prev = TN.resp[t.k];
+  if (prev && prev.f === f) return prev.r;
+  TN.resp[t.k] = { f, r: tnPasosDe(t).map(() => undefined) };
+  return TN.resp[t.k].r;
+}
+// Análisis de Nexus vigente: del contenido actual, con las comprobaciones actuales y de menos de 7 días
+const NX_VERSION = 2, NX_VIGENCIA = 7 * 864e5;
+function nxVigente(j) {
+  const a = j.analisisIA; if (!a) return { a: null, motivo: 'sin' };
+  if (a.version !== NX_VERSION) return { a, motivo: 'version' };
+  if (a.contenido !== firmaContenido(j)) return { a, motivo: 'cambio' };
+  if (Date.now() - new Date(a.fecha) > NX_VIGENCIA) return { a, motivo: 'caduco' };
+  return { a, motivo: '' };
+}
+const NX_LIMITE = { enlace: 'Que responda no prueba que el archivo sea el correcto: ábrelo.', medios: 'Que cargue no prueba que sea del proyecto.', texto: 'La longitud no dice si basta.', derechos: 'La legalidad la decide una persona.' };
+// Evidencia de Nexus para un paso de revisión, clasificada: problema · advertencia · comprobación técnica · descriptivo · sin datos
+function tnEvidencia(t, i) {
+  const p = tnPasosDe(t)[i]; if (t.tipo !== 'rev' || !p.area) return '';
+  const { a, motivo } = nxVigente(t.it);
+  if (!a || motivo) return '';
+  const hs = (a.hechos || []).filter(h => h.area === p.area);
+  const bad = hs.find(h => h.tipo === 'bad'), warn = hs.find(h => h.tipo === 'warn'), ok = hs.find(h => h.tipo === 'ok'), info = hs.find(h => h.tipo === 'info');
+  if (bad) return `<em class="mal">Nexus encontró un problema: ${esc(bad.texto)}</em>`;
+  if (warn) return `<em class="aviso">Advertencia de Nexus: ${esc(warn.texto)}</em>`;
+  if (ok && p.area !== 'derechos') return `<em>Comprobación técnica de Nexus: ${esc(ok.texto)}. ${esc(NX_LIMITE[p.area])}</em>`;
+  if (info) return `<em class="mut">Dato de Nexus: ${esc(info.texto)}</em>`;
+  return '<em class="mut">Nexus no tiene datos de este paso.</em>';
+}
+// ¿La respuesta humana «Sí» contradice un problema que Nexus encontró en el contenido actual?
+function tnContradice(t, r) {
+  if (t.tipo !== 'rev') return false;
+  const { a, motivo } = nxVigente(t.it); if (!a || motivo) return false;
+  return tnPasosDe(t).some((p, i) => r[i] === true && (a.hechos || []).some(h => h.area === p.area && h.tipo === 'bad'));
 }
 function tnResponder(i, v) {
-  const r = TN.resp[TN.k]; if (!r) return;
+  const t = tnTareas().find(x => x.k === TN.k); if (!t) return;
+  const r = tnPrefill(t);
+  if (t.tipo === 'pag' && !t.it.automatico && i === 0 && v === true && !TN.cobro[t.it._id]) { toast('Primero abre «Ver datos para pagar»', 'err'); return; }
   r[i] = v;
   tnPintar(true);
 }
-function tnCambiar(i) { const r = TN.resp[TN.k]; if (!r) return; r[i] = undefined; tnPintar(true); }
+function tnCambiar(i) { const t = tnTareas().find(x => x.k === TN.k); if (!t) return; tnPrefill(t)[i] = undefined; tnPintar(true); }
 function tnSaltar() { if (!TN.k) return; TN.saltadas.add(TN.k); TN.k = null; tnPintar(true); }
 function tnIrCola(tipo) { const t = tnTareas().find(x => x.tipo === tipo); if (t) { TN.k = t.k; tnPintar(true); } }
-const tnSi = v => v === true || v === 'nx';
-// Decisión según las respuestas
+const tnSi = v => v === true;
+// Lo que el panel vio de la tarea: si otro admin la cambió, el servidor responde 409 y no se pisa su decisión
+const tnEsperado = j => ({ status: j.status, linkStatus: j.linkStatus, reportes: Number.isInteger(j.reportes) ? j.reportes : undefined });
+// Decisión según las respuestas. Reglas: un «No» nunca termina en una acción positiva; una acción positiva
+// necesita todos los pasos en «Sí»; contradecir a Nexus pide confirmación; sin permiso o con algo en curso no hay acción.
 function tnDecision(t) {
   const r = tnPrefill(t), listo = r.every(v => v !== undefined), malos = r.map((v, i) => v === false ? i : -1).filter(i => i >= 0);
+  const permiso = t.tipo === 'pag' ? can('finanzas') : can(['revision', 'contenido']);
+  if (!permiso) return { txt: 'Tu rol no puede decidir esta tarea', off: true };
+  if (TN.ocupado === t.k || (t.tipo === 'pag' && PAGANDO.has(t.it._id))) return { txt: 'Procesando…', off: true };
+  const j = t.it;
   if (t.tipo === 'rev') {
     if (malos.length) return { txt: 'Rechazar con este motivo', mal: true, f: () => tnRechazar(t, malos.map(i => TN_PASOS.rev[i].mal).join('. ')) };
-    return { txt: 'Aprobar y pasar a la siguiente', off: !listo, f: async () => { await aprobar(t.it._id); } };
+    const contra = listo && tnContradice(t, r);
+    return { txt: contra ? 'Aprobar aunque Nexus vio un problema' : 'Aprobar y pasar a la siguiente', off: !listo, f: async () => {
+      if (contra && !confirm('Nexus encontró un problema en un paso que marcaste «Sí». ¿Lo comprobaste tú y quieres aprobarla igualmente?')) return false;
+      return putItem(j._id, { status: 'aprobado', linkStatus: 'online', reportes: 0 }, '✓ Aprobada y online', { comprobaciones: r.map(tnSi), esperado: tnEsperado(j) });
+    } };
   }
   if (t.tipo === 'rep') {
-    if (malos.length) return { txt: 'Marcar el enlace como caído', mal: true, f: async () => { await putItem(t.it._id, { linkStatus: 'caido' }, '⚠ Marcada como caída'); } };
-    return { txt: 'Funciona: limpiar reportes', off: !listo, f: async () => { await resetRep(t.it._id); } };
+    if (r[0] === false) return { txt: 'Rechazar por malware…', mal: true, f: () => tnRechazar(t, 'El archivo contiene malware o software no deseado', true) };
+    if (r[1] === false) return { txt: 'Marcar el enlace como caído', mal: true, f: () => putItem(j._id, { linkStatus: 'caido' }, '⚠ Marcada como caída', { resolverReportes: true, esperado: tnEsperado(j) }) };
+    return { txt: 'Funciona: limpiar reportes', off: !listo, f: () => resetRep(j._id, { confirmaMalware: r[0] === true, esperado: tnEsperado(j) }) };
   }
   if (t.tipo === 'ver') {
-    if (r[1] === false) return { txt: 'Mantener sin pagos', mal: true, f: async () => { await decidirSosp(t.it._id, 'mantener'); } };
-    return { txt: 'Es legítimo: vuelve a generar pagos', off: !listo, f: async () => { await decidirSosp(t.it._id, 'ok'); } };
+    if (r[1] === false) return { txt: 'Mantener sin pagos', mal: true, f: () => decidirSosp(j._id, 'mantener', { esperado: { revision: (j.sospecha || {}).revision || '' } }) };
+    if (r[0] === false) return { txt: 'Sin verificar el enlace: mantener sin pagos', mal: true, f: () => decidirSosp(j._id, 'mantener', { esperado: { revision: (j.sospecha || {}).revision || '' } }) };
+    return { txt: 'Es legítimo: vuelve a generar pagos', off: !listo, f: () => decidirSosp(j._id, 'ok', { enlaceVerificado: true, esperado: { revision: (j.sospecha || {}).revision || '' } }) };
   }
-  if (r[1] === false) return { txt: 'Rechazar el pago…', mal: true, f: () => rejPago(t.it._id) };
-  if (r[2] === false) return { txt: 'Primero envía el dinero', off: true };
-  return { txt: 'Registrar el pago', off: !listo, f: async () => { await doPago(t.it._id); } };
+  if (r[1] === false) return { txt: 'Rechazar el pago…', mal: true, f: () => rejPago(j._id) };
+  if (j.automatico) {
+    if (r[0] === false) return { txt: 'El destino no cuadra: rechaza el pago', off: true };
+    return { txt: 'Enviar automáticamente por PayPal', off: !listo, f: () => doPago(j._id) };
+  }
+  if (r[0] === false) return { txt: 'Sin datos verificados no se paga', off: true };
+  if (r[2] === false) return { txt: 'Primero haz la transferencia', off: true };
+  return { txt: 'Registrar con el comprobante…', off: !listo, f: () => doPago(j._id) };
 }
-function tnRechazar(t, motivo) {
-  txtModal({ t: 'Rechazar · ' + (t.it.title || ''), s: `Se ocultará del catálogo y @${t.it.usuario} recibirá una notificación con el motivo.`, l: 'Motivo (lo verá el autor)', v: motivo, ok: 'Rechazar publicación', cls: 'btn bad',
-    fn: async m => { await putItem(t.it._id, { status: 'rechazado', motivo: m }, '✗ Publicación rechazada'); cm('mTxt'); tnPintar(true); } });
+function tnRechazar(t, motivo, resolverReportes) {
+  const j = t.it;
+  txtModal({ t: 'Rechazar · ' + (j.title || ''), s: `Se ocultará del catálogo y @${j.usuario} recibirá una notificación con el motivo.`, l: 'Motivo (lo verá el autor)', v: motivo, ok: 'Rechazar publicación', cls: 'btn bad',
+    fn: async m => {
+      if (!m) { toast('Escribe el motivo', 'err'); return; }
+      const ok = await putItem(j._id, { status: 'rechazado', motivo: m }, '✗ Publicación rechazada', { esperado: tnEsperado(j), ...(resolverReportes ? { resolverReportes: true } : {}) });
+      cm('mTxt'); if (ok) TN.hechas.add(t.k); tnPintar(true);
+    } });
 }
 async function tnHacer() {
-  const t = tnTareas().find(x => x.k === TN.k); if (!t) return;
+  const t = tnTareas().find(x => x.k === TN.k); if (!t || TN.ocupado) return;
   const d = tnDecision(t); if (d.off || !d.f) return;
-  const b = $('tnOk'); if (b) b.disabled = true;
-  try { await d.f(); } finally { tnPintar(true); }
+  TN.ocupado = t.k; tnPintar(true);   // ninguna repintada reactiva el botón mientras la acción sigue en curso
+  try { if (await d.f() === true) TN.hechas.add(t.k); } finally { TN.ocupado = null; tnPintar(true); }
 }
 async function tnDatosCobro(id) {
+  const gen = S.gen;
   try { const { ok, d } = await api(`/admin/finanzas/datos-cobro/${id}`, { method: 'POST' });
+    if (gen !== S.gen) return;
     if (!ok) return toast(d.error || 'No se pudieron ver los datos', 'err');
     TN.cobro[id] = d; tnPintar(true);
   } catch (_) {}
@@ -3557,23 +3710,26 @@ function tnTarjeta(t) {
   const verEnlace = `<a href="${enlace}" target="_blank" rel="noopener noreferrer">${tnSvg(TN_IC.link, 15)}Abrir enlace</a>`;
   if (t.tipo === 'pag') {
     const du = j.datosUsuario || {}, c = TN.cobro[j._id], L = { email: 'Email', celular: 'Celular', cuenta: 'Cuenta', titular: 'Titular' };
-    return `<div class="tn-eti"><span>RETIRO</span><span class="tn-pill mut">${esc(fdate(j.fecha || j.createdAt))}</span></div>
+    return `<div class="tn-eti"><span>RETIRO</span><span class="tn-pill ${j.automatico ? 'ok' : 'mut'}">${j.automatico ? 'PayPal automático' : 'Pago manual'}</span><span class="tn-pill mut">${esc(fdate(j.fecha || j.createdAt))}</span></div>
       <div class="tn-monto">${money(j.monto)}</div>
       <div><h2 class="tn-tit">@${esc(j.usuario)}</h2><div class="tn-sub">${esc(j.resumen || ('PayPal · ' + (j.paypalEmail || '—')))}</div></div>
       ${du.listaNegraAdmin ? '<span class="tn-pill bad">🚫 Usuario en lista negra: revisa antes de pagar</span>' : ''}
-      ${c ? `<div class="tn-datos"><div style="font-weight:700;margin-bottom:4px">${esc(c.nombre || c.metodo || 'Datos para pagar')}</div>${Object.entries(c.datos || {}).map(([k, v]) => `<div>${esc(L[k] || k)}: <b>${esc(v)}</b></div>`).join('')}</div>`
-        : `<div class="tn-acc"><button type="button" onclick="tnDatosCobro('${esc(j._id)}')">${tnSvg(TN_IC.ojo, 15)}Ver datos para pagar</button></div>`}`;
+      ${j.automatico ? `<div class="tn-nx">${tnSvg(TN_IC.pag, 18)}<div><b>Lo envía Lurveta por PayPal.</b> No mandes el dinero tú: al confirmar, el servidor lo envía una sola vez a <b>${esc(j.paypalEmail || '—')}</b>.</div></div>`
+        : c ? `<div class="tn-datos"><div style="font-weight:700;margin-bottom:4px">${esc(c.nombre || c.metodo || 'Datos para pagar')}</div>${Object.entries(c.datos || {}).map(([k, v]) => `<div>${esc(L[k] || k)}: <b>${esc(v)}</b></div>`).join('')}</div>`
+        : `<div class="tn-acc"><button type="button" data-f="cobro" onclick="tnDatosCobro('${esc(j._id)}')">${tnSvg(TN_IC.ojo, 15)}Ver datos para pagar</button></div>`}`;
   }
   const cab = { rev: esPrio(j) ? `<span class="tn-pill warn">${tnSvg(TN_IC.reloj, 13)}Prioritaria · ${esc(ago(j.prioridadDesde))}</span>` : `<span class="tn-pill mut">${tnSvg(TN_IC.reloj, 13)}Hace ${esc(ago(j.createdAt))}</span>`,
     rep: `<span class="tn-pill bad">${j.reportes} reporte${j.reportes === 1 ? '' : 's'}</span>`, ver: '<span class="tn-pill warn">Sin pagos hasta decidir</span>' }[t.tipo];
   let extra = '';
   if (t.tipo === 'rev') {
-    const a = j.analisisIA, dec = a ? (IA_TXT[a.decision] || IA_TXT.revisar)[0] : '';
-    extra = `<div class="tn-nx">${tnSvg(TN_IC.nx, 18)}<div>${a ? `<b>Nexus recomienda: ${esc(dec)}.</b> ${esc(a.resumen || '')}<br><button type="button" onclick="openIA('${esc(j._id)}')">Ver el análisis completo</button>`
-      : `<b>Nexus aún no revisó esta publicación.</b> Puede comprobar el enlace, la portada y la descripción por ti.<br><button type="button" onclick="openIA('${esc(j._id)}')">Pedir análisis a Nexus</button>`}</div></div>`;
+    const { a, motivo } = nxVigente(j), dec = a ? (IA_TXT[a.decision] || IA_TXT.revisar)[0] : '';
+    const viejo = { version: 'Se hizo con comprobaciones anteriores', cambio: 'La publicación cambió después del análisis', caduco: 'El análisis tiene más de 7 días' }[motivo];
+    extra = `<div class="tn-nx">${tnSvg(TN_IC.nx, 18)}<div>${!a ? `<b>Nexus aún no revisó esta publicación.</b> Puede comprobar el enlace, la portada y la descripción por ti.<br><button type="button" onclick="openIA('${esc(j._id)}')">Pedir análisis a Nexus</button>`
+      : viejo ? `<b>El análisis de Nexus está desactualizado.</b> ${esc(viejo)}: no se usa como evidencia.<br><button type="button" onclick="openIA('${esc(j._id)}',true)">Pedir un análisis nuevo</button>`
+      : `<b>Recomendación de la IA: ${esc(dec)}.</b> ${esc(a.resumen || '')} Es una ayuda, no una comprobación: los pasos los confirmas tú.<br><button type="button" onclick="openIA('${esc(j._id)}')">Ver el análisis completo</button>`}</div></div>`;
   } else if (t.tipo === 'rep') {
-    const d = j.reportesDesglose || {};
-    extra = `<div class="tn-nx">${tnSvg(TN_IC.rep, 18)}<div><b>Qué reportaron:</b> ${d.caido || 0} enlace caído · ${d.viejo || 0} obsoleto · <span style="color:${d.malware ? '#B1361F' : 'inherit'}">${d.malware || 0} malware</span></div></div>`;
+    const d = j.reportesDesglose || {}, rr = j.revisionReportes;
+    extra = `<div class="tn-nx">${tnSvg(TN_IC.rep, 18)}<div><b>Qué reportaron:</b> ${d.caido || 0} enlace caído · ${d.viejo || 0} obsoleto · <span style="color:${d.malware ? '#B1361F' : 'inherit'}">${d.malware || 0} malware</span>${rr ? `<br>Última revisión: ${esc(rr.accion || '')} por @${esc(rr.por || '')} ${esc(ago(rr.en))}` : ''}</div></div>`;
   } else {
     const s = j.sospecha || {};
     extra = `<div class="tn-nx">${tnSvg(TN_IC.ver, 18)}<div><b>Coincide con ${esc(s.juego || 'un juego comercial')}.</b>${(s.motivos || []).length ? `<ul class="tn-lista">${s.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}</div></div>`;
@@ -3585,53 +3741,62 @@ function tnTarjeta(t) {
     ${extra}`;
 }
 function tnPasos(t) {
-  const r = tnPrefill(t), actual = r.findIndex(v => v === undefined);
-  const items = TN_PASOS[t.tipo].map((p, i) => {
+  const pasos = tnPasosDe(t), r = tnPrefill(t), actual = r.findIndex(v => v === undefined);
+  const items = pasos.map((p, i) => {
     const v = r[i], cls = tnSi(v) ? 'si' : v === false ? 'no' : i === actual ? 'actual' : 'espera';
-    const res = v === undefined ? (i === actual ? `<button type="button" class="tn-si" onclick="tnResponder(${i},true)">Sí</button><button type="button" class="tn-no" onclick="tnResponder(${i},false)">No</button>` : '')
-      : `<button type="button" class="tn-chip ${tnSi(v) ? 'si' : 'no'}" onclick="tnCambiar(${i})" title="Cambiar la respuesta">${tnSi(v) ? tnSvg(TN_IC.check, 13, 2.6) + 'Sí' : 'No'}</button>`;
-    const nota = v === 'nx' ? '<em>Nexus ya lo comprobó</em>' : v === false && p.mal ? `<em class="mal">Motivo: ${esc(p.mal)}</em>` : '';
+    const res = v === undefined ? (i === actual ? `<button type="button" class="tn-si" data-f="si-${i}" onclick="tnResponder(${i},true)">Sí</button><button type="button" class="tn-no" data-f="no-${i}" onclick="tnResponder(${i},false)">No</button>` : '')
+      : `<button type="button" class="tn-chip ${tnSi(v) ? 'si' : 'no'}" data-f="chip-${i}" onclick="tnCambiar(${i})" title="Cambiar la respuesta">${tnSi(v) ? tnSvg(TN_IC.check, 13, 2.6) + 'Sí' : 'No'}</button>`;
+    const nota = v === false && p.mal ? `<em class="mal">Motivo: ${esc(p.mal)}</em>` : tnEvidencia(t, i);
     return `<li class="tn-paso ${cls}"><span class="tn-num">${tnSi(v) ? tnSvg(TN_IC.check, 14, 2.8) : i + 1}</span><span class="tn-txt"><b>${esc(p.t)}</b><small>${esc(p.d)}</small>${nota}</span><span class="tn-res">${res}</span></li>`;
   }).join('');
-  const d = tnDecision(t);
-  const rech = t.tipo === 'rev' ? `<button type="button" class="tn-rech" onclick="tnRechazar(tnTareas().find(x=>x.k===TN.k),'')">Rechazar…</button>`
+  const d = tnDecision(t), libre = !d.txt.startsWith('Procesando') && (t.tipo === 'pag' ? can('finanzas') : can(['revision', 'contenido']));
+  const rech = !libre ? '' : t.tipo === 'rev' ? `<button type="button" class="tn-rech" onclick="tnRechazar(tnTareas().find(x=>x.k===TN.k),'')">Rechazar…</button>`
     : t.tipo === 'pag' ? `<button type="button" class="tn-rech" onclick="rejPago('${esc(t.it._id)}')">Rechazar…</button>` : '';
   const pie = { rev: 'Si nadie la revisa en 2 días, su enlace se marca como caído.' + (esPrio(t.it) ? ' Es prioritaria: si no se revisa en 24 h, el creador recupera sus UpCoins.' : ''),
-    rep: 'Limpiar los reportes la deja online. Marcarla como caída la oculta hasta que el creador la arregle.',
+    rep: 'Limpiar los reportes la deja online. Marcarla como caída la oculta hasta que el creador la arregle. Los reportes quedan en el historial y la tarea vuelve si llega uno nuevo.',
     ver: 'La decisión queda en la auditoría y el creador recibe un aviso.',
-    pag: 'Registrar el pago lo marca como enviado; si el método no es PayPal te pedirá la referencia.' }[t.tipo];
-  return `<div class="tn-h3"><h3>Revisa en ${TN_PASOS[t.tipo].length} pasos</h3><small>${r.filter(v => v !== undefined).length} de ${r.length}</small></div>
+    pag: t.it.automatico ? 'El envío por PayPal es único: si PayPal no confirma, el retiro pasa a «En revisión» y no se vuelve a enviar.' : 'Registrar el pago lo marca como enviado a tu nombre y te pide el número de comprobante.' }[t.tipo];
+  return `<div class="tn-h3"><h3>Revisa en ${pasos.length} pasos</h3><small>${r.filter(v => v !== undefined).length} de ${r.length}</small></div>
     <ol class="tn-pasos">${items}</ol>
-    <div class="tn-dec"><button type="button" id="tnOk" class="tn-ok${d.mal ? ' mal' : ''}" ${d.off ? 'disabled' : ''} onclick="tnHacer()">${esc(d.txt)}</button>${rech}<button type="button" class="tn-salta" onclick="tnSaltar()">Saltar por ahora</button></div>
+    <div class="tn-dec"><button type="button" id="tnOk" data-f="ok" class="tn-ok${d.mal ? ' mal' : ''}" ${d.off ? 'disabled' : ''} onclick="tnHacer()">${esc(d.txt)}</button>${rech}<button type="button" class="tn-salta" data-f="salta" onclick="tnSaltar()">Saltar por ahora</button></div>
     <p class="tn-pie">${esc(pie)}</p>`;
 }
 function tnPintar(forzar) {
   const box = $('turno'); if (!box || !TN.abierto) return;
-  const L = tnTareas();
-  L.forEach(t => TN.vistas.add(t.k));
+  const L = tnTareas(), est = tnEstado();
   if (!L.some(t => t.k === TN.k)) TN.k = L[0]?.k || null;
   const t = L.find(x => x.k === TN.k);
-  const firma = JSON.stringify([L.map(x => x.k), TN.k, t?.it?.analisisIA?.fecha || '', TN.resp[TN.k] || null, !!D.sosp]);
+  // Todo lo que cambia lo que se ve: tarea, contenido, Nexus, respuestas, pagos en curso, permisos y estado de carga
+  const firma = JSON.stringify([L.map(x => x.k + '|' + tnFirmaTarea(x)), TN.k, t?.it?.analisisIA?.fecha || '', t?.it?.revisionReportes?.en || '', t && esPrio(t.it),
+    TN.resp[TN.k] || null, TN.ocupado, [...PAGANDO], t && !!TN.cobro[t.it._id], S.admin?.permisos || [], est, [...TN.hechas]]);
   if (!forzar && firma === TN.firma) return;
   TN.firma = firma;
-  const hechas = [...TN.vistas].filter(k => !L.some(x => x.k === k)).length, total = hechas + L.length;
+  // Progreso: solo lo que resolviste tú en este turno; lo que resolvió otro admin no cuenta ni como hecho ni como pendiente
+  const hechas = [...TN.hechas].filter(k => !L.some(x => x.k === k)).length, total = hechas + L.length;
   const cuenta = tipo => L.filter(x => x.tipo === tipo).length;
   const tipos = Object.keys(TN_COLAS).filter(tp => tp === 'pag' ? can('finanzas') : can(['revision', 'contenido']));
-  const colas = tipos.map(tp => `<button type="button" class="tn-cola${t && t.tipo === tp ? ' on' : ''}" onclick="tnIrCola('${tp}')" ${cuenta(tp) ? '' : 'disabled'}><span class="ic">${tnSvg(TN_IC[tp])}</span><span><b>${cuenta(tp)} · ${TN_COLAS[tp][0]}</b><small>${TN_COLAS[tp][1]}</small></span></button>`).join('');
+  const colas = tipos.map(tp => `<button type="button" class="tn-cola${t && t.tipo === tp ? ' on' : ''}" data-f="cola-${tp}" onclick="tnIrCola('${tp}')" ${cuenta(tp) ? '' : 'disabled'}><span class="ic">${tnSvg(TN_IC[tp])}</span><span><b>${cuenta(tp)} · ${TN_COLAS[tp][0]}</b><small>${TN_COLAS[tp][1]}</small></span></button>`).join('');
   const hora = new Date().getHours(), saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
   const rol = isOwner() ? 'Dueño' : (S.admin?.rolNombre || S.admin?.rol || 'Equipo');
-  const scroll = box.scrollTop;
+  // Error ≠ cola vacía: si una fuente falló se dice cuál y desde cuándo son los datos
+  const aviso = est.mal.length ? `<div class="tn-nx" role="alert">${tnSvg(TN_IC.rev, 18)}<div><b>No se pudieron comprobar ${esc(est.mal.map(n => EST_NOM[n]).join(', '))}</b> (${esc([...new Set(est.mal.map(n => estTxt(EST[n].status)))].join(', '))}).
+      ${est.mal.some(n => EST[n].at) ? `Lo que ves puede estar desactualizado: es lo último que cargó${est.mal.map(n => EST[n].at).filter(Boolean).length ? ' hace ' + esc(ago(Math.min(...est.mal.map(n => EST[n].at).filter(Boolean)))) : ''}.` : 'Todavía no hay datos de esas colas.'} Se reintenta solo.<br><button type="button" data-f="reintentar" onclick="sync(true)">Reintentar ahora</button></div></div>` : '';
+  const h1 = L.length ? `${L.length} tarea${L.length === 1 ? '' : 's'} · empieza por la más urgente` : est.listo ? 'Todo al día' : est.mal.length ? 'No se pudo comprobar tus tareas' : 'Cargando tus tareas…';
+  const vacio = est.listo ? ['No tienes tareas pendientes', 'Cuando llegue algo a tus colas aparecerá aquí, ordenado por urgencia.'] : est.mal.length ? ['No se pudo comprobar si hay tareas', 'No es que la cola esté vacía: el servidor no respondió. Reintenta en un momento.'] : ['Cargando tus tareas…', 'Comprobando tus colas.'];
+  const scroll = box.scrollTop, foco = document.activeElement && box.contains(document.activeElement) ? document.activeElement.dataset.f : null;
   box.innerHTML = `<header class="tn-cab"><span class="tn-marca"><i>L</i>Lurveta · Turno</span><span class="tn-rol">${esc(rol)}</span>
     <nav><button type="button" class="tn-lnk" onclick="tnCerrar('ayuda')">${tnSvg(TN_IC.libro, 16)}Guía del panel</button><button type="button" class="tn-lnk" onclick="tnCerrar()">${tnSvg(TN_IC.grid, 16)}Ver todo el panel</button>
     <button type="button" class="tn-pausa" onclick="tnCerrar()">${tnSvg(TN_IC.pausa, 14)}Pausar turno</button></nav></header>
   <div class="tn-cuerpo">
-    <div class="tn-top"><div><small>${saludo}, ${esc(S.admin?.usuario || '')}. Hoy te toca:</small><h1>${L.length ? `${L.length} tarea${L.length === 1 ? '' : 's'} · empieza por la más urgente` : 'Todo al día'}</h1></div>
+    <div class="tn-top"><div><small>${saludo}, ${esc(S.admin?.usuario || '')}. Hoy te toca:</small><h1>${h1}</h1></div>
       ${total ? `<div class="tn-prog" aria-label="Progreso del turno"><div><i style="width:${Math.round(hechas / total * 100)}%"></i></div><span>${hechas} de ${total}</span></div>` : ''}</div>
+    ${aviso}
     <div class="tn-colas">${colas}</div>
     ${t ? `<div class="tn-zona"><section class="tn-caja">${tnTarjeta(t)}</section><section class="tn-caja pasos">${tnPasos(t)}</section></div>`
-      : `<div class="tn-vacio">${tnSvg(TN_IC.check, 40, 2)}<h2>${D.items.length || D.pagos.length ? 'No tienes tareas pendientes' : 'Cargando tus tareas…'}</h2><p>Cuando llegue algo a tus colas aparecerá aquí, ordenado por urgencia.</p><button type="button" onclick="tnCerrar()">Ver todo el panel</button></div>`}
+      : `<div class="tn-vacio">${tnSvg(TN_IC.check, 40, 2)}<h2>${vacio[0]}</h2><p>${vacio[1]}</p><button type="button" onclick="${est.mal.length ? 'sync(true)' : 'tnCerrar()'}">${est.mal.length ? 'Reintentar' : 'Ver todo el panel'}</button></div>`}
   </div>`;
   box.scrollTop = scroll;
+  if (foco) box.querySelector(`[data-f="${foco}"]`)?.focus({ preventScroll: true });
   tnBoton();
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && TN.abierto && !document.querySelector('.modal.on')) tnCerrar(); });

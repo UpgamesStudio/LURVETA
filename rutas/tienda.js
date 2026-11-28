@@ -96,7 +96,10 @@ function registrar(app, deps) {
     const avisar = (destinatario, itemTitle, mensaje) => Notificacion?.create?.({ destinatario, tipo: 'sistema', emisor: 'Lurveta', itemTitle, mensaje, leida: false, fecha: new Date() }).catch(() => {});
     const olvidarPerfil = deps.olvidarPerfil || (() => {});
     const mp = deps.mp || MP.crear();
-    if (mp.configurado() && !mp.webhookConfigurado()) logger.warn('[pagos] Configura MERCADOPAGO_WEBHOOK_SECRET para exigir la firma del webhook.');
+    // Producción sin firma del webhook: no se corta (los pagos pendientes dejarían de entregarse), pero tampoco pasa en silencio
+    const produccion = (deps.env || process.env).NODE_ENV === 'production';
+    if (mp.configurado() && !mp.webhookConfigurado()) logger[produccion ? 'error' : 'warn'](`[pagos] ${produccion ? 'PRODUCCIÓN SIN FIRMA DE WEBHOOK: ' : ''}configura MERCADOPAGO_WEBHOOK_SECRET para exigir la firma del webhook (docs/mercadopago-webhook.md).`);
+    let avisoSinFirma = 0;
     const ok = (res, d) => res.json({ success: true, ...d });
     const err = (res, code, error, extra) => res.status(code).json({ success: false, error, ...extra });
 
@@ -398,6 +401,7 @@ function registrar(app, deps) {
             if (!mp.configurado()) return res.sendStatus(204);
             if (!mp.activo()) return res.sendStatus(503);
             const exigirFirma = mp.webhookConfigurado();
+            if (!exigirFirma && produccion && Date.now() - avisoSinFirma > 3600e3) { avisoSinFirma = Date.now(); logger.error('[pagos] Webhook de Mercado Pago aceptado SIN firma en producción: configura MERCADOPAGO_WEBHOOK_SECRET.'); }
             const idURL = req.query['data.id'];
             if (exigirFirma && !mp.firmaWebhookValida(idURL, req.get('x-request-id'), req.get('x-signature')))
                 return res.sendStatus(401);

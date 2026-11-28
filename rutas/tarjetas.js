@@ -128,7 +128,8 @@ app.get('/admin/finanzas/solicitudes-pendientes', verificarAdmin, async (req, re
         ]);
         const usuarioMap = Object.fromEntries(usuariosData.map(u => [u.usuario, u]));
         const juegosMap  = Object.fromEntries(juegosAgg.map(j => [j._id, j.count]));
-        const solicitudesEnriquecidas = solicitudes.map(s => ({ ...s, datosUsuario: { email: usuarioMap[s.usuario]?.email || '', verificadoNivel: usuarioMap[s.usuario]?.verificadoNivel || 0, isVerificado: usuarioMap[s.usuario]?.isVerificado || false, descargasTotales: usuarioMap[s.usuario]?.descargasTotales || 0, juegosElegibles: juegosMap[s.usuario] || 0 } }));
+        // automatico: lo que hará «registrar» con la configuración efectiva del servidor (el panel no lo adivina)
+        const solicitudesEnriquecidas = solicitudes.map(s => ({ ...s, automatico: esAutomatico(s), datosUsuario: { email: usuarioMap[s.usuario]?.email || '', verificadoNivel: usuarioMap[s.usuario]?.verificadoNivel || 0, isVerificado: usuarioMap[s.usuario]?.isVerificado || false, descargasTotales: usuarioMap[s.usuario]?.descargasTotales || 0, juegosElegibles: juegosMap[s.usuario] || 0 } }));
         const enRevision = await Pago.countDocuments({ estado: 'procesado' }).catch(() => 0);   // a medias o inciertos: GET /admin/finanzas/pagos-en-revision
         res.json({ success: true, solicitudes: solicitudesEnriquecidas, total: solicitudesEnriquecidas.length, enRevision });
     } catch (error) {
@@ -149,9 +150,23 @@ app.post('/admin/finanzas/procesar-pago/:id', verificarAdmin, [param('id').isMon
         if (!errors.isEmpty()) return res.status(400).json({ success: false, error: "ID inválido" });
         const { id } = req.params;
         // Payouts automáticos solo existen para PayPal; Mercado Pago lo transfiere el admin
-        const previo = await Pago.findById(id).select('metodo paypalEmail').lean();
+        const previo = await Pago.findById(id).select('metodo paypalEmail datosCobro historial.accion').lean();
         const automatico = !!previo && esAutomatico(previo);
-        const r = await Retiros.procesar({ Pago, Usuario }, id, { enviar: automatico ? enviarPayPal : null, notas: req.body.notas, referencia: req.body.referencia, por: req.admin?.usuario || '' });
+        // El panel dice qué cree que va a pasar; si la configuración cambió desde que cargó, no se adivina
+        const modo = req.body.modo;
+        if (previo && (modo === 'automatico' || modo === 'manual') && modo !== (automatico ? 'automatico' : 'manual'))
+            return res.status(409).json({ success: false, code: 'MODO_CAMBIO', automatico, error: automatico ? 'Este retiro ahora se paga AUTOMÁTICAMENTE por PayPal. Recarga y no envíes el dinero a mano.' : 'Los pagos automáticos no están activos: este retiro se paga a mano. Recarga el panel.' });
+        // Manual: sin comprobante no hay registro (el dinero lo movió una persona fuera de Lurveta)
+        const referencia = String(req.body.referencia || '').trim();
+        if (previo && !automatico) {
+            if (referencia.length < 4 || (referencia.match(/[\p{L}\p{N}]/gu) || []).length < 4)
+                return res.status(400).json({ success: false, code: 'REFERENCIA_REQUERIDA', error: 'Escribe el número de comprobante o la referencia de la transferencia (mínimo 4 letras o números).' });
+            if (previo.datosCobro && !(previo.historial || []).some(h => h.accion === 'datos_consultados'))
+                return res.status(409).json({ success: false, code: 'DATOS_SIN_VER', error: 'Abre «Ver datos para pagar» y compruébalos antes de registrar el pago.' });
+            if (await Pago.exists({ _id: { $ne: id }, metodo: previo.metodo || 'paypal', referencia, estado: { $in: ['procesado', 'completado'] } }))
+                return res.status(409).json({ success: false, code: 'REFERENCIA_DUPLICADA', error: 'Esa referencia ya está registrada en otro retiro. Revisa el comprobante.' });
+        }
+        const r = await Retiros.procesar({ Pago, Usuario }, id, { enviar: automatico ? enviarPayPal : null, notas: req.body.notas, referencia: automatico ? '' : referencia, por: req.admin?.usuario || '' });
         if (r.codigo !== 200) {
             logger[r.incierto ? 'error' : 'warn'](`procesar-pago ${id}: ${r.error}`);
             const { codigo, ...resto } = r;

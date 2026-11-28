@@ -107,84 +107,6 @@ window.ugContadorUC = ugContadorUC;
 document.addEventListener('DOMContentLoaded', () => ugContadorUC());
 window.addEventListener('ug:upcoins', () => ugContadorUC());
 
-// ── Menú rápido radial: el orbe de la cabecera despliega las opciones en abanico ──
-// Las burbujas se reparten en un cuarto de círculo hacia abajo-izquierda del orbe;
-// las etiquetas van por fuera, sobre el mismo radio, para que nunca se pisen.
-const UGR = (() => {
-  let abierto = false;
-  const raiz = () => document.getElementById('hdr-radial'), orbe = () => document.getElementById('hdr-orb');
-  const ACCIONES = {
-    live: () => { location.href = './live.html'; },
-    subir: () => switchTab('upload'),
-    premium: () => { switchTab('economia'); setTimeout(() => window.ecoCargarPlan?.(true), 350); },
-    soporte: () => handleMail(),
-    blog: () => { window.location.href = './blog.html'; },
-  };
-  function colocar() {
-    const r = raiz(), o = orbe(); if (!r || !o) return;
-    const b = o.getBoundingClientRect();
-    r.style.setProperty('--ox', `${b.left + b.width / 2}px`); r.style.setProperty('--oy', `${b.top + b.height / 2}px`);   // --cy ya es el color cian
-    const items = [...r.querySelectorAll('.ugr-item')], n = items.length;
-    // Orbe pegado al borde (móviles angostos): el abanico termina un poco antes de "abajo"
-    // para que la última etiqueta no se salga por la derecha.
-    const fin = innerWidth - (b.left + b.width / 2) < 45 ? 102 : 90, arco = 180 - fin;
-    const R = Math.min(n > 4 ? (arco < 90 ? 166 : 150) : 132, (innerWidth - 40) * 0.6);
-    items.forEach((it, i) => {
-      const ang = (180 - (n > 1 ? i * arco / (n - 1) : arco / 2)) * Math.PI / 180;   // 180° = izquierda · 90° = abajo
-      const x = R * Math.cos(ang), y = R * Math.sin(ang);
-      it.style.setProperty('--x', `${x.toFixed(1)}px`); it.style.setProperty('--y', `${y.toFixed(1)}px`);
-      it.style.setProperty('--lx', `${(Math.cos(ang) * 62).toFixed(1)}px`); it.style.setProperty('--ly', `${(Math.sin(ang) * 44).toFixed(1)}px`);
-      it.style.setProperty('--i', i);
-    });
-  }
-  function abrir() {
-    const r = raiz(); if (!r || abierto) return;
-    abierto = true; colocar();
-    r.classList.add('open'); r.setAttribute('aria-hidden', 'false');
-    orbe()?.setAttribute('aria-expanded', 'true'); orbe()?.classList.add('on');
-    setTimeout(() => r.querySelector('.ugr-item')?.focus({ preventScroll: true }), 120);
-  }
-  function cerrar(volverFoco) {
-    const r = raiz(); if (!r || !abierto) return;
-    abierto = false;
-    r.classList.remove('open'); r.setAttribute('aria-hidden', 'true');
-    orbe()?.setAttribute('aria-expanded', 'false'); orbe()?.classList.remove('on');
-    if (volverFoco) orbe()?.focus({ preventScroll: true });
-  }
-  // Con sesión, el orbe es el avatar del usuario (sigue abriendo el mismo menú rápido)
-  function avatar() {
-    const o = orbe(), u = LS.get('user_admin'); if (!o || !ugSesion() || !u) return;
-    o.classList.add('hdr-orb--yo'); o.setAttribute('aria-label', `Menú de @${u}`); o.title = `@${u} · Menú rápido`;
-    let av = o.querySelector('.hdr-av');
-    if (!av) { av = document.createElement('span'); av.className = 'hdr-av'; av.textContent = avatarLetter(u); o.prepend(av); }
-    const poner = url => { if (!url) return; const img = new Image(); img.alt = ''; img.onload = () => { av.textContent = ''; av.appendChild(img); }; img.src = cldOpt(url, 'c_fill,g_face,w_96,h_96,q_auto,f_auto'); };
-    const k = 'ug_hdr_av_' + u; let guardado = null; try { guardado = sessionStorage.getItem(k); } catch (_) {}
-    if (guardado !== null) return poner(guardado);
-    fetch(`${API_URL}/usuarios/perfil-publico/${encodeURIComponent(u)}`).then(r => r.ok ? r.json() : null).then(d => {
-      const url = String(d?.usuario?.avatar || '').trim(); try { sessionStorage.setItem(k, url); } catch (_) {} poner(url);
-    }).catch(() => {});
-  }
-  document.addEventListener('DOMContentLoaded', () => {
-    const r = raiz(), o = orbe(); if (!r || !o) return;
-    avatar();
-    o.addEventListener('click', e => { e.stopPropagation(); abierto ? cerrar() : abrir(); });
-    r.addEventListener('click', e => {
-      if (e.target.closest('[data-ugr-cerrar]')) return cerrar(true);
-      const it = e.target.closest('.ugr-item[data-ugr]'); if (!it) return;
-      cerrar(); ACCIONES[it.dataset.ugr]?.();
-    });
-    r.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { e.preventDefault(); return cerrar(true); }
-      if (!/^Arrow/.test(e.key)) return;
-      const l = [...r.querySelectorAll('.ugr-item')], i = l.indexOf(document.activeElement);
-      e.preventDefault(); l[(i + (e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1) + l.length) % l.length]?.focus();
-    });
-    addEventListener('resize', () => cerrar());
-    addEventListener('scroll', () => cerrar(), { passive: true });
-  });
-  return { abrir, cerrar, colocar, get abierto() { return abierto; } };
-})();
-window.UGR = UGR;
 
 // Invitados: botón "Entrar" en la cabecera (en lugar de pedir cuenta para mirar)
 document.addEventListener('DOMContentLoaded', () => {
@@ -495,7 +417,7 @@ function createTile(item, isFeatured=false) {
   const isFav = favIds.includes(item._id);
   const dl = item.descargasEfectivas||0;
   const lk = item.likesCount||0;
-  const extraBadges = (item.serieInfo ? `<span class="tile-extra-badge tile-serie-badge"><ion-icon name="folder-open"></ion-icon>${item.serieInfo.partes} partes</span>` : '') + getTileExtras(item);
+  const extraBadges = (item.serieInfo ? `<span class="tile-extra-badge tile-serie-badge"><ion-icon name="folder-open"></ion-icon>${Number(item.serieInfo.partes) || ''} partes</span>` : '') + getTileExtras(item);
   // Siempre hay una fila de etiquetas (vacía si no tiene): todas las tarjetas miden lo mismo
   const insignias = extraBadges.replace(/<div class="tile-extras">([\s\S]*)<\/div>\s*$/, '$1').trim();
   const extrasFila = insignias ? `<div class="tile-extras">${insignias}</div>` : '<div class="tile-extras tile-extras--vacia" aria-hidden="true"></div>';
@@ -512,7 +434,7 @@ function createTile(item, isFeatured=false) {
         ${isVideo?'<div class="tile-video-overlay"><ion-icon name="play-circle"></ion-icon></div>':''}
       </div>
       <div class="ft-info">
-        <div class="ft-badge">${isVideo?'▶ '+( item.videoType||'Video'):'⭐ Destacado'}</div>
+        <div class="ft-badge">${isVideo?'▶ '+escH(item.videoType||'Video'):'⭐ Destacado'}</div>
         <div class="ft-title">${escH(tituloT)}</div>
         <div class="ft-meta">
           <div class="ft-user">@${escH(item.usuario||'Cloud')}${getBadge(item.usuario)}</div>
@@ -520,6 +442,7 @@ function createTile(item, isFeatured=false) {
         </div>
       </div>`;
     el.addEventListener('click',()=>openDetail(item));
+    tarjetaTeclado(el, item);
     return el;
   }
 
@@ -542,7 +465,7 @@ function createTile(item, isFeatured=false) {
           <ion-icon name="${isFav?'heart':'heart-outline'}"></ion-icon>
         </button>
         ${item.videoType?`<div class="tile-vid-type-badge">${escH(item.videoType)}</div>`:''}
-        ${duracion?`<div class="tile-duration-badge">${duracion}</div>`:''}
+        ${duracion?`<div class="tile-duration-badge">${escH(duracion)}</div>`:''}
       </div>
       <div class="tile-info tile-info--yt">
         <div class="tile-yt-avatar">${avatarLetter(item.usuario)}</div>
@@ -596,7 +519,21 @@ function createTile(item, isFeatured=false) {
     e.stopPropagation();
     fav(item._id);
   });
+  tarjetaTeclado(el, item);
   return el;
+}
+
+// Teclado y lectores de pantalla: la tarjeta se enfoca con Tab y se abre con Enter o Espacio (como un botón).
+// El corazón sigue siendo su propio botón: su Enter no abre la ficha porque solo cuenta si el foco está en la tarjeta.
+function tarjetaTeclado(el, item) {
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', `${item.title || 'Publicación'} · ${catLabel(item.category)} · de @${item.usuario || 'Cloud'}`);
+  el.addEventListener('keydown', e => {
+    if (e.target !== el || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    openDetail(item);
+  });
 }
 
 // ── VIDEO CARD — siempre abre el detail sheet ────────────
@@ -694,12 +631,17 @@ function initHeroCarousel(items, isVideoMode) {
         openDetail(item);
       }
     });
+    // Teclado: cada portada se enfoca y se abre con Enter o Espacio (mismo camino que el toque)
+    slide.tabIndex = 0; slide.setAttribute('role', 'button'); slide.setAttribute('aria-label', `${item.title || 'Publicación'} · de @${item.usuario || 'Cloud'}`);
+    slide.addEventListener('keydown', e => { if (e.target === slide && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); slide.click(); } });
     track.appendChild(slide);
 
     // Dot
     const dot = document.createElement('span');
     dot.className = 'hero-dot' + (i===0?' active':'');
+    dot.setAttribute('role', 'button'); dot.tabIndex = 0; dot.setAttribute('aria-label', `Ir a la portada ${i + 1}`);
     dot.addEventListener('click', (e) => { e.stopPropagation(); heroGoTo(i); });
+    dot.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); heroGoTo(i); } });
     dotsEl.appendChild(dot);
   });
 
@@ -1357,7 +1299,7 @@ function openDetail(item) {
       if(cached) {
         renderFeaturedEntry(featEl, cached);
       } else {
-        fetch(`${API_URL}/items/${item.featuredItemId}`)
+        fetch(`${API_URL}/items/${encodeURIComponent(item.featuredItemId)}`)
           .then(r => r.ok ? r.json() : null)
           .then(d => { if(d && d._id) renderFeaturedEntry(featEl, d); else featEl.style.display = 'none'; })
           .catch(() => { featEl.style.display = 'none'; });
@@ -2134,7 +2076,7 @@ async function renderFavs() {
       const card = document.createElement('div');
       card.className='pf-vault-card';
       card.innerHTML=`
-        <img src="${item.image||window.UG_PH}" alt="${item.title||''}" onerror="this.onerror=null;this.src=window.UG_PH">
+        <img src="${escH(item.image||window.UG_PH)}" alt="${escH(item.title||'')}" onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-vault-info">
           <div class="pf-vault-title">${(item.title||'Sin título').substring(0,40)}</div>
           <div class="pf-vault-user">@${escH(item.usuario||'Anónimo')}</div>
@@ -2742,12 +2684,11 @@ function pfRenderFeaturedList(items) {
   }
 
   list.innerHTML = items.map(item => {
-    const safeTitle = (item.title || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    const safeImg   = (item.image || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    const safeCat   = (item.category || 'General').replace(/'/g, '&#39;');
+    // Argumentos como JSON y luego escapados para el atributo: una comilla del título no sale del string de JS
+    const args = escH(JSON.stringify([String(item._id || ''), item.title || '', item.image || '', item.category || 'General']));
     return `
-      <div class="pf-featured-item" onclick="pfSelectFeaturedItem('${item._id}','${safeTitle}','${safeImg}','${safeCat}')">
-        <img src="${item.image || window.UG_PH}"
+      <div class="pf-featured-item" onclick="pfSelectFeaturedItem(...${args})">
+        <img src="${escH(item.image || window.UG_PH)}"
              alt="" loading="lazy"
              onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-featured-item-info">
@@ -3720,7 +3661,7 @@ async function pfLoadBoveda() {
       const card = document.createElement('div');
       card.className='pf-vault-card';
       card.innerHTML=`
-        <img src="${item.image||window.UG_PH}" alt="${item.title||''}" onerror="this.onerror=null;this.src=window.UG_PH">
+        <img src="${escH(item.image||window.UG_PH)}" alt="${escH(item.title||'')}" onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-vault-info">
           <div class="pf-vault-title">${(item.title||'Sin título').substring(0,40)}</div>
           <div class="pf-vault-user">@${escH(item.usuario||'Anónimo')}</div>
@@ -4391,15 +4332,15 @@ async function pfLoadTarjetas() {
     list.innerHTML = d.tarjetas.map(t => `
       <div class="pf-tarjeta-card${t.esPrincipal ? ' principal' : ''}" data-id="${t._id}">
         <div class="pf-tarjeta-left">
-          <div class="pf-tarjeta-logo pf-tarjeta-logo--${t.tipo}">${logos[t.tipo]||'···'}</div>
+          <div class="pf-tarjeta-logo pf-tarjeta-logo--${ugEsc(t.tipo)}">${logos[t.tipo]||'···'}</div>
           <div class="pf-tarjeta-info">
-            <div class="pf-tarjeta-num">•••• •••• •••• ${t.ultimos4}</div>
-            <div class="pf-tarjeta-titular">${t.titular}</div>
+            <div class="pf-tarjeta-num">•••• •••• •••• ${ugEsc(t.ultimos4)}</div>
+            <div class="pf-tarjeta-titular">${ugEsc(t.titular)}</div>
             <div class="pf-tarjeta-meta">
-              <span class="pf-tarjeta-exp">Exp: ${t.mesExp}/${t.anioExp}</span>
-              <span class="pf-tarjeta-prop pf-tarjeta-prop--${t.proposito}">${propLabel[t.proposito]||'↕ Ambos'}</span>
+              <span class="pf-tarjeta-exp">Exp: ${ugEsc(t.mesExp)}/${ugEsc(t.anioExp)}</span>
+              <span class="pf-tarjeta-prop pf-tarjeta-prop--${ugEsc(t.proposito)}">${propLabel[t.proposito]||'↕ Ambos'}</span>
             </div>
-            ${t.alias ? `<div class="pf-tarjeta-alias">${t.alias}</div>` : ''}
+            ${t.alias ? `<div class="pf-tarjeta-alias">${ugEsc(t.alias)}</div>` : ''}
           </div>
         </div>
         <div class="pf-tarjeta-actions">
@@ -4823,6 +4764,8 @@ async function pfLogout() {
   // Limpiar los datos de la cuenta en este navegador (se conservan las preferencias del dispositivo)
   try { const keep = ['ug_vid', 'ug_tema', 'ug_mus_off', 'ug_mus_vol', 'ug_mus_ult', 'ug_ab_bienv', 'upgames_terms_v'], g = {};
     keep.forEach(k => { const v = localStorage.getItem(k); if (v !== null) g[k] = v; }); localStorage.clear(); Object.entries(g).forEach(([k, v]) => localStorage.setItem(k, v)); } catch(_) {}
+  // Lo de la cuenta que vive en esta pestaña y en la caché del service worker tampoco pasa a la siguiente sesión
+  try { ['ug_gustos_srv', 'ug_mg_ok'].forEach(k => sessionStorage.removeItem(k)); navigator.serviceWorker?.controller?.postMessage({ type: 'LIMPIAR_API' }); } catch(_) {}
   toast('👋 Sesión cerrada');
   // replace() elimina biblioteca.html del historial — el botón "atrás" no puede regresar
   setTimeout(()=>{ location.replace('../login.html'); }, 800);
@@ -5940,22 +5883,13 @@ const ugnAuth = () => ({ Authorization: `Bearer ${LS.get('token')}` });
 // ── Botón de campana + panel ─────────────────────────
 function _initNotifUI() {
   const hdrActions = document.querySelector('.hdr-actions');
-  const radial = document.querySelector('#hdr-radial .ugr-items');   // la campana vive en el menú radial
-  if ((!hdrActions && !radial) || document.getElementById('notif-btn')) return;
+  if (!hdrActions || document.getElementById('notif-btn')) return;
   const btn = document.createElement('button');
   btn.id = 'notif-btn'; btn.type = 'button'; btn.title = 'Notificaciones'; btn.setAttribute('aria-label', 'Notificaciones');
-  if (radial && !(ugSesion() && hdrActions)) {   // con sesión la campana va en la cabecera, junto al saldo
-    btn.className = 'ugr-item'; btn.setAttribute('role', 'menuitem');
-    btn.innerHTML = '<span class="ugr-bub"><ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span></span><span class="ugr-lbl">Avisos</span>';
-    btn.onclick = e => { e.stopPropagation(); UGR.cerrar(); ugnToggle(); };
-    radial.insertBefore(btn, radial.firstChild);
-    if (UGR.abierto) UGR.colocar();   // si el menú ya estaba abierto, reacomoda el abanico
-  } else {
-    btn.className = 'hdr-btn';
-    btn.innerHTML = '<ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span>';
-    btn.onclick = e => { e.stopPropagation(); ugnToggle(); };
-    hdrActions.insertBefore(btn, hdrActions.firstChild);
-  }
+  btn.className = 'hdr-btn';
+  btn.innerHTML = '<ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span>';
+  btn.onclick = e => { e.stopPropagation(); ugnToggle(); };
+  hdrActions.insertBefore(btn, hdrActions.firstChild);
 
   const panel = document.createElement('div');
   panel.id = 'ugn-panel'; panel.className = 'ugn-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Notificaciones');
@@ -6108,12 +6042,8 @@ async function ugnVaciar() {
 }
 
 function _updateNotifBadge(count) {
-  const enMenu = !!document.querySelector('#hdr-radial #notif-btn');   // la campana dentro del menú: el orbe también muestra el número
-  for (const id of enMenu ? ['notif-badge', 'hdr-orb-badge'] : ['notif-badge']) {
-    const b = document.getElementById(id);
-    if (b) { b.hidden = !(count > 0); b.textContent = count > 99 ? '99+' : count; }
-  }
-  if (enMenu) document.getElementById('hdr-orb')?.setAttribute('aria-label', count > 0 ? `Abrir menú rápido · ${count} notificaciones sin leer` : 'Abrir menú rápido');
+  const b = document.getElementById('notif-badge');
+  if (b) { b.hidden = !(count > 0); b.textContent = count > 99 ? '99+' : count; }
   try { if ('setAppBadge' in navigator) count > 0 ? navigator.setAppBadge(count) : navigator.clearAppBadge(); } catch (_) {}
 }
 // Conteo periódico: si sube, trae las nuevas y las muestra en la isla
@@ -6398,7 +6328,6 @@ async function pfLoadHistorialPagos() {
       const n = d?.lives?.length || 0;
       ugPintarVivos(d?.lives || []);
       if (dot) dot.hidden = !n;
-      const orbLive = document.getElementById('hdr-orb-live'); if (orbLive) orbLive.hidden = !n;   // punto rojo también en el orbe
       dot?.closest('button')?.setAttribute('aria-label', n ? `Transmisiones en vivo · ${n} en vivo ahora` : 'Transmisiones en vivo');
     }).catch(() => {});
   };

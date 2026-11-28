@@ -593,15 +593,15 @@ async function pfLoadTarjetas() {
     list.innerHTML = d.tarjetas.map(t => `
       <div class="pf-tarjeta-card${t.esPrincipal ? ' principal' : ''}" data-id="${t._id}">
         <div class="pf-tarjeta-left">
-          <div class="pf-tarjeta-logo pf-tarjeta-logo--${t.tipo}">${logos[t.tipo]||'···'}</div>
+          <div class="pf-tarjeta-logo pf-tarjeta-logo--${ugEsc(t.tipo)}">${logos[t.tipo]||'···'}</div>
           <div class="pf-tarjeta-info">
-            <div class="pf-tarjeta-num">•••• •••• •••• ${t.ultimos4}</div>
-            <div class="pf-tarjeta-titular">${t.titular}</div>
+            <div class="pf-tarjeta-num">•••• •••• •••• ${ugEsc(t.ultimos4)}</div>
+            <div class="pf-tarjeta-titular">${ugEsc(t.titular)}</div>
             <div class="pf-tarjeta-meta">
-              <span class="pf-tarjeta-exp">Exp: ${t.mesExp}/${t.anioExp}</span>
-              <span class="pf-tarjeta-prop pf-tarjeta-prop--${t.proposito}">${propLabel[t.proposito]||'↕ Ambos'}</span>
+              <span class="pf-tarjeta-exp">Exp: ${ugEsc(t.mesExp)}/${ugEsc(t.anioExp)}</span>
+              <span class="pf-tarjeta-prop pf-tarjeta-prop--${ugEsc(t.proposito)}">${propLabel[t.proposito]||'↕ Ambos'}</span>
             </div>
-            ${t.alias ? `<div class="pf-tarjeta-alias">${t.alias}</div>` : ''}
+            ${t.alias ? `<div class="pf-tarjeta-alias">${ugEsc(t.alias)}</div>` : ''}
           </div>
         </div>
         <div class="pf-tarjeta-actions">

@@ -111,12 +111,14 @@ app.post('/auth/login', [body('usuario').isString().notEmpty(), body('password')
         // ── Verificación 2FA (si el usuario lo tiene activo) ──
         const tieneDFA = await twoFactor.tieneActivo(usuario.usuario);
         if (tieneDFA) {
-            if (!req.body.token2fa) {
-                return res.status(401).json({ error: 'Se requiere código 2FA', require2FA: true });
+            if (typeof req.body.token2fa !== 'string' || !req.body.token2fa.trim()) {
+                res.locals.credencialesOk = true;   // la contraseña era correcta: este paso no gasta intentos del límite de login
+                return res.status(401).json({ success: false, error: 'Se requiere código 2FA', require2FA: true, code: '2FA_REQUERIDO' });
             }
-            const check = await twoFactor.verificar(usuario.usuario, req.body.token2fa);
+            const check = await twoFactor.verificar(usuario.usuario, req.body.token2fa.slice(0, 16));
             if (!check.ok) {
-                return res.status(401).json({ error: check.error || 'Código 2FA incorrecto' });
+                return res.status(check.bloqueado ? 429 : 401).json({ success: false, error: check.error || 'Código 2FA incorrecto', require2FA: true,
+                    code: check.bloqueado ? '2FA_BLOQUEADO' : check.usado ? '2FA_USADO' : '2FA_INVALIDO' });
             }
         }
 

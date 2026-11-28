@@ -183,8 +183,13 @@ function registrar(app, deps) {
     const visible = () => ({ tipo: 'entrada', noindex: { $ne: true }, $or: [{ estado: 'publicada' }, { estado: 'programada', publicadaEn: { $lte: new Date() } }] });
     async function baseDescubrir() {
         return conCache('descubrir', 120, async () => {
-            const entradas = await Entrada.find({ ...visible(), publicadaEn: { $gte: new Date(Date.now() - 120 * 864e5) } })
-                .sort({ publicadaEn: -1 }).limit(400).select('blog titulo slug portada resumen bloques publicadaEn usuario vistas etiquetas').lean();
+            // Conjunto representativo: las más recientes ∪ las más leídas de la ventana (antes solo las 400 más nuevas:
+            // con mucho volumen, una entrada muy leída de hace semanas no llegaba a competir en «Recomendado» ni «Populares»)
+            const ventana = { ...visible(), publicadaEn: { $gte: new Date(Date.now() - 120 * 864e5) } };
+            const sel = 'blog titulo slug portada resumen bloques publicadaEn usuario vistas etiquetas';
+            const [nuevas, leidas] = await Promise.all([Entrada.find(ventana).sort({ publicadaEn: -1 }).limit(300).select(sel).lean(),
+                Entrada.find(ventana).sort({ vistas: -1, _id: -1 }).limit(200).select(sel).lean()]);
+            const entradas = [...new Map([...nuevas, ...leidas].map(e => [String(e._id), e])).values()];
             const blogs = await Blog.find({ _id: { $in: [...new Set(entradas.map(e => String(e.blog)))] }, estado: 'activo', visibilidad: 'publico' }).select('titulo usuario direccion dominio').lean();
             const porId = new Map(blogs.map(b => [String(b._id), b]));
             const validas = entradas.filter(e => porId.has(String(e.blog)));

@@ -75,6 +75,7 @@ module.exports = function modelos(mongoose) {
     EntradaSchema.index({ blog: 1, estado: 1, publicadaEn: -1 });
     EntradaSchema.index({ blog: 1, etiquetasSlug: 1 });
     EntradaSchema.index({ publicadaEn: -1, _id: -1 });
+    EntradaSchema.index({ vistas: -1, _id: -1 });   // feed por relevancia: las más leídas de la ventana
     EntradaSchema.index({ original: 1 });
     EntradaSchema.index({ usuario: 1, original: 1 }, { unique: true, partialFilterExpression: { tipo: 'republicacion' } });
     EntradaSchema.index({ blog: 1, huella: 1 }, { unique: true, partialFilterExpression: { tipo: 'nota' } });

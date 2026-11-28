@@ -16,7 +16,7 @@
 // No toca /admin/ (datos privados del panel), /games/ ni /studio/ (tienen su propio service worker).
 // ========================================
 
-const CACHE_VERSION = 'upgames-v8.5.2';   // Sin el menú rápido (orbe) en la cabecera; login con el diseño Bento.
+const CACHE_VERSION = 'upgames-v8.6.0';   // Precaché leída de las páginas (versiones exactas) y API: solo rutas públicas.
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_RUNTIME = `${CACHE_VERSION}-runtime`;
 const CACHE_API     = `${CACHE_VERSION}-api`;
@@ -29,7 +29,7 @@ const IMG_REVALIDAR = 7 * 24 * 3600 * 1000;      // las que no son de Cloudinary
 const PRECACHE_URLS = [
     '/',
     '/public/lurveta-portada.css?v=2',
-    '/public/lurveta-portada.js?v=1',
+    '/public/lurveta-portada.js?v=2',
     '/public/portada/inicio-oscuro.webp',
     '/public/upgames-anuncios-aislados.js',
     '/public/upgames-app.css',
@@ -63,8 +63,32 @@ const PRECACHE_URLS = [
     '/public/icons/icon-512.png?v=3',
     '/public/offline.html',
     '/public/biblioteca.html',   // entrada a la biblioteca sin conexión
+    '/public/lurveta-cards.css',
+    '/public/lurveta-liquid.css?v=2',
+    '/public/lurveta-liquid.js?v=2',
+    '/public/lurveta-login.css',
     '/public/og-upgames.jpg'
 ];
+// Páginas de entrada: al instalar se leen y se precachean los CSS/JS/imágenes que enlazan con su ?v= EXACTO,
+// así la copia sin conexión de cada página siempre va con sus propios recursos (nada de HTML nuevo con JS viejo).
+const PAGINAS = ['/', '/public/biblioteca.html', '/login.html'];
+const RECURSO = /(?:src|href)="([^"]+?\.(?:css|js|json|webp|png|jpe?g|svg)(?:\?[^"]*)?)"/gi;
+async function precachear(cache) {
+    const enlazados = new Set();
+    await Promise.allSettled(PAGINAS.map(async pagina => {
+        const r = await fetch(pagina, { cache: 'no-cache' });
+        if (!r.ok) return;
+        await cache.put(pagina, r.clone());
+        for (const [, ref] of (await r.text()).matchAll(RECURSO)) {
+            const u = new URL(ref.replace(/&amp;/g, '&'), new URL(pagina, self.location.origin));
+            if (u.origin === self.location.origin && !/^\/(admin|games|studio)\//.test(u.pathname)) enlazados.add(u.pathname + u.search);
+        }
+    }));
+    // addAll falla si UNA URL falla: cada recurso por separado
+    await Promise.allSettled([...new Set([...PRECACHE_URLS, ...enlazados])].map(url => cache.add(url).catch(err => {
+        console.warn('[SW] No se pudo cachear:', url, err.message);
+    })));
+}
 
 // ======================================================================
 // INSTALL
@@ -72,14 +96,7 @@ const PRECACHE_URLS = [
 self.addEventListener('install', (event) => {
     console.log('[SW] Instalando v' + CACHE_VERSION);
     event.waitUntil(
-        caches.open(CACHE_STATIC).then((cache) => {
-            // addAll falla si UNA URL falla. Usamos Promise.allSettled para tolerancia.
-            return Promise.allSettled(
-                PRECACHE_URLS.map(url => cache.add(url).catch(err => {
-                    console.warn('[SW] No se pudo cachear:', url, err.message);
-                }))
-            );
-        }).then(() => self.skipWaiting())
+        caches.open(CACHE_STATIC).then(precachear).then(() => self.skipWaiting())
     );
 });
 
@@ -167,6 +184,17 @@ function isApiRequest(url) {
     return apiDomains.some(d => url.hostname.includes(d));
 }
 
+// API: solo se guardan respuestas de rutas PÚBLICAS conocidas (catálogo, fichas, perfiles públicos, comentarios,
+// tienda y feed editorial sin sesión). Todo lo demás (saldo, avisos, chats, cobros, admin…) va siempre a la red.
+const API_PUBLICA = [/^\/items\/?$/, /^\/items\/[0-9a-f]{24}$/i, /^\/items\/user\/[\w.-]+$/, /^\/usuarios\/(perfil-publico|stats-seguimiento)\/[\w.-]+$/,
+    /^\/auth\/users\/public$/, /^\/comentarios\/[0-9a-f]{24}$/i, /^\/tienda\/catalogo$/, /^\/blogs\/comunidad\/(feed|publicaciones\/[0-9a-f]{24})$/i];
+function apiPublica(request) {
+    if (request.headers.has('Authorization') || request.headers.has('x-admin-token') || request.credentials === 'include') return false;
+    return API_PUBLICA.some(r => r.test(new URL(request.url).pathname));
+}
+// El servidor también decide: private/no-store o una cookie en la respuesta → no se guarda
+const guardable = response => response.ok && !/private|no-store/i.test(response.headers.get('Cache-Control') || '') && !response.headers.has('Set-Cookie');
+
 function isImageRequest(request) {
     const dest = request.destination;
     return dest === 'image' || /\.(png|jpg|jpeg|gif|webp|svg|avif)$/i.test(request.url);
@@ -175,13 +203,12 @@ function isImageRequest(request) {
 // ---------- Estrategias ----------
 
 async function networkFirstAPI(request) {
-    // Peticiones con sesión (saldo, notificaciones, chats…) NUNCA se guardan:
+    // Peticiones con sesión o de rutas no públicas (saldo, notificaciones, chats…) NUNCA se guardan:
     // en un dispositivo compartido otro usuario podría verlas sin conexión.
-    const privada = request.headers.has('Authorization');
+    const privada = !apiPublica(request);
     try {
         const response = await fetch(request);
-        // Solo cachear respuestas exitosas de GETs públicos
-        if (!privada && response.ok && request.method === 'GET') {
+        if (!privada && guardable(response) && request.method === 'GET') {
             const cache = await caches.open(CACHE_API);
             cache.put(request, response.clone()).catch(() => {});
         }
@@ -279,7 +306,8 @@ async function networkFirstStatic(request) {
         }
         return response;
     } catch (err) {
-        const cached = await caches.match(request, { ignoreSearch: true });
+        // Primero la versión exacta (?v=) que pide la página; solo si no está, otra copia del mismo archivo
+        const cached = await caches.match(request) || await caches.match(request, { ignoreSearch: true });
         if (cached) return cached;
         return new Response('Sin conexión', { status: 503 });
     }
@@ -322,6 +350,10 @@ self.addEventListener('message', (event) => {
         }).then(() => {
             event.ports[0]?.postMessage({ ok: true });
         });
+    }
+    // Cambio de cuenta: la caché de API solo tiene datos públicos, pero se vacía igual (no queda nada de la sesión anterior)
+    if (event.data?.type === 'LIMPIAR_API') {
+        caches.delete(CACHE_API).then(() => event.ports[0]?.postMessage({ ok: true }));
     }
     if (event.data?.type === 'GET_VERSION') {
         event.ports[0]?.postMessage({ version: CACHE_VERSION });

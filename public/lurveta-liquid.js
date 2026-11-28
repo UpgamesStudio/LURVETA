@@ -32,7 +32,7 @@
   function syncTab() { body.classList.toggle('lv-home',isHome()); setSearch(false); showChrome(); last=Math.max(0,scrollY);delta=0; }
   window.addEventListener('ug:tab',syncTab); syncTab();
   // Keep modal/radial and keyboard navigation reachable. A deliberate scroll closes search.
-  function protectedUI() { return body.classList.contains('nx-open') || header.querySelector('#hdr-orb[aria-expanded="true"]') || document.querySelector('#detail-sheet.open') || (document.activeElement !== input && document.activeElement?.matches(':focus-visible') && (header.contains(document.activeElement) || nav.contains(document.activeElement))); }
+  function protectedUI() { return body.classList.contains('nx-open') || document.querySelector('#detail-sheet.open') || (document.activeElement !== input && document.activeElement?.matches(':focus-visible') && (header.contains(document.activeElement) || nav.contains(document.activeElement))); }
   function onScroll(){
     frame=0; const y=Math.max(0,scrollY), d=y-last; last=y;
     if(!isHome()) {showChrome();return;}

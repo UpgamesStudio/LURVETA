@@ -73,22 +73,28 @@ function registrar(app, {
         return b ? { e, b } : null;
     }
 
-    async function tarjetas(items, yo) {
-        const autores = referencias(items.flatMap(({ e, original }) => [e.usuario, original?.e.usuario]));
-        const ids = items.map(({ e }) => e._id);
+    // Conversación, me gusta, republicaciones y perfil de los autores de un conjunto de entradas
+    async function senales(ids, autores, yo) {
         const ref = ids.map(id => `blog:${id}`);
-        const [usuarios, conversaciones, reacciones, propias, republicaciones] = await Promise.all([
+        const [usuarios, conversaciones, reacciones, republicaciones] = await Promise.all([
             Usuario.find({ usuario: { $in: autores } }).select('usuario avatar planHasta').lean(),
             Comentario.aggregate([{ $match: { itemId: { $in: ref }, usuario: { $nin: yo.ocultos } } }, { $group: { _id: '$itemId', n: { $sum: 1 } } }]),
             BlogInteraccion.aggregate([{ $match: { objetivo: { $in: ids }, tipo: 'gusta' } }, { $group: { _id: '$objetivo', n: { $sum: 1 } } }]),
-            yo.usuario ? BlogInteraccion.find({ usuario: yo.usuario, objetivo: { $in: ids }, tipo: { $in: ['gusta', 'guardar'] } }).select('objetivo tipo').lean() : [],
             Entrada.aggregate([{ $match: { original: { $in: ids }, estado: 'publicada', tipo: 'republicacion' } },
                 { $lookup: { from: Blog.collection.name, localField: 'blog', foreignField: '_id', as: 'sitio' } },
                 { $match: { 'sitio.estado': 'activo', 'sitio.visibilidad': 'publico' } }, { $group: { _id: '$original', n: { $sum: 1 } } }]),
         ]);
-        const perfil = new Map(usuarios.map(u => [u.usuario, u]));
         const n = lista => new Map(lista.map(r => [String(r._id), r.n]));
-        const com = n(conversaciones), likes = n(reacciones), reposts = n(republicaciones);
+        return { perfil: new Map(usuarios.map(u => [u.usuario, u])), com: n(conversaciones), likes: n(reacciones), reposts: n(republicaciones) };
+    }
+
+    async function tarjetas(items, yo) {
+        const autores = referencias(items.flatMap(({ e, original }) => [e.usuario, original?.e.usuario]));
+        const ids = items.map(({ e }) => e._id);
+        const [{ perfil, com, likes, reposts }, propias] = await Promise.all([
+            senales(ids, autores, yo),
+            yo.usuario ? BlogInteraccion.find({ usuario: yo.usuario, objetivo: { $in: ids }, tipo: { $in: ['gusta', 'guardar'] } }).select('objetivo tipo').lean() : [],
+        ]);
         const propiasSet = new Set(propias.map(r => `${r.objetivo}:${r.tipo}`));
         const sitios = new Set(yo.sitios.map(String));
         function resumir(e, b) {
@@ -120,6 +126,51 @@ function registrar(app, {
         } catch (_) { return null; }
     }
 
+    // Vistas por relevancia: el orden sale de un conjunto representativo (las más leídas ∪ las más recientes de la
+    // ventana), no de un lote cronológico de 12. El cursor guarda el valor y el id de la última entrada y la
+    // normalización de la primera página: la página siguiente sigue el mismo orden y no repite entradas.
+    const RANKEADAS = { todo: 90, explorar: 365, populares: 30 };   // ventana en días
+    const POOL = 300;
+    function cursorValor(valor, clave) {
+        if (!valor || typeof valor !== 'string' || valor.length > 400) return null;
+        try {
+            const c = JSON.parse(Buffer.from(valor, 'base64url').toString());
+            if (c.clave !== clave || c.r !== 1 || !idOk(c.id) || ![c.v, c.corte, c.mv, c.mc].every(Number.isFinite) || c.corte > Date.now()) return null;
+            return c;
+        } catch (_) { return null; }
+    }
+    async function feedRelevancia(req, res, { vista, yo, filtro, blogFiltro, clave, limite }) {
+        const cursor = req.query.cursor ? cursorValor(req.query.cursor, clave) : null;
+        if (req.query.cursor && !cursor) return error(res, 400, 'El cursor no es válido.');
+        const corte = cursor ? new Date(cursor.corte) : ahora();
+        const f = { ...filtro, ...disponible(corte), usuario: filtro.usuario };
+        f.publicadaEn = { $lte: corte, $gte: new Date(Number(corte) - RANKEADAS[vista] * 864e5) };
+        const lookup = [{ $lookup: { from: Blog.collection.name, localField: 'blog', foreignField: '_id', as: 'sitio' } }, { $unwind: '$sitio' }, { $match: blogFiltro }];
+        const proyeccion = { $project: { _id: 1, usuario: 1, tipo: 1, publicadaEn: 1, vistas: 1, resumen: 1, etiquetas: 1, 'sitio.ajustes.temas': 1 } };
+        const [masLeidas, recientes] = await Promise.all([{ vistas: -1, _id: -1 }, { publicadaEn: -1, _id: -1 }]
+            .map(orden => Entrada.aggregate([{ $match: f }, { $sort: orden }, ...lookup, { $limit: POOL }, proyeccion]).allowDiskUse(true)));
+        const pool = [...new Map([...masLeidas, ...recientes].map(e => [String(e._id), e])).values()];
+        const { perfil, com, likes, reposts } = await senales(pool.map(e => e._id), referencias(pool.map(e => e.usuario)), yo);
+        const candidatos = pool.map(e => { const id = String(e._id), u = perfil.get(e.usuario);
+            return { id, usuario: e.usuario, fecha: e.publicadaEn, vistas: e.vistas || 0, comentarios: com.get(`blog:${id}`) || 0, gusta: likes.get(id) || 0,
+                republicaciones: reposts.get(id) || 0, premium: !!(u?.planHasta && new Date(u.planHasta) > corte), temas: e.sitio?.ajustes?.temas || [],
+                resumen: e.resumen || e.tipo === 'entrada', etiquetas: e.etiquetas || [] }; })
+            .sort((a, b) => (a.id < b.id ? 1 : -1));   // orden total: valor ↓ y, a igual valor, id ↓
+        const n = cursor ? { maxVistas: cursor.mv, maxCom: cursor.mc } : { maxVistas: Math.max(0, ...candidatos.map(e => e.vistas)), maxCom: Math.max(0, ...candidatos.map(e => e.comentarios)) };
+        let orden = D.rankear(candidatos, { vista, ahora: Number(corte), siguiendo: yo.siguiendo, intereses: yo.intereses, n });
+        if (cursor) orden = orden.filter(x => x.valor < cursor.v - 1e-12 || (Math.abs(x.valor - cursor.v) <= 1e-12 && x.e.id < cursor.id));
+        const pagina = orden.slice(0, limite), ultimo = pagina.at(-1);
+        const docs = await Entrada.aggregate([{ $match: { _id: { $in: pagina.map(x => new ObjectId(x.e.id)) } } }, ...lookup,
+            { $project: { ...Object.fromEntries(campos.split(' ').map(k => [k, 1])), 'sitio._id': 1, 'sitio.titulo': 1, 'sitio.direccion': 1,
+                'sitio.dominio.nombre': 1, 'sitio.dominio.verificado': 1, 'sitio.ajustes.temas': 1 } }]);
+        const porId = new Map(docs.map(e => [String(e._id), e]));
+        const items = await Promise.all(pagina.map(x => porId.get(x.e.id)).filter(Boolean)
+            .map(async e => ({ e, b: e.sitio, original: e.original ? await obtenerOriginal(e.original, yo) : null })));
+        const entradas = D.alternarAutores(await tarjetas(items.filter(x => x.e.tipo !== 'republicacion' || x.original), yo));
+        const siguiente = orden.length > limite ? Buffer.from(JSON.stringify({ r: 1, clave, v: ultimo.valor, id: ultimo.e.id, corte: Number(corte), mv: n.maxVistas, mc: n.maxCom })).toString('base64url') : null;
+        res.json({ success: true, entradas, siguiente, conSesion: !!yo.usuario });
+    }
+
     async function feed(req, res) {
         const vista = VISTAS.has(req.query.vista) ? req.query.vista : 'todo';
         const yo = await lector(req), tema = V.slug(req.query.tema, 40);
@@ -127,8 +178,9 @@ function registrar(app, {
         if (vista === 'perfil' && !blogId) return error(res, 400, 'Elige un sitio editorial.');
         const consulta = vista === 'explorar' ? V.linea(req.query.q, 80).replace(/[^\p{L}\p{N} -]/gu, ' ').trim() : '';
         const clave = crypto.createHash('sha256').update(JSON.stringify([vista, tema, blogId, consulta])).digest('base64url').slice(0, 18);
-        const cursor = cursorDe(req.query.cursor, clave);
-        if (req.query.cursor && !cursor) return error(res, 400, 'El cursor no es válido.');
+        const relevancia = !!RANKEADAS[vista];
+        const cursor = relevancia ? null : cursorDe(req.query.cursor, clave);
+        if (!relevancia && req.query.cursor && !cursor) return error(res, 400, 'El cursor no es válido.');
         const corte = cursor?.corte || ahora(), limite = 12;
         const filtro = { ...disponible(corte), usuario: { $nin: yo.ocultos } };
         if (vista === 'siguiendo') filtro.$and = [{ $or: [{ usuario: { $in: yo.siguiendo } }, { blog: { $in: yo.sitios } }] }];
@@ -144,6 +196,7 @@ function registrar(app, {
             const hay = { $regex: consulta, $options: 'i' };
             (blogFiltro.$and ||= []).push({ $or: [{ titulo: hay }, { 'sitio.titulo': hay }, { resumen: hay }, { 'bloques.texto': hay }, { etiquetas: hay }] });
         }
+        if (relevancia) return feedRelevancia(req, res, { vista, yo, filtro: { usuario: filtro.usuario }, blogFiltro, clave, limite });
         const lista = await Entrada.aggregate([
             { $match: filtro }, { $sort: { publicadaEn: -1, _id: -1 } },
             { $lookup: { from: Blog.collection.name, localField: 'blog', foreignField: '_id', as: 'sitio' } },

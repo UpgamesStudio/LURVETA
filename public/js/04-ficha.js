@@ -276,7 +276,7 @@ function openDetail(item) {
       if(cached) {
         renderFeaturedEntry(featEl, cached);
       } else {
-        fetch(`${API_URL}/items/${item.featuredItemId}`)
+        fetch(`${API_URL}/items/${encodeURIComponent(item.featuredItemId)}`)
           .then(r => r.ok ? r.json() : null)
           .then(d => { if(d && d._id) renderFeaturedEntry(featEl, d); else featEl.style.display = 'none'; })
           .catch(() => { featEl.style.display = 'none'; });

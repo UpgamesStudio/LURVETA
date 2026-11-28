@@ -10,7 +10,7 @@ html body.lv-discovery.lv-home #app-header::before,html body.lv-discovery.lv-hom
 html body.lv-discovery.lv-home #app-header .hdr-logo { width:clamp(88px,25vw,136px)!important; height:27px!important; flex:0 0 auto!important; margin-right:auto!important; background:url(icons/logo-lurveta.svg) left center/contain no-repeat!important; }
 html body.lv-discovery.lv-home #app-header .hdr-logo > span { opacity:0!important;font-size:0!important; }
 html body.lv-discovery.lv-home #app-header .hdr-actions { gap:5px!important; flex:0 0 auto!important; align-items:center!important; }
-html body.lv-discovery.lv-home #app-header :is(.hdr-orb,#notif-btn,#hdr-entrar) { box-shadow:none!important; border:1px solid var(--ld-line)!important; background:rgba(255,255,255,.07)!important; color:var(--ld-fg)!important; border-radius:999px!important; clip-path:none!important; }
+html body.lv-discovery.lv-home #app-header :is(#notif-btn,#hdr-entrar) { box-shadow:none!important; border:1px solid var(--ld-line)!important; background:rgba(255,255,255,.07)!important; color:var(--ld-fg)!important; border-radius:999px!important; clip-path:none!important; }
 html body.lv-discovery.lv-home #app-header #hdr-entrar { padding:0 12px!important; min-width:0!important; height:42px!important; font-size:13px!important; background:var(--ld-green)!important; color:#08231a!important; }
 html body.lv-discovery.lv-home #app-header #hdr-uc { min-width:0!important; padding-inline:5px!important; }
 .lv-search-toggle { display:none; }
@@ -83,7 +83,7 @@ html body.lv-discovery.lv-home :is(#app-header,#bottom-nav) :is(a,button):focus-
  html body.lv-discovery.lv-home #output { grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important; }
  html body.lv-discovery.lv-home #output .ugx-fila-track { grid-auto-columns:clamp(180px,20vw,250px)!important;gap:15px!important; }
 }
-@media(max-width:380px){html body.lv-discovery.lv-home #app-header { padding-inline:8px!important;gap:4px!important; } html body.lv-discovery.lv-home #app-header .hdr-logo { width:78px!important; } html body.lv-discovery.lv-home #app-header .lv-search-toggle { width:38px;height:38px;flex-basis:38px; } html body.lv-discovery.lv-home #app-header .hdr-orb { width:36px!important;height:36px!important; } html body.lv-discovery.lv-home #app-header #hdr-entrar { padding-inline:8px!important; } }
+@media(max-width:380px){html body.lv-discovery.lv-home #app-header { padding-inline:8px!important;gap:4px!important; } html body.lv-discovery.lv-home #app-header .hdr-logo { width:78px!important; } html body.lv-discovery.lv-home #app-header .lv-search-toggle { width:38px;height:38px;flex-basis:38px; } html body.lv-discovery.lv-home #app-header #hdr-entrar { padding-inline:8px!important; } }
 @media(prefers-reduced-motion:reduce){html body.lv-discovery.lv-home :is(#app-header,#bottom-nav,#app-header .search-bar) { transition:none!important; } }
 /* Compact authenticated controls without deleting notification / balance actions. */
 @media(max-width:440px){

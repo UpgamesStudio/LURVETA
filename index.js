@@ -213,12 +213,10 @@ app.use(helmet({
 
 const allowedOrigins = config.ALLOWED_ORIGINS;
 
-app.options('*', cors());
-
-app.use(cors({
+const opcionesCors = {
     origin: (origin, callback) => {
         if (!origin || origin === API_URL_SELF) return callback(null, true);
-        if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed + '/'))) {
+        if (allowedOrigins.includes(origin)) {   // coincidencia exacta: un Origin nunca lleva ruta
             callback(null, true);
         } else {
             // Se sigue rechazando (la petición ni se procesa), pero no es un fallo del servidor: ver el manejador de errores
@@ -228,7 +226,10 @@ app.use(cors({
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-token']
-}));
+};
+// El preflight usa la misma lista (antes respondía «*» a cualquier origen)
+app.options('*', cors(opcionesCors));
+app.use(cors(opcionesCors));
 
 // Los listados públicos no llevan el enlace de descarga (solo la página puente lo entrega): modulos/sinEnlace.js
 // La antigua categoría de copias de consola («ROM») ya no existe: no se puede publicar ni pasar una publicación a ella
@@ -285,6 +286,8 @@ const authLimiter = rateLimit({
     max: config.RATE_LIMIT.AUTH.max,
     message: { error: "Demasiados intentos de login, espera 15 minutos" },
     skipSuccessfulRequests: true,
+    // Pedir el código 2FA tras una contraseña correcta no es un intento fallido
+    requestWasSuccessful: (req, res) => res.statusCode < 400 || !!res.locals.credencialesOk,
     skip: () => config.NODE_ENV === 'development'
 });
 
