@@ -41,7 +41,19 @@
     window.dispatchEvent(new CustomEvent('ug:tema', { detail: t }));
   }
 
+  // Modo claro / oscuro de las tarjetas y la ficha (independiente del tema cyber/clásico).
+  // <html data-modo="oscuro|claro">, localStorage 'ug_modo'. Lo usa lurveta-cards.css.
+  const MODOS = { oscuro: 'Oscuro', claro: 'Claro' };
+  const leerModo = () => { try { const m = localStorage.getItem('ug_modo'); return MODOS[m] ? m : 'oscuro'; } catch (_) { return 'oscuro'; } };
+  function setModo(m) {
+    if (!MODOS[m]) return;
+    try { localStorage.setItem('ug_modo', m); } catch (_) {}
+    html.dataset.modo = m;
+    window.dispatchEvent(new CustomEvent('ug:modo', { detail: m }));
+  }
+
   aplicar(leer());
+  html.dataset.modo = leerModo();
   document.addEventListener('DOMContentLoaded', () => {
     escaneo(html.dataset.tema === 'cyber');
     // Botón en el menú rápido de la biblioteca
@@ -58,6 +70,33 @@
       });
       radial.appendChild(b);
     }
+    // Interruptor claro/oscuro: junto al «01 / DISCOVER» del inicio (lo crea lurveta-liquid.js,
+    // que es defer y ya corrió). Si la portada Discovery no está, va al menú rápido.
+    if (!document.getElementById('ug-modo-btn')) {
+      const intro = document.querySelector('.lv-home-intro'), marca = intro?.querySelector('.lv-intro-mark');
+      const enIntro = !!(intro && marca);
+      if (enIntro || radial) {
+        const b = document.createElement('button');
+        b.id = 'ug-modo-btn'; b.type = 'button';
+        b.className = enIntro ? 'ug-modo-btn' : 'ugr-item ug-modo-btn';
+        if (!enIntro) b.setAttribute('role', 'menuitem');
+        const pintar = () => {
+          const claro = html.dataset.modo === 'claro', ico = claro ? 'moon-outline' : 'sunny-outline';
+          b.setAttribute('aria-label', claro ? 'Cambiar al modo oscuro' : 'Cambiar al modo claro');
+          b.innerHTML = enIntro ? `<ion-icon name="${ico}" aria-hidden="true"></ion-icon>` : `<span class="ugr-bub"><ion-icon name="${ico}"></ion-icon></span><span class="ugr-lbl">${claro ? 'Oscuro' : 'Claro'}</span>`;
+        };
+        pintar();
+        b.addEventListener('click', e => {
+          e.stopPropagation(); if (!enIntro) window.UGR?.cerrar?.();
+          setModo(html.dataset.modo === 'claro' ? 'oscuro' : 'claro'); pintar();
+          try { window.toast?.(html.dataset.modo === 'claro' ? '☀️ Modo claro activado' : '🌙 Modo oscuro activado'); } catch (_) {}
+        });
+        if (enIntro) {
+          const lado = document.createElement('div'); lado.className = 'lv-intro-side';
+          marca.replaceWith(lado); lado.append(marca, b);
+        } else radial.appendChild(b);
+      }
+    }
   });
-  window.UGTema = { set, get: () => html.dataset.tema, TEMAS };
+  window.UGTema = { set, get: () => html.dataset.tema, TEMAS, setModo, getModo: () => html.dataset.modo, MODOS };
 })();

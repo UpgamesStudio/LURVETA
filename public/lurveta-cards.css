@@ -1,0 +1,425 @@
+/* ═══════════════════════════════════════════════════════════════
+   Lurveta · Cards de publicaciones (inicio) y ficha abierta
+   ───────────────────────────────────────────────────────────────
+   Se carga DESPUÉS de lurveta-liquid.css (la portada Discovery).
+   • Modo oscuro  (html[data-modo="oscuro"]) → Diseño A «Inmersiva»:
+     portada a sangre en 4:5, datos sobre la imagen, controles de cristal.
+   • Modo claro   (html[data-modo="claro"])  → Diseño C «Tienda»:
+     tarjeta blanca, imagen con margen, datos debajo y pastilla «Obtener».
+   El modo lo pone upgames-tema.js antes de pintar (localStorage 'ug_modo').
+   Solo toca las cards del inicio (#output con body.lv-home) y la ficha
+   (#detail-sheet). Los diseños de tarjeta de los creadores (.ugs-t /
+   .ugs-tema) conservan sus colores y siguen oscuros en el modo claro.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* La pastilla «Obtener» solo existe visualmente en el modo claro del inicio */
+.tile-cta { display: none; }
+
+/* Interruptor claro/oscuro junto a «01 / DISCOVER» (lo crea upgames-tema.js) */
+.lv-intro-side { display: flex; align-items: flex-end; gap: 10px; flex: 0 0 auto; }
+.lv-home-intro .ug-modo-btn {
+  display: grid; place-items: center;
+  width: 44px; height: 44px; flex: 0 0 44px;
+  padding: 0; margin: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(219,249,240,.18);
+  background: rgba(255,255,255,.06);
+  color: #EEF5F3;
+  cursor: pointer;
+  transition: transform .18s cubic-bezier(.2,.8,.2,1), background .2s;
+}
+.lv-home-intro .ug-modo-btn ion-icon { font-size: 20px; }
+.lv-home-intro .ug-modo-btn:active { transform: scale(.92); }
+.lv-home-intro .ug-modo-btn:focus-visible { outline: 2px solid #39FF88; outline-offset: 2px; }
+html[data-modo="claro"] .lv-home-intro .ug-modo-btn { background: #FFFFFF; border-color: rgba(18,21,26,.12); color: #12151A; }
+html[data-modo="claro"] .lv-home-intro .ug-modo-btn:focus-visible { outline-color: #15803D; }
+
+/* ─────────────────────────────────────────────
+   A · INMERSIVA — cards cerradas (base, ambos modos)
+   ───────────────────────────────────────────── */
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) {
+  position: relative !important;
+  aspect-ratio: 4 / 5 !important;
+  height: auto !important;
+  background: #0B0F16 !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 34px -22px rgba(0,0,0,.9) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  color: #F2F4F8;
+  isolation: isolate;
+}
+html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) { aspect-ratio: 3 / 4 !important; }
+
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: #121823 !important;
+  box-shadow: none !important;
+  z-index: 0;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap :is(img, video) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+  transition: transform .5s cubic-bezier(.2,.8,.2,1);
+}
+@media (hover: hover) {
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):hover .thumb-wrap :is(img, video) { transform: scale(1.045); }
+}
+
+/* Datos sobre la portada, con velo para que el texto siempre se lea */
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info {
+  position: absolute !important;
+  left: 0 !important; right: 0 !important; bottom: 0 !important; top: auto !important;
+  z-index: 4 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  padding: 52px 12px 12px !important;
+  margin: 0 !important;
+  background: linear-gradient(to top, rgba(6,8,13,.97) 0%, rgba(6,8,13,.86) 48%, rgba(6,8,13,0) 100%) !important;
+  border: 0 !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat {
+  font: 500 10px/1.25 'DM Mono', ui-monospace, monospace !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+  color: var(--tj-acc, #39FF88) !important;
+  margin: 0 !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat .tile-promo { font: inherit !important; letter-spacing: inherit !important; color: #FFC547 !important; }
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-extras { display: none !important; }
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-title {
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.22 !important;
+  letter-spacing: -.01em !important;
+  color: var(--tj-tit, #FFFFFF) !important;
+  margin: 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 2px 0 0 !important;
+  min-width: 0;
+  font: 500 11.5px/1.2 Inter, system-ui, sans-serif !important;
+  color: #B7BFCC !important;
+  flex-wrap: nowrap !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-avatar {
+  width: 20px !important; height: 20px !important; min-width: 20px !important; flex: 0 0 20px !important;
+  border-radius: 50% !important;
+  background: #39FF88 !important; color: #05070C !important;
+  font: 800 10px/20px Inter, system-ui, sans-serif !important;
+  text-align: center; border: 0 !important; box-shadow: none !important; padding: 0 !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-user {
+  flex: 1 1 auto !important; min-width: 0 !important;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: inherit !important; font: inherit !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) :is(.tile-dl-count, .tile-downloads, .ugrs-tile-star) {
+  display: inline-flex !important; align-items: center !important; gap: 3px !important;
+  flex: 0 0 auto !important; margin: 0 !important;
+  color: inherit !important; font: inherit !important; background: none !important; padding: 0 !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta ion-icon { font-size: 13px !important; }
+
+/* Estado: pastilla de cristal arriba a la izquierda */
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status {
+  position: absolute !important;
+  top: 10px !important; left: 10px !important; right: auto !important; bottom: auto !important;
+  z-index: 5 !important;
+  display: inline-flex !important; align-items: center !important; gap: 5px !important;
+  height: 24px !important; padding: 0 9px !important; margin: 0 !important;
+  border-radius: 999px !important; border: 0 !important;
+  background: rgba(6,8,13,.55) !important;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: none !important;
+  font: 600 11px/1 Inter, system-ui, sans-serif !important;
+  letter-spacing: 0 !important; text-transform: none !important;
+  color: #F2F4F8 !important;
+  clip-path: none !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status-dot {
+  width: 6px !important; height: 6px !important; border-radius: 50% !important;
+  background: #FF5C6C !important; box-shadow: none !important; animation: none !important; margin: 0 !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.online .tile-status-dot { background: #39FF88 !important; }
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.revision .tile-status-dot { background: #FFC547 !important; }
+
+/* Favorito: botón redondo de cristal arriba a la derecha */
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick {
+  position: absolute !important;
+  top: 6px !important; right: 6px !important; left: auto !important; bottom: auto !important;
+  z-index: 5 !important;
+  width: 40px !important; height: 40px !important; min-width: 0 !important;
+  display: grid !important; place-items: center !important;
+  margin: 0 !important; padding: 0 !important;
+  border-radius: 50% !important; border: 0 !important;
+  background: rgba(6,8,13,.55) !important;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: none !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important; visibility: visible !important; transform: none !important;
+  clip-path: none !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick ion-icon { font-size: 18px !important; color: inherit !important; }
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick.active { color: #FF5C7A !important; }
+
+/* Ranking de «Lo más descargado»: el número va primero y el estado a su lado */
+html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .thumb-wrap::after {
+  top: 10px !important; left: 10px !important;
+  width: 30px !important; height: 24px !important;
+  border-radius: 999px !important; border: 0 !important;
+  background: #39FF88 !important; color: #05070C !important;
+  font: 500 12px/24px 'DM Mono', ui-monospace, monospace !important;
+  box-shadow: none !important; z-index: 5 !important;
+}
+html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .tile-status { left: 46px !important; }
+
+/* ─────────────────────────────────────────────
+   A · INMERSIVA — ficha abierta (base, ambos modos)
+   ───────────────────────────────────────────── */
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-cat {
+  font-family: 'DM Mono', ui-monospace, monospace !important;
+  font-size: 11px !important; font-weight: 500 !important;
+  letter-spacing: .12em !important; text-transform: uppercase !important;
+  color: var(--tj-acc, #39FF88) !important;
+  margin-bottom: 6px !important;
+}
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-title {
+  font-family: Inter, system-ui, sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: -.025em !important;
+}
+/* Acciones: cuadrícula de 4 con icono arriba y etiqueta debajo */
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 18px 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important; justify-content: center !important;
+  gap: 6px !important;
+  width: auto !important; min-width: 0 !important;
+  min-height: 68px !important; height: auto !important;
+  padding: 10px 4px !important; margin: 0 !important;
+  border-radius: 16px !important;
+  border: 0 !important;
+  background: rgba(255,255,255,.06) !important;
+  box-shadow: none !important;
+  color: #F2F4F8 !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 12px !important; font-weight: 600 !important; line-height: 1.2 !important;
+  text-align: center !important; white-space: normal !important;
+  clip-path: none !important;
+}
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill ion-icon { font-size: 20px !important; margin: 0 !important; color: inherit !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill.active,
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill.on { color: #FF5C7A !important; }
+
+/* ─────────────────────────────────────────────
+   C · TIENDA — modo claro del inicio
+   La cabecera y la barra inferior flotantes se quedan oscuras
+   (son el «marco» de la marca y el logo es verde).
+   ───────────────────────────────────────────── */
+html[data-modo="claro"] body.lv-discovery.lv-home {
+  background: #EEF0F3 !important;
+  color: #12151A;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #main-view {
+  --ld-fg: #12151A;
+  --ld-muted: #5B6371;
+  --ld-line: rgba(18,21,26,.1);
+  --txt: #12151A;
+  --txt2: #4A515D;
+  --txt3: #5B6371;
+  --bg-rgb: 238,240,243;   /* sombra de «hay más» al final de las filas horizontales */
+  color: #12151A;
+}
+/* Marco oscuro sólido: el cristal oscuro sobre fondo claro se ve gris y turbio */
+html[data-modo="claro"][data-tema] body.lv-discovery.lv-home :is(#app-header, #bottom-nav) {
+  background: rgba(17,21,27,.94) !important;
+  border-color: rgba(255,255,255,.08) !important;
+  box-shadow: 0 14px 34px -14px rgba(18,21,26,.45) !important;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home .lv-home-intro .lv-eyebrow { color: #4A515D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home .lv-home-intro .lv-eyebrow::before { background: #15803D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home .lv-home-intro .lv-intro-title { color: #12151A !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home .lv-home-intro .lv-intro-mark { color: #5B6371 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #category-row .chip {
+  background: #FFFFFF !important;
+  border-color: rgba(18,21,26,.1) !important;
+  color: #3A414C !important;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #category-row .chip.active { background: #12151A !important; color: #FFFFFF !important; border-color: transparent !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #hero-carousel .hero-dot { background: rgba(18,21,26,.18) !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #hero-carousel .hero-dot.active { background: rgba(21,128,61,.35) !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #hero-carousel .hero-dot::after { background: #15803D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output :is(.ugx-fila h2, .section-title) { color: #12151A !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila-h small,
+html[data-modo="claro"] body.lv-discovery.lv-home #output .section-count { color: #5B6371 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-h :is(h2, .ugc-eyebrow) { color: #12151A !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-h .ugc-eyebrow { color: #15803D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-dots button { background: rgba(18,21,26,.2) !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-dots button.on { background: #15803D !important; }
+
+/* C · cards cerradas (las de diseño de creador se quedan oscuras, estilo A) */
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) {
+  aspect-ratio: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 8px !important;
+  background: #FFFFFF !important;
+  border-radius: 22px !important;
+  box-shadow: 0 1px 2px rgba(18,21,26,.06), 0 10px 24px -14px rgba(18,21,26,.28) !important;
+  color: #12151A;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .thumb-wrap {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 11 !important;
+  border-radius: 15px !important;
+  overflow: hidden !important;
+  background: #E6E8EC !important;
+  flex: 0 0 auto;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video):not(.ugs-t) .thumb-wrap { aspect-ratio: 4 / 5 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-info {
+  position: relative !important;
+  inset: auto !important;
+  flex: 1 1 auto !important;
+  gap: 4px !important;
+  padding: 10px 4px 4px !important;
+  background: none !important;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-cta {
+  display: inline-flex;
+  position: absolute; top: 7px; right: 2px;
+  align-items: center;
+  height: 24px; padding: 0 10px;
+  border-radius: 999px;
+  background: #E6F4EA; color: #166534;
+  font: 800 11.5px/1 Inter, system-ui, sans-serif;
+  pointer-events: none;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-cat {
+  font: 700 10.5px/1.25 Inter, system-ui, sans-serif !important;
+  letter-spacing: .06em !important;
+  color: #15803D !important;
+  padding-right: 72px;
+  min-height: 24px; display: flex !important; align-items: center;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-title { color: #12151A !important; font-size: 14.5px !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-meta { color: #5B6371 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-avatar {
+  border-radius: 7px !important;
+  background: #12151A !important; color: #FFFFFF !important;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status {
+  background: rgba(255,255,255,.92) !important;
+  color: #12151A !important;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status.online .tile-status-dot { background: #15803D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status.revision .tile-status-dot { background: #B45309 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status:not(.online):not(.revision) .tile-status-dot { background: #C2410C !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-fav-quick {
+  background: rgba(255,255,255,.92) !important;
+  color: #12151A !important;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-fav-quick.active { color: #E11D48 !important; }
+
+/* ─────────────────────────────────────────────
+   C · TIENDA — ficha abierta en modo claro
+   (una ficha con diseño de creador, .ugs-tema, se queda oscura)
+   ───────────────────────────────────────────── */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) {
+  --txt: #12151A;
+  --txt2: #4A515D;
+  --txt3: #5B6371;
+  --bg1: #F4F5F7;
+  --bg2: #EEF0F3;
+  --bg3: #E6E8EC;
+  --bd: #E3E6EA;
+  --v6-glass: #F4F5F7;
+  --v6-glass-2: #EEF0F3;
+  --v6-bd: #E3E6EA;
+  --v6-hi: none;
+  --ld-fg: #12151A;
+  --ld-muted: #5B6371;
+  --ld-line: rgba(18,21,26,.1);
+  background: #FFFFFF !important;
+  color: #12151A !important;
+  border-color: rgba(18,21,26,.08) !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-amb { display: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-scroll { background: transparent !important; color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-cat { color: #15803D !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-title { color: #12151A !important; text-shadow: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.author-name, .an-n) { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-perfil { background: #F1F3F5 !important; border-color: transparent !important; color: #12151A !important; box-shadow: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats { border-color: rgba(18,21,26,.1) !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats div { border-color: rgba(18,21,26,.1) !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats b { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats span { color: #5B6371 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-tienda #ds-download {
+  background: #15803D !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-tienda #ds-download ion-icon { color: #FFFFFF !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .dst-fav {
+  background: #F1F3F5 !important; border: 0 !important; box-shadow: none !important;
+  color: #12151A !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-nota { color: #5B6371 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-desc { color: #4A515D !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-desc::before { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-actions .action-pill { background: #F1F3F5 !important; color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-actions .action-pill:is(.active, .on) { color: #E11D48 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.ucx, .nxc-btn, .ds-ask-nexus, .ugrs-caja, .comment-input-area) {
+  background: #F4F5F7 !important;
+  border-color: #E3E6EA !important;
+  box-shadow: none !important;
+  color: #12151A !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.ucx-h b, .ds-ask-nexus b, .comments-section-title) { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.ucx-h small, .ucx-p, .ds-ask-nexus small, .no-comments) { color: #5B6371 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .ucx-btn { color: #15803D !important; border-color: rgba(21,128,61,.35) !important; background: #FFFFFF !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-comment-input { background: #FFFFFF !important; color: #12151A !important; border-color: #E3E6EA !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-comment-input::placeholder { color: #6B7280 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile .thumb-wrap :is(img, video) { transition: none !important; transform: none !important; }
+}

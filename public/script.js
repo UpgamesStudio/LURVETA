@@ -567,6 +567,7 @@ function createTile(item, isFeatured=false) {
 
       </div>
       <div class="tile-info">
+        <span class="tile-cta" aria-hidden="true">Obtener</span>
         <div class="tile-cat">${catLabel(cat)}${item.promocionado ? ' <span class="tile-promo" title="Su autor pagó para destacarla">Promocionado</span>' : ''}</div>
         ${extrasFila}
         <div class="tile-title">${escH(tituloT)}</div>
