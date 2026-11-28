@@ -137,6 +137,7 @@ function createTile(item, isFeatured=false) {
   const tituloT = item.serieInfo?.base || item.title;
   const isOnline = ls==='online';
   const statusLabel = ls==='online'?'Online':ls==='revision'?'Revisión':'Caído';
+  const inicialT = (String(tituloT || '').match(/[\p{L}\p{N}]/u) || ['•'])[0].toUpperCase();   // icono de la card en modo claro
   const cat = item.category || 'General';
   const isVideo = cat === 'Video';
 
@@ -226,17 +227,22 @@ function createTile(item, isFeatured=false) {
 
       </div>
       <div class="tile-info">
-        <span class="tile-cta" aria-hidden="true">Obtener</span>
+        <span class="tile-icon" aria-hidden="true">${escH(inicialT)}</span>
+        <div class="tile-body">
         <div class="tile-cat">${catLabel(cat)}${item.promocionado ? ' <span class="tile-promo" title="Su autor pagó para destacarla">Promocionado</span>' : ''}</div>
         ${extrasFila}
         <div class="tile-title">${escH(tituloT)}</div>
+        <div class="tile-sub">${escH(catLabel(cat))} · @${escH(item.usuario||'Cloud')}</div>
         <div class="tile-meta">
+          <span class="tile-st ${ls}" aria-hidden="true"><i></i>${statusLabel}</span>
           <div class="tile-avatar">${avatarLetter(item.usuario)}</div>
           <div class="tile-user">@${escH(item.usuario||'Cloud')}</div>
           ${dl?`<div class="tile-dl-count" title="${dl} descargas"><ion-icon name="cloud-download-outline"></ion-icon>${fmt(dl)}</div>`:''}
           ${lk?`<div class="tile-downloads"><ion-icon name="heart"></ion-icon>${fmt(lk)}</div>`:''}
           ${window.UGR?.estrellasTile(item)||''}
         </div>
+        </div>
+        <span class="tile-cta" aria-hidden="true">Obtener</span>
       </div>`;
   }
 

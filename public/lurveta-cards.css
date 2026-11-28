@@ -2,20 +2,26 @@
    Lurveta · Cards de publicaciones (inicio) y ficha abierta
    ───────────────────────────────────────────────────────────────
    Se carga DESPUÉS de lurveta-liquid.css (la portada Discovery).
-   • Modo oscuro  (html[data-modo="oscuro"]) → Diseño A «Inmersiva»:
-     portada a sangre en 4:5, datos sobre la imagen, controles de cristal.
-   • Modo claro   (html[data-modo="claro"])  → Diseño C «Tienda»:
-     tarjeta blanca, imagen con margen, datos debajo y pastilla «Obtener».
-   El modo lo pone upgames-tema.js antes de pintar (localStorage 'ug_modo').
-   Solo toca las cards del inicio (#output con body.lv-home) y la ficha
-   (#detail-sheet). Diseños de tarjeta de los creadores (.ugs-t / .ugs-tema):
-   en oscuro conservan anillo, efectos y colores; en claro la tarjeta es
-   blanca y conserva el anillo con sus colores (los efectos de fondo, hechos
-   para fondo oscuro, se ocultan para que el texto se lea).
+   • Modo oscuro (html[data-modo="oscuro"]) → Diseño A «Inmersiva»
+     Cerrada: portada a sangre 4:5; categoría, título y autor sobre un velo;
+              estado y favorito en cristal.
+     Abierta: portada arriba, panel redondeado que sube sobre ella y barra
+              fija con ✦ Nexus + descarga (#ds-dock, lo crea fichaModo()).
+   • Modo claro (html[data-modo="claro"]) → Diseño C «Tienda»
+     Cerrada: tarjeta blanca, imagen con margen; icono + título +
+              «Categoría · @autor» + estado; pastilla «Obtener».
+     Abierta: cabecera de tienda (icono, título, autor), datos, «Obtener»,
+              capturas en tira y «Sobre esta publicación».
+   El modo lo pone upgames-tema.js antes de pintar (localStorage 'ug_modo');
+   la estructura de la ficha la ordena fichaModo() en js/04-ficha.js.
+   Solo toca las cards del inicio (#output con body.lv-home) y #detail-sheet.
+   Diseños de tarjeta de creadores (.ugs-t / .ugs-tema): en oscuro conservan
+   anillo, efectos y colores; en claro, la tarjeta es blanca con su anillo.
    ═══════════════════════════════════════════════════════════════ */
 
-/* La pastilla «Obtener» solo existe visualmente en el modo claro del inicio */
-.tile-cta { display: none; }
+/* Piezas nuevas de la card: fuera del inicio no se ven y no alteran nada */
+.tile-icon, .tile-sub, .tile-st, .tile-cta { display: none; }
+.tile-body { display: contents; }
 
 /* Interruptor claro/oscuro junto a «01 / DISCOVER» (lo crea upgames-tema.js) */
 .lv-intro-side { display: flex; align-items: flex-end; gap: 10px; flex: 0 0 auto; }
@@ -36,219 +42,256 @@
 html[data-modo="claro"] .lv-home-intro .ug-modo-btn { background: #FFFFFF; border-color: rgba(18,21,26,.12); color: #12151A; }
 html[data-modo="claro"] .lv-home-intro .ug-modo-btn:focus-visible { outline-color: #15803D; }
 
-/* ─────────────────────────────────────────────
-   A · INMERSIVA — cards cerradas (base, ambos modos)
-   ───────────────────────────────────────────── */
+/* ═════════════════════════════════════════════
+   A · INMERSIVA — card cerrada
+   ═════════════════════════════════════════════ */
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) {
+  container-type: inline-size;
   position: relative !important;
   aspect-ratio: 4 / 5 !important;
   height: auto !important;
   background: #0B0F16 !important;
   border: 0 !important;
   border-radius: 22px !important;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 34px -22px rgba(0,0,0,.9) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 20px 40px -20px rgba(0,0,0,.8) !important;
   overflow: hidden !important;
   padding: 0 !important;
   color: #F2F4F8;
   isolation: isolate;
 }
 html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) { aspect-ratio: 3 / 4 !important; }
-
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  aspect-ratio: auto !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  background: #121823 !important;
-  box-shadow: none !important;
-  z-index: 0;
+  position: absolute !important; inset: 0 !important;
+  width: 100% !important; height: 100% !important; aspect-ratio: auto !important;
+  margin: 0 !important; border-radius: 0 !important;
+  background: #121823 !important; box-shadow: none !important; z-index: 0;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap :is(img, video) {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  border-radius: 0 !important;
+  position: absolute !important; inset: 0 !important;
+  width: 100% !important; height: 100% !important;
+  object-fit: cover !important; border-radius: 0 !important;
   transition: transform .5s cubic-bezier(.2,.8,.2,1);
 }
 @media (hover: hover) {
   html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):hover .thumb-wrap :is(img, video) { transform: scale(1.045); }
 }
-
-/* Datos sobre la portada, con velo para que el texto siempre se lea */
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info {
   position: absolute !important;
   left: 0 !important; right: 0 !important; bottom: 0 !important; top: auto !important;
   z-index: 4 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 5px !important;
-  padding: 52px 12px 12px !important;
-  margin: 0 !important;
-  background: linear-gradient(to top, rgba(6,8,13,.97) 0%, rgba(6,8,13,.86) 48%, rgba(6,8,13,0) 100%) !important;
-  border: 0 !important;
+  display: flex !important; flex-direction: column !important; gap: 6px !important;
+  padding: 56px 12px 12px !important; margin: 0 !important; border: 0 !important;
+  background: linear-gradient(to top, rgba(5,7,12,.96) 30%, rgba(5,7,12,0)) !important;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat {
+  display: block !important; height: auto !important; min-height: 0 !important;
   font: 500 10px/1.25 'DM Mono', ui-monospace, monospace !important;
-  letter-spacing: .12em !important;
-  text-transform: uppercase !important;
+  letter-spacing: .12em !important; text-transform: uppercase !important;
   color: var(--tj-acc, #39FF88) !important;
-  margin: 0 !important;
+  margin: 0 !important; padding: 0 !important; background: none !important;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat .tile-promo { font: inherit !important; letter-spacing: inherit !important; color: #FFC547 !important; }
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat .tile-promo { font: inherit !important; letter-spacing: inherit !important; color: #FFC547 !important; background: none !important; padding: 0 !important; margin-left: 4px; }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-extras { display: none !important; }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-title {
   font-family: Inter, system-ui, sans-serif !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  line-height: 1.22 !important;
+  font-size: 15px !important; font-weight: 700 !important; line-height: 1.2 !important;
   letter-spacing: -.01em !important;
   color: var(--tj-tit, #FFFFFF) !important;
-  margin: 0 !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-  min-height: 0 !important;
+  margin: 0 !important; min-height: 0 !important;
+  display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  margin: 2px 0 0 !important;
-  min-width: 0;
+  display: flex !important; align-items: center !important; gap: 6px !important;
+  margin: 2px 0 0 !important; min-width: 0;
   font: 500 11.5px/1.2 Inter, system-ui, sans-serif !important;
-  color: #B7BFCC !important;
-  flex-wrap: nowrap !important;
+  color: #B7BFCC !important; flex-wrap: nowrap !important;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-avatar {
+  display: block !important;
   width: 20px !important; height: 20px !important; min-width: 20px !important; flex: 0 0 20px !important;
-  border-radius: 50% !important;
+  border-radius: 50% !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important;
   background: #39FF88 !important; color: #05070C !important;
-  font: 800 10px/20px Inter, system-ui, sans-serif !important;
-  text-align: center; border: 0 !important; box-shadow: none !important; padding: 0 !important;
+  font: 800 10px/20px Inter, system-ui, sans-serif !important; text-align: center;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-user {
+  display: block !important;
   flex: 1 1 auto !important; min-width: 0 !important;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: inherit !important; font: inherit !important;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) :is(.tile-dl-count, .tile-downloads, .ugrs-tile-star) {
   display: inline-flex !important; align-items: center !important; gap: 3px !important;
-  flex: 0 0 auto !important; margin: 0 !important;
-  color: inherit !important; font: inherit !important; background: none !important; padding: 0 !important;
+  flex: 0 0 auto !important; margin: 0 !important; padding: 0 !important;
+  color: inherit !important; font: inherit !important; background: none !important;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta ion-icon { font-size: 13px !important; }
-
-/* Estado: pastilla de cristal arriba a la izquierda */
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status {
   position: absolute !important;
-  top: 10px !important; left: 10px !important; right: auto !important; bottom: auto !important;
+  top: 12px !important; left: 12px !important; right: auto !important; bottom: auto !important;
   z-index: 5 !important;
-  display: inline-flex !important; align-items: center !important; gap: 5px !important;
-  height: 24px !important; padding: 0 9px !important; margin: 0 !important;
+  display: inline-flex !important; align-items: center !important; gap: 6px !important;
+  height: 26px !important; padding: 0 10px !important; margin: 0 !important;
   border-radius: 999px !important; border: 0 !important;
-  background: rgba(6,8,13,.55) !important;
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  box-shadow: none !important;
-  font: 600 11px/1 Inter, system-ui, sans-serif !important;
-  letter-spacing: 0 !important; text-transform: none !important;
-  color: #F2F4F8 !important;
-  clip-path: none !important;
+  background: rgba(5,7,12,.5) !important;
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: none !important; clip-path: none !important;
+  font: 600 11.5px/1 Inter, system-ui, sans-serif !important;
+  letter-spacing: 0 !important; text-transform: none !important; color: #F2F4F8 !important;
 }
-html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status-dot {
-  width: 6px !important; height: 6px !important; border-radius: 50% !important;
-  background: #FF5C6C !important; box-shadow: none !important; animation: none !important; margin: 0 !important;
-}
+html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status-dot { width: 7px !important; height: 7px !important; border-radius: 50% !important; background: #FF5C6C !important; box-shadow: none !important; animation: none !important; margin: 0 !important; }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.online .tile-status-dot { background: #39FF88 !important; }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.revision .tile-status-dot { background: #FFC547 !important; }
-
-/* Favorito: botón redondo de cristal arriba a la derecha */
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick {
   position: absolute !important;
-  top: 6px !important; right: 6px !important; left: auto !important; bottom: auto !important;
+  top: 8px !important; right: 8px !important; left: auto !important; bottom: auto !important;
   z-index: 5 !important;
   width: 40px !important; height: 40px !important; min-width: 0 !important;
   display: grid !important; place-items: center !important;
   margin: 0 !important; padding: 0 !important;
   border-radius: 50% !important; border: 0 !important;
-  background: rgba(6,8,13,.55) !important;
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  box-shadow: none !important;
-  color: #FFFFFF !important;
-  opacity: 1 !important; visibility: visible !important; transform: none !important;
-  clip-path: none !important;
+  background: rgba(5,7,12,.5) !important;
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: none !important; clip-path: none !important;
+  color: #FFFFFF !important; opacity: 1 !important; visibility: visible !important; transform: none !important;
 }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick ion-icon { font-size: 18px !important; color: inherit !important; }
 html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick.active { color: #FF5C7A !important; }
-
-/* Ranking de «Lo más descargado»: el número va primero y el estado a su lado */
+/* Ranking de «Lo más descargado»: el número primero y el estado a su lado */
 html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .thumb-wrap::after {
-  top: 10px !important; left: 10px !important;
-  width: 30px !important; height: 24px !important;
+  top: 12px !important; left: 12px !important;
+  width: 30px !important; height: 26px !important;
   border-radius: 999px !important; border: 0 !important;
   background: #39FF88 !important; color: #05070C !important;
-  font: 500 12px/24px 'DM Mono', ui-monospace, monospace !important;
+  font: 500 12px/26px 'DM Mono', ui-monospace, monospace !important;
   box-shadow: none !important; z-index: 5 !important;
 }
-html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .tile-status { left: 46px !important; }
+html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .tile-status { left: 48px !important; }
+/* Card ancha (escritorio y filas grandes): medidas de la maqueta */
+@container (min-width: 240px) {
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info { padding: 64px 16px 16px !important; gap: 8px !important; }
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat { font-size: 11px !important; }
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-title { font-size: 19px !important; }
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta { font-size: 13px !important; gap: 8px !important; }
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; flex-basis: 22px !important; line-height: 22px !important; font-size: 11px !important; }
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status { top: 14px !important; left: 14px !important; height: 28px !important; padding: 0 11px !important; font-size: 12px !important; }
+  html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick { top: 10px !important; right: 10px !important; width: 44px !important; height: 44px !important; }
+}
 
-/* ─────────────────────────────────────────────
-   A · INMERSIVA — ficha abierta (base, ambos modos)
-   ───────────────────────────────────────────── */
-html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-cat {
+/* ═════════════════════════════════════════════
+   A · INMERSIVA — card abierta (modo oscuro)
+   ═════════════════════════════════════════════ */
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda { background: #0A0D14 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-amb { display: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-media { aspect-ratio: auto !important; height: clamp(240px, 42vh, 380px) !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-media :is(img, video) { -webkit-mask-image: none !important; mask-image: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-media-overlay { background: linear-gradient(180deg, rgba(5,7,12,.45) 0, transparent 30%) !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .ds-car-dots { bottom: 44px !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda > .sheet-close {
+  top: 18px !important; right: 18px !important;
+  width: 44px !important; height: 44px !important;
+  background: rgba(5,7,12,.5) !important; border: 0 !important; color: #FFFFFF !important;
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-scroll {
+  position: relative !important; z-index: 2 !important;
+  margin-top: -30px !important;
+  padding: 24px 22px 40px !important;
+  background: #0A0D14 !important;
+  border-radius: 28px 28px 0 0 !important;
+  gap: 18px !important;
+}
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .sheet-scroll { padding-bottom: 120px !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-header { margin: 0 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-title-area { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-cat {
   font-family: 'DM Mono', ui-monospace, monospace !important;
   font-size: 11px !important; font-weight: 500 !important;
   letter-spacing: .12em !important; text-transform: uppercase !important;
-  color: var(--tj-acc, #39FF88) !important;
-  margin-bottom: 6px !important;
+  color: var(--tj-acc, #39FF88) !important; margin: 0 !important;
 }
-html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-title {
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-title {
   font-family: Inter, system-ui, sans-serif !important;
-  font-weight: 800 !important;
-  letter-spacing: -.025em !important;
+  font-size: clamp(26px, 6.6vw, 34px) !important; font-weight: 800 !important;
+  line-height: 1.12 !important; letter-spacing: -.02em !important;
+  color: var(--tj-tit, #F2F4F8) !important; text-shadow: none !important; margin: 0 !important;
 }
-/* Acciones: cuadrícula de 4 con icono arriba y etiqueta debajo */
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-author .author-avatar { width: 40px !important; height: 40px !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .author-name { font-size: 15px !important; font-weight: 700 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-perfil {
+  height: 36px !important; padding: 0 14px !important;
+  border-radius: 999px !important; border: 1px solid rgba(255,255,255,.16) !important;
+  background: transparent !important; box-shadow: none !important;
+  color: #F2F4F8 !important; font-size: 13px !important; font-weight: 600 !important;
+}
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats {
+  display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 10px !important;
+  margin: 0 !important; padding: 14px 0 !important;
+  border-top: 1px solid rgba(255,255,255,.08) !important; border-bottom: 1px solid rgba(255,255,255,.08) !important;
+}
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats div { border: 0 !important; text-align: left !important; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats b { font-family: Inter, system-ui, sans-serif !important; font-size: 18px !important; font-weight: 800 !important; padding: 0 !important; color: #F2F4F8 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats span { font-size: 12px !important; font-weight: 500 !important; color: #8A93A3 !important; }
+/* La descarga vive en la barra fija: el panel del medio sobra */
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .dst-panel { display: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-nota { margin: -6px 0 0 !important; text-align: left !important; font-size: 12.5px !important; color: #8A93A3 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { font-size: 15px !important; line-height: 1.55 !important; color: #C9CFDA !important; margin: 0 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc::before { content: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .ds-ask-nexus { display: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda { order: 3 !important; display: flex !important; flex-direction: column !important; gap: 16px !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { order: 4 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-actions { order: 5 !important; }
+/* Barra fija: ✦ Nexus + descarga */
+.ds-dock { display: none; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .ds-dock {
+  display: flex; gap: 10px;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  padding: 16px 18px calc(22px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, #0A0D14 70%, rgba(10,13,20,0));
+}
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .ds-dock .ds-dock-nx {
+  width: 56px; height: 56px; flex: 0 0 56px;
+  border-radius: 18px; border: 1px solid rgba(57,255,136,.4);
+  background: rgba(57,255,136,.08); color: #39FF88;
+  font-size: 20px; line-height: 1; cursor: pointer; padding: 0;
+}
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .ds-dock .ds-dock-nx:focus-visible { outline: 2px solid #39FF88; outline-offset: 2px; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download {
+  flex: 1 1 auto !important; width: auto !important; min-width: 0 !important;
+  height: 56px !important; margin: 0 !important; padding: 0 16px !important;
+  display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important;
+  border-radius: 18px !important; border: 0 !important;
+  background: #39FF88 !important; color: #05070C !important;
+  font: 700 16px/1 Inter, system-ui, sans-serif !important;
+  letter-spacing: 0 !important; text-transform: none !important; text-decoration: none !important;
+  box-shadow: none !important; clip-path: none !important; animation: none !important;
+}
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download::before, html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download::after { display: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download ion-icon { font-size: 20px !important; color: inherit !important; }
+
+/* Acciones en cuadrícula de 4 (ambos modos) */
 html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 8px !important;
-  margin: 18px 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
+  display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important; margin: 0 !important; padding: 0 !important; overflow: visible !important;
 }
 html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important; justify-content: center !important;
-  gap: 6px !important;
-  width: auto !important; min-width: 0 !important;
-  min-height: 68px !important; height: auto !important;
+  display: flex !important; flex-direction: column !important;
+  align-items: center !important; justify-content: center !important; gap: 6px !important;
+  width: auto !important; min-width: 0 !important; min-height: 66px !important; height: auto !important;
   padding: 10px 4px !important; margin: 0 !important;
-  border-radius: 16px !important;
-  border: 0 !important;
-  background: rgba(255,255,255,.06) !important;
-  box-shadow: none !important;
+  border-radius: 16px !important; border: 0 !important;
+  background: rgba(255,255,255,.06) !important; box-shadow: none !important; clip-path: none !important;
   color: #F2F4F8 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: 12px !important; font-weight: 600 !important; line-height: 1.2 !important;
+  font-family: Inter, system-ui, sans-serif !important; font-size: 12px !important; font-weight: 600 !important; line-height: 1.2 !important;
   text-align: center !important; white-space: normal !important;
-  clip-path: none !important;
 }
 html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill ion-icon { font-size: 20px !important; margin: 0 !important; color: inherit !important; }
-html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill.active,
-html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill.on { color: #FF5C7A !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill.fav-active { color: #FF5C7A !important; }
+#ds-icono { display: none; }
 
-/* ─────────────────────────────────────────────
+/* ═════════════════════════════════════════════
    C · TIENDA — modo claro del inicio
-   La cabecera y la barra inferior flotantes se quedan oscuras
-   (son el «marco» de la marca y el logo es verde).
-   ───────────────────────────────────────────── */
+   ═════════════════════════════════════════════ */
 html[data-modo="claro"] body.lv-discovery.lv-home {
   background: #EEF0F3 !important;
   color: #12151A;
@@ -290,86 +333,101 @@ html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-h .ugc-eyebrow { 
 html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-dots button { background: rgba(18,21,26,.2) !important; }
 html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-dots button.on { background: #15803D !important; }
 
-/* C · cards cerradas */
+/* C · card cerrada */
 html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) {
   aspect-ratio: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  padding: 8px !important;
+  display: flex !important; flex-direction: column !important; gap: 12px !important;
+  padding: 10px !important;
   background: #FFFFFF !important;
-  border-radius: 22px !important;
-  box-shadow: 0 1px 2px rgba(18,21,26,.06), 0 10px 24px -14px rgba(18,21,26,.28) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 1px 2px rgba(18,21,26,.06), 0 12px 28px -16px rgba(18,21,26,.22) !important;
   color: #12151A;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap {
-  position: relative !important;
-  inset: auto !important;
-  width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 16 / 11 !important;
-  border-radius: 15px !important;
-  overflow: hidden !important;
-  background: #E6E8EC !important;
-  flex: 0 0 auto;
-}
 html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) { aspect-ratio: auto !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .thumb-wrap { aspect-ratio: 4 / 5 !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info {
-  position: relative !important;
-  inset: auto !important;
-  flex: 1 1 auto !important;
-  gap: 4px !important;
-  padding: 10px 4px 4px !important;
-  background: none !important;
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap {
+  position: relative !important; inset: auto !important;
+  width: 100% !important; height: auto !important; aspect-ratio: 16 / 10 !important;
+  border-radius: 16px !important; overflow: hidden !important;
+  background: #E6E8EC !important; flex: 0 0 auto;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cta {
-  display: inline-flex;
-  position: absolute; top: 7px; right: 2px;
-  align-items: center;
-  height: 24px; padding: 0 10px;
-  border-radius: 999px;
-  background: #E6F4EA; color: #166534;
-  font: 800 11.5px/1 Inter, system-ui, sans-serif;
-  pointer-events: none;
-}
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat {
-  font: 700 10.5px/1.25 Inter, system-ui, sans-serif !important;
-  letter-spacing: .06em !important;
-  color: #15803D !important;
-  padding-right: 72px;
-  min-height: 24px; display: flex !important; align-items: center;
-}
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-title { color: #12151A !important; font-size: 14.5px !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta { color: #5B6371 !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-avatar {
-  border-radius: 7px !important;
-  background: #12151A !important; color: #FFFFFF !important;
-}
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status {
-  background: rgba(255,255,255,.92) !important;
-  color: #12151A !important;
-  -webkit-backdrop-filter: none; backdrop-filter: none;
-}
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.online .tile-status-dot { background: #15803D !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.revision .tile-status-dot { background: #B45309 !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status:not(.online):not(.revision) .tile-status-dot { background: #C2410C !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status { display: none !important; }
 html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick {
-  background: rgba(255,255,255,.92) !important;
-  color: #12151A !important;
+  top: 8px !important; right: 8px !important;
+  background: rgba(255,255,255,.92) !important; color: #12151A !important;
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick.active { color: #E11D48 !important; }
-/* Diseño de creador en claro: queda su anillo de color; fuera los efectos de fondo y brillos */
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .thumb-wrap::after { top: 10px !important; left: 10px !important; background: #FFFFFF !important; color: #12151A !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info {
+  position: relative !important; inset: auto !important;
+  display: grid !important;
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+  grid-template-areas: "icon body" "cta cta" !important;
+  column-gap: 10px !important; row-gap: 10px !important; align-items: center !important;
+  padding: 0 4px 4px !important;
+  background: none !important; flex: 1 1 auto !important;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-icon {
+  grid-area: icon; align-self: start;
+  display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--tile-ic, #334155); color: #FFFFFF;
+  font: 800 14px/1 Inter, system-ui, sans-serif;
+}
+.game-tile--mod { --tile-ic: #1E3A5F; }
+.game-tile--juego { --tile-ic: #5B2E72; }
+.game-tile--apps { --tile-ic: #16605F; }
+.game-tile--ajustes { --tile-ic: #9A3412; }
+.game-tile--optimizacion { --tile-ic: #1F6B45; }
+.game-tile--software { --tile-ic: #8A5320; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-body { grid-area: body; display: flex !important; flex-direction: column; gap: 3px; min-width: 0; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) :is(.tile-cat, .tile-extras) { display: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-title {
+  font-size: 14px !important; line-height: 1.25 !important; color: #12151A !important;
+  -webkit-line-clamp: 2 !important; text-shadow: none !important;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-sub {
+  display: block;
+  font: 500 12px/1.3 Inter, system-ui, sans-serif; color: #5B6371;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta { margin: 0 !important; gap: 8px !important; font: 600 11.5px/1.3 Inter, system-ui, sans-serif !important; color: #4A515D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) :is(.tile-avatar, .tile-user) { display: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-st { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; color: #C2410C !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-st i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-st.online { color: #15803D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-st.revision { color: #B45309 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta { overflow: hidden; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) :is(.tile-downloads, .ugrs-tile-star) { display: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cta {
+  grid-area: cta;
+  display: flex; align-items: center; justify-content: center;
+  height: 34px; padding: 0 16px; border-radius: 999px;
+  background: #E6F4EA; color: #15803D;
+  font: 800 13px/1 Inter, system-ui, sans-serif;
+  pointer-events: none;
+}
+@container (min-width: 320px) {
+  html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info {
+    grid-template-columns: 46px minmax(0, 1fr) auto !important;
+    grid-template-areas: "icon body cta" !important;
+    column-gap: 12px !important; padding: 0 6px 6px !important;
+  }
+  html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-icon { width: 46px; height: 46px; border-radius: 13px; font-size: 17px; align-self: center; }
+  html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-title { font-size: 15px !important; -webkit-line-clamp: 1 !important; }
+  html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-sub { font-size: 13px; }
+  html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cta { height: 36px; font-size: 14px; }
+}
+/* Diseño de creador en claro: queda su anillo de color; fuera efectos de fondo y brillos */
 html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) > .ugs-tj-fx,
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video)::after { display: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video)::after,
 html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) .tile-info::after { display: none !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) :is(.tile-title, .tile-cat) { text-shadow: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) :is(.tile-title, .tile-cat) { text-shadow: none !important; text-transform: none !important; font-style: normal !important; }
 html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) .thumb-wrap img { filter: none !important; }
 
-/* ─────────────────────────────────────────────
-   C · TIENDA — ficha abierta en modo claro
-   (con diseño de creador conserva su efecto sobre la imagen y su franja)
-   ───────────────────────────────────────────── */
+/* ═════════════════════════════════════════════
+   C · TIENDA — card abierta (modo claro)
+   ═════════════════════════════════════════════ */
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda {
   --txt: #12151A;
   --txt2: #4A515D;
@@ -466,6 +524,68 @@ html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-col-chip.a
 /* Nexus «¿Funciona en mi celular?» */
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .nxc-bar { background: rgba(18,21,26,.08) !important; }
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .nxc-aj b { color: #6D28D9 !important; }
+
+/* Página de producto: icono + título + autor arriba, datos, Obtener, capturas */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda > .sheet-close {
+  top: 22px !important; left: 18px !important; right: auto !important;
+  width: 44px !important; height: 44px !important;
+  background: #F1F3F5 !important; color: #12151A !important; border: 0 !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-handle { background: #D1D5DB !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-scroll {
+  display: grid !important;
+  grid-template-columns: 84px minmax(0, 1fr) !important;
+  column-gap: 14px !important; row-gap: 0 !important; align-content: start !important;
+  margin-top: 0 !important;
+  padding: 82px 22px 40px !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-scroll > * { grid-column: 1 / -1; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-header { display: contents !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-icono {
+  display: block; grid-column: 1; grid-row: 1 / span 2;
+  width: 84px; height: 84px; border-radius: 22px; object-fit: cover;
+  background: #E6E8EC; box-shadow: inset 0 0 0 1px rgba(18,21,26,.06);
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-title-area { grid-column: 2; grid-row: 1; align-self: end; display: block !important; min-width: 0; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-cat { display: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-title {
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 22px !important; font-weight: 800 !important; line-height: 1.15 !important; letter-spacing: -.02em !important;
+  margin: 0 !important;
+  display: -webkit-box !important; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author { grid-column: 2; grid-row: 2; align-self: start; margin: 4px 0 0 !important; padding: 0 !important; background: none !important; border: 0 !important; min-width: 0; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author .author-avatar { display: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author :is(.author-name, .an-n) { font-size: 14px !important; font-weight: 600 !important; color: #15803D !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author .v6-perfil { display: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda { order: 3 !important; margin-top: 18px !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats { margin: 0 0 16px !important; padding: 12px 0 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats b { font-size: 16px !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats span { font-size: 11px !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda #ds-download { height: 54px !important; border-radius: 16px !important; font-size: 16px !important; font-weight: 800 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .dst-fav { width: 54px !important; height: 54px !important; border-radius: 16px !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-status { order: 4 !important; }
+/* Capturas en tira, con la siguiente asomando */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media {
+  order: 5 !important; position: relative !important;
+  height: 200px !important; aspect-ratio: auto !important;
+  margin: 22px -22px 0 0 !important; padding: 0 !important;
+  border-radius: 0 !important; background: none !important; overflow: visible !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media :is(img, video) { -webkit-mask-image: none !important; mask-image: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media > :is(#ds-media-img, #ds-media-vid, #ds-yt-iframe, #ds-injected-vid) { border-radius: 16px !important; width: calc(100% - 22px) !important; height: 100% !important; object-fit: cover; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media-overlay, html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-car-dots { display: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-car { gap: 10px; scroll-padding-left: 0; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-slide { flex: 0 0 78% !important; border-radius: 16px; overflow: hidden; scroll-snap-align: start !important; background: #E6E8EC; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-slide > :is(img, video) { width: 100%; height: 100%; object-fit: cover; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { order: 6 !important; margin-top: 22px !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-desc::before { content: 'Sobre esta publicación' !important; font-size: 17px !important; margin: 0 0 6px !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-serie { order: 7 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-guia { order: 8 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-ask-nexus { order: 9 !important; margin-top: 18px !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-compat { order: 10 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-actions { order: 11 !important; margin-top: 18px !important; }
 
 @media (prefers-reduced-motion: reduce) {
   html[data-modo] body.lv-discovery.lv-home #output .game-tile .thumb-wrap :is(img, video) { transition: none !important; transform: none !important; }

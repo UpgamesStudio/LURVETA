@@ -478,6 +478,7 @@ function createTile(item, isFeatured=false) {
   const tituloT = item.serieInfo?.base || item.title;
   const isOnline = ls==='online';
   const statusLabel = ls==='online'?'Online':ls==='revision'?'Revisión':'Caído';
+  const inicialT = (String(tituloT || '').match(/[\p{L}\p{N}]/u) || ['•'])[0].toUpperCase();   // icono de la card en modo claro
   const cat = item.category || 'General';
   const isVideo = cat === 'Video';
 
@@ -567,17 +568,22 @@ function createTile(item, isFeatured=false) {
 
       </div>
       <div class="tile-info">
-        <span class="tile-cta" aria-hidden="true">Obtener</span>
+        <span class="tile-icon" aria-hidden="true">${escH(inicialT)}</span>
+        <div class="tile-body">
         <div class="tile-cat">${catLabel(cat)}${item.promocionado ? ' <span class="tile-promo" title="Su autor pagó para destacarla">Promocionado</span>' : ''}</div>
         ${extrasFila}
         <div class="tile-title">${escH(tituloT)}</div>
+        <div class="tile-sub">${escH(catLabel(cat))} · @${escH(item.usuario||'Cloud')}</div>
         <div class="tile-meta">
+          <span class="tile-st ${ls}" aria-hidden="true"><i></i>${statusLabel}</span>
           <div class="tile-avatar">${avatarLetter(item.usuario)}</div>
           <div class="tile-user">@${escH(item.usuario||'Cloud')}</div>
           ${dl?`<div class="tile-dl-count" title="${dl} descargas"><ion-icon name="cloud-download-outline"></ion-icon>${fmt(dl)}</div>`:''}
           ${lk?`<div class="tile-downloads"><ion-icon name="heart"></ion-icon>${fmt(lk)}</div>`:''}
           ${window.UGR?.estrellasTile(item)||''}
         </div>
+        </div>
+        <span class="tile-cta" aria-hidden="true">Obtener</span>
       </div>`;
   }
 
@@ -1535,7 +1541,40 @@ function fichaTienda(item, ls, isVideoItem) {
   ].filter(Boolean);
   document.getElementById('dst-chips').innerHTML = chips.join('');
   sheet.classList.toggle('dst-aviso', ls !== 'online' && !isVideoItem);   // en revisión o caído, el aviso grande sigue visible
+  // Icono de la publicación (cabecera estilo tienda del modo claro)
+  const ico = document.getElementById('ds-icono');
+  if (ico) {
+    const m = item.image || '';
+    ico.src = isYouTubeUrl(m) ? getYouTubeThumbnail(m) : ugEsVideoArchivo(m) ? (ugVideoThumb(m) || window.UG_PH) : (m ? cldOpt(m, 'c_fill,w_168,h_168,g_auto,q_auto,f_auto') : window.UG_PH);
+  }
+  sheet.dataset.video = isVideoItem ? '1' : '';
+  fichaModo();
 }
+
+// ── Estructura de la ficha según el modo (estilos en lurveta-cards.css) ────
+//    Oscuro (A): portada arriba, panel que sube sobre ella y barra fija con ✦ Nexus + descarga.
+//    Claro  (C): cabecera tipo tienda (icono, título, autor), datos, «Obtener» y las capturas debajo.
+function fichaModo() {
+  const sheet = document.getElementById('detail-sheet'), scroll = sheet?.querySelector('.sheet-scroll'), media = sheet?.querySelector('.sheet-media');
+  if (!sheet || !scroll || !media) return;
+  const claro = document.documentElement.dataset.modo === 'claro';
+  if (claro) { if (media.parentNode !== scroll) scroll.appendChild(media); }
+  else if (media.parentNode !== sheet) sheet.insertBefore(media, scroll);
+  let dock = document.getElementById('ds-dock');
+  if (!dock) {
+    dock = document.createElement('div'); dock.id = 'ds-dock'; dock.className = 'ds-dock';
+    dock.innerHTML = '<button type="button" class="ds-dock-nx" aria-label="Pregúntale a Nexus">✦</button>';
+    dock.firstChild.onclick = () => document.getElementById('ds-btn-nexus')?.click();
+    sheet.appendChild(dock);
+  }
+  const dl = document.getElementById('ds-download'), acc = document.getElementById('dst-acc');
+  if (dl && acc) {
+    if (!claro) { if (dl.parentNode !== dock) dock.appendChild(dl); }
+    else if (dl.parentNode !== acc) acc.insertBefore(dl, acc.firstChild);
+  }
+  sheet.classList.toggle('ds-con-dock', !claro && sheet.dataset.video !== '1');
+}
+window.addEventListener('ug:modo', fichaModo);
 
 // ── Ficha v6: portada que se funde con un brillo de su color, fila de 4 datos,
 //    «Ver perfil» junto al autor y la nota de la página puente bajo el botón ─────
@@ -1662,7 +1701,8 @@ function ugCarruselFicha(medias) {
   const slides = [...pista.children], botones = [...puntos.children];
   let actual = -1;
   const mostrar = () => {
-    const k = Math.round(pista.scrollLeft / (pista.clientWidth || 1));
+    const paso = slides[1] ? slides[1].offsetLeft - slides[0].offsetLeft : (pista.clientWidth || 1);
+    const k = Math.min(slides.length - 1, Math.round(pista.scrollLeft / (paso || 1)));
     if (k === actual) return; actual = k;
     botones.forEach((b, i) => b.classList.toggle('on', i === k));
     slides.forEach((s, i) => {
@@ -1672,7 +1712,7 @@ function ugCarruselFicha(medias) {
     sheet.classList.toggle('ds-media-video', !!slides[k]?._html);
   };
   pista.addEventListener('scroll', mostrar, { passive: true });
-  botones.forEach((b, i) => b.onclick = () => pista.scrollTo({ left: i * pista.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+  botones.forEach((b, i) => b.onclick = () => pista.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
   pista.addEventListener('click', e => {
     const s = e.target.closest('.ds-car-play')?.closest('.ds-slide'); if (!s) return;
     s._html = s.innerHTML;
