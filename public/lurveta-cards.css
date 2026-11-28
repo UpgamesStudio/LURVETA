@@ -8,8 +8,10 @@
      tarjeta blanca, imagen con margen, datos debajo y pastilla «Obtener».
    El modo lo pone upgames-tema.js antes de pintar (localStorage 'ug_modo').
    Solo toca las cards del inicio (#output con body.lv-home) y la ficha
-   (#detail-sheet). Los diseños de tarjeta de los creadores (.ugs-t /
-   .ugs-tema) conservan sus colores y siguen oscuros en el modo claro.
+   (#detail-sheet). Diseños de tarjeta de los creadores (.ugs-t / .ugs-tema):
+   en oscuro conservan anillo, efectos y colores; en claro la tarjeta es
+   blanca y conserva el anillo con sus colores (los efectos de fondo, hechos
+   para fondo oscuro, se ocultan para que el texto se lea).
    ═══════════════════════════════════════════════════════════════ */
 
 /* La pastilla «Obtener» solo existe visualmente en el modo claro del inicio */
@@ -288,8 +290,8 @@ html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-h .ugc-eyebrow { 
 html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-dots button { background: rgba(18,21,26,.2) !important; }
 html[data-modo="claro"] body.lv-discovery.lv-home #output .ugc-dots button.on { background: #15803D !important; }
 
-/* C · cards cerradas (las de diseño de creador se quedan oscuras, estilo A) */
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) {
+/* C · cards cerradas */
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) {
   aspect-ratio: auto !important;
   display: flex !important;
   flex-direction: column !important;
@@ -299,7 +301,7 @@ html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-t
   box-shadow: 0 1px 2px rgba(18,21,26,.06), 0 10px 24px -14px rgba(18,21,26,.28) !important;
   color: #12151A;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .thumb-wrap {
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .thumb-wrap {
   position: relative !important;
   inset: auto !important;
   width: 100% !important;
@@ -310,8 +312,9 @@ html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-t
   background: #E6E8EC !important;
   flex: 0 0 auto;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video):not(.ugs-t) .thumb-wrap { aspect-ratio: 4 / 5 !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-info {
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) { aspect-ratio: auto !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(.game-tile--video) .thumb-wrap { aspect-ratio: 4 / 5 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-info {
   position: relative !important;
   inset: auto !important;
   flex: 1 1 auto !important;
@@ -319,7 +322,7 @@ html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-t
   padding: 10px 4px 4px !important;
   background: none !important;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-cta {
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cta {
   display: inline-flex;
   position: absolute; top: 7px; right: 2px;
   align-items: center;
@@ -329,39 +332,45 @@ html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-t
   font: 800 11.5px/1 Inter, system-ui, sans-serif;
   pointer-events: none;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-cat {
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-cat {
   font: 700 10.5px/1.25 Inter, system-ui, sans-serif !important;
   letter-spacing: .06em !important;
   color: #15803D !important;
   padding-right: 72px;
   min-height: 24px; display: flex !important; align-items: center;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-title { color: #12151A !important; font-size: 14.5px !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-meta { color: #5B6371 !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-avatar {
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-title { color: #12151A !important; font-size: 14.5px !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-meta { color: #5B6371 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-avatar {
   border-radius: 7px !important;
   background: #12151A !important; color: #FFFFFF !important;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status {
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status {
   background: rgba(255,255,255,.92) !important;
   color: #12151A !important;
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status.online .tile-status-dot { background: #15803D !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status.revision .tile-status-dot { background: #B45309 !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-status:not(.online):not(.revision) .tile-status-dot { background: #C2410C !important; }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-fav-quick {
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.online .tile-status-dot { background: #15803D !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status.revision .tile-status-dot { background: #B45309 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status:not(.online):not(.revision) .tile-status-dot { background: #C2410C !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick {
   background: rgba(255,255,255,.92) !important;
   color: #12151A !important;
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
-html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video):not(.ugs-t) .tile-fav-quick.active { color: #E11D48 !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick.active { color: #E11D48 !important; }
+/* Diseño de creador en claro: queda su anillo de color; fuera los efectos de fondo y brillos */
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) > .ugs-tj-fx,
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video)::after { display: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) .tile-info::after { display: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) :is(.tile-title, .tile-cat) { text-shadow: none !important; }
+html[data-modo="claro"] body.lv-discovery.lv-home #output .game-tile.ugs-t:not(.game-tile--video) .thumb-wrap img { filter: none !important; }
 
 /* ─────────────────────────────────────────────
    C · TIENDA — ficha abierta en modo claro
-   (una ficha con diseño de creador, .ugs-tema, se queda oscura)
+   (con diseño de creador conserva su efecto sobre la imagen y su franja)
    ───────────────────────────────────────────── */
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) {
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda {
   --txt: #12151A;
   --txt2: #4A515D;
   --txt3: #5B6371;
@@ -380,45 +389,83 @@ html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) {
   color: #12151A !important;
   border-color: rgba(18,21,26,.08) !important;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-amb { display: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-scroll { background: transparent !important; color: #12151A !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-cat { color: #15803D !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-title { color: #12151A !important; text-shadow: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.author-name, .an-n) { color: #12151A !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-perfil { background: #F1F3F5 !important; border-color: transparent !important; color: #12151A !important; box-shadow: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats { border-color: rgba(18,21,26,.1) !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats div { border-color: rgba(18,21,26,.1) !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats b { color: #12151A !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-stats span { color: #5B6371 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-tienda #ds-download {
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-amb { display: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-scroll { background: transparent !important; color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-cat { color: #15803D !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-title { color: #12151A !important; text-shadow: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda.ugs-tema { box-shadow: 0 -14px 50px -12px rgba(18,21,26,.25) !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda.ugs-tema .sheet-media > .ugs-tj-fx { display: none !important; }
+/* Su franja de 3 px cae justo donde el título pisa la imagen: en blanco parece tachado */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda.ugs-tema .sheet-media::after { display: none !important; }
+/* Insignias del autor (Fundador, Premium…): pensadas para fondo oscuro */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugs-ins span {
+  color: #3A414C !important;
+  background: #F1F3F5 !important;
+  border-color: #E3E6EA !important;
+}
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.author-name, .an-n) { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-perfil { background: #F1F3F5 !important; border-color: transparent !important; color: #12151A !important; box-shadow: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats { border-color: rgba(18,21,26,.1) !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats div { border-color: rgba(18,21,26,.1) !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats b { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats span { color: #5B6371 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda #ds-download {
   background: #15803D !important;
   color: #FFFFFF !important;
   box-shadow: none !important;
   border: 0 !important;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-tienda #ds-download ion-icon { color: #FFFFFF !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .dst-fav {
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda #ds-download ion-icon { color: #FFFFFF !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .dst-fav {
   background: #F1F3F5 !important; border: 0 !important; box-shadow: none !important;
   color: #12151A !important;
   -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .v6-nota { color: #5B6371 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-desc { color: #4A515D !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-desc::before { color: #12151A !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-actions .action-pill { background: #F1F3F5 !important; color: #12151A !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .sheet-actions .action-pill:is(.active, .on) { color: #E11D48 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.ucx, .nxc-btn, .ds-ask-nexus, .ugrs-caja, .comment-input-area) {
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-nota { color: #5B6371 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { color: #4A515D !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-desc::before { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill { background: #F1F3F5 !important; color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-actions .action-pill:is(.active, .on) { color: #E11D48 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.ucx, .nxc-btn, .ds-ask-nexus, .ugrs-caja, .comment-input-area) {
   background: #F4F5F7 !important;
   border-color: #E3E6EA !important;
   box-shadow: none !important;
   color: #12151A !important;
   -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.ucx-h b, .ds-ask-nexus b, .comments-section-title) { color: #12151A !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) :is(.ucx-h small, .ucx-p, .ds-ask-nexus small, .no-comments) { color: #5B6371 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) .ucx-btn { color: #15803D !important; border-color: rgba(21,128,61,.35) !important; background: #FFFFFF !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-comment-input { background: #FFFFFF !important; color: #12151A !important; border-color: #E3E6EA !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda:not(.ugs-tema) #ds-comment-input::placeholder { color: #6B7280 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.ucx-h b, .ds-ask-nexus b, .comments-section-title) { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.ucx-h small, .ucx-p, .ds-ask-nexus small, .no-comments) { color: #5B6371 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ucx-btn { color: #15803D !important; border-color: rgba(21,128,61,.35) !important; background: #FFFFFF !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-comment-input { background: #FFFFFF !important; color: #12151A !important; border-color: #E3E6EA !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-comment-input::placeholder { color: #6B7280 !important; }
+
+/* Reseñas (upgames-social.js): sus colores están escritos para fondo oscuro */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.ugrs-cargando, .ugrs-vacio, .ugrs-prom small, .ugrs-func small, .ugrs-cab small, .ugrs-nueva small) { color: #5B6371 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-tit small { background: rgba(180,83,9,.12) !important; color: #92400E !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.ugrs-prom b, .ugrs-col) { color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-est { color: #D97706 !important; text-shadow: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-fila { color: #4A515D !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-func.bien { background: #E6F4EA !important; color: #166534 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-func.medio { background: #FEF3C7 !important; color: #92400E !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-func.mal { background: #FFE4E8 !important; color: #9F1239 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-pick button { color: #D1D5DB !important; text-shadow: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-pick button:is(.on, .hover) { color: #D97706 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-funcq { color: #4A515D !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-funcq button { background: #FFFFFF !important; border-color: #D7DBE0 !important; color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-funcq button.on[data-f="1"] { background: #E6F4EA !important; border-color: #15803D !important; color: #166534 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-funcq button.on[data-f="0"] { background: #FFE4E8 !important; border-color: #E11D48 !important; color: #9F1239 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.ugrs-form textarea, .ugrs-in) { background: #FFFFFF !important; border-color: #D7DBE0 !important; color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda :is(.ugrs-form textarea, .ugrs-in)::placeholder { color: #6B7280 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-btn.sec { background: #F1F3F5 !important; border-color: #E3E6EA !important; color: #12151A !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-btn.peligro { color: #BE123C !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-item p { color: #3A414C !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-chip.si { background: #E6F4EA !important; color: #166534 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-chip.no { background: #FFE4E8 !important; color: #9F1239 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-col-chip { background: rgba(109,40,217,.08) !important; border-color: rgba(109,40,217,.3) !important; color: #5B21B6 !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-col-chip.add { background: transparent !important; color: #6D28D9 !important; }
+/* Nexus «¿Funciona en mi celular?» */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .nxc-bar { background: rgba(18,21,26,.08) !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .nxc-aj b { color: #6D28D9 !important; }
 
 @media (prefers-reduced-motion: reduce) {
   html[data-modo] body.lv-discovery.lv-home #output .game-tile .thumb-wrap :is(img, video) { transition: none !important; transform: none !important; }
