@@ -80,7 +80,7 @@ body.lp-body { margin: 0; background: var(--lp-bg); color: var(--lp-fg); font-fa
 .lp-hero-copy { flex: 1.2 1 540px; min-width: 0; display: flex; flex-direction: column; gap: 26px; }
 .lp-chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; padding: 7px 8px 7px 16px; border-radius: 999px; border: 1px solid var(--lp-line); background: rgba(255,255,255,.04); color: var(--lp-fg) !important; font-size: 14px; text-decoration: none; }
 .lp-chip b { flex: none; white-space: nowrap; padding: 4px 10px; border-radius: 999px; background: var(--lp-acc); color: var(--lp-acc-ink); font-weight: 700; font-size: 12.5px; }
-.lp-h1 { margin: 0; font-family: var(--lp-disp); font-size: clamp(46px, 6.6vw, 98px); line-height: .94; font-weight: 600; letter-spacing: -.06em; }
+.lp-h1 { margin: 0; font-family: var(--lp-disp); font-size: clamp(46px, 6vw, 88px); line-height: .94; font-weight: 600; letter-spacing: -.06em; }
 .lp-brillo { white-space: nowrap; background: linear-gradient(90deg, var(--lp-acc), #C8FFE5, var(--lp-acc)); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
 .lp-lead { margin: 0; font-size: clamp(17px, 1.6vw, 20px); line-height: 1.6; color: var(--lp-mu); max-width: 32em; }
 .lp-prueba { display: flex; align-items: center; gap: 14px; font-size: 14.5px; color: var(--lp-mu); line-height: 1.4; }
