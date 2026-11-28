@@ -467,34 +467,15 @@ function fichaTienda(item, ls, isVideoItem) {
     const m = item.image || '';
     ico.src = isYouTubeUrl(m) ? getYouTubeThumbnail(m) : ugEsVideoArchivo(m) ? (ugVideoThumb(m) || window.UG_PH) : (m ? cldOpt(m, 'c_fill,w_168,h_168,g_auto,q_auto,f_auto') : window.UG_PH);
   }
-  sheet.dataset.video = isVideoItem ? '1' : '';
   fichaModo();
 }
 
-// ── Estructura de la ficha según el modo (estilos en lurveta-cards.css) ────
-//    Oscuro (A): portada arriba, panel que sube sobre ella y barra fija con ✦ Nexus + descarga.
-//    Claro  (C): cabecera tipo tienda (icono, título, autor), datos, «Obtener» y las capturas debajo.
+// ── Ficha como página de producto (estilos en lurveta-cards.css, ambos modos):
+//    icono, título y autor arriba; datos y «Obtener»; las capturas van dentro de la ficha.
 function fichaModo() {
   const sheet = document.getElementById('detail-sheet'), scroll = sheet?.querySelector('.sheet-scroll'), media = sheet?.querySelector('.sheet-media');
-  if (!sheet || !scroll || !media) return;
-  const claro = document.documentElement.dataset.modo === 'claro';
-  if (claro) { if (media.parentNode !== scroll) scroll.appendChild(media); }
-  else if (media.parentNode !== sheet) sheet.insertBefore(media, scroll);
-  let dock = document.getElementById('ds-dock');
-  if (!dock) {
-    dock = document.createElement('div'); dock.id = 'ds-dock'; dock.className = 'ds-dock';
-    dock.innerHTML = '<button type="button" class="ds-dock-nx" aria-label="Pregúntale a Nexus">✦</button>';
-    dock.firstChild.onclick = () => document.getElementById('ds-btn-nexus')?.click();
-    sheet.appendChild(dock);
-  }
-  const dl = document.getElementById('ds-download'), acc = document.getElementById('dst-acc');
-  if (dl && acc) {
-    if (!claro) { if (dl.parentNode !== dock) dock.appendChild(dl); }
-    else if (dl.parentNode !== acc) acc.insertBefore(dl, acc.firstChild);
-  }
-  sheet.classList.toggle('ds-con-dock', !claro && sheet.dataset.video !== '1');
+  if (scroll && media && media.parentNode !== scroll) scroll.appendChild(media);
 }
-window.addEventListener('ug:modo', fichaModo);
 
 // ── Ficha v6: portada que se funde con un brillo de su color, fila de 4 datos,
 //    «Ver perfil» junto al autor y la nota de la página puente bajo el botón ─────

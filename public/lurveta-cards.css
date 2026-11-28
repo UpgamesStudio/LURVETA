@@ -5,15 +5,14 @@
    • Modo oscuro (html[data-modo="oscuro"]) → Diseño A «Inmersiva»
      Cerrada: portada a sangre 4:5; categoría, título y autor sobre un velo;
               estado y favorito en cristal.
-     Abierta: portada arriba, panel redondeado que sube sobre ella y barra
-              fija con ✦ Nexus + descarga (#ds-dock, lo crea fichaModo()).
+     Abierta: la misma página de producto que el modo claro, en oscuro.
    • Modo claro (html[data-modo="claro"]) → Diseño C «Tienda»
      Cerrada: tarjeta blanca, imagen con margen; icono + título +
               «Categoría · @autor» + estado; pastilla «Obtener».
      Abierta: cabecera de tienda (icono, título, autor), datos, «Obtener»,
               capturas en tira y «Sobre esta publicación».
    El modo lo pone upgames-tema.js antes de pintar (localStorage 'ug_modo');
-   la estructura de la ficha la ordena fichaModo() en js/04-ficha.js.
+   fichaModo() (js/04-ficha.js) mete las capturas dentro de la ficha.
    Solo toca las cards del inicio (#output con body.lv-home) y #detail-sheet.
    Diseños de tarjeta de creadores (.ugs-t / .ugs-tema): en oscuro conservan
    anillo, efectos y colores; en claro, la tarjeta es blanca con su anillo.
@@ -177,97 +176,6 @@ html[data-modo] body.lv-discovery.lv-home #output .ugx-fila--top .game-tile:not(
   html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-status { top: 14px !important; left: 14px !important; height: 28px !important; padding: 0 11px !important; font-size: 12px !important; }
   html[data-modo] body.lv-discovery.lv-home #output .game-tile:not(.game-tile--video) .tile-fav-quick { top: 10px !important; right: 10px !important; width: 44px !important; height: 44px !important; }
 }
-
-/* ═════════════════════════════════════════════
-   A · INMERSIVA — card abierta (modo oscuro)
-   ═════════════════════════════════════════════ */
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda { background: #0A0D14 !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-amb { display: none !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-media { aspect-ratio: auto !important; height: clamp(240px, 42vh, 380px) !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-media :is(img, video) { -webkit-mask-image: none !important; mask-image: none !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-media-overlay { background: linear-gradient(180deg, rgba(5,7,12,.45) 0, transparent 30%) !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .ds-car-dots { bottom: 44px !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda > .sheet-close {
-  top: 18px !important; right: 18px !important;
-  width: 44px !important; height: 44px !important;
-  background: rgba(5,7,12,.5) !important; border: 0 !important; color: #FFFFFF !important;
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-scroll {
-  position: relative !important; z-index: 2 !important;
-  margin-top: -30px !important;
-  padding: 24px 22px 40px !important;
-  background: #0A0D14 !important;
-  border-radius: 28px 28px 0 0 !important;
-  gap: 18px !important;
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .sheet-scroll { padding-bottom: 120px !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-header { margin: 0 !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-title-area { display: flex !important; flex-direction: column !important; gap: 8px !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-cat {
-  font-family: 'DM Mono', ui-monospace, monospace !important;
-  font-size: 11px !important; font-weight: 500 !important;
-  letter-spacing: .12em !important; text-transform: uppercase !important;
-  color: var(--tj-acc, #39FF88) !important; margin: 0 !important;
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-title {
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: clamp(26px, 6.6vw, 34px) !important; font-weight: 800 !important;
-  line-height: 1.12 !important; letter-spacing: -.02em !important;
-  color: var(--tj-tit, #F2F4F8) !important; text-shadow: none !important; margin: 0 !important;
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-author .author-avatar { width: 40px !important; height: 40px !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .author-name { font-size: 15px !important; font-weight: 700 !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-perfil {
-  height: 36px !important; padding: 0 14px !important;
-  border-radius: 999px !important; border: 1px solid rgba(255,255,255,.16) !important;
-  background: transparent !important; box-shadow: none !important;
-  color: #F2F4F8 !important; font-size: 13px !important; font-weight: 600 !important;
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats {
-  display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 10px !important;
-  margin: 0 !important; padding: 14px 0 !important;
-  border-top: 1px solid rgba(255,255,255,.08) !important; border-bottom: 1px solid rgba(255,255,255,.08) !important;
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats div { border: 0 !important; text-align: left !important; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats b { font-family: Inter, system-ui, sans-serif !important; font-size: 18px !important; font-weight: 800 !important; padding: 0 !important; color: #F2F4F8 !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats span { font-size: 12px !important; font-weight: 500 !important; color: #8A93A3 !important; }
-/* La descarga vive en la barra fija: el panel del medio sobra */
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .dst-panel { display: none !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-nota { margin: -6px 0 0 !important; text-align: left !important; font-size: 12.5px !important; color: #8A93A3 !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { font-size: 15px !important; line-height: 1.55 !important; color: #C9CFDA !important; margin: 0 !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc::before { content: none !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .ds-ask-nexus { display: none !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda { order: 3 !important; display: flex !important; flex-direction: column !important; gap: 16px !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { order: 4 !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-actions { order: 5 !important; }
-/* Barra fija: ✦ Nexus + descarga */
-.ds-dock { display: none; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda.ds-con-dock .ds-dock {
-  display: flex; gap: 10px;
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
-  padding: 16px 18px calc(22px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(to top, #0A0D14 70%, rgba(10,13,20,0));
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .ds-dock .ds-dock-nx {
-  width: 56px; height: 56px; flex: 0 0 56px;
-  border-radius: 18px; border: 1px solid rgba(57,255,136,.4);
-  background: rgba(57,255,136,.08); color: #39FF88;
-  font-size: 20px; line-height: 1; cursor: pointer; padding: 0;
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .ds-dock .ds-dock-nx:focus-visible { outline: 2px solid #39FF88; outline-offset: 2px; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download {
-  flex: 1 1 auto !important; width: auto !important; min-width: 0 !important;
-  height: 56px !important; margin: 0 !important; padding: 0 16px !important;
-  display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important;
-  border-radius: 18px !important; border: 0 !important;
-  background: #39FF88 !important; color: #05070C !important;
-  font: 700 16px/1 Inter, system-ui, sans-serif !important;
-  letter-spacing: 0 !important; text-transform: none !important; text-decoration: none !important;
-  box-shadow: none !important; clip-path: none !important; animation: none !important;
-}
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download::before, html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download::after { display: none !important; }
-html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-dock #ds-download ion-icon { font-size: 20px !important; color: inherit !important; }
 
 /* Acciones en cuadrícula de 4 (ambos modos) */
 html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions {
@@ -521,71 +429,96 @@ html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-chip.si { 
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-chip.no { background: #FFE4E8 !important; color: #9F1239 !important; }
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-col-chip { background: rgba(109,40,217,.08) !important; border-color: rgba(109,40,217,.3) !important; color: #5B21B6 !important; }
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugrs-col-chip.add { background: transparent !important; color: #6D28D9 !important; }
+/* «Apoyar a @autor» (upgames-extras.js): ámbar legible sobre blanco */
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugx-apoyar { background: #FEF3C7 !important; border-color: #FCD34D !important; box-shadow: none !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugx-apoyar b { color: #92400E !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugx-apoyar small { color: #57534E !important; }
+html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ugx-apoyar ion-icon { color: #92400E !important; }
 /* Nexus «¿Funciona en mi celular?» */
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .nxc-bar { background: rgba(18,21,26,.08) !important; }
 html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .nxc-aj b { color: #6D28D9 !important; }
 
-/* Página de producto: icono + título + autor arriba, datos, Obtener, capturas */
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda > .sheet-close {
+/* Página de producto (ambos modos; colores del claro, el oscuro los cambia abajo): icono + título + autor arriba, datos, Obtener, capturas */
+html[data-modo][data-tema] body #detail-sheet.ds-tienda > .sheet-close {
   top: 22px !important; left: 18px !important; right: auto !important;
   width: 44px !important; height: 44px !important;
   background: #F1F3F5 !important; color: #12151A !important; border: 0 !important;
   -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-handle { background: #D1D5DB !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-scroll {
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-handle { background: #D1D5DB !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-scroll {
   display: grid !important;
   grid-template-columns: 84px minmax(0, 1fr) !important;
   column-gap: 14px !important; row-gap: 0 !important; align-content: start !important;
   margin-top: 0 !important;
   padding: 82px 22px 40px !important;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-scroll > * { grid-column: 1 / -1; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-header { display: contents !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-icono {
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-scroll > * { grid-column: 1 / -1; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-header { display: contents !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-icono {
   display: block; grid-column: 1; grid-row: 1 / span 2;
   width: 84px; height: 84px; border-radius: 22px; object-fit: cover;
   background: #E6E8EC; box-shadow: inset 0 0 0 1px rgba(18,21,26,.06);
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-title-area { grid-column: 2; grid-row: 1; align-self: end; display: block !important; min-width: 0; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-cat { display: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-title {
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-title-area { grid-column: 2; grid-row: 1; align-self: end; display: block !important; min-width: 0; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-cat { display: none !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-title {
   font-family: Inter, system-ui, sans-serif !important;
   font-size: 22px !important; font-weight: 800 !important; line-height: 1.15 !important; letter-spacing: -.02em !important;
   margin: 0 !important;
   display: -webkit-box !important; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author { grid-column: 2; grid-row: 2; align-self: start; margin: 4px 0 0 !important; padding: 0 !important; background: none !important; border: 0 !important; min-width: 0; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author .author-avatar { display: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author :is(.author-name, .an-n) { font-size: 14px !important; font-weight: 600 !important; color: #15803D !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-author .v6-perfil { display: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda { order: 3 !important; margin-top: 18px !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats { margin: 0 0 16px !important; padding: 12px 0 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats b { font-size: 16px !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .v6-stats span { font-size: 11px !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda #ds-download { height: 54px !important; border-radius: 16px !important; font-size: 16px !important; font-weight: 800 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .dst-fav { width: 54px !important; height: 54px !important; border-radius: 16px !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-status { order: 4 !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-author { grid-column: 2; grid-row: 2; align-self: start; margin: 4px 0 0 !important; padding: 0 !important; background: none !important; border: 0 !important; min-width: 0; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-author .author-avatar { display: none !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-author :is(.author-name, .an-n) { font-size: 14px !important; font-weight: 600 !important; color: #15803D !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-author .v6-perfil { display: none !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-tienda { order: 3 !important; margin-top: 18px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .v6-stats { margin: 0 0 16px !important; padding: 12px 0 !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .v6-stats b { font-size: 16px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .v6-stats span { font-size: 11px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-tienda #ds-download { height: 54px !important; border-radius: 16px !important; font-size: 16px !important; font-weight: 800 !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .dst-fav { width: 54px !important; height: 54px !important; border-radius: 16px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-status { order: 4 !important; }
 /* Capturas en tira, con la siguiente asomando */
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media {
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-media {
   order: 5 !important; position: relative !important;
   height: 200px !important; aspect-ratio: auto !important;
   margin: 22px -22px 0 0 !important; padding: 0 !important;
   border-radius: 0 !important; background: none !important; overflow: visible !important;
 }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media :is(img, video) { -webkit-mask-image: none !important; mask-image: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media > :is(#ds-media-img, #ds-media-vid, #ds-yt-iframe, #ds-injected-vid) { border-radius: 16px !important; width: calc(100% - 22px) !important; height: 100% !important; object-fit: cover; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-media-overlay, html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-car-dots { display: none !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-car { gap: 10px; scroll-padding-left: 0; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-slide { flex: 0 0 78% !important; border-radius: 16px; overflow: hidden; scroll-snap-align: start !important; background: #E6E8EC; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-slide > :is(img, video) { width: 100%; height: 100%; object-fit: cover; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { order: 6 !important; margin-top: 22px !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-desc::before { content: 'Sobre esta publicación' !important; font-size: 17px !important; margin: 0 0 6px !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-serie { order: 7 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-guia { order: 8 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .ds-ask-nexus { order: 9 !important; margin-top: 18px !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda #ds-compat { order: 10 !important; }
-html[data-modo="claro"][data-tema] body #detail-sheet.ds-tienda .sheet-actions { order: 11 !important; margin-top: 18px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-media :is(img, video) { -webkit-mask-image: none !important; mask-image: none !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-media > :is(#ds-media-img, #ds-media-vid, #ds-yt-iframe, #ds-injected-vid) { border-radius: 16px !important; width: calc(100% - 22px) !important; height: 100% !important; object-fit: cover; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-media-overlay, html[data-modo][data-tema] body #detail-sheet.ds-tienda .ds-car-dots { display: none !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .ds-car { gap: 10px; scroll-padding-left: 0; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .ds-slide { flex: 0 0 78% !important; border-radius: 16px; overflow: hidden; scroll-snap-align: start !important; background: #E6E8EC; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .ds-slide > :is(img, video) { width: 100%; height: 100%; object-fit: cover; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-desc { order: 6 !important; margin-top: 22px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-desc::before { content: 'Sobre esta publicación' !important; font-size: 17px !important; margin: 0 0 6px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-serie { order: 7 !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-guia { order: 8 !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .ds-ask-nexus { order: 9 !important; margin-top: 18px !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda #ds-compat { order: 10 !important; }
+html[data-modo][data-tema] body #detail-sheet.ds-tienda .sheet-actions { order: 11 !important; margin-top: 18px !important; }
+
+/* Ficha en modo oscuro: misma página de producto, con colores oscuros */
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda { background: #0A0D14 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-amb { display: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda > .sheet-close { background: rgba(255,255,255,.08) !important; color: #F2F4F8 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-handle { background: rgba(255,255,255,.22) !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-icono { background: #161B24; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .sheet-title { color: var(--tj-tit, #F2F4F8) !important; text-shadow: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-author :is(.author-name, .an-n) { color: #39FF88 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats, html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats div { border-color: rgba(255,255,255,.08) !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats b { color: #F2F4F8 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .v6-stats span { color: #8A93A3 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda #ds-download { background: #39FF88 !important; color: #05070C !important; box-shadow: none !important; border: 0 !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-tienda #ds-download ion-icon { color: #05070C !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .dst-fav { background: rgba(255,255,255,.06) !important; border: 0 !important; box-shadow: none !important; color: #F2F4F8 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda .ds-slide { background: #161B24; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc { color: #C9CFDA !important; }
+html[data-modo="oscuro"][data-tema] body #detail-sheet.ds-tienda #ds-desc::before { color: #F2F4F8 !important; }
+/* Diseño de creador: sus efectos sobre la portada no encajan en la tira de capturas */
+html[data-modo][data-tema] body #detail-sheet.ds-tienda.ugs-tema .sheet-media > .ugs-tj-fx, html[data-modo][data-tema] body #detail-sheet.ds-tienda.ugs-tema .sheet-media::after { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   html[data-modo] body.lv-discovery.lv-home #output .game-tile .thumb-wrap :is(img, video) { transition: none !important; transform: none !important; }

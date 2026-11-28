@@ -16,7 +16,7 @@
 // No toca /admin/ (datos privados del panel), /games/ ni /studio/ (tienen su propio service worker).
 // ========================================
 
-const CACHE_VERSION = 'upgames-v8.3.0';   // Cards y ficha con la estructura de los diseños A y C.
+const CACHE_VERSION = 'upgames-v8.3.1';   // Ficha oscura con la misma estructura que la clara.
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_RUNTIME = `${CACHE_VERSION}-runtime`;
 const CACHE_API     = `${CACHE_VERSION}-api`;
