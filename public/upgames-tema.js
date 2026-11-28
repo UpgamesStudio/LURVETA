@@ -56,9 +56,9 @@
   html.dataset.modo = leerModo();
   document.addEventListener('DOMContentLoaded', () => {
     escaneo(html.dataset.tema === 'cyber');
-    // Botón en el menú rápido de la biblioteca (si existe); si no, en Ajustes del perfil
-    const radial = document.querySelector('#hdr-radial .ugr-items'), ajustes = document.getElementById('pf-menu-aj');
-    if (!radial && ajustes && !document.getElementById('ug-tema-btn')) {
+    // Botón en Ajustes del perfil (el menú rápido de la cabecera ya no existe)
+    const ajustes = document.getElementById('pf-menu-aj');
+    if (ajustes && !document.getElementById('ug-tema-btn')) {
       const b = document.createElement('button');
       b.id = 'ug-tema-btn'; b.type = 'button'; b.setAttribute('role', 'menuitem');
       const pintar = () => { const c = html.dataset.tema === 'cyber'; b.innerHTML = `<ion-icon name="${c ? 'contrast-outline' : 'flash-outline'}"></ion-icon><span><b>${c ? 'Tema clásico' : 'Tema cyber'}</b><small>Cambia el estilo de Lurveta</small></span>`; };
@@ -70,43 +70,25 @@
       });
       ajustes.insertBefore(b, ajustes.querySelector('.peligro'));
     }
-    if (radial && !document.getElementById('ug-tema-btn')) {
-      const b = document.createElement('button');
-      b.id = 'ug-tema-btn'; b.type = 'button'; b.className = 'ugr-item ug-tema-btn'; b.setAttribute('role', 'menuitem');
-      const pintar = () => { const c = html.dataset.tema === 'cyber'; b.setAttribute('aria-label', c ? 'Cambiar al tema clásico' : 'Cambiar al tema cyber'); b.innerHTML = `<span class="ugr-bub"><ion-icon name="${c ? 'contrast-outline' : 'flash-outline'}"></ion-icon></span><span class="ugr-lbl">${c ? 'Clásico' : 'Cyber'}</span>`; };
-      pintar();
-      b.addEventListener('click', e => {
-        e.stopPropagation(); window.UGR?.cerrar?.();
-        set(html.dataset.tema === 'cyber' ? 'clasico' : 'cyber'); pintar();
-        try { window.toast?.(html.dataset.tema === 'cyber' ? '⚡ Tema Cyber activado' : '🌙 Tema clásico activado'); } catch (_) {}
-      });
-      radial.appendChild(b);
-    }
-    // Interruptor claro/oscuro: junto al «01 / DISCOVER» del inicio (lo crea lurveta-liquid.js,
-    // que es defer y ya corrió). Si la portada Discovery no está, va al menú rápido.
+    // Interruptor claro/oscuro: junto al «01 / DISCOVER» del inicio (lo crea lurveta-liquid.js, que es defer y ya corrió)
     if (!document.getElementById('ug-modo-btn')) {
       const intro = document.querySelector('.lv-home-intro'), marca = intro?.querySelector('.lv-intro-mark');
-      const enIntro = !!(intro && marca);
-      if (enIntro || radial) {
+      if (intro && marca) {
         const b = document.createElement('button');
-        b.id = 'ug-modo-btn'; b.type = 'button';
-        b.className = enIntro ? 'ug-modo-btn' : 'ugr-item ug-modo-btn';
-        if (!enIntro) b.setAttribute('role', 'menuitem');
+        b.id = 'ug-modo-btn'; b.type = 'button'; b.className = 'ug-modo-btn';
         const pintar = () => {
           const claro = html.dataset.modo === 'claro', ico = claro ? 'moon-outline' : 'sunny-outline';
           b.setAttribute('aria-label', claro ? 'Cambiar al modo oscuro' : 'Cambiar al modo claro');
-          b.innerHTML = enIntro ? `<ion-icon name="${ico}" aria-hidden="true"></ion-icon>` : `<span class="ugr-bub"><ion-icon name="${ico}"></ion-icon></span><span class="ugr-lbl">${claro ? 'Oscuro' : 'Claro'}</span>`;
+          b.innerHTML = `<ion-icon name="${ico}" aria-hidden="true"></ion-icon>`;
         };
         pintar();
         b.addEventListener('click', e => {
-          e.stopPropagation(); if (!enIntro) window.UGR?.cerrar?.();
+          e.stopPropagation();
           setModo(html.dataset.modo === 'claro' ? 'oscuro' : 'claro'); pintar();
           try { window.toast?.(html.dataset.modo === 'claro' ? '☀️ Modo claro activado' : '🌙 Modo oscuro activado'); } catch (_) {}
         });
-        if (enIntro) {
-          const lado = document.createElement('div'); lado.className = 'lv-intro-side';
-          marca.replaceWith(lado); lado.append(marca, b);
-        } else radial.appendChild(b);
+        const lado = document.createElement('div'); lado.className = 'lv-intro-side';
+        marca.replaceWith(lado); lado.append(marca, b);
       }
     }
   });

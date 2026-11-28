@@ -46,10 +46,10 @@ const config = {
     ALLOWED_ORIGINS: [...new Set([
         URL_PUBLICA,
         "https://www.lurveta.com",
-        'https://upgames.games',
-        'https://www.upgames.games',
-        'https://roucedevstudio.github.io',
-        // la cuenta de GitHub pasó de RouceDevStudio a UpgamesStudio: GitHub Pages cambia de dominio
+        // Fuera a propósito: upgames.games (su DNS apunta a GitHub Pages sin sitio: cualquiera podría reclamarlo)
+        // y roucedevstudio.github.io (cuenta antigua renombrada, el nombre puede registrarlo otra persona).
+        // Si se recupera el control de uno de ellos, se añade por CORS_ORIGINS sin tocar el código.
+        // La cuenta de GitHub pasó de RouceDevStudio a UpgamesStudio: GitHub Pages cambia de dominio
         'https://upgamesstudio.github.io',
         'http://localhost:3000',
         'http://localhost:5500',

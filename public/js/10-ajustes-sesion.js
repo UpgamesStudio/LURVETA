@@ -243,6 +243,8 @@ async function pfLogout() {
   // Limpiar los datos de la cuenta en este navegador (se conservan las preferencias del dispositivo)
   try { const keep = ['ug_vid', 'ug_tema', 'ug_mus_off', 'ug_mus_vol', 'ug_mus_ult', 'ug_ab_bienv', 'upgames_terms_v'], g = {};
     keep.forEach(k => { const v = localStorage.getItem(k); if (v !== null) g[k] = v; }); localStorage.clear(); Object.entries(g).forEach(([k, v]) => localStorage.setItem(k, v)); } catch(_) {}
+  // Lo de la cuenta que vive en esta pestaña y en la caché del service worker tampoco pasa a la siguiente sesión
+  try { ['ug_gustos_srv', 'ug_mg_ok'].forEach(k => sessionStorage.removeItem(k)); navigator.serviceWorker?.controller?.postMessage({ type: 'LIMPIAR_API' }); } catch(_) {}
   toast('👋 Sesión cerrada');
   // replace() elimina biblioteca.html del historial — el botón "atrás" no puede regresar
   setTimeout(()=>{ location.replace('../login.html'); }, 800);

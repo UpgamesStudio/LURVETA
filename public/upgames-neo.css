@@ -71,7 +71,6 @@ html[data-tema="cyber"] #autocomplete-dropdown {
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 24px 60px -20px rgba(0,0,0,.9) !important; overflow: hidden;
 }
 html[data-tema="cyber"] .search-bar .nxb-btn { background: var(--cb-aurora); }
-html[data-tema="cyber"] .hdr-orb { background: linear-gradient(135deg, rgba(57,255,136,.3), rgba(92,225,255,.28) 60%, rgba(143,123,255,.3)) !important; }
 
 /* ── 3. CHIPS ─────────────────────────────────────────────── */
 html[data-tema="cyber"] #category-row { gap: 8px; }

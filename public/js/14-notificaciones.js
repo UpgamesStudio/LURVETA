@@ -328,22 +328,13 @@ const ugnAuth = () => ({ Authorization: `Bearer ${LS.get('token')}` });
 // ── Botón de campana + panel ─────────────────────────
 function _initNotifUI() {
   const hdrActions = document.querySelector('.hdr-actions');
-  const radial = document.querySelector('#hdr-radial .ugr-items');   // la campana vive en el menú radial
-  if ((!hdrActions && !radial) || document.getElementById('notif-btn')) return;
+  if (!hdrActions || document.getElementById('notif-btn')) return;
   const btn = document.createElement('button');
   btn.id = 'notif-btn'; btn.type = 'button'; btn.title = 'Notificaciones'; btn.setAttribute('aria-label', 'Notificaciones');
-  if (radial && !(ugSesion() && hdrActions)) {   // con sesión la campana va en la cabecera, junto al saldo
-    btn.className = 'ugr-item'; btn.setAttribute('role', 'menuitem');
-    btn.innerHTML = '<span class="ugr-bub"><ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span></span><span class="ugr-lbl">Avisos</span>';
-    btn.onclick = e => { e.stopPropagation(); UGR.cerrar(); ugnToggle(); };
-    radial.insertBefore(btn, radial.firstChild);
-    if (UGR.abierto) UGR.colocar();   // si el menú ya estaba abierto, reacomoda el abanico
-  } else {
-    btn.className = 'hdr-btn';
-    btn.innerHTML = '<ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span>';
-    btn.onclick = e => { e.stopPropagation(); ugnToggle(); };
-    hdrActions.insertBefore(btn, hdrActions.firstChild);
-  }
+  btn.className = 'hdr-btn';
+  btn.innerHTML = '<ion-icon name="notifications-outline"></ion-icon><span id="notif-badge" class="ugn-badge" hidden>0</span>';
+  btn.onclick = e => { e.stopPropagation(); ugnToggle(); };
+  hdrActions.insertBefore(btn, hdrActions.firstChild);
 
   const panel = document.createElement('div');
   panel.id = 'ugn-panel'; panel.className = 'ugn-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Notificaciones');
@@ -496,12 +487,8 @@ async function ugnVaciar() {
 }
 
 function _updateNotifBadge(count) {
-  const enMenu = !!document.querySelector('#hdr-radial #notif-btn');   // la campana dentro del menú: el orbe también muestra el número
-  for (const id of enMenu ? ['notif-badge', 'hdr-orb-badge'] : ['notif-badge']) {
-    const b = document.getElementById(id);
-    if (b) { b.hidden = !(count > 0); b.textContent = count > 99 ? '99+' : count; }
-  }
-  if (enMenu) document.getElementById('hdr-orb')?.setAttribute('aria-label', count > 0 ? `Abrir menú rápido · ${count} notificaciones sin leer` : 'Abrir menú rápido');
+  const b = document.getElementById('notif-badge');
+  if (b) { b.hidden = !(count > 0); b.textContent = count > 99 ? '99+' : count; }
   try { if ('setAppBadge' in navigator) count > 0 ? navigator.setAppBadge(count) : navigator.clearAppBadge(); } catch (_) {}
 }
 // Conteo periódico: si sube, trae las nuevas y las muestra en la isla

@@ -42,6 +42,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Lurveta Blogs de extremo a extremo
         run: node test/real/blogs.js
+      - name: Lurveta Blogs editorial (blogs independientes, notas, republicaciones, comunidad, formularios, dominios y ranking)
+        run: node test/real/blog-editorial.js
       - name: Navegación, perfil, NEW y página puente (móvil y escritorio)
         run: node test/real/navegacion.js
       - name: Panel de administración y conciliación de PayPal (servidor real, móvil y escritorio)

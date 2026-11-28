@@ -842,8 +842,6 @@ body.pp-con-fondo .profile-hero { background: transparent; }
 .hero-arrow { background: rgba(10, 11, 15, .7) !important; }
 .tile-status-dot, .nx-fdot { animation: none !important; will-change: auto !important; }
 #preloader.hide, #preloader.hide * { animation: none !important; }
-.hdr-orb::before { animation: none !important; }
-.hdr-orb:hover::before, .hdr-orb:focus-visible::before { animation: orbGiro 6s linear infinite !important; }
 /* Tarjetas fuera de pantalla: el navegador no las pinta hasta que se acercan */
 #output .game-tile, #favs-grid .game-tile { content-visibility: auto; contain-intrinsic-size: auto 290px; }
 

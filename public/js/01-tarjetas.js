@@ -179,6 +179,7 @@ function createTile(item, isFeatured=false) {
         </div>
       </div>`;
     el.addEventListener('click',()=>openDetail(item));
+    tarjetaTeclado(el, item);
     return el;
   }
 
@@ -255,7 +256,21 @@ function createTile(item, isFeatured=false) {
     e.stopPropagation();
     fav(item._id);
   });
+  tarjetaTeclado(el, item);
   return el;
+}
+
+// Teclado y lectores de pantalla: la tarjeta se enfoca con Tab y se abre con Enter o Espacio (como un botón).
+// El corazón sigue siendo su propio botón: su Enter no abre la ficha porque solo cuenta si el foco está en la tarjeta.
+function tarjetaTeclado(el, item) {
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', `${item.title || 'Publicación'} · ${catLabel(item.category)} · de @${item.usuario || 'Cloud'}`);
+  el.addEventListener('keydown', e => {
+    if (e.target !== el || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    openDetail(item);
+  });
 }
 
 // ── VIDEO CARD — siempre abre el detail sheet ────────────

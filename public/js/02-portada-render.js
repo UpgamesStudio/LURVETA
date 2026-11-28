@@ -87,12 +87,17 @@ function initHeroCarousel(items, isVideoMode) {
         openDetail(item);
       }
     });
+    // Teclado: cada portada se enfoca y se abre con Enter o Espacio (mismo camino que el toque)
+    slide.tabIndex = 0; slide.setAttribute('role', 'button'); slide.setAttribute('aria-label', `${item.title || 'Publicación'} · de @${item.usuario || 'Cloud'}`);
+    slide.addEventListener('keydown', e => { if (e.target === slide && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); slide.click(); } });
     track.appendChild(slide);
 
     // Dot
     const dot = document.createElement('span');
     dot.className = 'hero-dot' + (i===0?' active':'');
+    dot.setAttribute('role', 'button'); dot.tabIndex = 0; dot.setAttribute('aria-label', `Ir a la portada ${i + 1}`);
     dot.addEventListener('click', (e) => { e.stopPropagation(); heroGoTo(i); });
+    dot.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); heroGoTo(i); } });
     dotsEl.appendChild(dot);
   });
 

@@ -27,7 +27,6 @@ html[data-tema] #app-header { background: rgba(10,11,15,.62) !important; -webkit
 html[data-tema] #app-header .hdr-logo { width: 104px; height: 33px; flex: none; background: url(icons/logo-upgames.png?v=3) left center / contain no-repeat; }
 html[data-tema] #app-header .hdr-logo > span { opacity: 0 !important; font-size: 0 !important; }
 html[data-tema] #app-header #hdr-entrar { background: var(--v6-glass-2) !important; color: var(--txt) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 999px !important; clip-path: none !important; font-weight: 700 !important; font-size: 15px !important; }
-html[data-tema] #app-header .hdr-orb { border-radius: 50% !important; clip-path: none !important; background: var(--v6-glass-2) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; }
 html[data-tema] #app-header .search-bar { background: var(--v6-glass) !important; border: 1px solid var(--v6-bd) !important; box-shadow: var(--v6-hi) !important; border-radius: 15px !important; -webkit-backdrop-filter: var(--v6-blur); backdrop-filter: var(--v6-blur); }
 html[data-tema] #app-header .nxb-btn { border-radius: 11px !important; clip-path: none !important; background: rgba(54,224,138,.14) !important; color: var(--v6-g) !important; box-shadow: none !important; }
 

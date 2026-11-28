@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
  * Navegación de la biblioteca en un navegador real (móvil y escritorio):
- *  - barra inferior: exactamente Inicio · Videos · Nexus · Novedades · Perfil
+ *  - barra inferior: exactamente Inicio · Videos · Nexus · Blogs · Perfil
  *  - Favoritos, Ganancias y Economía se abren desde el Perfil (y Perfil queda marcado)
  *  - sin pestaña Logros; las demás pestañas del perfil siguen
  *  - Videos abre el feed vertical de siempre
- *  - Novedades pinta tarjetas por entrada que llevan al artículo completo
+ *  - Blogs pinta una tarjeta por publicación que abre la lectura y lleva al blog del autor
  *  - página puente: el botón de descarga queda debajo de la primera pantalla
  * La API se simula (no toca producción). Uso: node test/real/navegacion.js  (CAPTURAS=dir para guardar capturas)
  */
@@ -22,6 +22,10 @@ const tarjeta = (i, o = {}) => ({ id: `e${i}`, blogId: `b${i % 3}`, titulo: `Gu�
 const DESCUBRIR = { success: true, conSesion: false, secciones: {
   nexus: [0, 1, 2, 3].map(i => tarjeta(i)), destacadas: [tarjeta(7)], siguiendo: [], populares: [4, 5, 6].map(i => tarjeta(i)), recientes: [0, 1, 2, 3, 4, 5, 6, 7].map(i => tarjeta(i)) } };
 
+// Publicaciones del feed editorial de Lurveta Blogs (forma de /blogs/comunidad/feed)
+const FEED = [0, 1, 2, 3, 4, 5, 6, 7].map(i => ({ ...tarjeta(i), tipo: 'entrada', titulo: `Guía ${i}`, blogId: `b${'0'.repeat(22)}${i % 3}`, lectura: 2, temas: [], etiquetas: [],
+  destacada: i === 0, sigoBlog: false, sigoAutor: false, propia: false, gusta: 0, republicaciones: 0, meGusta: false, guardada: false, original: null }));
+
 async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false } = {}) {
   // Sin service worker: él pide la API por su cuenta (network-first) y se saltaría la API simulada,
   // yendo a producción (donde /blogs/descubrir aún no existe). Así fallaba en CI.
@@ -35,19 +39,27 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
   }, [sesion, sinAnuncios]);
   await ctx.route('**/*', r => {
     const u = r.request().url();
-    if (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u)) return r.continue();
+    // En localhost la app usa el propio origen como API (UG_CONFIG): las rutas sin extensión fuera de /public/ son la API
+    const ruta = new URL(u).pathname, local = u.startsWith(web.url) && ruta !== '/' && !ruta.startsWith('/public/') && !/\.[a-z0-9]+$/i.test(ruta);
+    const api = u.startsWith(API) ? u.slice(API.length) : local ? u.slice(web.url.length) : null;
+    if (api === null && (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u))) return r.continue();
     const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type', 'access-control-allow-methods': 'GET, POST, OPTIONS' };
-    if (u.startsWith(API) && r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });   // preflight (la petición lleva Authorization)
-    if (u.startsWith(API + '/blogs/descubrir')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...DESCUBRIR, conSesion: sesion }), headers: cors });
-    if (u.startsWith(API + '/economia/ticket')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, ticket: 'a.b', esperaMs: 25000 }), headers: cors });
-    if (u.startsWith(API)) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]', headers: cors });
+    if (api !== null && r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });   // preflight (la petición lleva Authorization)
+    // Feed editorial (?vista=…): «Siguiendo» sin entradas; el resto, las 8 publicaciones. Sin vista: las secciones.
+    if (api !== null && api.startsWith('/blogs/descubrir')) {
+      const vista = new URL(u).searchParams.get('vista');
+      const body = vista ? { success: true, conSesion: sesion, siguiente: null, entradas: vista === 'siguiendo' ? [] : FEED } : { ...DESCUBRIR, conSesion: sesion };
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body), headers: cors });
+    }
+    if (api !== null && api.startsWith('/economia/ticket')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, ticket: 'a.b', esperaMs: 25000 }), headers: cors });
+    if (api !== null) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]', headers: cors });
     return r.abort();   // anuncios y terceros: fuera de la prueba
   });
   return ctx;
 }
 
 (async () => {
-  const C = contador('Navegación, perfil, Novedades y página puente');
+  const C = contador('Navegación, perfil, Blogs y página puente');
   const web = await servirRaiz(), b = await navegador();
   const errores = [];
   const VISTAS = [['móvil', { width: 390, height: 844 }], ['escritorio', { width: 1440, height: 900 }]];
@@ -60,29 +72,29 @@ async function contexto(b, web, viewport, { sesion = false, sinAnuncios = false 
     await p.evaluate(() => { document.getElementById('preloader')?.remove(); document.querySelectorAll('.modal, #onboarding-modal, .btut, #tutorial-overlay').forEach(m => m.remove?.()); });
 
     const nav = await p.$$eval('#bottom-nav .nav-tab', bs => bs.map(x => x.querySelector('span')?.textContent.trim()));
-    C.prueba('barra inferior: Inicio · Videos · Nexus · Novedades · Perfil', JSON.stringify(nav) === JSON.stringify(['Inicio', 'Videos', 'Nexus', 'Novedades', 'Perfil']), JSON.stringify(nav));
+    C.prueba('barra inferior: Inicio · Videos · Nexus · Blogs · Perfil', JSON.stringify(nav) === JSON.stringify(['Inicio', 'Videos', 'Nexus', 'Blogs', 'Perfil']), JSON.stringify(nav));
     C.prueba('Favoritos y Ganancias ya no están en la barra', await p.$$eval('#bottom-nav .nav-tab', bs => !bs.some(x => /Favoritos|Ganancias|Economía/.test(x.textContent))));
     const anchos = await p.$$eval('#bottom-nav .nav-tab', bs => bs.map(x => Math.round(x.getBoundingClientRect().width)));
     C.prueba('los cinco botones ocupan el mismo ancho', Math.max(...anchos) - Math.min(...anchos) <= 2, JSON.stringify(anchos));
     if (CAPT) await p.locator('#bottom-nav').screenshot({ path: path.join(CAPT, `nav-${nombre}.png`) });
 
-    // Novedades
+    // Blogs (feed editorial de la comunidad)
     const fallidas = []; p.on('requestfailed', q => fallidas.push(`${q.method()} ${q.url().slice(0, 90)} ${q.failure()?.errorText}`));
     await p.locator('#bottom-nav .nav-tab[data-tab="new"]').click();
-    await p.waitForSelector('#new-view .ugn-card', { timeout: 10000 }).catch(() => {});
+    await p.waitForSelector('#new-view article.editorial-post', { timeout: 10000 }).catch(() => {});
     const nw = await p.evaluate(() => ({ visible: getComputedStyle(document.getElementById('new-view')).display !== 'none', main: getComputedStyle(document.getElementById('main-view')).display,
-      tarjetas: document.querySelectorAll('#new-view .ugn-card').length, grande: !!document.querySelector('#new-view .ugn-card--grande'), activa: document.querySelector('#bottom-nav .nav-tab.active span')?.textContent,
-      enlace: document.querySelector('#new-view .ugn-card-link')?.getAttribute('href'), autor: document.querySelector('#new-view .ugn-autor')?.getAttribute('href') }));
-    C.prueba('Novedades se abre (y oculta el inicio)', nw.visible && nw.main === 'none' && nw.activa === 'Novedades', JSON.stringify(nw));
-    C.prueba('Novedades pinta tarjetas por entrada, con una destacada grande', nw.tarjetas >= 8 && nw.grande, `tarjetas ${nw.tarjetas} · NEW: ${await p.evaluate(() => document.getElementById('ugn-cuerpo').innerText.slice(0, 160))} · fallidas: ${fallidas.filter(f => /railway/.test(f)).join(' | ')}`);
-    C.prueba('la tarjeta lleva al artículo completo y el creador a su perfil', /\/b\/blog-\d\/e\/guia-\d/.test(nw.enlace || '') && /perfil-publico\.html\?usuario=creador/.test(nw.autor || ''), JSON.stringify(nw));
+      tarjetas: document.querySelectorAll('#new-view article.editorial-post').length, destacada: !!document.querySelector('#new-view .editorial-featured'), activa: document.querySelector('#bottom-nav .nav-tab.active span')?.textContent,
+      enlace: document.querySelector('#new-view .editorial-article-link')?.getAttribute('href'), autor: document.querySelector('#new-view .editorial-who')?.getAttribute('href') }));
+    C.prueba('Blogs se abre (y oculta el inicio)', nw.visible && nw.main === 'none' && nw.activa === 'Blogs', JSON.stringify(nw));
+    C.prueba('Blogs pinta una tarjeta por publicación, con la destacada marcada', nw.tarjetas >= 8 && nw.destacada, `tarjetas ${nw.tarjetas} · fallidas: ${fallidas.filter(f => /railway/.test(f)).join(' | ')}`);
+    C.prueba('la tarjeta abre la publicación y el autor lleva a su blog', /[?&]publicacion=/.test(nw.enlace || '') && /[?&]perfilBlog=/.test(nw.autor || ''), JSON.stringify(nw));
     const desborde = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     C.prueba('sin desborde horizontal', desborde <= 1, `${desborde}px`);
     if (CAPT) await p.screenshot({ path: path.join(CAPT, `new-${nombre}.png`) });
-    await p.locator('#new-view [data-ugn="recientes"]').click(); await espera(200);
-    C.prueba('filtro «Recientes» muestra la lista', (await p.$$eval('#new-view .ugn-card', x => x.length)) === 8);
-    await p.locator('#new-view [data-ugn="siguiendo"]').click(); await espera(200);
-    C.prueba('«Siguiendo» sin entradas muestra un aviso claro', await p.evaluate(() => !!document.querySelector('#new-view .ugn-vacio')));
+    await p.locator('#new-view [data-ugn="recientes"]').click(); await espera(400);
+    C.prueba('filtro «Recientes» muestra la lista', (await p.$$eval('#new-view article.editorial-post', x => x.length)) === 8);
+    await p.locator('#new-view [data-ugn="siguiendo"]').click(); await espera(400);
+    C.prueba('«Siguiendo» sin entradas (o sin sesión) muestra un aviso claro', await p.evaluate(() => !!document.querySelector('#new-view .editorial-empty')));
 
     // Perfil
     await p.locator('#bottom-nav .nav-tab[data-tab="profile"]').click(); await espera(900);

@@ -109,7 +109,6 @@ async function pfLoadHistorialPagos() {
       const n = d?.lives?.length || 0;
       ugPintarVivos(d?.lives || []);
       if (dot) dot.hidden = !n;
-      const orbLive = document.getElementById('hdr-orb-live'); if (orbLive) orbLive.hidden = !n;   // punto rojo también en el orbe
       dot?.closest('button')?.setAttribute('aria-label', n ? `Transmisiones en vivo · ${n} en vivo ahora` : 'Transmisiones en vivo');
     }).catch(() => {});
   };

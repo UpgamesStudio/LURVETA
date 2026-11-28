@@ -521,3 +521,8 @@ html[data-modo][data-tema] body #detail-sheet.ds-tienda.ugs-tema .sheet-media > 
 @media (prefers-reduced-motion: reduce) {
   html[data-modo] body.lv-discovery.lv-home #output .game-tile .thumb-wrap :is(img, video) { transition: none !important; transform: none !important; }
 }
+
+/* Foco con teclado en las tarjetas (solo se ve al navegar con Tab: el aspecto con ratón o dedo no cambia) */
+.game-tile:focus-visible, .featured-tile:focus-visible, .hero-slide:focus-visible, .hero-dot:focus-visible { outline: 2px solid #39FF88; outline-offset: 3px; }
+html[data-modo="claro"] .game-tile:focus-visible, html[data-modo="claro"] .featured-tile:focus-visible, html[data-modo="claro"] .hero-slide:focus-visible, html[data-modo="claro"] .hero-dot:focus-visible { outline-color: #15803D; }
+.game-tile:focus:not(:focus-visible), .featured-tile:focus:not(:focus-visible), .hero-slide:focus:not(:focus-visible) { outline: none; }

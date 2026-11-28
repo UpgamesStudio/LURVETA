@@ -31,7 +31,6 @@ html[data-tema] #app-header .hdr-logo { width: 124px; height: 28px; background-i
 html[data-tema] #app-header .hdr-actions { display: flex; align-items: center; gap: 10px; }
 html[data-tema] #app-header #hdr-uc { order: 1; }
 html[data-tema] #app-header #notif-btn { order: 2; }
-html[data-tema] #app-header .hdr-orb { order: 3; }
 html[data-tema] #app-header #hdr-entrar { order: 4; }
 
 /* Saldo: moneda dorada + cifra + «UpCoins» */
@@ -62,16 +61,11 @@ html[data-tema] #app-header #notif-btn .ugn-badge {
 }
 
 /* Avatar (con sesión el orbe del menú rápido es tu foto) */
-html[data-tema] #app-header .hdr-orb { width: 40px !important; height: 40px !important; position: relative; }
-html[data-tema] #app-header .hdr-orb--yo { padding: 0 !important; background: var(--lv-surf2) !important; border: 2px solid rgba(255, 255, 255, .14) !important; box-shadow: 0 4px 14px rgba(0, 0, 0, .45) !important; }
-html[data-tema] #app-header .hdr-orb--yo .hdr-orb-ic { display: none !important; }
 html[data-tema] #app-header .hdr-av {
   position: absolute; inset: 0; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
   background: linear-gradient(135deg, #2FD37F, #1C8F7A); color: #04140B; font: 800 16px/1 var(--ff);
 }
 html[data-tema] #app-header .hdr-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
-html[data-tema] #app-header .hdr-orb.on.hdr-orb--yo { border-color: rgba(var(--lv-g-rgb), .7) !important; }
-html[data-tema] #app-header .hdr-orb .ugn-badge, html[data-tema] #app-header .hdr-orb-live { z-index: 2; }
 html[data-tema] #app-header #hdr-entrar {
   height: 40px !important; padding: 0 18px !important; background: var(--lv-g) !important; color: #04140B !important;
   border: 0 !important; box-shadow: 0 8px 20px -10px rgba(var(--lv-g-rgb), .8) !important; font-weight: 700 !important; font-size: 14.5px !important;

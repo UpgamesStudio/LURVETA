@@ -39,11 +39,14 @@ async function contexto(b, web, { sesion = false, vp = { width: 390, height: 844
     const u = r.request().url(), m = r.request().method();
     // https://lurveta.com/… (adonde van las fichas) se sirve desde esta copia del repo
     if (u.startsWith('https://lurveta.com/')) { const resp = await r.fetch({ url: web.url + u.slice('https://lurveta.com'.length) }); return r.fulfill({ response: resp }); }
-    if (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u)) return r.continue();
-    if (u.startsWith(API) && m === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
-    if (u.startsWith(`${API}/items/${ID}`) && m === 'GET') return json(r, FICHA);
-    if (u.startsWith(`${API}/auth/email-estado`)) return json(r, { success: true, verificado: false, email: 'tester@example.com' });
-    if (u.startsWith(API)) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]', headers: cors });
+    // En localhost la app usa el propio origen como API (UG_CONFIG): rutas sin extensión fuera de /public/ son la API
+    const ruta = new URL(u).pathname, local = u.startsWith(web.url) && ruta !== '/' && !ruta.startsWith('/public/') && !/\.[a-z0-9]+$/i.test(ruta);
+    const api = u.startsWith(API) ? u.slice(API.length) : local ? u.slice(web.url.length) : null;
+    if (api === null && (u.startsWith(web.url) || /unpkg\.com\/ionicons/.test(u))) return r.continue();
+    if (api !== null && m === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+    if (api !== null && api.startsWith(`/items/${ID}`) && m === 'GET') return json(r, FICHA);
+    if (api !== null && api.startsWith('/auth/email-estado')) return json(r, { success: true, verificado: false, email: 'tester@example.com' });
+    if (api !== null) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]', headers: cors });
     return r.abort();
   });
   return ctx;
@@ -131,7 +134,8 @@ function versionAnterior() {
     await fichaAbierta(r.p);
     const f2 = await r.p.evaluate(() => !!document.getElementById('detail-sheet')?.classList.contains('open')).catch(() => false);
     C.prueba('/public/p/<id>.html → https://lurveta.com/?id=<id> directo (sin pasar por el puente) y abre la ficha',
-      r.pedidas[1] === `https://lurveta.com/?id=${ID}` && r.pedidas[2] === `/public/biblioteca.html?id=${ID}` && f2, JSON.stringify({ pedidas: r.pedidas, f2 }));
+      // tras ir a lurveta.com el puente sigue en ese mismo origen (la prueba lo sirve con esta copia del repo)
+      r.pedidas[1] === `https://lurveta.com/?id=${ID}` && [`/public/biblioteca.html?id=${ID}`, `https://lurveta.com/public/biblioteca.html?id=${ID}`].includes(r.pedidas[2]) && f2, JSON.stringify({ pedidas: r.pedidas, f2 }));
     await ctx.close();
 
     C.seccion('Recursos de la portada');

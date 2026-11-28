@@ -56,28 +56,41 @@ function armar(entradas, { ahora = Date.now(), siguiendo = [] } = {}) {
 
 module.exports = { armar, puntaje, tomar };
 
-// Ordena cada lote cronológico de descubrimiento y alterna autores cuando es posible.
-function ordenarFeed(entradas, { ahora = Date.now(), vista, siguiendo = [], intereses = [] } = {}) {
-    if (vista === 'recientes' || vista === 'siguiendo' || vista === 'guardados' || vista === 'perfil') return entradas;
-    const seguidos = new Set(siguiendo);
-    const temas = new Set(intereses);
-    const contexto = { ahora, maxVistas: Math.max(0, ...entradas.map(e => e.vistas)), maxCom: Math.max(0, ...entradas.map(e => e.comentarios)) };
-    const candidatos = entradas.map(e => {
-        const interaccion = Math.log1p((e.gusta || 0) + (e.republicaciones || 0));
-        const relevancia = (e.temas || []).some(t => temas.has(t)) ? 0.12 : 0;
-        const afinidad = seguidos.has(e.usuario) ? 0.08 : 0;
-        const calidad = e.resumen && e.etiquetas?.length ? 0.025 : 0;
-        const valor = vista === 'populares'
-            ? Math.log1p(e.vistas) + Math.log1p(e.comentarios) + interaccion
-            : puntaje(e, contexto) + Math.min(0.15, interaccion * 0.035) + relevancia + afinidad + calidad;
-        return { e, valor };
-    }).sort((a, b) => b.valor - a.valor);
-    const orden = [];
-    while (candidatos.length) {
-        const distinto = candidatos.findIndex(({ e }) => e.usuario !== orden.at(-1)?.usuario);
-        orden.push(candidatos.splice(Math.max(0, distinto), 1)[0].e);
+/** Valor de una entrada en las vistas ordenadas por relevancia. `n` = normalización fija (maxVistas, maxCom),
+ *  la misma en todas las páginas de un mismo recorrido para que el cursor por valor sea estable. */
+function valorFeed(e, { vista, ahora, n, seguidos = new Set(), temas = new Set() }) {
+    const interaccion = Math.log1p((e.gusta || 0) + (e.republicaciones || 0));
+    if (vista === 'populares') return Math.log1p(e.vistas || 0) + Math.log1p(e.comentarios || 0) + interaccion;
+    const relevancia = (e.temas || []).some(t => temas.has(t)) ? 0.12 : 0;
+    const afinidad = seguidos.has(e.usuario) ? 0.08 : 0;
+    const calidad = e.resumen && e.etiquetas?.length ? 0.025 : 0;
+    return puntaje(e, { ahora, ...n }) + Math.min(0.15, interaccion * 0.035) + relevancia + afinidad + calidad;
+}
+
+/** Ordena por valor y devuelve [{ e, valor }]. El orden es estable: los empates quedan como venían
+ *  (el feed entrega la lista ya ordenada por id para que el orden total sea valor ↓, id ↓). */
+function rankear(entradas, { vista, ahora = Date.now(), siguiendo = [], intereses = [], n } = {}) {
+    const norma = n || { maxVistas: Math.max(0, ...entradas.map(e => e.vistas || 0)), maxCom: Math.max(0, ...entradas.map(e => e.comentarios || 0)) };
+    const ctx = { vista, ahora, n: norma, seguidos: new Set(siguiendo), temas: new Set(intereses) };
+    return entradas.map(e => ({ e, valor: valorFeed(e, ctx) })).sort((a, b) => b.valor - a.valor);
+}
+
+/** Alterna autores dentro de una página cuando es posible (sin cambiar qué entradas salen). */
+function alternarAutores(lista) {
+    const resto = [...lista], orden = [];
+    while (resto.length) {
+        const distinto = resto.findIndex(e => e.usuario !== orden.at(-1)?.usuario);
+        orden.push(resto.splice(Math.max(0, distinto), 1)[0]);
     }
     return orden;
 }
 
+// Ordena un lote por relevancia y alterna autores cuando es posible.
+function ordenarFeed(entradas, { ahora = Date.now(), vista, siguiendo = [], intereses = [] } = {}) {
+    if (vista === 'recientes' || vista === 'siguiendo' || vista === 'guardados' || vista === 'perfil') return entradas;
+    return alternarAutores(rankear(entradas, { vista, ahora, siguiendo, intereses }).map(x => x.e));
+}
+
 module.exports.ordenarFeed = ordenarFeed;
+module.exports.rankear = rankear;
+module.exports.alternarAutores = alternarAutores;
