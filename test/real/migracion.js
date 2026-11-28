@@ -140,10 +140,10 @@ function versionAnterior() {
       p.on('response', x => { if (x.url().startsWith(web.url) && x.status() >= 400) rotos.push(`${x.status()} ${x.url().slice(web.url.length)}`); });
       p.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) err.push(e.message); });
       await p.goto(web.url + '/'); await espera(3000);
-      const v = await p.evaluate(() => ({ base: document.baseURI, main: !!document.getElementById('main-view'), sobra: document.documentElement.scrollWidth - innerWidth }));
+      const v = await p.evaluate(() => ({ base: document.baseURI, landing: !!document.querySelector('body.lp-body') && getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)', explorar: !!document.getElementById('ug-explorar-biblioteca'), sobra: document.documentElement.scrollWidth - innerWidth }));
       const conocidos = err.filter(e => e === 'undefined');   // rechazo sin motivo con la API simulada: igual en ${ANTERIOR} (ver navegacion.js)
       if (conocidos.length) console.log(`  ⚠ conocido (también en ${ANTERIOR.slice(0, 7)}): ${conocidos.length} rechazo(s) sin motivo con la API simulada`);
-      C.prueba(`${n}: sin recursos 404 ni errores de JavaScript`, !rotos.length && err.length === conocidos.length && v.main && v.base.endsWith('/public/'), JSON.stringify({ rotos, err: err.slice(0, 3), v }));
+      C.prueba(`${n}: sin recursos 404 ni errores de JavaScript`, !rotos.length && err.length === conocidos.length && v.landing && v.explorar && !v.base.endsWith('/public/'), JSON.stringify({ rotos, err: err.slice(0, 3), v }));
       C.prueba(`${n}: sin desborde horizontal`, v.sobra <= 1, `${v.sobra}px`);
       await c.close();
     }

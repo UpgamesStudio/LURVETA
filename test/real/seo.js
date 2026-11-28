@@ -3,7 +3,7 @@
  * SEO de extremo a extremo (sin tocar producción):
  *  - <head> de las páginas públicas clave: título y descripción únicos, canónica propia, sin noindex donde no toca,
  *    Open Graph / X completos, imagen de vista previa real de 1200×630, JSON-LD válido y un solo <h1>
- *  - portada (https://lurveta.com/ = la biblioteca): título, descripción, H1 y palabras clave del posicionamiento;
+ *  - portada (https://lurveta.com/ = la landing): título, descripción, JSON-LD con FAQPage, H1, palabras clave y enlaces SEO;
  *    el puente /public/biblioteca.html solo apunta (canónica) a la portada
  *  - todos los enlaces internos de la portada existen
  *  - sitemap: el del servidor real y el publicado (public/sitemap.xml) con la portada primero, sin biblioteca.html
@@ -69,15 +69,19 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
   const html = fs.readFileSync(path.join(REPO, 'index.html'), 'utf8');
   const raiz = cabecera(html);
   const grafo = JSON.parse(raiz.ld[0])['@graph'] || [];
-  C.prueba('portada: Organization + WebSite (buscador en /?q=) + CollectionPage', ['Organization', 'WebSite', 'CollectionPage'].every(t => grafo.some(x => x['@type'] === t)) && grafo.find(x => x['@type'] === 'WebSite').potentialAction?.target?.urlTemplate === 'https://lurveta.com/?q={search_term_string}' && grafo.every(x => !/biblioteca\.html/.test(JSON.stringify(x))), JSON.stringify(grafo.map(x => x['@type'])));
-  C.prueba('título y descripción de la portada', raiz.title === 'Lurveta | Juegos, mods y apps de creadores independientes' && raiz.desc === 'Lurveta conecta gamers, creadores de contenido y desarrolladores independientes en un ecosistema para descubrir, crear y monetizar.', `${raiz.title} · ${raiz.desc}`);
-  const h1 = (html.match(/<h1[^>]*>([^<]*)<\/h1>/) || [])[1] || '', bloque = ((html.match(/<section class="ug-bienvenida"[\s\S]*?<\/section>/) || [''])[0] + (html.match(/<section id="ug-acerca"[\s\S]*?<\/section>/) || [''])[0]).toLowerCase();   // texto visible: introducción + qué es Lurveta
-  C.prueba('H1 con la propuesta de valor', h1 === 'Descubre juegos, mods y apps de la comunidad', h1);
-  const claves = ['juegos', 'mods', 'winlator', 'aplicaciones', 'descargas', 'desarrolladores independientes', 'creadores de contenido'].filter(k => !bloque.includes(k));
-  C.prueba('palabras clave (juegos, mods, Winlator, aplicaciones, descargas, desarrolladores independientes, creadores de contenido)', !claves.length, 'faltan: ' + claves.join(', '));
-  C.prueba('«Sobre Lurveta» conserva la información ampliada y los enlaces SEO', !/class="ug-sr"/.test(html) && /<details class="ug-sobre" id="ug-sobre">\s*<summary>Sobre Lurveta<\/summary>[\s\S]*id="ug-acerca"[\s\S]*SEO:ENLACES[\s\S]*<\/details>/.test(html));
-  C.prueba('un solo H1 en la bienvenida inicial, en la portada', /<section class="ug-bienvenida"[\s\S]*?<h1[\s>][\s\S]*?<\/section>/.test(html) && (html.match(/<h1[\s>]/g) || []).length === 1);
-  C.prueba('sin anclas relativas (con <base> un href="#…" iría a /public/)', !/href="#[a-z]/i.test(html), (html.match(/href="#[^"]+"/g) || []).join(' '));
+  C.prueba('portada: Organization + WebSite (buscador en /?q=) + WebPage + FAQPage', ['Organization', 'WebSite', 'WebPage', 'FAQPage'].every(t => grafo.some(x => x['@type'] === t)) && grafo.find(x => x['@type'] === 'WebSite').potentialAction?.target?.urlTemplate === 'https://lurveta.com/?q={search_term_string}' && grafo.every(x => !/biblioteca\.html/.test(JSON.stringify(x))), JSON.stringify(grafo.map(x => x['@type'])));
+  const faqLd = (grafo.find(x => x['@type'] === 'FAQPage')?.mainEntity || []).map(q => q.name), faqHtml = [...html.matchAll(/<summary[^>]*>([^<]+)<\/summary>/g)].map(m => m[1].trim());
+  C.prueba(`FAQPage = las preguntas visibles de la portada (${faqLd.length})`, faqLd.length >= 4 && faqLd.every(q => faqHtml.includes(q)), JSON.stringify({ faqLd, faqHtml }));
+  C.prueba('título y descripción de la portada con las palabras clave', /^Lurveta \| /.test(raiz.title) && ['juegos', 'mods', 'apps', 'creadores independientes'].every(k => raiz.title.toLowerCase().includes(k)) && ['juegos', 'mods', 'apps', 'pc', 'android', 'blog'].every(k => raiz.desc.toLowerCase().includes(k)), `${raiz.title} · ${raiz.desc}`);
+  const h1 = ((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const visible = html.slice(html.indexOf('<body')).replace(/<(script|style)[\s\S]*?<\/\1>/g, '').replace(/<!--SEO:ENLACES-->[\s\S]*?<!--\/SEO:ENLACES-->/, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').toLowerCase();   // texto propio de la portada, sin la lista de enlaces generada
+  C.prueba('H1 con la propuesta de valor', h1 === 'Todo lo que creas, en un solo lugar.', h1);
+  const claves = ['juegos', 'mods', 'aplicaciones', 'descargas', 'desarrolladores independientes', 'creadores de contenido', 'creadores independientes', 'blog', 'directos', 'monetizar'].filter(k => !visible.includes(k));
+  C.prueba(`palabras clave en el texto visible (${visible.split(' ').length} palabras)`, !claves.length && visible.split(' ').length >= 600, 'faltan: ' + claves.join(', '));
+  C.prueba('la lista de enlaces SEO generada sigue en la portada (pie «Explora Lurveta»)', /<nav class="ug-explora[^"]*"[\s\S]*<!--SEO:ENLACES-->[\s\S]*<!--\/SEO:ENLACES-->[\s\S]*<\/nav>/.test(html));
+  C.prueba('un solo H1 y sin estilos en línea (la CSP no los permite)', (html.match(/<h1[\s>]/g) || []).length === 1 && !/\sstyle="/.test(html.slice(html.indexOf('<body'))));
+  const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map(m => m[1])), anclas = [...html.matchAll(/href="#([^"]+)"/g)].map(m => m[1]);
+  C.prueba(`anclas del menú llevan a secciones que existen (${anclas.length})`, !/<base\s/i.test(html) && anclas.every(a => ids.has(a)), anclas.filter(a => !ids.has(a)).join(' '));
   C.prueba('la portada enlaza a la biblioteca', /href="public\/biblioteca\.html"/.test(html));
   const puente = cabecera(fs.readFileSync(path.join(REPO, 'public/biblioteca.html'), 'utf8'));
   C.prueba('biblioteca: canónica a la portada e indexación permitida', puente.canon === 'https://lurveta.com/' && !/\bnoindex\b/i.test(puente.robots || ''), JSON.stringify(puente));
@@ -88,12 +92,12 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
   C.prueba('raíz /sitemap.xml: índice que apunta al sitemap real', /<sitemapindex[\s\S]*https:\/\/lurveta\.com\/public\/sitemap\.xml/.test(fs.readFileSync(path.join(REPO, 'sitemap.xml'), 'utf8')));
   const robots = fs.readFileSync(path.join(REPO, 'robots.txt'), 'utf8');
   C.prueba('robots.txt deja rastrear la portada y la biblioteca y declara el sitemap', /User-agent: \*[\s\S]*Allow: \//.test(robots) && !/^Disallow: \/\s*$/m.test(robots.split('User-agent: PetalBot')[0]) && /Sitemap: https:\/\/lurveta\.com\/public\/sitemap\.xml/.test(robots));
-  // <base href="/public/">: los relativos cuelgan de public/, los absolutos de la raíz
+  // sin <base>: los relativos y los absolutos cuelgan de la raíz
   const hrefs = [...html.matchAll(/href="([^"#:?]+)[^"]*"/g)].map(m => m[1]).filter(h => !/^\/\/|\.css$|^\/$/.test(h) && /\.html$/.test(h));
   const rotos = hrefs.filter(h => !fs.existsSync(path.join(REPO, h.startsWith('/') ? h.slice(1) : h.replace(/^\.\//, ''))));
   C.prueba(`enlaces internos de la portada existen (${hrefs.length})`, hrefs.length > 10 && rotos.length === 0, rotos.join(', '));
   const enlaces = (html.match(/<!--SEO:ENLACES-->([\s\S]*?)<!--\/SEO:ENLACES-->/) || [])[1] || '';
-  C.prueba('la portada enlaza temas y secciones rastreables (absolutos, por el <base>)', (enlaces.match(/href="\/public\/j\//g) || []).length >= 3 && !/href="\.\//.test(enlaces), enlaces.slice(0, 200));
+  C.prueba('la portada enlaza temas y secciones rastreables (absolutos)', (enlaces.match(/href="\/public\/j\//g) || []).length >= 3 && !/href="\.\//.test(enlaces), enlaces.slice(0, 200));
   C.seccion('Sitemap publicado (public/sitemap.xml) y su saneado');
   const Seo = require(path.join(REPO, 'modulos/seo.js'));
   const pub = fs.readFileSync(path.join(REPO, 'public/sitemap.xml'), 'utf8'), locsPub = [...pub.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x => x[1]);
@@ -110,31 +114,15 @@ function tamJpg(buf) { let i = 2; while (i < buf.length) { if (buf[i] !== 0xFF) 
       const ctx = await b.newContext({ viewport: vp, serviceWorkers: 'block' }); await ctx.route(/fonts\.(googleapis|gstatic)\.com|unpkg\.com|railway\.app/, r => r.abort());
       const p = await ctx.newPage(); const err = []; p.on('pageerror', e => { if (!esErrorSandboxPlaywright(e)) err.push(e.message); });
       await p.goto(web.url + '/', { waitUntil: 'load' }); await espera(700);
-      const vis = await p.evaluate(() => {
-        // checkVisibility: lo que está dentro de un <details> cerrado no se pinta (aunque tenga tamaño)
-        const ve = el => { if (!el || (el.checkVisibility && !el.checkVisibility())) return false; const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 100 && r.height > 10 && cs.visibility !== 'hidden' && cs.display !== 'none' && cs.clip === 'auto' && cs.position !== 'absolute'; };
-        const a = document.getElementById('ug-acerca'), txt = (a?.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-        const h1Visible = ve(document.querySelector('h1'));
-        const acercaVisible = ve(a);
-        document.getElementById('ug-sobre').open = true;
-        const acercaAbierto = ve(a);
-        document.getElementById('ug-sobre').open = false;
-        return { h1: h1Visible, acerca: acercaVisible, acercaAbierto, palabras: txt.split(/\s+/).length,
-          faltan: ['juegos', 'mods', 'winlator', 'apps', 'creadores de contenido', 'desarrolladores independientes', 'monetiza'].filter(k => !txt.includes(k)) };
+      const r = await p.evaluate(() => {
+        const h = document.querySelector('h1'), hr = h?.getBoundingClientRect();
+        return { url: location.pathname, h1: h?.innerText.replace(/\s+/g, ' ').trim(), h1Visible: !!hr && hr.width > 100 && hr.height > 10 && hr.top < innerHeight,
+          lib: !!document.getElementById('main-view'), sobra: document.documentElement.scrollWidth - innerWidth,
+          ctas: [...document.querySelectorAll('a[href="login.html?registro=1"]')].filter(a => a.getBoundingClientRect().width > 0).length,
+          tira: document.querySelectorAll('#lp-tira a[href]').length, faq: document.querySelectorAll('#preguntas details').length };
       });
-      const sobre = await p.evaluate(() => { const d = document.getElementById('ug-sobre'), s = d?.querySelector('summary').getBoundingClientRect();
-        return { cerrado: d && !d.open, resumen: !!s && s.height > 10, altoCerrado: Math.round(d?.getBoundingClientRect().height || 0) }; });
-      C.prueba(`${n}: «Sobre Lurveta» llega plegado (el usuario solo ve una línea)`, sobre.cerrado && sobre.resumen && sobre.altoCerrado < 200 && !vis.acerca, JSON.stringify(sobre));
-      await p.evaluate(() => { document.getElementById('ug-sobre').open = true; });
-      const abierto = await p.evaluate(() => { const r = document.getElementById('ug-acerca').getBoundingClientRect(); return r.height > 100; });
-      C.prueba(`${n}: al abrirlo se ve todo (${vis.palabras} palabras en el HTML, con las palabras clave)`, abierto && vis.acercaAbierto && vis.palabras >= 300 && !vis.faltan.length, JSON.stringify(vis));
-      const r = await p.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.innerText, lib: !!document.getElementById('main-view'), sobra: document.documentElement.scrollWidth - innerWidth }));
-      C.prueba(`${n}: portada independiente en / con H1 visible`, r.url === '/' && vis.h1 && r.h1 === 'Descubre juegos, mods y apps de la comunidad' && !r.lib, JSON.stringify(r));
-      const categorías = await p.locator('.ug-categorias-portada a').evaluateAll(enlaces => enlaces.map(a => a.getAttribute('href')));
-      C.prueba(`${n}: enlaces directos a las cuatro categorías`, JSON.stringify(categorías) === JSON.stringify([
-        '/public/j/juegos-y-mods-para-android.html', 'public/biblioteca.html?tab=videos',
-        'public/biblioteca.html?tab=new', '/public/j/mods-de-rendimiento.html',
-      ]));
+      C.prueba(`${n}: portada independiente en / con H1 visible al cargar`, r.url === '/' && r.h1Visible && r.h1 === 'Todo lo que creas, en un solo lugar.' && !r.lib, JSON.stringify(r));
+      C.prueba(`${n}: llamadas a crear cuenta, proyectos reales y preguntas (sin API también)`, r.ctas >= 2 && r.tira >= 6 && r.faq >= 4, JSON.stringify(r));
       const explorar = p.locator('#ug-explorar-biblioteca');
       await explorar.focus();
       await Promise.all([p.waitForURL('**/public/biblioteca.html', { waitUntil: 'domcontentloaded' }), p.keyboard.press('Enter')]);

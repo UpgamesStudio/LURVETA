@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Une y minifica las hojas de estilo de la biblioteca en public/upgames-app.css.
- * La landing de la raíz ahora tiene una hoja independiente (lurveta-landing.css).
+ * La portada de la raíz tiene una hoja independiente (lurveta-portada.css).
  * Las fuentes y la cascada de la biblioteca se mantienen sin cambios.
  * node scripts/unir-css.js         → escribe el paquete y actualiza biblioteca.html
  * node scripts/unir-css.js --check → falla si el paquete no está al día

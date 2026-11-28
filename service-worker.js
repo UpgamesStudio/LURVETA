@@ -16,7 +16,7 @@
 // No toca /admin/ (datos privados del panel), /games/ ni /studio/ (tienen su propio service worker).
 // ========================================
 
-const CACHE_VERSION = 'upgames-v8.4.0';   // Cards cerradas con el diseño F (Mosaico).
+const CACHE_VERSION = 'upgames-v8.5.0';   // Nueva portada (landing) en la raíz.
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_RUNTIME = `${CACHE_VERSION}-runtime`;
 const CACHE_API     = `${CACHE_VERSION}-api`;
@@ -28,9 +28,9 @@ const IMG_REVALIDAR = 7 * 24 * 3600 * 1000;      // las que no son de Cloudinary
 // Assets esenciales que se precachean
 const PRECACHE_URLS = [
     '/',
-    '/public/portada.css?v=2',
-    '/public/portada-populares.css?v=1',
-    '/public/portada-populares.js?v=1',
+    '/public/lurveta-portada.css?v=1',
+    '/public/lurveta-portada.js?v=1',
+    '/public/portada/inicio-oscuro.webp',
     '/public/upgames-anuncios-aislados.js',
     '/public/upgames-app.css',
     '/public/upgames-estilo.css',
