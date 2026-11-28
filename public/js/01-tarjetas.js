@@ -137,7 +137,6 @@ function createTile(item, isFeatured=false) {
   const tituloT = item.serieInfo?.base || item.title;
   const isOnline = ls==='online';
   const statusLabel = ls==='online'?'Online':ls==='revision'?'Revisión':'Caído';
-  const inicialT = (String(tituloT || '').match(/[\p{L}\p{N}]/u) || ['•'])[0].toUpperCase();   // icono de la card en modo claro
   const cat = item.category || 'General';
   const isVideo = cat === 'Video';
 
@@ -149,6 +148,8 @@ function createTile(item, isFeatured=false) {
     ? `<video data-src="${escH(ugVideoSrc(imgSrc))}" muted loop playsinline preload="none" class="lazy-vid"></video>`
     : `<img src="${escH(cldOpt(imgSrc, CLD_TILE_FEED))}"${cldSrcset(imgSrc, UG_SS_TILE, UG_SIZES_TILE)} alt="${escH(tituloT)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute('srcset');this.src=window.UG_PH">`;
 
+  // Miniatura cuadrada de la portada: icono de la franja de cristal en las filas del inicio
+  const iconoT = isVid ? (ugVideoThumb(imgSrc) || window.UG_PH) : isYouTubeUrl(imgSrc) ? getYouTubeThumbnail(imgSrc) : (imgSrc ? cldOpt(imgSrc, 'c_fill,w_96,h_96,g_auto,q_auto,f_auto') : window.UG_PH);
   const favIds = LS.getJSON('favoritos', []);
   const isFav = favIds.includes(item._id);
   const dl = item.descargasEfectivas||0;
@@ -227,7 +228,7 @@ function createTile(item, isFeatured=false) {
 
       </div>
       <div class="tile-info">
-        <span class="tile-icon" aria-hidden="true">${escH(inicialT)}</span>
+        <img class="tile-icon" src="${escH(iconoT)}" alt="" aria-hidden="true" loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">
         <div class="tile-body">
         <div class="tile-cat">${catLabel(cat)}${item.promocionado ? ' <span class="tile-promo" title="Su autor pagó para destacarla">Promocionado</span>' : ''}</div>
         ${extrasFila}
