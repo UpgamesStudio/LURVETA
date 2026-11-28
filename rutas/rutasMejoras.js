@@ -302,9 +302,11 @@ function registrar(app, { verificarToken, verificarAdmin }) {
     /**
      * POST /2fa/verify - Verificar token en login
      */
-    app.post('/2fa/verify', [body('usuario').notEmpty(), body('token').notEmpty()], async (req, res) => {
+    // Con sesión y solo sobre la propia cuenta: sin ella cualquiera probaba códigos de otra persona sin su
+    // contraseña, gastaba sus códigos de respaldo y la dejaba bloqueada 15 min. El login usa /auth/login.
+    app.post('/2fa/verify', verificarToken, [body('token').isString().notEmpty()], async (req, res) => {
         try {
-            const result = await twoFactor.verificar(req.body.usuario.toLowerCase(), req.body.token);
+            const result = await twoFactor.verificar(req.usuario, req.body.token);
             res.json(result);
         } catch (err) {
             res.status(500).json({ ok: false });

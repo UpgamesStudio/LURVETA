@@ -495,7 +495,7 @@ function createTile(item, isFeatured=false) {
   const isFav = favIds.includes(item._id);
   const dl = item.descargasEfectivas||0;
   const lk = item.likesCount||0;
-  const extraBadges = (item.serieInfo ? `<span class="tile-extra-badge tile-serie-badge"><ion-icon name="folder-open"></ion-icon>${item.serieInfo.partes} partes</span>` : '') + getTileExtras(item);
+  const extraBadges = (item.serieInfo ? `<span class="tile-extra-badge tile-serie-badge"><ion-icon name="folder-open"></ion-icon>${Number(item.serieInfo.partes) || ''} partes</span>` : '') + getTileExtras(item);
   // Siempre hay una fila de etiquetas (vacía si no tiene): todas las tarjetas miden lo mismo
   const insignias = extraBadges.replace(/<div class="tile-extras">([\s\S]*)<\/div>\s*$/, '$1').trim();
   const extrasFila = insignias ? `<div class="tile-extras">${insignias}</div>` : '<div class="tile-extras tile-extras--vacia" aria-hidden="true"></div>';
@@ -512,7 +512,7 @@ function createTile(item, isFeatured=false) {
         ${isVideo?'<div class="tile-video-overlay"><ion-icon name="play-circle"></ion-icon></div>':''}
       </div>
       <div class="ft-info">
-        <div class="ft-badge">${isVideo?'▶ '+( item.videoType||'Video'):'⭐ Destacado'}</div>
+        <div class="ft-badge">${isVideo?'▶ '+escH(item.videoType||'Video'):'⭐ Destacado'}</div>
         <div class="ft-title">${escH(tituloT)}</div>
         <div class="ft-meta">
           <div class="ft-user">@${escH(item.usuario||'Cloud')}${getBadge(item.usuario)}</div>
@@ -542,7 +542,7 @@ function createTile(item, isFeatured=false) {
           <ion-icon name="${isFav?'heart':'heart-outline'}"></ion-icon>
         </button>
         ${item.videoType?`<div class="tile-vid-type-badge">${escH(item.videoType)}</div>`:''}
-        ${duracion?`<div class="tile-duration-badge">${duracion}</div>`:''}
+        ${duracion?`<div class="tile-duration-badge">${escH(duracion)}</div>`:''}
       </div>
       <div class="tile-info tile-info--yt">
         <div class="tile-yt-avatar">${avatarLetter(item.usuario)}</div>
@@ -1357,7 +1357,7 @@ function openDetail(item) {
       if(cached) {
         renderFeaturedEntry(featEl, cached);
       } else {
-        fetch(`${API_URL}/items/${item.featuredItemId}`)
+        fetch(`${API_URL}/items/${encodeURIComponent(item.featuredItemId)}`)
           .then(r => r.ok ? r.json() : null)
           .then(d => { if(d && d._id) renderFeaturedEntry(featEl, d); else featEl.style.display = 'none'; })
           .catch(() => { featEl.style.display = 'none'; });
@@ -2134,7 +2134,7 @@ async function renderFavs() {
       const card = document.createElement('div');
       card.className='pf-vault-card';
       card.innerHTML=`
-        <img src="${item.image||window.UG_PH}" alt="${item.title||''}" onerror="this.onerror=null;this.src=window.UG_PH">
+        <img src="${escH(item.image||window.UG_PH)}" alt="${escH(item.title||'')}" onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-vault-info">
           <div class="pf-vault-title">${(item.title||'Sin título').substring(0,40)}</div>
           <div class="pf-vault-user">@${escH(item.usuario||'Anónimo')}</div>
@@ -2742,12 +2742,11 @@ function pfRenderFeaturedList(items) {
   }
 
   list.innerHTML = items.map(item => {
-    const safeTitle = (item.title || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    const safeImg   = (item.image || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    const safeCat   = (item.category || 'General').replace(/'/g, '&#39;');
+    // Argumentos como JSON y luego escapados para el atributo: una comilla del título no sale del string de JS
+    const args = escH(JSON.stringify([String(item._id || ''), item.title || '', item.image || '', item.category || 'General']));
     return `
-      <div class="pf-featured-item" onclick="pfSelectFeaturedItem('${item._id}','${safeTitle}','${safeImg}','${safeCat}')">
-        <img src="${item.image || window.UG_PH}"
+      <div class="pf-featured-item" onclick="pfSelectFeaturedItem(...${args})">
+        <img src="${escH(item.image || window.UG_PH)}"
              alt="" loading="lazy"
              onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-featured-item-info">
@@ -3720,7 +3719,7 @@ async function pfLoadBoveda() {
       const card = document.createElement('div');
       card.className='pf-vault-card';
       card.innerHTML=`
-        <img src="${item.image||window.UG_PH}" alt="${item.title||''}" onerror="this.onerror=null;this.src=window.UG_PH">
+        <img src="${escH(item.image||window.UG_PH)}" alt="${escH(item.title||'')}" onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-vault-info">
           <div class="pf-vault-title">${(item.title||'Sin título').substring(0,40)}</div>
           <div class="pf-vault-user">@${escH(item.usuario||'Anónimo')}</div>
@@ -4391,15 +4390,15 @@ async function pfLoadTarjetas() {
     list.innerHTML = d.tarjetas.map(t => `
       <div class="pf-tarjeta-card${t.esPrincipal ? ' principal' : ''}" data-id="${t._id}">
         <div class="pf-tarjeta-left">
-          <div class="pf-tarjeta-logo pf-tarjeta-logo--${t.tipo}">${logos[t.tipo]||'···'}</div>
+          <div class="pf-tarjeta-logo pf-tarjeta-logo--${ugEsc(t.tipo)}">${logos[t.tipo]||'···'}</div>
           <div class="pf-tarjeta-info">
-            <div class="pf-tarjeta-num">•••• •••• •••• ${t.ultimos4}</div>
-            <div class="pf-tarjeta-titular">${t.titular}</div>
+            <div class="pf-tarjeta-num">•••• •••• •••• ${ugEsc(t.ultimos4)}</div>
+            <div class="pf-tarjeta-titular">${ugEsc(t.titular)}</div>
             <div class="pf-tarjeta-meta">
-              <span class="pf-tarjeta-exp">Exp: ${t.mesExp}/${t.anioExp}</span>
-              <span class="pf-tarjeta-prop pf-tarjeta-prop--${t.proposito}">${propLabel[t.proposito]||'↕ Ambos'}</span>
+              <span class="pf-tarjeta-exp">Exp: ${ugEsc(t.mesExp)}/${ugEsc(t.anioExp)}</span>
+              <span class="pf-tarjeta-prop pf-tarjeta-prop--${ugEsc(t.proposito)}">${propLabel[t.proposito]||'↕ Ambos'}</span>
             </div>
-            ${t.alias ? `<div class="pf-tarjeta-alias">${t.alias}</div>` : ''}
+            ${t.alias ? `<div class="pf-tarjeta-alias">${ugEsc(t.alias)}</div>` : ''}
           </div>
         </div>
         <div class="pf-tarjeta-actions">

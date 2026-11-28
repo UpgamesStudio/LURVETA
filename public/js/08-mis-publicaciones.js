@@ -520,7 +520,7 @@ async function pfLoadBoveda() {
       const card = document.createElement('div');
       card.className='pf-vault-card';
       card.innerHTML=`
-        <img src="${item.image||window.UG_PH}" alt="${item.title||''}" onerror="this.onerror=null;this.src=window.UG_PH">
+        <img src="${escH(item.image||window.UG_PH)}" alt="${escH(item.title||'')}" onerror="this.onerror=null;this.src=window.UG_PH">
         <div class="pf-vault-info">
           <div class="pf-vault-title">${(item.title||'Sin título').substring(0,40)}</div>
           <div class="pf-vault-user">@${escH(item.usuario||'Anónimo')}</div>

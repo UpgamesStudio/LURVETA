@@ -134,6 +134,8 @@ function registrar(app, { verificarToken, verificarAdmin, Usuario, logger, sendE
             const datos = p.datosCobro ? descifrar(p.datosCobro) : (p.paypalEmail ? { email: p.paypalEmail } : null);
             if (!datos) return err(res, 409, 'No se pudieron leer los datos de cobro (¿cambió COBROS_CLAVE o JWT_SECRET?)');
             logger.warn(`[cobros] Admin @${req.admin?.usuario || '?'} consultó los datos de cobro del pago ${p._id} (@${p.usuario})`);
+            // Queda en el historial del retiro: registrar un pago manual exige haber visto antes estos datos
+            await mongoose.model('Pago').updateOne({ _id: p._id }, { $push: { historial: { $each: [{ fecha: new Date(), accion: 'datos_consultados', por: String(req.admin?.usuario || 'admin').slice(0, 40), detalle: '' }], $slice: -100 } } }).catch(() => {});
             ok(res, { usuario: p.usuario, metodo: p.metodo || 'paypal', nombre: TIPOS[p.metodo || 'paypal']?.nombre, datos, monto: p.monto });
         } catch (e) { logger.error(`[cobros] datos admin: ${e.message}`); err(res, 500, 'Error al leer los datos'); }
     });

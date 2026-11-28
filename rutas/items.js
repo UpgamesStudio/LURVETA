@@ -250,7 +250,16 @@ app.post("/items/add", [verificarToken, body('title').notEmpty().trim().isLength
         // inyectar descargasEfectivas, likesCount, nexusMentor, etc.
         const datos = {};
         CAMPOS_PUBLICACION.forEach(f => { if (req.body[f] !== undefined) datos[f] = req.body[f]; });
-        if (datos.extraData && (typeof datos.extraData !== 'object' || Array.isArray(datos.extraData))) datos.extraData = {};
+        // Campos extra: mismas reglas que al editar (claves simples, valores texto o número cortos, sin objetos anidados)
+        if (datos.extraData !== undefined) {
+            const ex = {};
+            if (datos.extraData && typeof datos.extraData === 'object' && !Array.isArray(datos.extraData))
+                Object.entries(datos.extraData).slice(0, 20).forEach(([k, v]) => {
+                    if (/^[\w-]{1,40}$/.test(k) && k !== 'detectedGame' && !/^nexus/i.test(k) && (typeof v === 'string' || typeof v === 'number') && v !== '') ex[k] = String(v).trim().slice(0, 600);
+                });
+            datos.extraData = ex;
+        }
+        if (datos.videoType !== undefined) datos.videoType = typeof datos.videoType === 'string' ? datos.videoType.trim().slice(0, 40) : '';
         if (datos.tags !== undefined && !Array.isArray(datos.tags)) delete datos.tags;
         const errGuia = await sanearGuia(datos, req.usuario);
         if (errGuia) return res.status(400).json({ success: false, error: errGuia });
@@ -345,7 +354,7 @@ app.put("/items/:id", verificarToken, [
             const ex = { ...previo };
             if (nuevo) {
                 Object.entries(nuevo).slice(0, 20).forEach(([k, v]) => {
-                    if (!/^[\w-]{1,40}$/.test(k) || k === 'detectedGame') return;
+                    if (!/^[\w-]{1,40}$/.test(k) || k === 'detectedGame' || /^nexus/i.test(k)) return;   // nexus*: los pone el servidor al publicar desde Nexus
                     if (v === '' || v === null) delete ex[k];
                     else if (typeof v === 'string' || typeof v === 'number') ex[k] = String(v).trim().slice(0, 600);
                 });

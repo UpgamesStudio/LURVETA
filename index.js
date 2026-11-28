@@ -285,6 +285,8 @@ const authLimiter = rateLimit({
     max: config.RATE_LIMIT.AUTH.max,
     message: { error: "Demasiados intentos de login, espera 15 minutos" },
     skipSuccessfulRequests: true,
+    // Pedir el código 2FA tras una contraseña correcta no es un intento fallido
+    requestWasSuccessful: (req, res) => res.statusCode < 400 || !!res.locals.credencialesOk,
     skip: () => config.NODE_ENV === 'development'
 });
 

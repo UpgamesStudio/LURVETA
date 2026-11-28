@@ -199,6 +199,61 @@ function servirRepo() {   // admin/ usa ../public/: se sirve la raíz del reposi
       C.prueba('turno: «Pausar turno» vuelve al panel', await p.evaluate(() => document.getElementById('turno').hidden && document.getElementById('app').classList.contains('on')));
       await ctx.close();
     }
+    C.seccion('Turno: reglas en el servidor (pagos, reportes, verificación y conflictos)');
+    const tok = (await (await fetch(A + '/admin/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin: PIN }) })).json()).adminToken;
+    const adm = async (mt, r, body) => { const x = await fetch(A + r, { method: mt, headers: { 'Content-Type': 'application/json', 'x-admin-token': tok }, body: body ? JSON.stringify(body) : undefined }); return { s: x.status, d: await x.json().catch(() => ({})) }; };
+    const sol = (await adm('GET', '/admin/finanzas/solicitudes-pendientes')).d.solicitudes || [];
+    C.prueba('la cola dice si el retiro se paga solo (sin PayPal configurado: manual)', sol.find(x => String(x._id) === String(P.pend))?.automatico === false, JSON.stringify(sol.map(x => x.automatico)));
+    let r = await adm('POST', `/admin/finanzas/procesar-pago/${P.pend}`, { modo: 'automatico' });
+    C.prueba('un panel que cree que es automático no registra un pago manual (409 MODO_CAMBIO)', r.s === 409 && r.d.code === 'MODO_CAMBIO', JSON.stringify(r));
+    r = await adm('POST', `/admin/finanzas/procesar-pago/${P.pend}`, { modo: 'manual', referencia: '  ' });
+    C.prueba('pago manual sin comprobante → 400 y el retiro sigue pendiente', r.s === 400 && r.d.code === 'REFERENCIA_REQUERIDA' && (await pagos.findOne({ _id: P.pend })).estado === 'pendiente', JSON.stringify(r));
+    await pagos.insertOne({ usuario: 'eva', monto: 3, metodo: 'paypal', referencia: 'TRX-REPETIDA-1', estado: 'completado', fecha: ahora });
+    r = await adm('POST', `/admin/finanzas/procesar-pago/${P.pend}`, { modo: 'manual', referencia: 'TRX-REPETIDA-1' });
+    C.prueba('una referencia ya usada en otro retiro → 409', r.s === 409 && r.d.code === 'REFERENCIA_DUPLICADA', JSON.stringify(r));
+    const mp = (await pagos.insertOne({ usuario: 'dani', monto: 5, metodo: 'mercadopago', datosCobro: 'cifrado', resumen: 'MP · dani', estado: 'pendiente', fecha: ahora })).insertedId;
+    r = await adm('POST', `/admin/finanzas/procesar-pago/${mp}`, { modo: 'manual', referencia: 'MP-7788' });
+    C.prueba('pago manual sin haber visto los datos de cobro → 409', r.s === 409 && r.d.code === 'DATOS_SIN_VER', JSON.stringify(r));
+    r = await adm('POST', `/admin/finanzas/procesar-pago/${P.pend}`, { modo: 'manual', referencia: 'TRX-998877' });
+    const pagado = await pagos.findOne({ _id: P.pend });
+    C.prueba('con comprobante se registra una vez, con referencia y responsable en el historial', r.s === 200 && pagado.estado === 'completado' && pagado.referencia === 'TRX-998877' && (pagado.historial || []).some(h => h.accion === 'completado' && h.por), JSON.stringify({ s: r.s, e: pagado.estado }));
+    r = await adm('POST', `/admin/finanzas/procesar-pago/${P.pend}`, { modo: 'manual', referencia: 'TRX-998877' });
+    C.prueba('el mismo pago no se registra dos veces (409)', r.s === 409, r.s);
+
+    const rep = await juegos.findOne({ _id: J.rep });
+    C.prueba('marcar caído cerró la tarea de reportes sin borrar los reportes', rep.revisionReportes?.estado === 'resuelta' && rep.revisionReportes.reportes === rep.reportes && rep.reportes === 2, JSON.stringify(rep.revisionReportes));
+    await juegos.updateOne({ _id: J.rep }, { $inc: { reportes: 1, 'reportesDesglose.malware': 1 } });
+    r = await adm('PUT', `/admin/items/${J.rep}`, { linkStatus: 'online', esperado: { reportes: 2 } });
+    C.prueba('una decisión sobre datos viejos no pisa un reporte nuevo (409 CONFLICTO)', r.s === 409 && r.d.code === 'CONFLICTO', JSON.stringify(r.d));
+    r = await adm('PUT', `/admin/items/${J.rep}/reset-reports`, {});
+    C.prueba('un reporte de malware nuevo no se limpia solo porque el enlace funcione (422)', r.s === 422 && r.d.code === 'MALWARE_SIN_REVISAR', JSON.stringify(r.d));
+    r = await adm('PUT', `/admin/items/${J.normal}`, { status: 'aprobado', comprobaciones: [true, false, true, true] });
+    C.prueba('aprobar con una comprobación en «No» → 422 CONTRADICCION', r.s === 422 && r.d.code === 'CONTRADICCION' && (await juegos.findOne({ _id: J.normal })).status === 'pendiente', JSON.stringify(r.d));
+    const sos = (await juegos.insertOne({ ...base, usuario: 'eva', title: 'Juego completo dudoso', status: 'aprobado', pagoPausado: true, sospecha: { juego: 'X', desde: ahora } })).insertedId;
+    r = await adm('POST', `/admin/items/${sos}/sospecha`, { decision: 'ok' });
+    C.prueba('volver a pagar sin verificar el enlace → 422', r.s === 422 && r.d.code === 'ENLACE_SIN_VERIFICAR' && (await juegos.findOne({ _id: sos })).pagoPausado === true, JSON.stringify(r.d));
+    r = await adm('POST', `/admin/items/${sos}/sospecha`, { decision: 'mantener', esperado: { revision: '' } });
+    const r2 = await adm('POST', `/admin/items/${sos}/sospecha`, { decision: 'ok', enlaceVerificado: true, esperado: { revision: '' } });
+    C.prueba('dos admins a la vez: la segunda decisión sobre la misma versión → 409 y gana la primera', r.s === 200 && r2.s === 409 && (await juegos.findOne({ _id: sos })).sospecha.revision === 'mantener', JSON.stringify([r.s, r2.s]));
+
+    C.seccion('Turno: un error del servidor no es «Todo al día»');
+    {
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 860 } });
+      await ctx.route(/unpkg\.com|fonts\.(googleapis|gstatic)\.com/, x => x.abort());
+      await ctx.route(/\/admin\/(items(\?|\/sospechosas)|finanzas\/solicitudes-pendientes)/, x => x.fulfill({ status: 500, contentType: 'application/json', body: '{"success":false}' }));
+      const p = await ctx.newPage(); p.on('pageerror', e => errores.push(`error-500: ${e.message}`));
+      await p.goto(`${web.url}/admin/index.html?api=${encodeURIComponent(A)}`, { waitUntil: 'domcontentloaded' });
+      await p.evaluate(() => togglePin()); await p.fill('#lgPin', PIN); await p.click('#lgBtn');
+      await p.waitForSelector('#app.on', { timeout: 15000 }).catch(() => {}); await espera(2500);
+      await p.evaluate(() => tnAbrir()); await espera(800);
+      const t = await p.evaluate(() => ({ h1: document.querySelector('#turno h1')?.innerText, alerta: document.querySelector('#turno [role=alert]')?.innerText || '', vacio: document.querySelector('#turno .tn-vacio h2')?.innerText }));
+      C.prueba('con la API en 500 el turno dice que no pudo comprobar (nunca «Todo al día»)', !/Todo al día/.test(t.h1) && /No se pudieron comprobar/.test(t.alerta) && /error del servidor/.test(t.alerta), JSON.stringify(t));
+      await p.evaluate(() => logout('Sesión cerrada en la prueba')); await p.waitForLoadState('domcontentloaded'); await espera(800);
+      const fuera = await p.evaluate(() => ({ login: !document.getElementById('login').classList.contains('hide'), turno: document.getElementById('turno').innerHTML, msg: document.getElementById('lgErr').textContent, ses: sessionStorage.getItem('ugAdmin') || localStorage.getItem('ugAdmin') }));
+      C.prueba('cerrar sesión recarga limpio: login visible, sin datos del turno ni sesión guardada, con el motivo', fuera.login && !fuera.turno && !fuera.ses && /prueba/.test(fuera.msg), JSON.stringify(fuera));
+      await ctx.close();
+    }
+
     C.seccion('Salud general');
     C.prueba('sin errores de JavaScript en el panel', errores.length === 0, errores.slice(0, 5).join('\n'));
   } finally {
