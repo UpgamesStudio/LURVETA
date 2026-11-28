@@ -1,24 +1,17 @@
 #!/usr/bin/env node
 /**
  * Une y minifica las hojas de estilo de la biblioteca en public/upgames-app.css.
- *
- * Antes la portada pedía 6 hojas (~400 KB) que bloqueaban la primera pintura.
- * Ahora es UNA sola, sin comentarios ni espacios de más, en el MISMO orden (la
- * cascada y el diseño no cambian). Las fuentes siguen siendo los archivos de
- * siempre: edítalos a ellos y vuelve a correr este script (la acción
- * .github/workflows/css.yml lo hace sola al subir cambios a main).
- *
- *   node scripts/unir-css.js          → escribe el paquete y actualiza index.html (la portada)
- *   node scripts/unir-css.js --check  → falla si el paquete no está al día
+ * La landing de la raíz ahora tiene una hoja independiente (lurveta-landing.css).
+ * Las fuentes y la cascada de la biblioteca se mantienen sin cambios.
+ * node scripts/unir-css.js         → escribe el paquete y actualiza biblioteca.html
+ * node scripts/unir-css.js --check → falla si el paquete no está al día
  */
 'use strict';
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
-
 const PUB = path.join(__dirname, '..', 'public');
 const FUENTES = ['biblioteca.css', 'upgames-glass.css', 'upgames-estilo.css', 'upgames-cyber.css', 'upgames-videos.css', 'upgames-ux.css', 'upgames-neo.css', 'upgames-hero.css', 'upgames-v6.css', 'lurveta-ui.css'];
 const SALIDA = path.join(PUB, 'upgames-app.css');
-const paginas = [[path.join(PUB, '..', 'index.html'), 'public/'], [path.join(PUB, 'biblioteca.html'), '']];
-
+const paginas = [[path.join(PUB, 'biblioteca.html'), '']];
 /** Minificador conservador: respeta cadenas y url(); solo quita comentarios y espacios sobrantes. */
 function minificar(css) {
   let out = '', i = 0;
