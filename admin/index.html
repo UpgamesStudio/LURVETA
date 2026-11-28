@@ -8,7 +8,7 @@
 <title>Panel Admin · Lurveta</title>
 <link rel="icon" type="image/png" href="../public/icons/icon-192.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#04060B;--bg2:#080C15;
@@ -748,6 +748,145 @@ body::before{opacity:.45}body::after{display:none}
   .chips{flex-wrap:wrap;overflow:visible}
 }
 @media (min-width:1400px){ .main{padding:28px 36px 48px} }
+
+/* ═════════ Acceso al panel (mismo lenguaje que el login de Lurveta) ═════════ */
+#login{background:#0C0D10;font-family:Inter,system-ui,sans-serif;overflow-y:auto;align-items:center;padding:72px 20px 32px}
+#login .al-fondo{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 45% at 50% -5%,rgba(91,240,168,.16),transparent 70%),radial-gradient(40% 35% at 100% 100%,rgba(92,225,255,.07),transparent 70%)}
+#login .al-volver{position:fixed;left:20px;top:20px;z-index:1;height:36px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.08);background:rgba(12,13,16,.6);color:#9CA0AA;font-size:13px;font-weight:600;text-decoration:none}
+#login .al-volver:hover{color:#F3F4F6}
+#login .lg-box{position:relative;width:100%;max-width:420px;margin:auto;padding:0;border:0;border-radius:0;background:none;box-shadow:none;display:flex;flex-direction:column;gap:18px;-webkit-backdrop-filter:none;backdrop-filter:none}
+#login .lg-box::before,#login .lg-box::after{display:none}
+#login .al-marca{display:flex;align-items:center;gap:8px}
+#login .al-logo{display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:999px;background:rgba(12,13,16,.6);border:1px solid rgba(255,255,255,.08);color:#F3F4F6;font-weight:800;font-size:15px;letter-spacing:.04em}
+#login .al-logo span{color:#5BF0A8}
+#login .al-chip{height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;background:rgba(91,240,168,.12);color:#5BF0A8;font-size:12px;font-weight:700}
+#login .al-cab{display:flex;flex-direction:column;gap:8px}
+#login .lg-t{margin:0;text-align:left;font-family:Inter,system-ui,sans-serif;font-size:32px;line-height:1.08;font-weight:800;letter-spacing:-.035em;text-transform:none;color:#F3F4F6;background:none;-webkit-text-fill-color:currentColor}
+#login .lg-s{margin:0;text-align:left;font-size:15px;line-height:1.5;color:#9CA0AA}
+#login .al-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:24px;background:#16181D;border:1px solid rgba(255,255,255,.07)}
+#login #lgCuenta,#login #lgPinBox{display:flex;flex-direction:column;gap:10px}
+#login .al-campo{display:flex;flex-direction:column;gap:4px;padding:10px 14px;border-radius:14px;background:#1D2027;cursor:text;transition:box-shadow .2s}
+#login .al-campo:focus-within{box-shadow:0 0 0 2px rgba(91,240,168,.55)}
+#login .al-etq{font-size:11.5px;font-weight:600;color:#9CA0AA}
+#login .al-campo input{width:100%;border:0;outline:0;background:none;color:#F3F4F6;font:600 16px Inter,system-ui,sans-serif;padding:0;min-width:0}
+#login .al-campo input.mono{font-family:var(--ff-mono);letter-spacing:.08em}
+#login .al-campo input::placeholder{color:#F3F4F6;opacity:.35}
+#login .al-fila{display:flex;align-items:center;gap:8px}
+#login .al-ojo{flex:none;width:32px;height:32px;margin:-6px -6px -6px 0;border:0;border-radius:8px;background:none;color:#9CA0AA;display:grid;place-items:center;font-size:18px;cursor:pointer}
+#login .al-ojo:hover{color:#F3F4F6}
+#login .al-rec{display:flex;align-items:center;gap:10px;padding:4px 4px 2px;font-size:13.5px;color:#C9CDD4;cursor:pointer;user-select:none}
+#login .al-rec input{position:absolute;opacity:0;width:1px;height:1px}
+#login .al-sw{position:relative;flex:none;width:36px;height:22px;border-radius:999px;background:#2A2E36;transition:background .2s}
+#login .al-sw::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#F3F4F6;transition:transform .2s}
+#login .al-rec input:checked+.al-sw{background:#5BF0A8}
+#login .al-rec input:checked+.al-sw::after{transform:translateX(14px);background:#04110A}
+#login .al-rec input:focus-visible+.al-sw{outline:2px solid #5BF0A8;outline-offset:2px}
+#login .al-pri,#login #lgBtn{width:100%;height:54px;border:0;border-radius:16px;background:#5BF0A8;color:#04110A;font:800 16px Inter,system-ui,sans-serif;letter-spacing:0;text-transform:none;cursor:pointer;box-shadow:none;padding:0;transition:filter .2s,transform .2s}
+#login #lgBtn:hover:not(:disabled){filter:brightness(1.06)}
+#login #lgBtn:active:not(:disabled){transform:scale(.98)}
+#login #lgBtn:disabled{opacity:.6;cursor:progress}
+#login .lg-err{min-height:0;margin:0;font-size:13.5px;line-height:1.45;text-align:center;color:#FF7A7A}
+#login .lg-err:empty{display:none}
+#login .al-links{display:grid;grid-template-columns:1fr;gap:10px}
+#login .lg-alt{margin:0;height:48px;padding:0 10px;border-radius:16px;border:1px solid rgba(255,255,255,.07);background:#16181D;color:#F3F4F6;font:700 13.5px Inter,system-ui,sans-serif;text-decoration:none;text-align:center;cursor:pointer}
+#login .lg-alt:hover{border-color:rgba(255,255,255,.16)}
+#login .al-nota{display:flex;align-items:flex-start;gap:8px;margin:0;padding:0 4px;font-size:12.5px;line-height:1.5;color:#8A8F99}
+#login .al-nota ion-icon{flex:none;font-size:16px;margin-top:1px;color:#5BF0A8}
+
+/* ═════════ Entrada al modo turno (pie del menú) ═════════ */
+.tn-entrar{width:100%;display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(91,240,168,.35);background:rgba(91,240,168,.1);color:#B9F8D8;font:700 13.5px var(--ff);cursor:pointer}
+.tn-entrar:hover{background:rgba(91,240,168,.16)}
+.tn-entrar ion-icon{font-size:18px;color:#5BF0A8}
+.tn-entrar span{flex:1;text-align:left}
+.tn-entrar b{min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:#5BF0A8;color:#04110A;font-size:12px;display:inline-grid;place-items:center}
+.tn-entrar b:empty{display:none}
+
+/* ═════════ Modo turno (claro, una tarea a la vez) ═════════ */
+#turno{position:fixed;inset:0;z-index:7100;overflow-y:auto;background:#F4F5F2;color:#101412;font-family:'Inter Tight',Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;color-scheme:light}
+#turno[hidden]{display:none}
+#turno *{box-sizing:border-box}
+#turno button{font-family:inherit;cursor:pointer}
+#turno a{color:inherit}
+#turno :focus-visible{outline:2px solid #0F7B4A;outline-offset:2px}
+.tn-cab{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:12px 32px;background:rgba(255,255,255,.94);border-bottom:1px solid #E3E5E0;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.tn-marca{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.tn-marca i{width:26px;height:26px;border-radius:8px;background:#101412;color:#fff;display:grid;place-items:center;font-size:13px;font-style:normal}
+.tn-rol{height:28px;padding:0 12px;border-radius:999px;background:#E3F2EA;color:#0F7B4A;font-size:13px;font-weight:700;display:inline-flex;align-items:center}
+.tn-cab nav{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:14px;color:#5A625E}
+.tn-lnk{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:6px 0;color:#5A625E;font-size:14px;font-weight:500}
+.tn-lnk:hover{color:#101412}
+.tn-pausa{height:36px;padding:0 14px;border-radius:999px;border:1px solid #E3E5E0;background:#fff;color:#101412;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.tn-cuerpo{width:100%;max-width:1240px;margin:0 auto;padding:28px 32px 48px;display:flex;flex-direction:column;gap:22px}
+.tn-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.tn-top small{display:block;font-size:14px;color:#5A625E;margin-bottom:4px}
+.tn-top h1{margin:0;font-size:32px;line-height:1.1;font-weight:600;letter-spacing:-.03em}
+.tn-prog{display:flex;align-items:center;gap:12px;min-width:260px;font-size:14px;font-weight:600}
+.tn-prog div{flex:1;height:8px;border-radius:999px;background:#E3E5E0;overflow:hidden}
+.tn-prog i{display:block;height:100%;background:#0F7B4A;border-radius:999px;transition:width .4s}
+.tn-colas{display:flex;flex-wrap:wrap;gap:10px}
+.tn-cola{flex:1 1 180px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid #E3E5E0;text-align:left;color:#101412}
+.tn-cola.on{border-color:#0F7B4A;box-shadow:0 0 0 3px #E3F2EA}
+.tn-cola[disabled]{opacity:.5;cursor:default}
+.tn-cola .ic{width:36px;height:36px;border-radius:10px;background:#F4F5F2;color:#5A625E;display:grid;place-items:center;flex:none}
+.tn-cola.on .ic{background:#E3F2EA;color:#0F7B4A}
+.tn-cola b{display:block;font-size:15px}
+.tn-cola small{font-size:12.5px;color:#5A625E}
+.tn-zona{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.tn-caja{flex:1 1 440px;min-width:0;display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:20px;background:#fff;border:1px solid #E3E5E0}
+.tn-caja.pasos{flex-basis:520px;gap:6px;padding:20px 24px}
+.tn-eti{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:700;letter-spacing:.06em;color:#8A918D}
+.tn-pill{height:26px;padding:0 10px;border-radius:999px;font-size:12.5px;font-weight:700;letter-spacing:0;display:inline-flex;align-items:center;gap:5px}
+.tn-pill.warn{background:#FDF1DC;color:#9A5B00}.tn-pill.bad{background:#FBE7E3;color:#B1361F}.tn-pill.ok{background:#E3F2EA;color:#0F7B4A}.tn-pill.mut{background:#F0F1EE;color:#5A625E}
+.tn-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;display:block;background:#EEF0EC}
+.tn-tit{margin:0;font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.25;overflow-wrap:anywhere}
+.tn-sub{font-size:14px;color:#5A625E}
+.tn-acc{display:flex;flex-wrap:wrap;gap:8px}
+.tn-acc a,.tn-acc button{flex:1 1 160px;height:40px;border-radius:10px;border:1px solid #E3E5E0;background:#fff;color:#101412;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600}
+.tn-acc a:hover,.tn-acc button:hover{border-color:#C9CDC6}
+.tn-nx{display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:#F4F5F2;font-size:13.5px;line-height:1.5;color:#5A625E}
+.tn-nx>svg{flex:none;color:#0F7B4A;margin-top:2px}
+.tn-nx b{color:#101412}
+.tn-nx button{margin-top:6px;border:0;background:none;padding:0;color:#0F7B4A;font-weight:700;font-size:13.5px}
+.tn-lista{margin:0;padding-left:18px;font-size:13.5px;line-height:1.5;color:#5A625E}
+.tn-monto{font-size:40px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.tn-datos{padding:12px 14px;border-radius:12px;border:1px dashed #C9CDC6;font-size:13.5px;line-height:1.6;overflow-wrap:anywhere}
+.tn-datos b{font-family:var(--ff-mono);font-weight:600}
+.tn-h3{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.tn-h3 h3{margin:0;font-size:18px;font-weight:600}
+.tn-h3 small{font-size:13px;color:#5A625E}
+.tn-pasos{margin:0;padding:0;list-style:none}
+.tn-paso{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #E3E5E0}
+.tn-paso:last-child{border-bottom:0}
+.tn-paso.espera{opacity:.5}
+.tn-num{width:28px;height:28px;border-radius:999px;flex:none;display:grid;place-items:center;font-size:13px;font-weight:700;background:#F4F5F2;color:#5A625E}
+.tn-paso.actual .tn-num{background:#101412;color:#fff}
+.tn-paso.si .tn-num{background:#0F7B4A;color:#fff}
+.tn-paso.no .tn-num{background:#C2412D;color:#fff}
+.tn-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.tn-txt b{font-size:15px;font-weight:600}
+.tn-txt small{font-size:13.5px;line-height:1.45;color:#5A625E}
+.tn-txt em{font-style:normal;font-size:12.5px;font-weight:600;color:#0F7B4A}
+.tn-txt em.mal{color:#B1361F}
+.tn-res{flex:none;align-self:center;display:flex;gap:6px}
+.tn-si,.tn-no{height:34px;padding:0 16px;border-radius:999px;font-size:13.5px;font-weight:600}
+.tn-si{border:0;background:#101412;color:#fff}
+.tn-no{border:1px solid #E3E5E0;background:#fff;color:#101412}
+.tn-chip{height:28px;padding:0 12px;border-radius:999px;border:0;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.tn-chip.si{background:#E3F2EA;color:#0F7B4A}.tn-chip.no{background:#FBE7E3;color:#B1361F}
+.tn-dec{display:flex;flex-wrap:wrap;gap:10px;padding-top:14px;border-top:1px solid #E3E5E0}
+.tn-dec button{height:50px;border-radius:12px;font-size:15px;font-weight:600}
+.tn-ok{flex:2 1 220px;border:0;background:#0F7B4A;color:#fff;font-size:16px!important}
+.tn-ok.mal{background:#C2412D}
+.tn-ok:disabled{background:#C9CDC6;color:#fff;cursor:not-allowed}
+.tn-rech{flex:1 1 140px;border:1px solid #E3E5E0;background:#fff;color:#B1361F}
+.tn-salta{flex:1 1 120px;border:0;background:transparent;color:#5A625E}
+.tn-pie{margin:6px 0 0;font-size:12.5px;color:#8A918D}
+.tn-vacio{display:flex;flex-direction:column;align-items:center;gap:12px;padding:56px 20px;border-radius:20px;background:#fff;border:1px solid #E3E5E0;text-align:center}
+.tn-vacio svg{color:#0F7B4A}
+.tn-vacio h2{margin:0;font-size:22px;font-weight:600}
+.tn-vacio p{margin:0;color:#5A625E;font-size:15px;max-width:420px}
+.tn-vacio button{height:44px;padding:0 20px;border-radius:12px;border:0;background:#101412;color:#fff;font-size:15px;font-weight:600}
+@media (max-width:640px){.tn-colas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tn-cola{padding:10px;gap:10px}.tn-cola .ic{width:30px;height:30px}.tn-cola small{display:none}.tn-cola b{font-size:14px}.tn-cab{padding:10px 16px}.tn-cuerpo{padding:20px 16px 40px}.tn-top h1{font-size:26px}.tn-prog{min-width:0;width:100%}.tn-caja,.tn-caja.pasos{flex-basis:100%;padding:16px}.tn-paso{flex-wrap:wrap}.tn-res{margin-left:42px}}
 </style>
 <script src="../public/upgames-errores.js?v=20261029i"></script>
 </head>
@@ -755,30 +894,42 @@ body::before{opacity:.45}body::after{display:none}
 
 <!-- ═════════ LOGIN ═════════ -->
 <div id="login">
-  <form class="lg-box glass" id="lgForm" autocomplete="on">
-    <img class="lg-logo" src="../public/icons/icon-192.png?v=3" alt="">
-    <h1 class="lg-t">Panel de administración</h1>
-    <p class="lg-s">Entra con tu cuenta de Lurveta</p>
-    <div id="lgCuenta">
-      <div class="fg"><label class="lbl" for="lgEmail">Email o usuario</label>
-        <input class="in" id="lgEmail" type="text" autocomplete="username" inputmode="email" spellcheck="false" placeholder="tu@email.com"></div>
-      <div class="fg"><label class="lbl" for="lgPass">Contraseña</label>
-        <div class="pw-wrap"><input class="in" id="lgPass" type="password" autocomplete="current-password" placeholder="••••••••">
-        <button type="button" class="pw-eye" onclick="togglePw()" aria-label="Mostrar contraseña"><ion-icon name="eye-outline" id="pwIco"></ion-icon></button></div></div>
-      <div class="fg" id="lg2fa" style="display:none"><label class="lbl" for="lgCode">Código 2FA</label>
-        <input class="in mono" id="lgCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"></div>
+  <div class="al-fondo" aria-hidden="true"></div>
+  <a class="al-volver" href="../">← Volver a Lurveta</a>
+  <form class="lg-box" id="lgForm" autocomplete="on">
+    <div class="al-marca"><span class="al-logo"><span>LUR</span>VETA</span><span class="al-chip">Admin</span></div>
+    <div class="al-cab">
+      <h1 class="lg-t">Panel de administración</h1>
+      <p class="lg-s">Entra con tu cuenta de Lurveta. Solo verás las secciones de tu rol.</p>
     </div>
-    <div id="lgPinBox" style="display:none">
-      <div class="fg"><label class="lbl" for="lgPin">Llave maestra (ADMIN_PIN)</label>
-        <input class="in mono" id="lgPin" type="password" autocomplete="off" placeholder="••••••••••"></div>
+    <div class="al-card">
+      <div id="lgCuenta">
+        <label class="al-campo" for="lgEmail"><span class="al-etq">Email o usuario</span>
+          <input id="lgEmail" type="text" autocomplete="username" inputmode="email" spellcheck="false" placeholder="tu@email.com"></label>
+        <label class="al-campo" for="lgPass"><span class="al-etq">Contraseña</span>
+          <span class="al-fila"><input id="lgPass" type="password" autocomplete="current-password" placeholder="••••••••">
+          <button type="button" class="al-ojo" onclick="togglePw()" aria-label="Mostrar contraseña"><ion-icon name="eye-outline" id="pwIco"></ion-icon></button></span></label>
+        <label class="al-campo" id="lg2fa" for="lgCode" style="display:none"><span class="al-etq">Código 2FA</span>
+          <input class="mono" id="lgCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"></label>
+      </div>
+      <div id="lgPinBox" style="display:none">
+        <label class="al-campo" for="lgPin"><span class="al-etq">Llave maestra (ADMIN_PIN)</span>
+          <input class="mono" id="lgPin" type="password" autocomplete="off" placeholder="••••••••••"></label>
+      </div>
+      <label class="al-rec"><input type="checkbox" id="lgRec"><span class="al-sw" aria-hidden="true"></span>Mantener la sesión en este dispositivo</label>
+      <button class="al-pri" id="lgBtn">Entrar</button>
+      <div class="lg-err" id="lgErr" role="status" aria-live="polite"></div>
     </div>
-    <label class="row small muted" style="margin:-2px 0 14px;cursor:pointer"><input type="checkbox" id="lgRec" style="accent-color:#32D583"> Mantener la sesión en este dispositivo</label>
-    <button class="btn pri" id="lgBtn" style="width:100%;padding:13px">Entrar</button>
-    <div class="lg-err" id="lgErr"></div>
-    <button type="button" class="lg-alt" id="lgForgot" onclick="olvide()">¿Olvidaste tu contraseña?</button>
-    <button type="button" class="lg-alt" id="lgAlt" style="margin-top:6px" onclick="togglePin()">Usar llave maestra de emergencia</button>
+    <div class="al-links">
+      <button type="button" class="lg-alt" id="lgForgot" onclick="olvide()">¿Olvidaste tu contraseña?</button>
+      <button type="button" class="lg-alt" id="lgAlt" onclick="togglePin()">Usar llave maestra de emergencia</button>
+    </div>
+    <p class="al-nota"><ion-icon name="shield-checkmark-outline"></ion-icon>Acceso solo para el equipo de Lurveta. Cada acción queda en la auditoría.</p>
   </form>
 </div>
+
+<!-- ═════════ MODO TURNO: una tarea a la vez, con la guía dentro (lo pinta tnPintar) ═════════ -->
+<div id="turno" role="region" aria-label="Modo turno" hidden></div>
 
 <!-- ═════════ APP ═════════ -->
 <div id="app">
@@ -789,6 +940,7 @@ body::before{opacity:.45}body::after{display:none}
     </div>
     <nav class="nav" id="nav"></nav>
     <div class="side-ft">
+      <button class="tn-entrar" id="tnBtn" type="button" onclick="tnAbrir()" hidden><ion-icon name="play-circle-outline"></ion-icon><span>Modo turno</span><b id="tnBtnN"></b></button>
       <div class="me">
         <div class="av" id="meAv">A</div>
         <div class="grow"><div class="me-n" id="meN">—</div><div class="me-r" id="meR">—</div></div>
@@ -1365,6 +1517,8 @@ async function logout(msg) {
   if (msg) $('lgErr').textContent = msg;
   clearInterval(timers.sync); clearInterval(timers.exp); clearInterval(timers.nx);
   $('nxDock')?.classList.remove('open');
+  if (TN) { TN.abierto = false; clearInterval(TN.t); TN.vistas.clear(); TN.saltadas.clear(); TN.resp = {}; TN.cobro = {}; TN.k = null; }
+  $('turno').hidden = true; try { sessionStorage.removeItem('ug_tn_off'); } catch (_) {}
 }
 
 const timers = {};
@@ -1379,7 +1533,8 @@ async function entrar() {
   $('mePerm').innerHTML = isOwner() ? '<span class="tag t-info">👑 Control total</span>' : (S.admin.permisos || []).map(p => `<span class="tag t-mut">${esc(PERMS[p]?.nombre || p)}</span>`).join('') + (S.admin.hasta ? `<div class="small muted" style="width:100%;margin-top:4px">Acceso hasta ${fdate(S.admin.hasta)}</div>` : '');
   $('meAv').textContent = (S.admin.usuario || 'A')[0].toUpperCase();
   $('hola').textContent = `Hola, ${S.admin.usuario} 👋`;
-  buildNav();
+  buildNav(); tnBoton();
+  if (!isOwner() && tnPuede()) { let off = null; try { off = sessionStorage.getItem('ug_tn_off'); } catch (_) {} if (!off) setTimeout(tnAbrir, 400); }
   setTimeout(() => infRevisarMes().catch(() => {}), 2500);
   const h = (location.hash || '').slice(1);
   go(NAV.some(n => n.id === h && navOk(n)) ? h : inicioDeRol());
@@ -1465,6 +1620,7 @@ function updBadges() {
   // Grupo plegado: su título muestra el trabajo pendiente de dentro
   for (const [grupo, v] of Object.entries(porGrupo)) { const el = $('ng-' + grupo.replace(/\W+/g, '')); if (el) { el.textContent = v > 99 ? '99+' : v; el.style.display = v > 0 ? '' : 'none'; el.classList.toggle('hot', v > 0); } }
   if (typeof pfContar === 'function') pfContar();
+  if (typeof tnBoton === 'function') tnBoton();
 }
 function navFiltrar(q) {
   const t = sinTildes(q.trim());
@@ -1754,6 +1910,7 @@ let cmdSel = 0, cmdOps = [];
 function cmdLista() {
   const ops = NAV.filter(n => n.id && navOk(n)).map(n => ({ t: n.t, ic: n.ic, s: 'Ir', f: () => go(n.id) }));
   if (can(['estadisticas', 'finanzas'])) ops.push({ t: 'Descargar el informe del mes pasado', ic: 'download-outline', s: 'Acción', f: () => { const m = infMeses?.[1]?.mes; m ? infDescargar('csv', m) : go('inf'); } });
+  if (tnPuede()) ops.unshift({ t: 'Empezar turno (una tarea a la vez)', ic: 'play-circle-outline', s: 'Acción', f: () => tnAbrir() });
   ops.push({ t: 'Sincronizar ahora', ic: 'sync-outline', s: 'Acción', f: () => sync(true) }, { t: 'Hablar con Nexus', ic: 'sparkles-outline', s: 'Acción', f: () => nxAbrir() }, { t: 'Cerrar sesión', ic: 'log-out-outline', s: 'Acción', f: () => logout() });
   return ops;
 }
@@ -3265,6 +3422,219 @@ async function loadAudit(more) {
   if (s) { S.token = s.t; S.exp = s.e; try { await entrar(); } catch (_) {} }
   else setTimeout(() => $('lgEmail').focus(), 200);
 })();
+
+// ─────────── Modo turno: una tarea a la vez, con la guía dentro ───────────
+// Junta Revisión, Reportes, Verificación y Retiros (según los permisos del rol) en una sola fila de trabajo.
+// Cada tarea trae sus pasos con «Sí / No»; la decisión sale de las respuestas y usa las mismas acciones del panel.
+var TN = { abierto: false, k: null, resp: {}, vistas: new Set(), saltadas: new Set(), firma: '', t: 0, cobro: {}, cola: null };
+const tnSvg = (d, s = 18, w = 1.9) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const TN_IC = {
+  rev: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  rep: '<path d="M4 22V4a1 1 0 0 1 1-1h12l-2 5 2 5H5"/>',
+  ver: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  pag: '<path d="M20 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3v3a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  ojo: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  nx: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
+  reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  libro: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  pausa: '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
+};
+const TN_COLAS = { rev: ['Revisión', 'publicaciones nuevas'], rep: ['Reportes', 'de la comunidad'], ver: ['Verificación', 'posible juego comercial'], pag: ['Retiros', 'listos para pagar'] };
+// Pasos de cada tipo de tarea. «mal» es el motivo (o la acción) si la respuesta es «No».
+const TN_PASOS = {
+  rev: [
+    { t: 'Abre el enlace', d: 'Debe descargar el archivo o llevar a la página del creador. Si no carga, marca «No».', mal: 'El enlace de descarga no funciona', area: 'enlace' },
+    { t: 'Mira la portada y las capturas', d: '¿Son del proyecto y se ven bien? Nada de imágenes ajenas o con marcas de otros sitios.', mal: 'La portada o las capturas no son del proyecto', area: 'medios' },
+    { t: 'Lee la descripción', d: 'Debe decir qué es, para qué plataforma y cómo se instala.', mal: 'Falta la descripción o las instrucciones de instalación', area: 'texto' },
+    { t: '¿Es un mod, app o proyecto propio?', d: 'Si es un juego comercial completo (de pago) y no un mod o port legítimo, marca «No».', mal: 'Es un juego comercial completo: no se permite publicarlo', area: 'derechos' },
+  ],
+  rep: [
+    { t: 'Prueba el enlace', d: 'Ábrelo como lo haría un usuario. ¿Descarga o abre la página del creador?' },
+    { t: '¿Está libre de malware?', d: 'Si hay reportes de malware, revisa el archivo antes de dejarlo online. Ante la duda, marca «No».' },
+  ],
+  ver: [
+    { t: 'Abre el enlace y la ficha', d: 'Mira qué se descarga realmente y compáralo con el juego con el que coincide.' },
+    { t: '¿Es un mod, port o versión legítima?', d: '«Sí»: vuelve a generar pagos. «No» (es el juego completo): se mantiene sin pagos y el creador recibe un aviso.' },
+  ],
+  pag: [
+    { t: 'Mira los datos para pagar', d: 'Ábrelos con «Ver datos para pagar». La consulta queda en la auditoría.' },
+    { t: '¿El usuario está libre de alertas?', d: 'Si está en lista negra o algo no cuadra, marca «No» y rechaza el pago con el motivo.' },
+    { t: '¿Ya enviaste el dinero?', d: 'Marca «Sí» solo cuando el envío esté hecho; después lo registras.' },
+  ],
+};
+const tnPuede = () => can(['revision', 'contenido']) || can('finanzas');
+function tnTareas() {
+  const L = [];
+  if (can(['revision', 'contenido'])) {
+    const rev = D.items.filter(enRev).sort((a, b) => (esPrio(b) - esPrio(a)) || (esPrio(a) && esPrio(b) ? new Date(a.prioridadDesde) - new Date(b.prioridadDesde) : 0) || (b.reportes || 0) - (a.reportes || 0) || new Date(a.createdAt) - new Date(b.createdAt));
+    rev.filter(esPrio).forEach(it => L.push({ k: 'rev:' + it._id, tipo: 'rev', it }));
+    D.items.filter(i => i.reportes > 0 && !enRev(i)).sort((a, b) => b.reportes - a.reportes).forEach(it => L.push({ k: 'rep:' + it._id, tipo: 'rep', it }));
+    (D.sosp || []).filter(i => (i.sospecha || {}).revision !== 'mantener').forEach(it => L.push({ k: 'ver:' + it._id, tipo: 'ver', it }));
+    rev.filter(j => !esPrio(j)).forEach(it => L.push({ k: 'rev:' + it._id, tipo: 'rev', it }));
+  }
+  if (can('finanzas')) (D.pagos || []).forEach(it => L.push({ k: 'pag:' + it._id, tipo: 'pag', it }));
+  return [...L.filter(t => !TN.saltadas.has(t.k)), ...L.filter(t => TN.saltadas.has(t.k))];
+}
+function tnBoton() {
+  const b = $('tnBtn'); if (!b || !TN) return;
+  b.hidden = !S.admin || !tnPuede();
+  const n = S.admin ? tnTareas().length : 0; $('tnBtnN').textContent = n ? (n > 99 ? '99+' : n) : '';
+}
+async function tnAbrir() {
+  if (!S.admin || !tnPuede()) return;
+  closeMenu?.();
+  TN.abierto = true; $('turno').hidden = false; document.body.style.overflow = 'hidden';
+  try { sessionStorage.removeItem('ug_tn_off'); } catch (_) {}
+  tnPintar(true);
+  if (can(['revision', 'contenido']) && !D.sosp) { try { const { d } = await api('/admin/items/sospechosas'); D.sosp = d.items || []; } catch (_) { D.sosp = []; } tnPintar(true); }
+  clearInterval(TN.t); TN.t = setInterval(() => { if (TN.abierto) tnPintar(); }, 1000);
+}
+function tnCerrar(ir) {
+  TN.abierto = false; clearInterval(TN.t); $('turno').hidden = true;
+  if (!document.querySelector('.modal.on')) document.body.style.overflow = '';
+  try { sessionStorage.setItem('ug_tn_off', '1'); } catch (_) {}
+  if (ir) go(ir);
+}
+// Nexus ya comprobó algunas áreas: esos pasos llegan respondidos (y se pueden cambiar)
+function tnPrefill(t) {
+  if (TN.resp[t.k]) return TN.resp[t.k];
+  const r = TN_PASOS[t.tipo].map(() => undefined);
+  if (t.tipo === 'rev' && t.it.analisisIA) {
+    const hs = t.it.analisisIA.hechos || [];
+    TN_PASOS.rev.forEach((p, i) => { const h = hs.filter(x => x.area === p.area); if (h.length && !h.some(x => x.tipo === 'bad' || x.tipo === 'warn')) r[i] = 'nx'; });
+  }
+  return (TN.resp[t.k] = r);
+}
+function tnResponder(i, v) {
+  const r = TN.resp[TN.k]; if (!r) return;
+  r[i] = v;
+  tnPintar(true);
+}
+function tnCambiar(i) { const r = TN.resp[TN.k]; if (!r) return; r[i] = undefined; tnPintar(true); }
+function tnSaltar() { if (!TN.k) return; TN.saltadas.add(TN.k); TN.k = null; tnPintar(true); }
+function tnIrCola(tipo) { const t = tnTareas().find(x => x.tipo === tipo); if (t) { TN.k = t.k; tnPintar(true); } }
+const tnSi = v => v === true || v === 'nx';
+// Decisión según las respuestas
+function tnDecision(t) {
+  const r = tnPrefill(t), listo = r.every(v => v !== undefined), malos = r.map((v, i) => v === false ? i : -1).filter(i => i >= 0);
+  if (t.tipo === 'rev') {
+    if (malos.length) return { txt: 'Rechazar con este motivo', mal: true, f: () => tnRechazar(t, malos.map(i => TN_PASOS.rev[i].mal).join('. ')) };
+    return { txt: 'Aprobar y pasar a la siguiente', off: !listo, f: async () => { await aprobar(t.it._id); } };
+  }
+  if (t.tipo === 'rep') {
+    if (malos.length) return { txt: 'Marcar el enlace como caído', mal: true, f: async () => { await putItem(t.it._id, { linkStatus: 'caido' }, '⚠ Marcada como caída'); } };
+    return { txt: 'Funciona: limpiar reportes', off: !listo, f: async () => { await resetRep(t.it._id); } };
+  }
+  if (t.tipo === 'ver') {
+    if (r[1] === false) return { txt: 'Mantener sin pagos', mal: true, f: async () => { await decidirSosp(t.it._id, 'mantener'); } };
+    return { txt: 'Es legítimo: vuelve a generar pagos', off: !listo, f: async () => { await decidirSosp(t.it._id, 'ok'); } };
+  }
+  if (r[1] === false) return { txt: 'Rechazar el pago…', mal: true, f: () => rejPago(t.it._id) };
+  if (r[2] === false) return { txt: 'Primero envía el dinero', off: true };
+  return { txt: 'Registrar el pago', off: !listo, f: async () => { await doPago(t.it._id); } };
+}
+function tnRechazar(t, motivo) {
+  txtModal({ t: 'Rechazar · ' + (t.it.title || ''), s: `Se ocultará del catálogo y @${t.it.usuario} recibirá una notificación con el motivo.`, l: 'Motivo (lo verá el autor)', v: motivo, ok: 'Rechazar publicación', cls: 'btn bad',
+    fn: async m => { await putItem(t.it._id, { status: 'rechazado', motivo: m }, '✗ Publicación rechazada'); cm('mTxt'); tnPintar(true); } });
+}
+async function tnHacer() {
+  const t = tnTareas().find(x => x.k === TN.k); if (!t) return;
+  const d = tnDecision(t); if (d.off || !d.f) return;
+  const b = $('tnOk'); if (b) b.disabled = true;
+  try { await d.f(); } finally { tnPintar(true); }
+}
+async function tnDatosCobro(id) {
+  try { const { ok, d } = await api(`/admin/finanzas/datos-cobro/${id}`, { method: 'POST' });
+    if (!ok) return toast(d.error || 'No se pudieron ver los datos', 'err');
+    TN.cobro[id] = d; tnPintar(true);
+  } catch (_) {}
+}
+function tnTarjeta(t) {
+  const j = t.it, enlace = esc(safeUrl(j.link) || '#');
+  const verEnlace = `<a href="${enlace}" target="_blank" rel="noopener noreferrer">${tnSvg(TN_IC.link, 15)}Abrir enlace</a>`;
+  if (t.tipo === 'pag') {
+    const du = j.datosUsuario || {}, c = TN.cobro[j._id], L = { email: 'Email', celular: 'Celular', cuenta: 'Cuenta', titular: 'Titular' };
+    return `<div class="tn-eti"><span>RETIRO</span><span class="tn-pill mut">${esc(fdate(j.fecha || j.createdAt))}</span></div>
+      <div class="tn-monto">${money(j.monto)}</div>
+      <div><h2 class="tn-tit">@${esc(j.usuario)}</h2><div class="tn-sub">${esc(j.resumen || ('PayPal · ' + (j.paypalEmail || '—')))}</div></div>
+      ${du.listaNegraAdmin ? '<span class="tn-pill bad">🚫 Usuario en lista negra: revisa antes de pagar</span>' : ''}
+      ${c ? `<div class="tn-datos"><div style="font-weight:700;margin-bottom:4px">${esc(c.nombre || c.metodo || 'Datos para pagar')}</div>${Object.entries(c.datos || {}).map(([k, v]) => `<div>${esc(L[k] || k)}: <b>${esc(v)}</b></div>`).join('')}</div>`
+        : `<div class="tn-acc"><button type="button" onclick="tnDatosCobro('${esc(j._id)}')">${tnSvg(TN_IC.ojo, 15)}Ver datos para pagar</button></div>`}`;
+  }
+  const cab = { rev: esPrio(j) ? `<span class="tn-pill warn">${tnSvg(TN_IC.reloj, 13)}Prioritaria · ${esc(ago(j.prioridadDesde))}</span>` : `<span class="tn-pill mut">${tnSvg(TN_IC.reloj, 13)}Hace ${esc(ago(j.createdAt))}</span>`,
+    rep: `<span class="tn-pill bad">${j.reportes} reporte${j.reportes === 1 ? '' : 's'}</span>`, ver: '<span class="tn-pill warn">Sin pagos hasta decidir</span>' }[t.tipo];
+  let extra = '';
+  if (t.tipo === 'rev') {
+    const a = j.analisisIA, dec = a ? (IA_TXT[a.decision] || IA_TXT.revisar)[0] : '';
+    extra = `<div class="tn-nx">${tnSvg(TN_IC.nx, 18)}<div>${a ? `<b>Nexus recomienda: ${esc(dec)}.</b> ${esc(a.resumen || '')}<br><button type="button" onclick="openIA('${esc(j._id)}')">Ver el análisis completo</button>`
+      : `<b>Nexus aún no revisó esta publicación.</b> Puede comprobar el enlace, la portada y la descripción por ti.<br><button type="button" onclick="openIA('${esc(j._id)}')">Pedir análisis a Nexus</button>`}</div></div>`;
+  } else if (t.tipo === 'rep') {
+    const d = j.reportesDesglose || {};
+    extra = `<div class="tn-nx">${tnSvg(TN_IC.rep, 18)}<div><b>Qué reportaron:</b> ${d.caido || 0} enlace caído · ${d.viejo || 0} obsoleto · <span style="color:${d.malware ? '#B1361F' : 'inherit'}">${d.malware || 0} malware</span></div></div>`;
+  } else {
+    const s = j.sospecha || {};
+    extra = `<div class="tn-nx">${tnSvg(TN_IC.ver, 18)}<div><b>Coincide con ${esc(s.juego || 'un juego comercial')}.</b>${(s.motivos || []).length ? `<ul class="tn-lista">${s.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}</div></div>`;
+  }
+  return `<div class="tn-eti"><span>${esc(TN_COLAS[t.tipo][0].toUpperCase())}</span>${cab}</div>
+    <img class="tn-img" src="${esc(thumb(j))}" alt="Portada de ${esc(j.title)}" onerror="this.src='${PH}'">
+    <div><h2 class="tn-tit">${esc(j.title || 'Sin título')}</h2><div class="tn-sub">${esc(j.category || 'General')} · @${esc(j.usuario)}${j.descargasEfectivas ? ' · ' + num(j.descargasEfectivas) + ' descargas' : ''}</div></div>
+    <div class="tn-acc">${verEnlace}<a href="../?id=${encodeURIComponent(j._id)}" target="_blank" rel="noopener noreferrer">${tnSvg(TN_IC.ojo, 15)}Ver como usuario</a></div>
+    ${extra}`;
+}
+function tnPasos(t) {
+  const r = tnPrefill(t), actual = r.findIndex(v => v === undefined);
+  const items = TN_PASOS[t.tipo].map((p, i) => {
+    const v = r[i], cls = tnSi(v) ? 'si' : v === false ? 'no' : i === actual ? 'actual' : 'espera';
+    const res = v === undefined ? (i === actual ? `<button type="button" class="tn-si" onclick="tnResponder(${i},true)">Sí</button><button type="button" class="tn-no" onclick="tnResponder(${i},false)">No</button>` : '')
+      : `<button type="button" class="tn-chip ${tnSi(v) ? 'si' : 'no'}" onclick="tnCambiar(${i})" title="Cambiar la respuesta">${tnSi(v) ? tnSvg(TN_IC.check, 13, 2.6) + 'Sí' : 'No'}</button>`;
+    const nota = v === 'nx' ? '<em>Nexus ya lo comprobó</em>' : v === false && p.mal ? `<em class="mal">Motivo: ${esc(p.mal)}</em>` : '';
+    return `<li class="tn-paso ${cls}"><span class="tn-num">${tnSi(v) ? tnSvg(TN_IC.check, 14, 2.8) : i + 1}</span><span class="tn-txt"><b>${esc(p.t)}</b><small>${esc(p.d)}</small>${nota}</span><span class="tn-res">${res}</span></li>`;
+  }).join('');
+  const d = tnDecision(t);
+  const rech = t.tipo === 'rev' ? `<button type="button" class="tn-rech" onclick="tnRechazar(tnTareas().find(x=>x.k===TN.k),'')">Rechazar…</button>`
+    : t.tipo === 'pag' ? `<button type="button" class="tn-rech" onclick="rejPago('${esc(t.it._id)}')">Rechazar…</button>` : '';
+  const pie = { rev: 'Si nadie la revisa en 2 días, su enlace se marca como caído.' + (esPrio(t.it) ? ' Es prioritaria: si no se revisa en 24 h, el creador recupera sus UpCoins.' : ''),
+    rep: 'Limpiar los reportes la deja online. Marcarla como caída la oculta hasta que el creador la arregle.',
+    ver: 'La decisión queda en la auditoría y el creador recibe un aviso.',
+    pag: 'Registrar el pago lo marca como enviado; si el método no es PayPal te pedirá la referencia.' }[t.tipo];
+  return `<div class="tn-h3"><h3>Revisa en ${TN_PASOS[t.tipo].length} pasos</h3><small>${r.filter(v => v !== undefined).length} de ${r.length}</small></div>
+    <ol class="tn-pasos">${items}</ol>
+    <div class="tn-dec"><button type="button" id="tnOk" class="tn-ok${d.mal ? ' mal' : ''}" ${d.off ? 'disabled' : ''} onclick="tnHacer()">${esc(d.txt)}</button>${rech}<button type="button" class="tn-salta" onclick="tnSaltar()">Saltar por ahora</button></div>
+    <p class="tn-pie">${esc(pie)}</p>`;
+}
+function tnPintar(forzar) {
+  const box = $('turno'); if (!box || !TN.abierto) return;
+  const L = tnTareas();
+  L.forEach(t => TN.vistas.add(t.k));
+  if (!L.some(t => t.k === TN.k)) TN.k = L[0]?.k || null;
+  const t = L.find(x => x.k === TN.k);
+  const firma = JSON.stringify([L.map(x => x.k), TN.k, t?.it?.analisisIA?.fecha || '', TN.resp[TN.k] || null, !!D.sosp]);
+  if (!forzar && firma === TN.firma) return;
+  TN.firma = firma;
+  const hechas = [...TN.vistas].filter(k => !L.some(x => x.k === k)).length, total = hechas + L.length;
+  const cuenta = tipo => L.filter(x => x.tipo === tipo).length;
+  const tipos = Object.keys(TN_COLAS).filter(tp => tp === 'pag' ? can('finanzas') : can(['revision', 'contenido']));
+  const colas = tipos.map(tp => `<button type="button" class="tn-cola${t && t.tipo === tp ? ' on' : ''}" onclick="tnIrCola('${tp}')" ${cuenta(tp) ? '' : 'disabled'}><span class="ic">${tnSvg(TN_IC[tp])}</span><span><b>${cuenta(tp)} · ${TN_COLAS[tp][0]}</b><small>${TN_COLAS[tp][1]}</small></span></button>`).join('');
+  const hora = new Date().getHours(), saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const rol = isOwner() ? 'Dueño' : (S.admin?.rolNombre || S.admin?.rol || 'Equipo');
+  const scroll = box.scrollTop;
+  box.innerHTML = `<header class="tn-cab"><span class="tn-marca"><i>L</i>Lurveta · Turno</span><span class="tn-rol">${esc(rol)}</span>
+    <nav><button type="button" class="tn-lnk" onclick="tnCerrar('ayuda')">${tnSvg(TN_IC.libro, 16)}Guía del panel</button><button type="button" class="tn-lnk" onclick="tnCerrar()">${tnSvg(TN_IC.grid, 16)}Ver todo el panel</button>
+    <button type="button" class="tn-pausa" onclick="tnCerrar()">${tnSvg(TN_IC.pausa, 14)}Pausar turno</button></nav></header>
+  <div class="tn-cuerpo">
+    <div class="tn-top"><div><small>${saludo}, ${esc(S.admin?.usuario || '')}. Hoy te toca:</small><h1>${L.length ? `${L.length} tarea${L.length === 1 ? '' : 's'} · empieza por la más urgente` : 'Todo al día'}</h1></div>
+      ${total ? `<div class="tn-prog" aria-label="Progreso del turno"><div><i style="width:${Math.round(hechas / total * 100)}%"></i></div><span>${hechas} de ${total}</span></div>` : ''}</div>
+    <div class="tn-colas">${colas}</div>
+    ${t ? `<div class="tn-zona"><section class="tn-caja">${tnTarjeta(t)}</section><section class="tn-caja pasos">${tnPasos(t)}</section></div>`
+      : `<div class="tn-vacio">${tnSvg(TN_IC.check, 40, 2)}<h2>${D.items.length || D.pagos.length ? 'No tienes tareas pendientes' : 'Cargando tus tareas…'}</h2><p>Cuando llegue algo a tus colas aparecerá aquí, ordenado por urgencia.</p><button type="button" onclick="tnCerrar()">Ver todo el panel</button></div>`}
+  </div>`;
+  box.scrollTop = scroll;
+  tnBoton();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && TN.abierto && !document.querySelector('.modal.on')) tnCerrar(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.token) sync(); });
 </script>
 </body>

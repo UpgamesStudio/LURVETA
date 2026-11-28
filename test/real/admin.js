@@ -8,6 +8,8 @@
  *    interfaz exige el monto exacto y acredita UNA vez (repetir por la API → 409); reportar una incidencia de
  *    un pago manual desde «Historial»
  *  - las rutas nuevas de finanzas exigen sesión de admin
+ *  - Modo turno: no se abre solo para el dueño; junta revisión, reportes y retiros; los pasos deciden la acción
+ *    (aprobar, marcar caído) y se guarda en la base; «Ver todo el panel» vuelve al panel
  * Sin PayPal real: los payouts sembrados ya tienen su estado. Uso: node test/real/admin.js  (CAPTURAS=dir)
  */
 'use strict';
@@ -56,6 +58,15 @@ function servirRepo() {   // admin/ usa ../public/: se sirve la raíz del reposi
       noRec: (await pagos.insertOne({ usuario: 'dani', monto: 14, metodo: 'paypal', paypalEmail: 'dani@pp.test', resumen: 'PayPal · dani', estado: 'completado', payoutBatchId: 'LOTEDANI1', fecha: ahora,
         paypal: { estado: 'UNCLAIMED', itemId: 'ITEMDANI1', actualizado: ahora, fuente: 'barrido' }, incidencia: { tipo: 'no_reclamado', estado: 'abierta', abierta: ahora, fuente: 'barrido', motivo: 'PayPal: UNCLAIMED' } })).insertedId,
       manual: (await pagos.insertOne({ usuario: 'eva', monto: 15, metodo: 'mercadopago', resumen: 'Mercado Pago · eva', estado: 'completado', fecha: ahora })).insertedId,
+    };
+
+    // ── Datos del modo turno: una publicación prioritaria, una normal y una reportada ──
+    const juegos = db.collection('juegos'), hace = h => new Date(Date.now() - h * 3600e3);
+    const base = { category: 'Mod', link: 'https://example.com/descarga', image: 'https://example.com/portada.jpg', description: 'Mod de prueba', descargasEfectivas: 0 };
+    const J = {
+      prio: (await juegos.insertOne({ ...base, usuario: 'ana', title: 'Mod prioritario de prueba', status: 'pendiente', linkStatus: 'revision', prioridadDesde: hace(2), createdAt: hace(3), updatedAt: hace(3) })).insertedId,
+      normal: (await juegos.insertOne({ ...base, usuario: 'beto', title: 'Mod normal de prueba', status: 'pendiente', linkStatus: 'revision', createdAt: hace(30), updatedAt: hace(30) })).insertedId,
+      rep: (await juegos.insertOne({ ...base, usuario: 'caro', title: 'Mod reportado de prueba', status: 'aprobado', linkStatus: 'online', reportes: 2, reportesDesglose: { caido: 2 }, createdAt: hace(200), updatedAt: hace(200) })).insertedId,
     };
 
     C.seccion('Seguridad de las rutas nuevas');
@@ -155,6 +166,37 @@ function servirRepo() {   // admin/ usa ../public/: se sirve la raíz del reposi
       const al = await p.evaluate(() => [...document.querySelectorAll('#dAlerts .alert')].slice(0, 3).map(a => a.innerText.replace(/\s+/g, ' ').trim()));
       C.prueba('inicio: lo pendiente de finanzas aparece primero', al.length && /incidencias|revisión|por pagar/.test(al[0]), JSON.stringify(al));
       if (CAPT) { await p.screenshot({ path: path.join(CAPT, `admin-inicio-${nombre}.png`) }); }
+
+      // ── Modo turno ──
+      C.prueba('turno: no se abre solo para el dueño', await p.evaluate(() => document.getElementById('turno').hidden));
+      const btn = await p.evaluate(() => ({ visible: !document.getElementById('tnBtn').hidden, n: document.getElementById('tnBtnN').textContent }));
+      C.prueba('turno: botón «Modo turno» en el menú con sus tareas (2 revisión + 1 reporte + 1 retiro)', btn.visible && btn.n === '4', JSON.stringify(btn));
+      await p.evaluate(() => tnAbrir()); await espera(1200);
+      const t0 = await p.evaluate(() => ({ abierto: !document.getElementById('turno').hidden, h1: document.querySelector('#turno h1')?.innerText, eti: document.querySelector('#turno .tn-eti')?.innerText,
+        ok: document.getElementById('tnOk')?.disabled, sobra: document.getElementById('turno').scrollWidth - innerWidth, colas: [...document.querySelectorAll('#turno .tn-cola b')].map(b => b.innerText) }));
+      C.prueba('turno: abre con la prioritaria primero y «Aprobar» bloqueado hasta responder los pasos', t0.abierto && /4 tareas/.test(t0.h1) && /Prioritaria/i.test(t0.eti) && t0.ok === true, JSON.stringify(t0));
+      C.prueba('turno: colas de revisión, reportes, verificación y retiros, sin desborde', t0.colas.length === 4 && t0.sobra <= 1, JSON.stringify(t0));
+      if (CAPT) await p.screenshot({ path: path.join(CAPT, `admin-turno-${nombre}.png`), fullPage: false });
+      if (nombre === 'escritorio') {
+        for (let i = 0; i < 4; i++) { await p.click('#turno .tn-si'); await espera(150); }
+        const listo = await p.evaluate(() => ({ off: document.getElementById('tnOk').disabled, txt: document.getElementById('tnOk').innerText }));
+        C.prueba('turno: con los 4 «Sí» se habilita «Aprobar y pasar a la siguiente»', !listo.off && /Aprobar/.test(listo.txt), JSON.stringify(listo));
+        await p.click('#tnOk'); await espera(1500);
+        const prio = await juegos.findOne({ _id: J.prio });
+        const t1 = await p.evaluate(() => ({ prog: document.querySelector('#turno .tn-prog span')?.innerText, eti: document.querySelector('#turno .tn-eti')?.innerText }));
+        C.prueba('turno: aprobó en la base y pasó a la siguiente (el reporte)', prio.status === 'aprobado' && prio.linkStatus === 'online' && t1.prog === '1 de 4' && /REPORTES/.test(t1.eti), JSON.stringify({ st: prio.status, ...t1 }));
+        await p.click('#turno .tn-si'); await espera(150); await p.click('#turno .tn-no'); await espera(150);
+        const caida = await p.evaluate(() => document.getElementById('tnOk').innerText);
+        C.prueba('turno: «No» en un paso cambia la decisión (marcar caído)', /caído/.test(caida), caida);
+        await p.click('#tnOk'); await espera(1500);
+        C.prueba('turno: el enlace reportado quedó caído en la base', (await juegos.findOne({ _id: J.rep })).linkStatus === 'caido');
+        const antes = await p.evaluate(() => document.querySelector('#turno .tn-tit')?.innerText);
+        await p.click('#turno .tn-salta'); await espera(400);
+        const despues = await p.evaluate(() => document.querySelector('#turno .tn-tit')?.innerText);
+        C.prueba('turno: «Saltar por ahora» pasa a otra tarea', antes && despues && antes !== despues, JSON.stringify({ antes, despues }));
+      }
+      await p.click('#turno .tn-pausa'); await espera(400);
+      C.prueba('turno: «Pausar turno» vuelve al panel', await p.evaluate(() => document.getElementById('turno').hidden && document.getElementById('app').classList.contains('on')));
       await ctx.close();
     }
     C.seccion('Salud general');
