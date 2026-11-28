@@ -271,6 +271,7 @@ const UGN_TIPOS = {
   nueva_publicacion: { ic: 'cloud-upload', c: '#32D583', cat: 'publicaciones' },
   nueva_entrada: { ic: 'newspaper', c: '#5AC8FA', cat: 'publicaciones' },
   favorito:   { ic: 'heart', c: '#ff5c7a', cat: 'social' },
+  republicacion: { ic: 'repeat', c: '#5AC8FA', cat: 'social' },
   comentario: { ic: 'chatbubble', c: '#5AC8FA', cat: 'social' },
   seguidor:   { ic: 'person-add', c: '#a78bfa', cat: 'social' },
   logro:      { ic: 'trophy', c: '#ffd23f', cat: 'social' },
@@ -299,6 +300,7 @@ function ugnTexto(n) {
     case 'nueva_publicacion': return { quien: e, accion: 'publicó algo nuevo', sub: t };
     case 'nueva_entrada': return { quien: e, accion: 'publicó en su blog', sub: t };
     case 'favorito':   return { quien: e, accion: 'guardó tu publicación', sub: t };
+    case 'republicacion': return { quien: e, accion: 'republicó tu publicación', sub: msg || t };
     case 'comentario': return { quien: e, accion: 'comentó tu publicación', sub: msg || t };
     case 'seguidor':   return { quien: e, accion: 'empezó a seguirte', sub: 'Toca para ver su perfil' };
     case 'logro':      return { quien: '🏆', accion: msg || '¡Nuevo logro desbloqueado!', sub: t };
@@ -454,6 +456,14 @@ async function ugnAbrir(n) {
   if (n.tipo === 'seguidor') { location.href = `./perfil-publico.html?u=${encodeURIComponent(n.emisor || '')}`; return; }
   if (t === 'Revisión') { ugnCerrar(); switchTab('profile'); return; }
   if (ugnTexto(n).anuncio) return;   // el anuncio ya se lee completo en la tarjeta
+  if (['comentario', 'republicacion'].includes(n.tipo) && n.itemId) {
+    try {
+      const u = new URL(n.itemId);
+      if (u.origin === location.origin && u.pathname === '/public/biblioteca.html' && u.searchParams.get('tab') === 'new') {
+        ugnCerrar(); location.href = u.href; return;
+      }
+    } catch (_) {}
+  }
   if (n.tipo === 'nueva_entrada' && /^https:\/\//.test(n.itemId || '')) { ugnCerrar(); window.open(n.itemId, '_blank', 'noopener'); return; }
   if (n.itemId) { ugnCerrar(); _abrirItemDesdeNotif(n.itemId); }
 }

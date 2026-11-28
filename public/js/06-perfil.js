@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // PERFIL INTEGRADO — FULL LOGIC
 // ═══════════════════════════════════════════════════════════
-const PF_API = "https://upgames-production.up.railway.app";
+const PF_API = window.UG_CONFIG?.API_URL || "https://upgames-production.up.railway.app";
 let pfUser = null;
 let pfInitialized = false;
 let pfCurrentEditId = null;

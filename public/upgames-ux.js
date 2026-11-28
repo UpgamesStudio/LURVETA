@@ -12,7 +12,7 @@
 ═══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
-  const API = 'https://upgames-production.up.railway.app';
+  const API = window.UG_CONFIG?.API_URL || 'https://upgames-production.up.railway.app';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const ls = k => { try { return localStorage.getItem(k); } catch (_) { return null; } };
   const DIA = 864e5;

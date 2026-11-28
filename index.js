@@ -172,6 +172,23 @@ const paypalPayouts = require('./modulos/paypal').crear(config, getPayPalAccessT
 
 
 const app = express();
+if (config.NODE_ENV === 'development' && process.env.LURVETA_PREVIA_LOCAL === '1') {
+    const path = require('node:path');
+    const publicar = { setHeaders(res) {
+        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+        res.setHeader('Content-Security-Policy', "connect-src 'self' https://unpkg.com");
+    } };
+    app.get('/', (req, res) => res.redirect(302, '/public/biblioteca.html?tab=new'));
+    app.get('/login.html', (req, res) => {
+        publicar.setHeaders(res);
+        res.sendFile(path.join(__dirname, 'login.html'));
+    });
+    app.use('/public', express.static(path.join(__dirname, 'public'), publicar));
+    if (process.env.LURVETA_PREVIA_DIR) {
+        app.use('/__demo', express.static(path.resolve(process.env.LURVETA_PREVIA_DIR), publicar));
+    }
+}
+
 // Railway pone UN proxy delante: confiar solo en ese salto. Así req.ip es la IP real
 // del visitante (la que agrega Railway) y no la primera de X-Forwarded-For, que el
 // cliente puede inventar. Sin esto los límites de peticiones se compartían entre
@@ -717,8 +734,10 @@ const CommentSchema = new mongoose.Schema({
     usuario: String,
     texto:   String,
     itemId:  String,
+    padre:   mongoose.Schema.Types.ObjectId,
     fecha:   { type: Date, default: Date.now }
 });
+CommentSchema.index({ itemId: 1, fecha: -1 });
 const Comentario = mongoose.model('Comentario', CommentSchema);
 
 // ⭐ FavoritosSchema con índices (corrige COLLSCAN en GET /favoritos/:usuario)
@@ -731,7 +750,7 @@ const Favorito = mongoose.model('Favoritos', FavoritosSchema);
 
 const NotificacionSchema = new mongoose.Schema({
     destinatario: { type: String, required: true, index: true },
-    tipo:     { type: String, enum: ['nueva_publicacion', 'nueva_entrada', 'favorito', 'descarga', 'sistema', 'comentario', 'seguidor', 'logro'], required: true },
+    tipo:     { type: String, enum: ['nueva_publicacion', 'nueva_entrada', 'favorito', 'descarga', 'sistema', 'comentario', 'seguidor', 'logro', 'republicacion'], required: true },
     emisor:   { type: String, required: true },
     itemId:   { type: String, default: '' },
     itemTitle:{ type: String, default: '' },

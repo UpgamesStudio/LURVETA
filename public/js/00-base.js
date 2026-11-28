@@ -6,7 +6,7 @@ window.UG_PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http
 // Mobile-first · App Store style
 // ═══════════════════════════════════════════════════════════
 
-const API_URL = "https://upgames-production.up.railway.app";
+const API_URL = window.UG_CONFIG?.API_URL || "https://upgames-production.up.railway.app";
 
 // ── Sesión caducada o revocada: salir limpio en vez de quedar "conectado" con todo fallando ──
 // (pasa al cambiar la contraseña en otro dispositivo, o cuando el token vence a los 30 días)

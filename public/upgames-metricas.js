@@ -6,7 +6,7 @@
 ═══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
-  const API = 'https://upgames-production.up.railway.app';
+  const API = window.UG_CONFIG?.API_URL || 'https://upgames-production.up.railway.app';
   const noRastrear = navigator.doNotTrack === '1' || window.doNotTrack === '1';
   function vid() {
     try {

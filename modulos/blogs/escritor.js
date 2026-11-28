@@ -49,7 +49,7 @@ ${nota ? `- Enfoque pedido por quien escribe: ${String(nota).slice(0, 200)}` : '
 function armar(o, j, tipo) {
     if (!o || typeof o !== 'object') return null;
     let bloques = V.limpiarBloques(o.bloques).filter(b => !['juego', 'descarga', 'imagen', 'boton', 'redes', 'galeria', 'video', 'audio', 'codigo', 'apoyo', 'afiliado'].includes(b.tipo));
-    if (bloques.length < 3) return null;
+    if (bloques.length < 2) return null;
     const imagen = V.urlSegura(j.image);
     const extra = [];
     if (imagen) extra.push({ tipo: 'imagen', url: imagen, alt: V.linea(j.title, 120), pie: '' });
@@ -94,7 +94,9 @@ const EJEMPLO_LANDING = `{"titulo":"Estudio de tatuajes Tinta Viva","resumen":"T
 {"tipo":"faq","items":[{"p":"¿Duele mucho?","r":"Depende de la zona. Te recomendamos la mejor ubicación para tu primera vez y hacemos pausas cuando lo necesites."},{"p":"¿Cuánto cuesta?","r":"Depende del tamaño y el detalle. En la valoración gratis te damos el precio exacto, sin compromiso."},{"p":"¿Cómo reservo?","r":"Escríbenos por WhatsApp con tu idea y una foto de referencia; te proponemos fecha y hora."}]},
 {"tipo":"cta","titulo":"¿Listo para tu próximo tatuaje?","texto":"Cuéntanos tu idea hoy y te respondemos en minutos.","bTexto":"Escribir por WhatsApp","bUrl":"","fondo":"acento"}]}`;
 
-const SISTEMA_LANDING = `Eres Nexus, el asistente de Lurveta Blogs. Diseñas landing pages profesionales para personas que no saben programar.
+const SISTEMA_LANDING = `Eres Nexus, el asistente de Lurveta Blogs. Diseñas páginas para profesionales, comunidades, canales, portafolios, proyectos educativos y negocios.
+Adapta la estructura al propósito. Usa galerías o vídeos solo cuando el creador haya facilitado sus recursos. Omite secciones comerciales cuando no apliquen.
+No inventes información sobre el creador: trayectoria, clientes, perfiles, lugares, horarios, datos, testimonios, cifras, credenciales o enlaces. Señala lo que falte con [corchetes].
 ${ESTILO_PRO}
 Devuelves SOLO un JSON: {"titulo":"nombre corto de la página","resumen":"meta descripción de 140-155 caracteres con beneficio y llamada a la acción","bloques":[…]}
 ${FORMA_SECCIONES}
@@ -136,7 +138,20 @@ const SISTEMA_COLORES = fuentes => `Eres Nexus, director de arte de Lurveta Blog
 Devuelves SOLO un JSON: {"paletas":[{"nombre":"nombre evocador de 1-3 palabras","porque":"1 frase de por qué encaja con la marca","acento":"#RRGGBB","acento2":"#RRGGBB","fuente":"id de letra para títulos","fuenteTexto":"id de letra para el texto"}]}
 Reglas: el color principal ("acento") debe leerse bien sobre el fondo del tema (en tema oscuro, colores vivos o claros; en tema claro, colores con buen contraste, no pasteles). "acento2" combina con el principal para degradados. Evita los clichés obvios si hay opciones mejores. Letras disponibles (usa SOLO estos id): ${fuentes}. El texto debe ser muy legible (manrope, inter, poppins, montserrat o lora).`;
 
-const TIPOS_LANDING = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'texto', 'titulo', 'faq']);
+const TIPOS_LANDING = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'texto', 'titulo', 'faq', 'articulos', 'suscripcion']);
+const SISTEMA_EDITORIAL = `Eres Nexus, asistente editorial de Lurveta. Escribe para cualquier temática permitida.
+Devuelve un JSON con { "titulo": "", "resumen": "", "etiquetas": [], "bloques": [] }.
+Usa bloques de texto con { "tipo": "texto", "texto": "…" }, títulos con { "tipo": "titulo", "texto": "…" } o separadores.
+Puedes escribir artículos, presentaciones o calendarios editoriales. Mantén la voz que pida la persona.
+No inventes experiencias, citas, cifras, enlaces, fuentes ni información sobre la persona, su negocio o su sitio.
+Si falta información específica, deja una indicación editable entre corchetes. No añadas productos ni enlaces al catálogo por tu cuenta.`;
+
+function armarEditorial(o) {
+    const titulo = V.linea(o?.titulo, 140);
+    const bloques = V.limpiarBloques(o?.bloques).filter(b => ['texto', 'titulo', 'separador'].includes(b.tipo));
+    if (!titulo || !bloques.some(b => b.tipo === 'texto')) return null;
+    return { titulo, bloques, resumen: V.linea(o?.resumen, 300), etiquetas: V.etiquetas(o?.etiquetas) };
+}
 
 /**
  * Retoque de diseño por código (no se le deja al modelo): héroe amplio y con fondo, CTA final con color
@@ -160,7 +175,7 @@ function pulirSecciones(bloques) {
 function armarLanding(o, contacto) {
     if (!o || typeof o !== 'object') return null;
     let bloques = pulirSecciones(V.limpiarBloques(o.bloques).filter(b => TIPOS_LANDING.has(b.tipo)));
-    if (bloques.length < 3 || bloques[0].tipo !== 'heroe') return null;
+    if (bloques.length < 2 || bloques[0].tipo !== 'heroe') return null;
     if (contacto?.items?.length) {
         const i = bloques.map(b => b.tipo).lastIndexOf('cta');
         const red = { tipo: 'redes', estilo: 'botones', items: contacto.items };
@@ -179,4 +194,4 @@ function armarSeccion(o, tipo) {
     return b || null;
 }
 
-module.exports = { SISTEMA, TIPOS, pedido, armar, pulirSecciones, SISTEMA_LANDING, SISTEMA_SECCION, SISTEMA_TEXTO, SISTEMA_SEO, SISTEMA_COLORES, ACCIONES_TEXTO, armarLanding, armarSeccion };
+module.exports = { SISTEMA_EDITORIAL, armarEditorial, SISTEMA, TIPOS, pedido, armar, pulirSecciones, SISTEMA_LANDING, SISTEMA_SECCION, SISTEMA_TEXTO, SISTEMA_SEO, SISTEMA_COLORES, ACCIONES_TEXTO, armarLanding, armarSeccion };

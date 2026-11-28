@@ -67,6 +67,12 @@ function seccionHtml(b, ctx = {}, i = 0) {
         case 'precios': return seccion(b, 'precios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<div class="plan${i.destacado ? ' destacado' : ''}">${i.destacado ? '<span class="plan-chip">Recomendado</span>' : ''}<h3>${esc(i.nombre)}</h3>${i.precio ? `<p class="plan-precio"><b>${esc(i.precio)}</b>${i.periodo ? ` <small>${esc(i.periodo)}</small>` : ''}</p>` : ''}${i.items ? `<ul>${i.items.split('\n').map(x => x.replace(/^\s*[-•✓]\s*/, '').trim()).filter(Boolean).map(x => `<li>${enLinea(x)}</li>`).join('')}</ul>` : ''}${boton(i.bTexto, i.bUrl, 'boton', ctx)}</div>`).join('')}</div>`);
         case 'testimonios': return seccion(b, 'testimonios', `${cabSec(b)}<div class="rej-sec">${b.items.map(i => `<figure class="testi"><blockquote>${textoHtml(i.texto)}</blockquote><figcaption><span class="testi-ini" aria-hidden="true">${esc([...i.nombre][0].toUpperCase())}</span><span><b>${esc(i.nombre)}</b>${i.rol ? `<small>${esc(i.rol)}</small>` : ''}</span></figcaption></figure>`).join('')}</div>`);
         case 'cta': return seccion(b, 'cta', `${cabSec(b)}${b.bTexto && b.bUrl ? `<div class="botones">${boton(b.bTexto, b.bUrl, 'boton', ctx)}</div>` : ''}`);
+        case 'articulos':
+            return seccion(b, 'articulos', `${cabSec(b)}<div class="rej-sec">${(ctx.articulos || []).slice(0, 6).map(e => tarjeta(e, ctx)).join('')}</div>`);
+        case 'suscripcion': {
+            const href = ctx.blog?._id && ctx.appUrl ? `${ctx.appUrl}/public/biblioteca.html?tab=new&perfilBlog=${ctx.blog._id}` : '';
+            return seccion(b, 'suscripcion', `${cabSec(b)}${href && ctx.blog.visibilidad === 'publico' ? `<a class="boton" href="${esc(href)}">${esc(b.bTexto)}</a>` : ''}`);
+        }
         case 'apoyo': {
             const href = ctx.blog?._id && ctx.appUrl ? `${ctx.appUrl}/?apoyarBlog=${encodeURIComponent(String(ctx.blog._id))}` : '';
             return seccion(b, 'apoyo', `<span class="apoyo-ic" aria-hidden="true">💛</span>${cabSec(b)}${href ? `<div class="botones"><a class="boton boton-apoyo" href="${esc(href)}" target="_blank" rel="noopener">🪙 ${esc(b.bTexto)}</a></div>` : ''}<p class="apoyo-nota">Se paga con UpCoins en Lurveta. El creador recibe una parte como ganancia.</p>`);
@@ -354,9 +360,13 @@ function documento(ctx, { titulo, descripcion, ruta, imagen, cuerpo, tipo = 'web
     const desc = descripcion || blog.descripcion || `Blog de @${blog.usuario} en Lurveta`;
     const oculto = noindex || blog.visibilidad !== 'publico';
     const vars = `--bg:${v.bg};--bg2:${v.bg2};--tarjeta:${v.tarjeta};--borde:${v.borde};--txt:${v.txt};--txt2:${v.txt2};--acento:${v.acento};--acento2:${v.acento2};--sobre-acento:${v.sobreAcento};--radio:${v.radio};--fondo:${v.fondo};--fondo-tam:${v.fondoTam || 'auto'};--fondo-rep:${v.fondoRep || 'no-repeat'};--f-tit:${fTit.css};--f-txt:${fTxt.css}`;
+    const paginas = Array.isArray(a.paginasMenu)
+        ? a.paginasMenu.map(id => (ctx.paginas || []).find(p => String(p._id) === id)).filter(Boolean)
+        : (ctx.paginas || []);
     const menu = [`<a href="${esc(base)}/"${activo === 'inicio' ? ' class="activo"' : ''}>Inicio</a>`,
-        ...(a.inicio && ctx.hayEntradas ? [`<a href="${esc(base)}/blog"${activo === 'blog' ? ' class="activo"' : ''}>Blog</a>`] : []),
-        ...(ctx.paginas || []).filter(p => String(p._id) !== a.inicio).slice(0, 6).map(p => `<a href="${esc(base)}/p/${esc(p.slug)}"${activo === 'p:' + p.slug ? ' class="activo"' : ''}>${esc(p.titulo)}</a>`)].join('');
+        ...(a.blogEnMenu !== false && a.inicio && ctx.hayEntradas ? [`<a href="${esc(base)}/blog"${activo === 'blog' ? ' class="activo"' : ''}>Blog</a>`] : []),
+        ...(a.notasEnMenu ? [`<a href="${esc(base)}/notas"${activo === 'notas' ? ' class="activo"' : ''}>Notas</a>`] : []),
+        ...paginas.filter(p => String(p._id) !== a.inicio).slice(0, a.paginasMenu ? 20 : 6).map(p => `<a href="${esc(base)}/p/${esc(p.slug)}"${activo === 'p:' + p.slug ? ' class="activo"' : ''}>${esc(p.titulo)}</a>`)].join('');
     return `<!DOCTYPE html>
 <html lang="${esc(a.idioma || 'es')}">
 <head>
@@ -387,7 +397,7 @@ ${previa ? '<div class="previa">Vista previa · así se verá cuando la publique
 </div></header>
 ${cuerpo}
 <footer class="pie"><div class="ancho">
-<span>© ${new Date().getUTCFullYear()} ${esc(blog.titulo)} · <a href="${esc(base)}/feed.xml">RSS</a> · <a href="${esc(ctx.appUrl)}/public/blog.html?reportar=${esc(blog.direccion)}" rel="nofollow">Reportar</a></span>
+<span>${a.pie ? esc(a.pie) : `© ${new Date().getUTCFullYear()} ${esc(blog.titulo)}`} · <a href="${esc(base)}/feed.xml">RSS</a> · <a href="${esc(ctx.appUrl)}/public/blog.html?reportar=${esc(blog.direccion)}" rel="nofollow">Reportar</a></span>
 ${blog.sinMarca || ctx.sinMarca ? '' : `<a class="hecho" href="${esc(ctx.appUrl)}/public/blog.html" rel="noopener">Hecho con <b>Lurveta</b> · crea tu blog gratis</a>`}
 </div></footer>
 </body>
@@ -480,6 +490,19 @@ ${e._id && !previa ? `<img class="pixel" src="${esc(base)}/_v/${esc(e._id)}.gif"
     });
 }
 
+function notas(ctx, lista, pagina, hayMas, slug) {
+    const body = lista.map(e => {
+        const link = e.enlace?.url ? `<p><a href="${esc(e.enlace.url)}" rel="nofollow ugc noopener" target="_blank">${esc(e.enlace.titulo || e.enlace.url)}</a></p>` : '';
+        const conversar = `${ctx.appUrl}/public/biblioteca.html?tab=new&publicacion=${e._id}`;
+        return `<article class="entrada"><div class="meta">@${esc(e.usuario)} · ${esc(fecha(e.publicadaEn))}</div>
+          <div class="contenido">${bloquesHtml(e.bloques, ctx)}${link}</div>
+          <p><a class="chip" href="${esc(conversar)}">Conversación en Lurveta</a>${slug ? '' : ` <a class="chip" href="${esc(ctx.base)}/n/${esc(e.slug)}">Enlace de la nota</a>`}</p></article>`;
+    }).join('<hr>');
+    const pag = `<nav class="paginacion">${pagina > 1 ? `<a class="chip" href="?pagina=${pagina - 1}">Anterior</a>` : ''}${hayMas ? `<a class="chip" href="?pagina=${pagina + 1}">Siguiente</a>` : ''}</nav>`;
+    return documento(ctx, { titulo: 'Notas', ruta: slug ? `/n/${slug}` : '/notas', activo: 'notas', noindex: true,
+        cuerpo: `<main><div class="ancho"><h1>Notas</h1>${body || '<p>Todavía no hay notas en este sitio.</p>'}${pag}</div></main>` });
+}
+
 function noEncontrada(ctx) {
     return documento(ctx, { titulo: 'No encontrada', ruta: '/', noindex: true,
         cuerpo: `<main><div class="ancho"><div class="vacio"><h1 style="font-family:var(--f-tit);margin-bottom:8px">Esta página no existe</h1><p>Puede que la hayan borrado o que el enlace esté mal.</p><p style="margin-top:16px"><a class="boton" href="${esc(ctx.base)}/">Ir al inicio</a></p></div></div></main>` });
@@ -514,4 +537,4 @@ ${entradas.map(e => u(`${raiz}/${e.tipo === 'pagina' ? 'p' : 'e'}/${e.slug}`, e.
 </urlset>`;
 }
 
-module.exports = { precio, esc, enLinea, textoHtml, bloquesHtml, inicio, entrada, noEncontrada, aviso, feed, sitemap, fecha };
+module.exports = { precio, esc, enLinea, textoHtml, bloquesHtml, inicio, entrada, notas, noEncontrada, aviso, feed, sitemap, fecha };

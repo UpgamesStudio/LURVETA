@@ -12,7 +12,7 @@
 'use strict';
 
 module.exports = function modelos(mongoose) {
-    if (mongoose.models.Blog) return { BlogMensaje: mongoose.models.BlogMensaje, Blog: mongoose.models.Blog, Entrada: mongoose.models.Entrada, BlogVista: mongoose.models.BlogVista, BlogReporte: mongoose.models.BlogReporte };
+    if (mongoose.models.Blog) return { BlogMensaje: mongoose.models.BlogMensaje, Blog: mongoose.models.Blog, Entrada: mongoose.models.Entrada, BlogVista: mongoose.models.BlogVista, BlogReporte: mongoose.models.BlogReporte, BlogInteraccion: mongoose.models.BlogInteraccion };
 
     const BlogSchema = new mongoose.Schema({
         usuario:     { type: String, required: true, index: true },
@@ -49,8 +49,8 @@ module.exports = function modelos(mongoose) {
     const EntradaSchema = new mongoose.Schema({
         blog:      { type: mongoose.Schema.Types.ObjectId, ref: 'Blog', required: true },
         usuario:   { type: String, required: true },
-        tipo:      { type: String, enum: ['entrada', 'pagina'], default: 'entrada' },
-        titulo:    { type: String, required: true, maxlength: 140 },
+        tipo:      { type: String, enum: ['entrada', 'pagina', 'nota', 'republicacion'], default: 'entrada' },
+        titulo:    { type: String, required() { return ['entrada', 'pagina'].includes(this.tipo); }, default: '', maxlength: 140 },
         slug:      { type: String, required: true },
         bloques:   { type: [mongoose.Schema.Types.Mixed], default: [] },
         etiquetas: { type: [String], default: [] },
@@ -59,8 +59,13 @@ module.exports = function modelos(mongoose) {
         resumen:   { type: String, default: '', maxlength: 300 },
         estado:    { type: String, enum: ['borrador', 'publicada', 'programada'], default: 'borrador' },
         publicadaEn: { type: Date, default: null },
+        destacada: { type: Boolean, default: false },
         vistas:    { type: Number, default: 0 },
         avisada:   { type: Boolean, default: false },   // ya se avisó a los seguidores del creador
+        alcance:   { type: String, enum: ['comunidad', 'sitio'], default: 'comunidad' },
+        original:  { type: mongoose.Schema.Types.ObjectId, ref: 'Entrada' },
+        huella:    String,
+        enlace:    { url: String, titulo: String, descripcion: String, imagen: String },
         tituloSeo: { type: String, default: '', maxlength: 90 },    // título para Google y redes (si no, el título)
         noindex:   { type: Boolean, default: false },               // pedir a Google que no la muestre
         // Historial: estados anteriores (máx. 15) para volver atrás
@@ -69,6 +74,19 @@ module.exports = function modelos(mongoose) {
     EntradaSchema.index({ blog: 1, tipo: 1, slug: 1 }, { unique: true });
     EntradaSchema.index({ blog: 1, estado: 1, publicadaEn: -1 });
     EntradaSchema.index({ blog: 1, etiquetasSlug: 1 });
+    EntradaSchema.index({ publicadaEn: -1, _id: -1 });
+    EntradaSchema.index({ original: 1 });
+    EntradaSchema.index({ usuario: 1, original: 1 }, { unique: true, partialFilterExpression: { tipo: 'republicacion' } });
+    EntradaSchema.index({ blog: 1, huella: 1 }, { unique: true, partialFilterExpression: { tipo: 'nota' } });
+
+    const BlogInteraccionSchema = new mongoose.Schema({
+        usuario: { type: String, required: true },
+        tipo: { type: String, required: true, enum: ['gusta', 'guardar', 'seguir', 'silenciar'] },
+        objetivo: { type: mongoose.Schema.Types.ObjectId, required: true },
+        frecuencia: { type: String, enum: ['cada-articulo', 'sin-avisos'], default: 'cada-articulo' },
+    }, { timestamps: true });
+    BlogInteraccionSchema.index({ usuario: 1, tipo: 1, objetivo: 1 }, { unique: true });
+    BlogInteraccionSchema.index({ objetivo: 1, tipo: 1, frecuencia: 1 });
 
     const BlogVistaSchema = new mongoose.Schema({ blog: { type: mongoose.Schema.Types.ObjectId, required: true }, dia: { type: String, required: true }, n: { type: Number, default: 0 }, a: { type: Number, default: 0 }, g: { type: Number, default: 0 }, d: { type: Number, default: 0 }, gd: { type: Number, default: 0 },
         u: { type: Number, default: 0 }, mo: { type: Number, default: 0 }, pc: { type: Number, default: 0 },   // visitantes (aprox.) · visitas desde móvil · desde computador
@@ -77,7 +95,11 @@ module.exports = function modelos(mongoose) {
     // n visitas · a anuncios vistos · g ganancia US$ · d descargas atribuidas · gd ganancia US$ por ellas
     BlogVistaSchema.index({ blog: 1, dia: 1 }, { unique: true });
 
-    const BlogReporteSchema = new mongoose.Schema({ blog: { type: mongoose.Schema.Types.ObjectId, required: true, index: true }, motivo: String, detalle: String, ip: String }, { timestamps: true });
+    const BlogReporteSchema = new mongoose.Schema({
+        blog: { type: mongoose.Schema.Types.ObjectId, required: true, index: true },
+        usuario: String, publicacion: mongoose.Schema.Types.ObjectId, motivo: String, detalle: String, ip: String,
+    }, { timestamps: true });
+    BlogReporteSchema.index({ usuario: 1, publicacion: 1 }, { unique: true, partialFilterExpression: { publicacion: { $type: 'objectId' } } });
 
     // Lo que mandan los visitantes desde el blog: mensajes del formulario de contacto y pedidos del catálogo
     const BlogMensajeSchema = new mongoose.Schema({
@@ -90,6 +112,7 @@ module.exports = function modelos(mongoose) {
     BlogMensajeSchema.index({ blog: 1, createdAt: -1 });
 
     return {
+        BlogInteraccion: mongoose.model('BlogInteraccion', BlogInteraccionSchema),
         BlogMensaje: mongoose.model('BlogMensaje', BlogMensajeSchema),
         Blog: mongoose.model('Blog', BlogSchema),
         Entrada: mongoose.model('Entrada', EntradaSchema),

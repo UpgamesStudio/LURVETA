@@ -56,4 +56,15 @@ test('lista vacía: secciones vacías, sin errores', () => {
     assert.deepStrictEqual(Object.values(s).map(x => x.length), [0, 0, 0, 0, 0]);
 });
 
+test('el feed conserva formatos, variedad de autores y orden cronológico en Siguiendo', () => {
+    const lote = [
+        e('foto', { usuario: 'ines', tipo: 'nota', temas: ['Fotografía'] }),
+        e('nota', { usuario: 'ines', tipo: 'nota', temas: ['Fotografía'] }),
+        e('texto', { usuario: 'abril', tipo: 'entrada', temas: ['Cultura'] }),
+    ];
+    const recomendado = D.ordenarFeed(lote, { ahora: AHORA, vista: 'todo', intereses: ['Fotografía'] });
+    assert.deepStrictEqual(recomendado.map(x => x.id), ['foto', 'texto', 'nota']);
+    assert.deepStrictEqual(D.ordenarFeed(lote, { ahora: AHORA, vista: 'siguiendo' }), lote);
+});
+
 console.log(`\ndescubrir: ${passed} pruebas OK`);

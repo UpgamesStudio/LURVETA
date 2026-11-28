@@ -27,9 +27,9 @@ const RESERVADOS = new Set(['www', 'admin', 'api', 'app', 'blog', 'blogs', 'upga
     'mail', 'correo', 'ftp', 'cdn', 'static', 'assets', 'nexus', 'live', 'studio', 'racing', 'premium', 'oficial', 'official',
     'root', 'null', 'undefined', 'test', 'dev', 'staging', 'status', 'docs', 'legal', 'terminos', 'privacidad']);
 
-const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes', 'heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo', 'apoyo', 'afiliado']);
+const TIPOS = new Set(['texto', 'titulo', 'imagen', 'galeria', 'video', 'cita', 'boton', 'separador', 'codigo', 'juego', 'descarga', 'aviso', 'faq', 'ficha', 'audio', 'redes', 'heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo', 'apoyo', 'afiliado', 'articulos', 'suscripcion']);
 // Secciones de landing: tipos de bloque que ocupan todo el ancho y llevan su propio estilo
-const SECCIONES = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo', 'apoyo', 'afiliado']);
+const SECCIONES = new Set(['heroe', 'columnas', 'precios', 'testimonios', 'cta', 'formulario', 'catalogo', 'apoyo', 'afiliado', 'articulos', 'suscripcion']);
 const MONEDAS = ['COP', 'USD', 'MXN', 'ARS', 'CLP', 'PEN', 'EUR', 'BRL', 'UYU', 'BOB', 'GTQ', 'DOP', 'VES'];
 const FONDOS_SEC = new Set(['', 'suave', 'acento', 'degradado', 'oscuro', 'imagen']);
 const ESPACIOS_SEC = new Set(['compacto', 'normal', 'amplio']);
@@ -73,7 +73,13 @@ function validarDominio(v) {
 function urlSegura(v, max = 600) {
     const u = String(v ?? '').trim();
     if (!u || u.length > max || /[\s"'<>`\\]/.test(u)) return '';
-    try { const p = new URL(u); return p.protocol === 'https:' && p.hostname.includes('.') ? p.href : ''; } catch (_) { return ''; }
+    try {
+        const p = new URL(u);
+        if (p.username || p.password) return '';
+        const local = process.env.LURVETA_PREVIA_LOCAL === '1' && process.env.NODE_ENV === 'development' &&
+            p.origin === `http://localhost:${process.env.PORT || 10000}` && p.pathname.startsWith('/__demo/media/');
+        return local || (p.protocol === 'https:' && p.hostname.includes('.')) ? p.href : '';
+    } catch (_) { return ''; }
 }
 
 /** Saca el identificador de un video de YouTube de cualquiera de sus formatos de enlace. */
@@ -192,6 +198,13 @@ function limpiarBloques(entrada) {
                 if (items.length && /^https:\/\/wa\.me\/\d+$/.test(wa)) n = { tipo: 'catalogo', titulo: linea(b.titulo, 120), texto: parrafos(b.texto, 400), whatsapp: wa, moneda: MONEDAS.includes(b.moneda) ? b.moneda : 'COP', items, ...estiloSec(b) };
                 break;
             }
+            case 'articulos':
+                n = { tipo: 'articulos', titulo: linea(b.titulo, 120) || 'Últimos artículos', texto: parrafos(b.texto, 400), ...estiloSec(b) };
+                break;
+            case 'suscripcion':
+                n = { tipo: 'suscripcion', titulo: linea(b.titulo, 120) || 'Recibe las novedades', texto: parrafos(b.texto, 400),
+                    bTexto: linea(b.bTexto, 40) || 'Seguir este blog', ...estiloSec(b) };
+                break;
             case 'apoyo': {
                 // Apoyo con UpCoins: el botón abre Lurveta (mismas reglas que apoyar una publicación)
                 n = { tipo: 'apoyo', titulo: linea(b.titulo, 120) || 'Apoya este blog', texto: parrafos(b.texto, 400), bTexto: linea(b.bTexto, 40) || 'Apoyar con UpCoins', ...estiloSec(b) };

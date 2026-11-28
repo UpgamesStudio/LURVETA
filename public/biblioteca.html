@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://upload-widget.cloudinary.com https://widget.cloudinary.com https://sdk.mercadopago.com https://www.paypal.com https://www.paypalobjects.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src 'self' https: blob:; media-src 'self' https: blob: data:; worker-src 'self' blob:">
+<script>
+  if (['localhost', '127.0.0.1'].includes(location.hostname)) window.UG_CONFIG = { API_URL: location.origin };
+</script>
 <script src="/public/upgames-anuncios-aislados.js"></script>
 <script>
   (function () {
@@ -55,7 +58,7 @@
 
 <!-- css:inicio -->
 <!-- Paquete de: biblioteca.css, upgames-glass.css, upgames-estilo.css, upgames-cyber.css, upgames-videos.css, upgames-ux.css, upgames-neo.css, upgames-hero.css, upgames-v6.css, lurveta-ui.css (scripts/unir-css.js) -->
-<link rel="stylesheet" href="upgames-app.css?v=8ff48ffc8f">
+<link rel="stylesheet" href="upgames-app.css?v=3a3f8bc21d">
 <!-- css:fin -->
 <script src="upgames-tema.js?v=20261112a"></script>
 <script src="upgames-musica.js?v=20261108a" defer></script>
@@ -106,6 +109,10 @@
     <input type="text" id="buscador" placeholder="Buscar juegos, mods, apps, videos..." autocomplete="off">
     <div id="autocomplete-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a1a28;border:1px solid rgba(50,213,131,.2);border-radius:0 0 12px 12px;z-index:1000;max-height:280px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.5)"></div>
   </div>
+  <form id="editorial-search" class="search-bar editorial-search" role="search">
+    <input name="q" type="search" maxlength="80" aria-label="Buscar en Blogs" placeholder="Buscar en Blogs">
+    <button type="submit" aria-label="Buscar en Blogs"><ion-icon name="search-outline"></ion-icon></button>
+  </form>
   <div class="hdr-actions">
     <!-- Menú rápido: el orbe despliega las opciones en abanico circular (script.js → UGR) -->
     <button class="hdr-orb" id="hdr-orb" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="hdr-radial" title="Menú rápido" aria-label="Abrir menú rápido">
@@ -187,23 +194,61 @@
 <!-- ══════════════════════════════════
   NEW — artículos y entradas de los blogs de la comunidad (public/js/16-new.js)
 ══════════════════════════════════ -->
-<div id="new-view" aria-label="Novedades: lecturas de la comunidad">
-  <header class="ugn-cab">
-    <div>
-      <p class="ugn-marca">Novedades</p>
-      <h2 class="ugn-titulo">Lecturas de la comunidad</h2>
-      <p class="ugn-sub">Guías, reseñas y noticias escritas por creadores de Lurveta.</p>
+<section id="new-view" aria-labelledby="blog-community-title">
+  <header class="editorial-masthead">
+    <div class="editorial-heading">
+      <div><small id="editorial-demo" hidden>Demostración local</small><h1 id="blog-community-title">Blogs</h1><p>Ideas, historias y conversaciones de la comunidad.</p></div>
+      <a class="editorial-primary" href="./blog.html?escribir=1"><ion-icon name="create-outline"></ion-icon> Escribir</a>
     </div>
-    <a class="ugn-escribir" href="./blog.html"><ion-icon name="create-outline"></ion-icon> Escribir</a>
   </header>
-  <nav class="ugn-filtros" role="tablist" aria-label="Secciones de NEW">
-    <button type="button" role="tab" data-ugn="todo" class="active" aria-selected="true">Para ti</button>
-    <button type="button" role="tab" data-ugn="siguiendo" aria-selected="false">Siguiendo</button>
-    <button type="button" role="tab" data-ugn="populares" aria-selected="false">Populares</button>
-    <button type="button" role="tab" data-ugn="recientes" aria-selected="false">Recientes</button>
-  </nav>
-  <div id="ugn-cuerpo" aria-live="polite"><div class="ugn-carga"><span></span><span></span><span></span></div></div>
-</div>
+  <div class="editorial-layout">
+    <nav class="editorial-nav" aria-label="Feed editorial">
+      <button type="button" data-ugn="todo" aria-current="page"><ion-icon name="sparkles-outline"></ion-icon> Para ti</button>
+      <button type="button" data-ugn="siguiendo"><ion-icon name="people-outline"></ion-icon> Siguiendo</button>
+      <button type="button" data-ugn="explorar"><ion-icon name="compass-outline"></ion-icon> Explorar</button>
+      <button type="button" data-ugn="populares"><ion-icon name="trending-up-outline"></ion-icon> Tendencias</button>
+      <button type="button" data-ugn="recientes"><ion-icon name="time-outline"></ion-icon> Recientes</button>
+      <button type="button" data-ugn="guardados"><ion-icon name="bookmark-outline"></ion-icon> Guardados</button>
+      <a href="./blog.html"><ion-icon name="layers-outline"></ion-icon> Mis blogs</a>
+      <a class="editorial-nav-write" href="./blog.html?escribir=1"><ion-icon name="create-outline"></ion-icon> Escribir</a>
+      <button type="button" data-editorial="silenciados" id="editorial-muted" hidden><ion-icon name="volume-mute-outline"></ion-icon> Silenciados</button>
+    </nav>
+    <div class="editorial-center">
+      <form id="editorial-composer" class="editorial-composer">
+        <div class="editorial-composer-head"><h2>Escribe una nota</h2><a href="./blog.html?escribir=1">Abrir Post Studio <ion-icon name="open-outline"></ion-icon></a></div>
+        <textarea name="texto" maxlength="2000" rows="2" aria-label="Tu nota" placeholder="¿Qué quieres compartir?"></textarea>
+        <div id="editorial-attachments" class="editorial-fields" hidden>
+          <label>Subir imágenes <input name="archivos" type="file" accept="image/*,.heic,.heif" multiple></label>
+          <label>Enlaces de imágenes <textarea name="imagenes" rows="2" placeholder="Una dirección por línea"></textarea></label>
+          <label>Vídeo de YouTube <input name="video" placeholder="https://youtu.be/…"></label>
+          <label>Enlace <input name="url" type="url" placeholder="https://…"></label>
+          <label>Título del enlace <input name="titulo" maxlength="140"></label>
+          <label>Descripción del enlace <input name="descripcion" maxlength="220"></label>
+          <label>Imagen del enlace <input name="imagen" type="url"></label>
+          <label>Etiquetas <input name="etiquetas" maxlength="220" placeholder="Separadas por comas"></label>
+        </div>
+        <div class="editorial-compose-actions">
+          <button type="button" class="editorial-attach" data-editorial="adjuntos" aria-controls="editorial-attachments" aria-expanded="false"><ion-icon name="attach-outline"></ion-icon> Adjuntar</button>
+          <label class="editorial-select"><span>Publicar como</span><select name="blog" aria-label="Identidad editorial"><option value="">Elige un sitio</option></select></label>
+          <label class="editorial-select"><span>Visibilidad</span><select name="alcance" aria-label="Visibilidad de la nota"><option value="comunidad">Comunidad</option><option value="sitio">Comunidad y sitio</option></select></label>
+          <button type="submit" class="editorial-primary">Publicar nota</button>
+        </div>
+        <div id="editorial-compose-status" role="status" hidden></div>
+      </form>
+      <div id="editorial-topics" class="editorial-topics" hidden></div>
+      <div class="editorial-feed-heading"><h2 id="editorial-current">Para ti</h2><span id="editorial-progress" role="status"></span></div>
+      <div id="ugn-cuerpo"></div>
+      <button type="button" id="editorial-more" class="editorial-secondary" data-editorial="mas" hidden>Cargar más</button>
+    </div>
+    <aside id="editorial-aside" class="editorial-aside" aria-label="Descubrimiento editorial"></aside>
+  </div>
+  <dialog id="editorial-reader" class="editorial-dialog" aria-labelledby="editorial-reader-title">
+    <header><button type="button" class="editorial-secondary" data-editorial="volver"><ion-icon name="arrow-back-outline"></ion-icon> Volver al feed</button><span id="editorial-reader-title"></span></header>
+    <div id="editorial-reader-body"></div>
+  </dialog>
+  <dialog id="editorial-action" class="editorial-dialog editorial-action" aria-label="Acción editorial"><div id="editorial-action-body"></div></dialog>
+  <div id="editorial-toast" role="status" hidden></div>
+</section>
 
 <div id="favs-view">
   <button type="button" class="ug-volver-perfil" onclick="switchTab('profile')"><ion-icon name="chevron-back"></ion-icon> Perfil</button>
@@ -1831,10 +1876,10 @@
     <span>Nexus</span>
   </button>
 
-  <button class="nav-tab" data-tab="new" aria-label="Novedades: artículos de la comunidad">
+  <button class="nav-tab" data-tab="new" aria-label="Blogs de la comunidad">
     <div class="nav-dot"></div>
     <ion-icon name="newspaper-outline"></ion-icon>
-    <span>Novedades</span>
+    <span>Blogs</span>
   </button>
   <!-- Favoritos y Ganancias/Economía viven ahora dentro del Perfil (accesos del perfil) -->
   <button class="nav-tab" data-tab="profile" data-tabs="profile favs economia" aria-label="Mi perfil">
@@ -1952,7 +1997,8 @@
 <script src="upgames-metricas.js?v=20261120a"></script>
 <script src="upgames-ranking.js?v=20261108c"></script>
 <script src="upgames-ux.js?v=20261114a"></script>
-<script src="script.js?v=0989c65865"></script>
+<script src="./upgames-blog-imagen.js"></script>
+<script src="script.js?v=784d7dcd5f"></script>
 <script src="upgames-publicar.js?v=20261108a"></script>
 <script src="upgames-extras.js?v=20261115a"></script>
 <script src="upgames-social.js?v=20261120a"></script>

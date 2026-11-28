@@ -391,7 +391,7 @@
          ╚══════════════════════════════════════════════╝ -->
     <script>
       window.UG_CONFIG = {
-        API_URL    : "https://upgames-production.up.railway.app"
+        API_URL    : ["localhost", "127.0.0.1"].includes(location.hostname) ? location.origin : "https://upgames-production.up.railway.app"
       };
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

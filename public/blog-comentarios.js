@@ -4,7 +4,7 @@
 'use strict';
 const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
 const Q = new URLSearchParams(location.search);
-const API = (LOCAL && Q.get('api')) || window.UG_CONFIG?.API_URL || 'https://upgames-production.up.railway.app';
+const API = (LOCAL && Q.get('api')) || (LOCAL ? location.origin : window.UG_CONFIG?.API_URL) || 'https://upgames-production.up.railway.app';
 const EID = (Q.get('e') || '').match(/^[a-f0-9]{24}$/i)?.[0] || '';
 const leer = k => { try { return localStorage.getItem(k) || ''; } catch (_) { return ''; } };
 const TOKEN = leer('token'), YO = leer('user_admin').toLowerCase();

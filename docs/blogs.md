@@ -30,6 +30,15 @@ Herramienta para que cualquier usuario cree su sitio o blog desde Lurveta. **Lur
 - **Premium:** sin «Hecho con Lurveta», 10 blogs (3 gratis) y temas `cristal` y `lienzo`. Si vence, el tema exclusivo se muestra con el tema por defecto.
 - **Monetización (opcional):** marco aislado con ticket firmado (blog + hora + huella de IP), pago por anuncio visto ≥10 s, límites 3/día por blog y 25/día en total por IP, anti-fraude. Tarifa: `BLOGS_CPM` (US$ por 1.000).
 
+## Comunidad editorial
+
+- Una cuenta verificada puede crear sitios, páginas, artículos y notas sin publicar en el catálogo. Los bloques de catálogo y descarga se pueden añadir cuando convienen al contenido. La publicidad editorial se activa desde Ingresos y conserva el CPM vigente.
+- El propósito, las temáticas, el orden del menú y el pie se editan en Ajustes. La página de inicio puede ser cualquier página publicada del propio sitio. El menú puede ocultar el acceso a Blog. Los bloques Lista de artículos y Suscripción al blog se rellenan a partir del sitio.
+- Post Studio ofrece una redacción generalista y conserva la generación desde una publicación como opción adicional. Nexus recibe el propósito, las temáticas y el estilo editorial del sitio del propio creador. Los borradores requieren revisión antes de publicar.
+- Las notas de comunidad aparecen en el feed y en el perfil editorial de un sitio público. La opción Comunidad y sitio añade la nota a `/notas` y le da una URL `/n/…`. Las notas y republicaciones se excluyen del sitemap, el RSS y la indexación. Los artículos conservan su URL canónica.
+- `GET /blogs/descubrir?vista=…` entrega lotes de 12 con cursor por fecha e ID. Para ti pondera actualidad, conversación, reacciones, lectura, intereses inferidos de blogs seguidos y el beneficio Premium existente. Alterna autores dentro de cada lote. Siguiendo es cronológico y reúne publicaciones de personas y de sitios seguidos. La respuesta sin `vista` mantiene el contrato previo.
+- Los seguimientos de personas usan el perfil existente. Los seguimientos de sitios permiten avisos por cada artículo o lectura sin avisos. Las notificaciones y las respuestas usan los registros de Lurveta. El correo editorial requeriría un proveedor operativo y un flujo específico de consentimiento, confirmación y cancelación. La demostración usa avisos en Lurveta.
+
 ## Datos personales (resumen de Privacidad §2.6)
 
 Contenido del blog (público), dominio y consulta DNS, estadísticas diarias sin datos de visitantes (IP en memoria 30 min para no duplicar visitas; huella cifrada en el ticket del anuncio), comentarios (usuario, texto, fecha), reportes (motivo, detalle e IP hasta resolverlos) y la constancia de aceptación (versión, fecha e IP; hasta 5 años después de borrar el blog).
@@ -41,5 +50,7 @@ Beneficio discrecional que entrega el equipo: **2.000 UpCoins promocionales** (n
 ## Pruebas
 
 - `npm test` → `test/blogs.test.js` (validación, render, descarga, comentarios, Premium, escritor).
-- `node test/real/blogs.js` → de extremo a extremo con el servidor real y MongoDB en memoria (27 comprobaciones).
+- `node test/real/blogs.js` → compatibilidad de Blogs con el servidor real y MongoDB en memoria.
+- `node test/real/blog-editorial.js` → cinco cuentas nuevas, contenidos, formularios, navegación, interacción, visibilidad, SEO y descarga opcional contra MongoDB aislado.
+- `node test/real/blog-editorial.js --servir` → conserva la demostración local en `http://localhost:3000/__demo/`. Se puede indicar un directorio de archivos locales con `LURVETA_PREVIA_DIR`. Las fotografías opcionales se leen de `media/valle.jpg`, `media/montana.jpg`, `media/estudio.jpg` y `media/camara.jpg`.
 - `node test/real/portada.js` → la biblioteca con el catálogo real de producción.

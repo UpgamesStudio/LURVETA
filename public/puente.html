@@ -150,7 +150,7 @@
 
     <script>
         // ⭐ CONFIGURACIÓN
-        const API_URL   = "https://upgames-production.up.railway.app";
+        const API_URL   = ["localhost", "127.0.0.1"].includes(location.hostname) ? location.origin : "https://upgames-production.up.railway.app";
         const DEBUG_MODE = false; // Cambiar a true para ver logs detallados
 
         // ── Notifica la descarga al backend de Lurveta ──────────────

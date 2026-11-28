@@ -13,15 +13,16 @@
 
 // ── 1. BASE ─────────────────────────────────────────────────────────
 const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
-const API = (LOCAL && new URLSearchParams(location.search).get('api')) || window.UG_CONFIG?.API_URL || 'https://upgames-production.up.railway.app';
+const API = (LOCAL && new URLSearchParams(location.search).get('api')) || (LOCAL ? location.origin : window.UG_CONFIG?.API_URL) || 'https://upgames-production.up.railway.app';
 const leer = k => { try { return localStorage.getItem(k) || ''; } catch (_) { return ''; } };
+const Q = new URLSearchParams(location.search);
 const TOKEN = leer('token'), YO = leer('user_admin').toLowerCase();
 const $ = (s, r = document) => r.querySelector(s);
 const app = $('#app');
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ico = n => `<ion-icon name="${n}"></ion-icon>`;
 
-const S = { blogs: [], blog: null, vista: 'entradas', temas: [], fuentes: [], fondos: [], cpm: 0, maximo: 3, premium: false };
+const S = { blogs: [], blog: null, vista: 'entradas', temas: [], propositos: [], tematicas: [], fuentes: [], fondos: [], cpm: 0, maximo: 3, premium: false };
 
 async function api(ruta, { metodo = 'GET', cuerpo, publico } = {}) {
   let r;
@@ -78,7 +79,7 @@ function lineaCupo() {
   if (!NX_CUPO) return '';
   if (NX_CUPO.premium) return `<p class="nx-cupo pro">${ico('star')} Premium: Nexus ilimitado</p>`;
   const a = NX_CUPO.acciones, n = (k, s, p) => `<b>${a[k].quedan}</b> ${a[k].quedan === 1 ? s : p}`;
-  return `<p class="nx-cupo">Plan gratis · hoy te quedan ${n('landing', 'landing', 'landings')}, ${n('seccion', 'sección', 'secciones')}, ${n('texto', 'mejora de texto', 'mejoras de texto')} y ${n('seo', 'SEO', 'SEO')}. <a href="/?plan=1">✦ Ilimitado con Premium</a></p>`;
+  return `<p class="nx-cupo">Plan gratis · hoy te quedan ${n('landing', 'página', 'páginas')}, ${n('editorial', 'borrador', 'borradores')}, ${n('seccion', 'sección', 'secciones')}, ${n('texto', 'mejora de texto', 'mejoras de texto')} y ${n('seo', 'SEO', 'SEO')}. <a href="/?plan=1">✦ Ilimitado con Premium</a></p>`;
 }
 const fechaCorta = d => d ? new Date(d).toLocaleDateString('es', { day: 'numeric', month: 'short', year: new Date(d).getFullYear() === new Date().getFullYear() ? undefined : 'numeric' }) : '';
 const num = n => Number(n || 0).toLocaleString('es');
@@ -95,30 +96,7 @@ function elegirImagenes(varias = true) {
     inp.click();
   });
 }
-// Mismo subidor que el resto de Lurveta (preset público de Cloudinary); la firma del servidor queda de respaldo
-const CLD_NUBE = 'dd4w2plxn', CLD_PRESET = 'upgames_videos';
-async function enviarCloudinary(nube, campos, archivo) {
-  const fd = new FormData();
-  fd.append('file', archivo);
-  for (const [k, v] of Object.entries(campos)) fd.append(k, v);
-  let r;
-  try { r = await fetch(`https://api.cloudinary.com/v1_1/${nube}/image/upload`, { method: 'POST', body: fd }); } catch (_) { throw new Error('Sin conexión. Revisa tu internet e inténtalo de nuevo.'); }
-  const d = await r.json().catch(() => null);
-  if (d?.secure_url) return d.secure_url;
-  throw new Error(d?.error?.message ? `No se pudo subir la imagen: ${d.error.message}` : 'No se pudo subir la imagen. Inténtalo de nuevo.');
-}
-async function subirImagen(archivo) {
-  // Algunas galerías de Android entregan la foto sin tipo (o HEIC): se mira también la extensión
-  const esImagen = archivo.type.startsWith('image/') || (!archivo.type && /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(archivo.name));
-  if (!esImagen) throw new Error('Ese archivo no es una imagen.');
-  if (archivo.size > 20 * 1024 * 1024) throw new Error('La imagen pesa más de 20 MB. Elige una más ligera.');
-  try { return await enviarCloudinary(CLD_NUBE, { upload_preset: CLD_PRESET, folder: 'covers' }, archivo); }
-  catch (e) {
-    if (/conexión/.test(e.message)) throw e;
-    const f = await api('/upload/sign?folder=covers');
-    return enviarCloudinary(f.cloud_name, { api_key: f.api_key, timestamp: f.timestamp, signature: f.signature, folder: f.folder }, archivo);
-  }
-}
+const subirImagen = archivo => window.UGBlogSubirImagen(archivo, () => api('/upload/sign?folder=covers'));
 const mini = (url, w) => String(url || '').replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\/(?:w_|c_))/, `$1f_auto,q_auto,w_${w},c_limit/`);
 
 // ── 2. BIENVENIDA, ASISTENTE Y REPORTE ──────────────────────────────
@@ -129,7 +107,7 @@ function bienvenida() {
     <section class="heroe">
       <h1>Tu sitio web,<br><em>hecho en Lurveta</em></h1>
       <p>Elige un diseño, escribe y publica. Sin programar y gratis. Cuando quieras, conéctale tu propio dominio.</p>
-      <a class="btn pri" href="../login.html">${ico('rocket-outline')} Entrar y crear mi blog</a>
+      <a class="btn pri" href="../login.html?volver=${encodeURIComponent('./public/blog.html' + location.search)}">${ico('rocket-outline')} Entrar y crear mi blog</a>
     </section>
     <div class="ventajas">
       <div class="glass">${ico('color-palette-outline')}<b>Temas listos</b><span>Cinco diseños que puedes personalizar con tu color, tu logo y tu portada.</span></div>
@@ -147,17 +125,23 @@ function tarjetasTema(elegido) {
     <b>${h(t.nombre)}</b><span>${h(t.descripcion)}</span></button>`).join('')}</div>`;
 }
 
+function opcionesProposito(valor = '') {
+  return '<option value="">Sin definir</option>' + S.propositos.map(p => `<option${valor === p ? ' selected' : ''}>${h(p)}</option>`).join('');
+}
+
 function asistente(puedeVolver) {
   let tema = S.temas[0]?.id || 'neon', tDir, dirTocada = false;
   app.innerHTML = `<div class="portal">${LOGO}
     <form class="asistente glass" autocomplete="off">
-      <h2>Crea tu blog</h2><p>Solo te toma un minuto. Todo se puede cambiar después.</p>
-      <label class="campo"><span>Nombre del blog</span><input class="inp" name="titulo" maxlength="140" placeholder="Ej.: Mods y trucos de Kale" required></label>
+      <h2>Crea tu sitio</h2><p>Elige una dirección y empieza a construir.</p>
+      <label class="campo"><span>Nombre del sitio</span><input class="inp" name="titulo" maxlength="140" placeholder="Ej.: Cuaderno de Lucía" required></label>
       <label class="campo"><span>Dirección</span><div class="prefijo"><b>…/b/</b><input class="inp" name="direccion" maxlength="30" placeholder="mi-blog" required autocapitalize="off" spellcheck="false"></div><small id="dir-nota">Letras, números y guiones. Entre 3 y 30 caracteres.</small></label>
       <label class="campo"><span>De qué trata (opcional)</span><input class="inp" name="descripcion" maxlength="300" placeholder="Una frase que lo describa"></label>
+      <label class="campo"><span>Propósito (opcional)</span><select class="inp" name="proposito">${opcionesProposito()}</select></label>
+      <label class="campo"><span>Cómo empezar</span><select class="inp" name="inicio"><option value="panel">Crear el sitio ahora</option><option value="plantilla">Elegir una plantilla</option><option value="blanco">Crear una página en blanco</option><option value="nexus">Pedir una propuesta a Nexus</option></select></label>
       <div class="campo"><span>Elige un tema</span>${tarjetasTema(tema)}</div>
       <label class="acepto"><input type="checkbox" name="acepto" required><span>Soy el único responsable de todo lo que publique en mi blog (textos, imágenes, enlaces, descargas, dominio y comentarios que mantenga). Lurveta solo presta la herramienta. Acepto los <a href="./terminos_condiciones.html#blogs" target="_blank" rel="noopener">Términos de Lurveta Blogs</a> y la <a href="./politica-privacidad.html#blogs-datos" target="_blank" rel="noopener">Política de Privacidad</a>.</span></label>
-      <button class="btn pri ancho" type="submit">${ico('sparkles-outline')} Crear mi blog</button>
+      <button class="btn pri ancho" type="submit">${ico('sparkles-outline')} Crear mi sitio</button>
       ${puedeVolver ? '<button class="btn ancho" type="button" data-volver>Cancelar</button>' : ''}
     </form></div>`;
   const f = $('form', app), nota = $('#dir-nota');
@@ -177,9 +161,13 @@ function asistente(puedeVolver) {
   f.onsubmit = e => {
     e.preventDefault();
     ocupado($('[type=submit]', f), async () => {
-      const r = await api('/blogs', { metodo: 'POST', cuerpo: { titulo: f.titulo.value, direccion: f.direccion.value.replace(/-+$/, ''), descripcion: f.descripcion.value, tema, aceptaTerminos: f.acepto.checked } });
+      const r = await api('/blogs', { metodo: 'POST', cuerpo: { titulo: f.titulo.value, direccion: f.direccion.value.replace(/-+$/, ''), descripcion: f.descripcion.value, proposito: f.proposito.value || '', tema, aceptaTerminos: f.acepto.checked } });
       S.blogs.push({ ...r.blog, entradas: 0 }); S.blog = S.blogs[S.blogs.length - 1]; S.vista = 'entradas';
-      JUEGO_INICIAL ? editor('entrada') : (panel(), toast('¡Tu blog está listo! Escribe tu primera entrada.'));
+      const modo = f.inicio.value;
+      panel();
+      if (JUEGO_INICIAL || Q.has('escribir')) return editor('entrada');
+      if (modo !== 'panel') { S.vista = 'paginas'; panel(); return editor('pagina', null, modo); }
+      toast('Tu sitio está listo para personalizar.');
     });
   };
 }
@@ -205,7 +193,7 @@ function reporte(direccion) {
 }
 
 // ── 3. PANEL ────────────────────────────────────────────────────────
-const SECCIONES = [['entradas', 'document-text', 'Entradas'], ['paginas', 'copy', 'Páginas'], ['mensajes', 'mail', 'Mensajes'], ['estadisticas', 'stats-chart', 'Estadísticas'], ['ingresos', 'cash', 'Ingresos'], ['tema', 'color-palette', 'Tema'], ['ajustes', 'settings', 'Ajustes']];
+const SECCIONES = [['entradas', 'document-text', 'Entradas'], ['paginas', 'copy', 'Páginas'], ['notas', 'chatbox', 'Notas'], ['mensajes', 'mail', 'Mensajes'], ['estadisticas', 'stats-chart', 'Estadísticas'], ['ingresos', 'cash', 'Ingresos'], ['tema', 'color-palette', 'Tema'], ['ajustes', 'settings', 'Ajustes']];
 
 function panel() {
   const b = S.blog;
@@ -221,7 +209,7 @@ function panel() {
   $('.nav', app).onclick = e => { const x = e.target.closest('[data-v]'); if (x) { S.vista = x.dataset.v; panel(); } };
   $('#cambiar').onclick = menuBlogs;
   api(`/blogs/${b.id}/mensajes`).then(r => pintarGlobo(r.sinLeer)).catch(() => {});
-  ({ entradas: () => vistaLista('entrada'), paginas: () => vistaLista('pagina'), mensajes: vistaMensajes, estadisticas: vistaEstadisticas, ingresos: vistaIngresos, tema: vistaTema, ajustes: vistaAjustes })[S.vista]();
+  ({ entradas: () => vistaLista('entrada'), paginas: () => vistaLista('pagina'), notas: vistaNotas, mensajes: vistaMensajes, estadisticas: vistaEstadisticas, ingresos: vistaIngresos, tema: vistaTema, ajustes: vistaAjustes })[S.vista]();
 }
 
 function menuBlogs() {
@@ -242,8 +230,9 @@ async function vistaLista(tipo) {
   const v = $('#vista'), esPag = tipo === 'pagina';
   let lista;
   try { lista = (await api(`/blogs/${S.blog.id}/entradas?tipo=${tipo}`)).entradas; } catch (e) { v.innerHTML = `<div class="vacio"><b>No se pudo cargar</b>${h(e.message)}</div>`; return; }
+  if (!v.isConnected) return;
   const aviso = S.blog.estado !== 'activo' ? `<div class="seccion glass" style="border-color:rgba(255,204,0,.4)"><h2>${ico('warning-outline')} Blog en revisión</h2><p>Tu blog recibió reportes y no se muestra al público hasta que el equipo de Lurveta lo revise.</p></div>` : '';
-  v.innerHTML = `<h1>${esPag ? 'Páginas' : 'Entradas'}</h1><p class="sub">${esPag ? 'Páginas fijas que salen en el menú de tu blog: «Sobre mí», «Contacto»…' : 'Lo que publicas en tu blog, de lo más nuevo a lo más antiguo.'}</p>${aviso}
+  v.innerHTML = `<h1>${esPag ? 'Páginas' : 'Entradas'}</h1><p class="sub">${esPag ? 'Crea y organiza las páginas de tu sitio.' : 'Administra tus artículos y abre Post Studio para escribir.'}</p>${aviso}
     ${lista.length ? `<div class="lista">${lista.map(e => {
       const [txt, color] = e.estado === 'programada' && new Date(e.publicadaEn) <= new Date() ? ESTADOS.publicada : ESTADOS[e.estado];
       return `<div class="item glass" data-e="${h(e.id)}" role="button" tabindex="0">
@@ -253,12 +242,29 @@ async function vistaLista(tipo) {
     }).join('')}</div>`
     : `<div class="vacio">${ico(esPag ? 'copy-outline' : 'document-text-outline')}<b>${esPag ? 'Aún no tienes páginas' : 'Escribe tu primera entrada'}</b>Toca el botón <b style="display:inline;color:var(--g)">+</b> para empezar.</div>`}
     <button class="fab" id="nueva" aria-label="${esPag ? 'Crear página' : 'Crear entrada'}">${ico('add')}</button>`;
-  $('#nueva').onclick = () => editor(tipo);
+  $('#nueva', v).onclick = () => editor(tipo);
   v.onclick = e => {
     const m = e.target.closest('[data-menu]');
     if (m) return menuEntrada(lista.find(x => x.id === m.dataset.menu), tipo);
     const it = e.target.closest('[data-e]'); if (it) editor(tipo, it.dataset.e);
   };
+}
+
+async function vistaNotas() {
+  const v = $('#vista');
+  try {
+    const { entradas } = await api(`/blogs/${S.blog.id}/entradas?tipo=nota`);
+    if (!v.isConnected) return;
+    v.innerHTML = `<h1>Notas</h1><p class="sub"><a href="./biblioteca.html?tab=new">Publicar una nota en la comunidad</a></p>
+      <div class="lista">${entradas.map(e => `<div class="item glass"><div class="cuerpo"><b>${h(e.resumen || 'Nota multimedia')}</b>
+      <small>${e.alcance === 'sitio' ? 'Comunidad y sitio' : 'Comunidad'} · ${h(fechaCorta(e.publicadaEn))}</small></div>
+      <a class="btn chico" href="./biblioteca.html?tab=new&publicacion=${e.id}">Ver</a><button class="btn chico rojo" data-borrar-nota="${e.id}">Eliminar</button></div>`).join('') || '<p class="vacio">Todavía no has publicado notas.</p>'}</div>`;
+    v.onclick = async ev => {
+      const b = ev.target.closest('[data-borrar-nota]');
+      if (!b || !(await confirmar('¿Eliminar esta nota?', 'Se retirará de la comunidad y del sitio.', 'Eliminar', true))) return;
+      ocupado(b, async () => { await api('/blogs/comunidad/publicaciones/' + b.dataset.borrarNota, { metodo: 'DELETE' }); vistaNotas(); });
+    };
+  } catch (e) { v.textContent = e.message; }
 }
 
 function menuEntrada(e, tipo) {
@@ -354,7 +360,7 @@ async function vistaEstadisticas() {
       </div>
       <section class="seccion glass"><h2>${ico('flame')} Lo más visto</h2>
         ${d.top.length ? `<div class="top">${d.top.map((t, k) => `<div><span class="pos">${k + 1}</span><b>${h(t.titulo)}</b><small>${t.tipo === 'pagina' ? 'Página' : 'Entrada'}</small><span>${num(t.vistas)}</span></div>`).join('')}</div>` : '<p>Cuando tus páginas reciban visitas aparecerán aquí.</p>'}
-        <p class="nota-stats">${num(d.total)} visitas desde siempre · ${num(d.publicadas)} entradas publicadas. Los visitantes y las fuentes son aproximados.</p></section>
+        <p class="nota-stats">${num(d.total)} visitas desde siempre · ${num(d.publicadas)} artículos · ${num(d.notas || 0)} notas · ${num(d.seguidores || 0)} seguidores del sitio. Los visitantes y las fuentes son aproximados.</p></section>
       ${consejoStats(act, fu, tf, visitas, contactos)}`;
     v.querySelectorAll('[data-rango]').forEach(b => { b.onclick = () => { rangoStats = +b.dataset.rango; pintar(); }; });
   };
@@ -378,7 +384,7 @@ async function vistaIngresos() {
   const usd = n => 'US$' + Number(n || 0).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: Number(n) > 0 && Number(n) < 0.1 ? 4 : 2 });
   v.innerHTML = `<h1>Ingresos</h1><p class="sub">Tú decides si tu blog lleva publicidad. Si la activas, ganas dinero con cada anuncio que ven tus visitantes.</p>
     <section class="seccion glass"><h2>${ico('cash')} Monetizar con Lurveta</h2>
-      <label class="interruptor"><span><b>Mostrar publicidad en mi blog</b><br><small style="color:var(--txt3)">Un anuncio al final de cada entrada y del inicio. Además, el bloque «Descarga» abre el enlace final a través del acortador de anuncios Cuty.io (nunca a usuarios Premium). Tus otros enlaces y botones no cambian.</small></span><input type="checkbox" id="monetizar"${b.monetizar ? ' checked' : ''}></label>
+      <label class="interruptor"><span><b>Mostrar publicidad en mi blog</b><br><small style="color:var(--txt3)">Publica anuncios en el inicio y los artículos. Si usas un bloque «Descarga», la monetización también habilita el acortador Cuty.io para esas descargas, salvo para lectores Premium.</small></span><input type="checkbox" id="monetizar"${b.monetizar ? ' checked' : ''}></label>
       <p>Ganas <b style="color:var(--g)">${usd(d.cpm)}</b> por cada 1.000 anuncios vistos. Se suma a tu saldo de Lurveta, el mismo de tus publicaciones, y lo retiras desde <a href="/">tu perfil → Economía</a>.</p>
       ${b.visibilidad !== 'publico' ? '<p style="color:var(--amber)">Tu blog está oculto: los anuncios solo se muestran en blogs públicos.</p>' : ''}
     </section>
@@ -394,7 +400,7 @@ async function vistaIngresos() {
       <p>Un anuncio cuenta cuando una persona real lo tuvo a la vista unos segundos y no usa bloqueador. Cada visitante cuenta hasta 3 veces al día en tu blog. Las visitas falsas o hechas por ti mismo no pagan y pueden suspender la monetización.</p></section>`;
   $('#monetizar').onchange = async e => {
     const quiere = e.target.checked;
-    if (quiere && !(await confirmar('¿Activar la publicidad?', 'Tus visitantes verán un anuncio al final de cada entrada y el bloque «Descarga» pasará por el acortador de anuncios Cuty.io (sin acortador para quien tiene Premium). Puedes quitarla cuando quieras.', 'Activar'))) { e.target.checked = false; return; }
+    if (quiere && !(await confirmar('¿Activar la publicidad?', 'Tus visitantes verán publicidad en los artículos. Si usas el bloque «Descarga», los lectores sin Premium pasarán por Cuty.io. Puedes desactivar la publicidad cuando quieras.', 'Activar'))) { e.target.checked = false; return; }
     try { await guardarBlog({ monetizar: quiere }, quiere ? 'Publicidad activada' : 'Publicidad desactivada'); } catch (err) { e.target.checked = !quiere; toast(err.message, true); }
   };
 }
@@ -497,6 +503,16 @@ function vistaAjustes() {
     <section class="seccion glass"><h2>${ico('home')} Página de inicio</h2><p>Lo primero que ve quien entra a tu sitio. Elige una página para tener una landing (tus entradas pasan a «Blog» en el menú).</p>
       <div class="fila"><select class="inp" id="inicio" style="flex:1;min-width:200px"><option value="">La lista de entradas (blog)</option></select><button class="btn chico" id="inicio-ok">Guardar</button></div>
       <small id="inicio-nota" style="color:var(--txt3)"></small></section>
+    <form class="seccion glass" id="f-editorial"><h2>${ico('options')} Identidad editorial y navegación</h2>
+      <label class="campo"><span>Propósito</span><select class="inp" name="proposito">${opcionesProposito(b.ajustes?.proposito)}</select></label>
+      <label class="campo"><span>Estilo editorial para Nexus (opcional)</span><input class="inp" name="estiloEditorial" maxlength="200" value="${h(b.ajustes?.estiloEditorial)}" placeholder="Ej.: cercano y con ejemplos prácticos"></label>
+      <fieldset class="editorial-setting"><legend>Temáticas</legend><div class="tema-opciones">${S.tematicas.map(t => `<label><input type="checkbox" name="temas" value="${h(t)}"${b.ajustes?.temas?.includes(t) ? ' checked' : ''}> ${h(t)}</label>`).join('')}</div></fieldset>
+      <label class="campo"><span>Texto del pie de página</span><input class="inp" name="pie" maxlength="180" value="${h(b.ajustes?.pie)}"></label>
+      <label class="acepto"><input type="checkbox" name="blogEnMenu"${b.ajustes?.blogEnMenu !== false ? ' checked' : ''}> Mostrar Blog en el menú</label>
+      <label class="acepto"><input type="checkbox" name="notasEnMenu"${b.ajustes?.notasEnMenu ? ' checked' : ''}> Mostrar Notas en el menú</label>
+      <label class="acepto"><input type="checkbox" name="personalizarMenu"${b.ajustes?.paginasMenu ? ' checked' : ''}> Elegir páginas y ordenar enlaces</label>
+      <div id="menu-paginas"></div>
+      <button class="btn pri" type="submit">Guardar identidad y menú</button></form>
     <section class="seccion glass"><h2>${ico('share-social')} Tu enlace</h2>
       <div class="fila"><code style="flex:1;min-width:0;word-break:break-all;color:var(--cy)">${h(b.url)}</code><button class="btn chico" id="copiar-url">${ico('copy-outline')} Copiar</button></div></section>
     <section class="seccion glass" id="s-dominio"><h2>${ico('globe')} Dominio propio ${d ? `<span class="chip ${d.verificado ? 'verde' : 'ambar'}">${d.verificado ? 'Conectado' : 'Pendiente'}</span>` : ''}</h2>
@@ -518,14 +534,28 @@ function vistaAjustes() {
   };
   $('#copiar-url').onclick = () => copiar(b.url);
   (async () => {
-    const sel = $('#inicio'), nota = $('#inicio-nota');
+    const sel = $('#inicio', v), nota = $('#inicio-nota', v), boton = $('#inicio-ok', v);
     try {
       const pags = (await api(`/blogs/${b.id}/entradas?tipo=pagina`)).entradas;
+      if (!v.isConnected) return;
       sel.insertAdjacentHTML('beforeend', pags.map(p => `<option value="${h(p.id)}"${b.ajustes?.inicio === p.id ? ' selected' : ''}${p.estado === 'borrador' ? ' disabled' : ''}>${h(p.titulo)}${p.estado === 'borrador' ? ' (borrador: publícala primero)' : ''}</option>`).join(''));
+      pintarMenuPaginas(pags.filter(p => p.estado === 'publicada' || (p.estado === 'programada' && new Date(p.publicadaEn) <= new Date())), b);
       if (!pags.length) nota.textContent = 'Aún no tienes páginas. Crea una en «Páginas» con la plantilla «Landing de negocio» o pídesela a ✦ Nexus.';
     } catch (_) {}
-    $('#inicio-ok').onclick = e => ocupado(e.currentTarget, () => guardarBlog({ ajustes: { inicio: sel.value } }, sel.value ? 'Inicio cambiado: tu sitio abre con esa página' : 'Inicio: lista de entradas'));
+    boton.onclick = e => ocupado(e.currentTarget, () => guardarBlog({ ajustes: { inicio: sel.value } }, sel.value ? 'Inicio cambiado: tu sitio abre con esa página' : 'Inicio: lista de entradas'));
   })();
+  const fe = $('#f-editorial');
+  fe.onsubmit = e => {
+    e.preventDefault();
+    ocupado($('[type=submit]', fe), () => {
+      const datos = new FormData(fe);
+      return guardarBlog({ ajustes: {
+        proposito: datos.get('proposito'), estiloEditorial: datos.get('estiloEditorial'), temas: datos.getAll('temas'),
+        pie: datos.get('pie'), blogEnMenu: datos.has('blogEnMenu'), notasEnMenu: datos.has('notasEnMenu'),
+        paginasMenu: datos.has('personalizarMenu') ? datos.getAll('paginasMenu') : null,
+      } }, 'Identidad y menú guardados');
+    });
+  };
   const fDom = $('#f-dominio');
   if (fDom) fDom.onsubmit = e => {
     e.preventDefault();
@@ -551,6 +581,30 @@ function vistaAjustes() {
     } catch (e) { toast(e.message, true); }
   };
 }
+function pintarMenuPaginas(paginas, blog) {
+  const lista = $('#menu-paginas'), personalizada = $('#f-editorial').elements.personalizarMenu;
+  if (!lista) return;
+  const actual = blog.ajustes?.paginasMenu;
+  const orden = actual ? [...actual, ...paginas.map(p => p.id).filter(id => !actual.includes(id))] : paginas.map(p => p.id);
+  lista.innerHTML = orden.map(id => {
+    const p = paginas.find(p => p.id === id);
+    if (!p || p.id === blog.ajustes?.inicio) return '';
+    return `<div class="fila menu-pagina"><label><input type="checkbox" name="paginasMenu" value="${p.id}"${!actual || actual.includes(id) ? ' checked' : ''}> ${h(p.titulo)}</label>
+      <button type="button" class="ico" data-orden="subir" aria-label="Subir ${h(p.titulo)}">${ico('arrow-up')}</button>
+      <button type="button" class="ico" data-orden="bajar" aria-label="Bajar ${h(p.titulo)}">${ico('arrow-down')}</button></div>`;
+  }).join('');
+  lista.hidden = !personalizada.checked;
+  personalizada.onchange = () => { lista.hidden = !personalizada.checked; };
+  lista.onclick = ev => {
+    const b = ev.target.closest('[data-orden]');
+    if (!b) return;
+    const f = b.closest('.menu-pagina');
+    if (b.dataset.orden === 'subir' && f.previousElementSibling) f.previousElementSibling.before(f);
+    if (b.dataset.orden === 'bajar' && f.nextElementSibling) f.nextElementSibling.after(f);
+    b.focus();
+  };
+}
+
 function panelCabecera() { const s = $('.barra .quien small'); if (s) s.textContent = S.blog.url.replace(/^https?:\/\//, ''); const a = $('.barra a.btn'); if (a) a.href = S.blog.url; }
 
 // ── 4. EDITOR POR BLOQUES ───────────────────────────────────────────
@@ -622,6 +676,8 @@ const SEC = {
     item: [['imagen', 'Foto del producto', 0, 'img'], ['nombre', 'Nombre del producto', 80], ['tienda', 'Tienda (ej.: Amazon)', 40], ['precio', 'Precio aproximado (opcional)', 30], ['url', 'Tu enlace de afiliado: https://…', 600]],
     max: 12, nombreItem: 'Producto', otro: 'Añadir producto', nuevo: () => ({}), inicio: () => [{}], sinNexus: true,
     ayuda: 'Se muestra siempre el aviso «Enlaces de afiliado» para tus lectores. Tú eres responsable de cumplir las reglas de cada programa de afiliados.' },
+  articulos: { nombre: 'Lista de artículos', ico: 'newspaper', sinNexus: true, campos: [['titulo', 'Título', 120], ['texto', 'Introducción', 400, 1]] },
+  suscripcion: { nombre: 'Suscripción al blog', ico: 'notifications', sinNexus: true, campos: [['titulo', 'Título', 120], ['texto', 'Introducción', 400, 1], ['bTexto', 'Texto del botón', 40]] },
   cta: { nombre: 'Llamada a la acción', ico: 'megaphone', campos: [['titulo', 'Título (ej.: ¿Listo para empezar?)', 120], ['texto', 'Frase corta (opcional)', 300, 1], ...BOTON], idea: 'Ej.: invitar a escribir por WhatsApp para pedir una cotización' },
 };
 const FONDOS_SEC = [['', 'Sin fondo'], ['suave', 'Suave'], ['acento', 'Color del blog'], ['degradado', 'Degradado'], ['oscuro', 'Oscuro'], ['imagen', 'Imagen']];
@@ -638,6 +694,7 @@ window.addEventListener('beforeunload', e => { if (sucio) { e.preventDefault(); 
 // Plantillas: un punto de partida para no empezar con la hoja en blanco
 const PLANTILLAS = [
   ['blanco', 'document-outline', 'En blanco', 'Empieza desde cero', []],
+  ['articulo', 'newspaper-outline', 'Artículo editorial', 'Introducción, desarrollo y cierre', [{ tipo: 'texto', texto: '', grande: true }, { tipo: 'titulo', texto: 'Desarrollo' }, { tipo: 'texto', texto: '' }]],
   ['resena', 'star-outline', 'Reseña de juego', 'Opinión, ficha y nota final', [{ tipo: 'texto', texto: 'Cuenta en dos frases de qué va el juego y por qué lo probaste.', grande: true }, { tipo: 'imagen' }, { tipo: 'titulo', texto: 'Lo mejor' }, { tipo: 'texto', texto: '- Punto fuerte 1\n- Punto fuerte 2\n- Punto fuerte 3' }, { tipo: 'titulo', texto: 'Lo peor' }, { tipo: 'texto', texto: '- Punto débil 1\n- Punto débil 2' }, { tipo: 'ficha', titulo: 'Ficha', filas: [{ k: 'Género', v: 'Acción' }, { k: 'Plataforma', v: 'Android' }, { k: 'Peso', v: '1,2 GB' }] }, { tipo: 'aviso', estilo: 'exito', texto: '**Nota final: 8/10.** Recomendado si te gusta…' }]],
   ['guia', 'construct-outline', 'Guía de instalación', 'Requisitos y pasos numerados', [{ tipo: 'texto', texto: 'Qué vas a conseguir con esta guía y cuánto tiempo toma.' }, { tipo: 'ficha', titulo: 'Requisitos', filas: [{ k: 'Android', v: '10 o superior' }, { k: 'RAM', v: '4 GB' }, { k: 'Espacio libre', v: '3 GB' }] }, { tipo: 'titulo', texto: 'Paso a paso' }, { tipo: 'texto', texto: '1. Descarga los archivos.\n2. Instala la APK.\n3. Copia la carpeta OBB.\n4. Abre el juego.' }, { tipo: 'aviso', estilo: 'alerta', texto: 'Haz una copia de tu partida antes de empezar.' }, { tipo: 'video' }, { tipo: 'faq', items: [{ p: '¿Sirve en mi celular?', r: 'Funciona en la mayoría de equipos con…' }, { p: 'Me sale pantalla negra, ¿qué hago?', r: 'Prueba a…' }] }]],
   ['noticia', 'megaphone-outline', 'Noticia', 'Titular, imagen y lo importante', [{ tipo: 'texto', texto: 'Lo más importante de la noticia en una o dos frases.', grande: true }, { tipo: 'imagen' }, { tipo: 'texto', texto: 'Desarrolla la noticia: qué pasó, cuándo y qué significa.' }, { tipo: 'cita', texto: 'Una frase destacada de la fuente.', autor: 'Fuente' }]],
@@ -648,12 +705,28 @@ const PLANTILLAS_PAGINA = [
   ['blanco', 'document-outline', 'En blanco', 'Empieza desde cero', []],
   ['landing', 'rocket-outline', 'Landing de negocio', 'Portada, servicios, opiniones y contacto', [{ tipo: 'heroe', fondo: 'degradado', espacio: 'amplio' }, { tipo: 'columnas' }, { tipo: 'testimonios', fondo: 'suave' }, { tipo: 'redes', items: [{ red: 'whatsapp', url: '' }] }, { tipo: 'cta', fondo: 'acento' }]],
   ['producto', 'pricetag-outline', 'Producto o servicio', 'Portada con imagen, beneficios, precios y dudas', [{ tipo: 'heroe', variante: 'dividido' }, { tipo: 'columnas', fondo: 'suave' }, { tipo: 'precios' }, { tipo: 'faq', items: [] }, { tipo: 'cta', fondo: 'degradado' }]],
-  ['contacto', 'call-outline', 'Contacto', 'Tus redes, WhatsApp y una frase', [{ tipo: 'texto', texto: 'Escríbenos y te respondemos lo antes posible.', grande: true, centro: true }, { tipo: 'redes', items: [{ red: 'whatsapp', url: '' }, { red: 'instagram', url: '' }, { red: 'email', url: '' }] }]],
+  ['contacto', 'call-outline', 'Contacto', 'Formulario y enlaces a tus redes', [{ tipo: 'formulario', titulo: 'Contacto' }, { tipo: 'texto', texto: 'Escríbenos y te respondemos lo antes posible.', grande: true, centro: true }, { tipo: 'redes', items: [{ red: 'whatsapp', url: '' }, { red: 'instagram', url: '' }, { red: 'email', url: '' }] }]],
 ];
+PLANTILLAS_PAGINA.push(
+  ['canal', 'videocam-outline', 'Canal de vídeo', 'Presentación, vídeos y suscripción', [{ tipo: 'heroe', fondo: 'degradado' }, { tipo: 'video' }, { tipo: 'redes' }, { tipo: 'suscripcion' }]],
+  ['portafolio', 'images-outline', 'Portafolio', 'Presentación, galería y contacto', [{ tipo: 'heroe', variante: 'dividido' }, { tipo: 'galeria' }, { tipo: 'formulario' }]],
+  ['revista', 'newspaper-outline', 'Revista o blog', 'Portada, últimos artículos y suscripción', [{ tipo: 'heroe', fondo: 'suave' }, { tipo: 'articulos' }, { tipo: 'suscripcion', fondo: 'acento' }]],
+  ['equipo', 'people-outline', 'Sobre nosotros', 'Presentación del equipo y formulario de contacto', [{ tipo: 'heroe' }, { tipo: 'columnas', titulo: 'Equipo' }, { tipo: 'formulario' }]],
+  ['proyecto', 'bulb-outline', 'Proyecto o documentación', 'Presentación, recursos y novedades', [{ tipo: 'heroe' }, { tipo: 'columnas', titulo: 'Recursos' }, { tipo: 'articulos' }, { tipo: 'formulario' }]],
+  ['comunidad', 'chatbubbles-outline', 'Comunidad', 'Presentación, novedades y seguimiento', [{ tipo: 'heroe' }, { tipo: 'articulos' }, { tipo: 'suscripcion' }]],
+);
+const PROPUESTA_PAGINA = {
+  'Canal de YouTube': 'canal', 'Creador de contenido': 'canal', 'Portafolio profesional': 'portafolio', Fotografía: 'portafolio', Arte: 'portafolio',
+  'Medio digital': 'revista', Noticias: 'revista', 'Blog personal': 'revista', Comunidad: 'comunidad', Organización: 'equipo',
+  Negocio: 'landing', 'Tienda o catálogo': 'producto', 'Sitio web en blanco': 'blanco',
+  Educación: 'proyecto', Tecnología: 'proyecto', 'Desarrollo de software': 'proyecto', 'Proyecto personal': 'proyecto', Gaming: 'canal',
+};
 const PLANTILLA_NEXUS = ['nexus', 'sparkles', '✦ Que Nexus la cree', 'Cuéntale tu idea y arma la página por ti', null];
 function elegirPlantilla(esPag) {
   return new Promise(ok => {
-    const lista = [PLANTILLA_NEXUS, ...(esPag ? PLANTILLAS_PAGINA : [...PLANTILLAS, PLANTILLAS_PAGINA[1]])];
+    const sugerida = PROPUESTA_PAGINA[S.blog?.ajustes?.proposito];
+    const paginas = [...PLANTILLAS_PAGINA].sort((a, b) => Number(b[0] === sugerida) - Number(a[0] === sugerida));
+    const lista = [PLANTILLA_NEXUS, ...(esPag ? paginas : [...PLANTILLAS, PLANTILLAS_PAGINA[1]])];
     const c = hoja(`<h3>¿Cómo quieres empezar?</h3><div class="opciones">${lista.map(([id, i, n, d]) => `<button data-p="${id}"${id === 'nexus' ? ' class="nx-op"' : ''}>${ico(i)}<span>${n}<small>${d}</small></span></button>`).join('')}</div>`);
     $('#hoja').onclick = e => { if (e.target.id === 'hoja') { cerrarHoja(); ok(null); } };
     c.onclick = e => { const x = e.target.closest('[data-p]'); if (!x) return; cerrarHoja(); const p = lista.find(p => p[0] === x.dataset.p); ok(p[0] === 'nexus' ? 'nexus' : p[4]); };
@@ -766,22 +839,22 @@ function nexusTexto(texto, aplicar) {
   };
 }
 
-async function editor(tipo, id) {
+async function editor(tipo, id, modo) {
   const esPag = tipo === 'pagina';
   let inicial = null;
   const juegoDesde = !id && !esPag ? tomarJuegoInicial() : '';
   let conNexus = false;
-  if (!id) { inicial = juegoDesde ? [{ tipo: 'juego', id: juegoDesde }, { tipo: 'texto', texto: '' }] : await elegirPlantilla(esPag); if (inicial === null) return; if (inicial === 'nexus') { conNexus = true; inicial = []; } }
+  if (!id) { inicial = juegoDesde ? [{ tipo: 'juego', id: juegoDesde }, { tipo: 'texto', texto: '' }] : modo === 'blanco' ? [] : modo === 'nexus' ? 'nexus' : await elegirPlantilla(esPag); if (inicial === null) return; if (inicial === 'nexus') { conNexus = true; inicial = []; } }
   let E = { titulo: '', bloques: inicial?.length ? inicial : [{ tipo: 'texto', texto: '' }], etiquetas: [], portadaPropia: '', resumenPropio: '', estado: 'borrador', publicadaEn: null };
   urlPreviaInicial = '';
   app.innerHTML = '<div class="cargando"><span class="giro"></span></div>';
   if (id) { try { const r = await api(`/blogs/${S.blog.id}/entradas/${id}`); E = r.entrada; urlPreviaInicial = r.previa || ''; } catch (e) { toast(e.message, true); return panel(); } }
-  const meta = { tituloSeo: E.tituloSeo || '', noindex: !!E.noindex, etiquetas: (E.etiquetas || []).join(', '), portada: E.portadaPropia || '', resumen: E.resumenPropio || '', programar: E.estado === 'programada' && new Date(E.publicadaEn) > new Date() ? E.publicadaEn : '' };
+  const meta = { tituloSeo: E.tituloSeo || '', noindex: !!E.noindex, destacada: !!E.destacada, etiquetas: (E.etiquetas || []).join(', '), portada: E.portadaPropia || '', resumen: E.resumenPropio || '', programar: E.estado === 'programada' && new Date(E.publicadaEn) > new Date() ? E.publicadaEn : '' };
   sucio = false;
   const publica = () => E.estado !== 'borrador';
 
   app.innerHTML = `<div class="editor">
-    <header class="barra"><button class="ico" id="salir" aria-label="Volver">${ico('chevron-back')}</button><b>${id ? 'Editar' : 'Nueva'} ${esPag ? 'página' : 'entrada'}</b><span class="chip estado" id="estado"></span><button class="btn chico nexus" id="nexus" style="margin-left:8px" aria-label="Nexus escribe un borrador"><b>✦</b><span>Nexus</span></button><button class="btn chico" id="previa" style="margin-left:8px" aria-label="Vista previa">${ico('eye-outline')}<span>Vista previa</span></button></header>
+    <header class="barra"><button class="ico" id="salir" aria-label="Volver">${ico('chevron-back')}</button><b>${esPag ? 'Constructor · ' + (id ? 'Editar página' : 'Nueva página') : 'Post Studio'}</b><span class="chip estado" id="estado"></span><button class="btn chico nexus" id="nexus" style="margin-left:8px" aria-label="Nexus escribe un borrador"><b>✦</b><span>Nexus</span></button><button class="btn chico" id="previa" style="margin-left:8px" aria-label="Vista previa">${ico('eye-outline')}<span>Vista previa</span></button></header>
     <div class="guardado" id="guardado" aria-live="polite"></div>
     <div class="lienzo">
       <textarea class="titulo-entrada" id="titulo" rows="1" maxlength="140" placeholder="${esPag ? 'Título de la página' : 'Título de la entrada'}">${h(E.titulo)}</textarea>
@@ -1065,7 +1138,7 @@ async function editor(tipo, id) {
     autoOcupado = true;
     try {
       const bloques = [...cont.children].map(x => x.leer()).filter(x => x && (x.tipo === 'separador' || x.tipo === 'formulario' || [x.texto, x.url, x.id, x.titulo].some(v => String(v || '').trim()) || [x.urls, x.items, x.filas].some(a => a?.length)));
-      const r = await api(`/blogs/${S.blog.id}/entradas${id ? '/' + id : ''}`, { metodo: id ? 'PUT' : 'POST', cuerpo: { tipo, titulo: tit.value.trim(), bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, tituloSeo: meta.tituloSeo, noindex: meta.noindex, estado: 'borrador' } });
+      const r = await api(`/blogs/${S.blog.id}/entradas${id ? '/' + id : ''}`, { metodo: id ? 'PUT' : 'POST', cuerpo: { tipo, titulo: tit.value.trim(), bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, tituloSeo: meta.tituloSeo, noindex: meta.noindex, destacada: meta.destacada, estado: 'borrador' } });
       const nueva = !id; E = r.entrada; id = E.id; urlPrevia = r.previa || urlPrevia; sucio = false; pintarEstado();
       if (nueva) try { localStorage.removeItem(`ug_editor_${S.blog.id}_nueva-${tipo}`); } catch (_) {}
       borrarCopiaLocal();
@@ -1118,9 +1191,10 @@ async function editor(tipo, id) {
   $('#opciones').onclick = () => {
     const local = d => { const f = new Date(d); return isNaN(f) ? '' : new Date(f.getTime() - f.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
     const c = hoja(`<h3>Opciones de la ${esPag ? 'página' : 'entrada'}</h3>
-      ${esPag ? '' : `<label class="campo"><span>Etiquetas</span><input class="inp" id="o-et" maxlength="260" placeholder="mods, android, guías" value="${h(meta.etiquetas)}"><small>Sepáralas con comas. Hasta 8.</small></label>`}
+      ${esPag ? '' : `<label class="campo"><span>Etiquetas</span><input class="inp" id="o-et" maxlength="260" placeholder="fotografía, guías, cultura" value="${h(meta.etiquetas)}"><small>Sepáralas con comas. Hasta 8.</small></label>`}
       <div class="campo"><span>Imagen de portada</span><div class="fila">${meta.portada ? `<img src="${h(mini(meta.portada, 240))}" alt="" style="height:60px;border-radius:10px">` : ''}<button class="btn chico" id="o-port">${ico('image-outline')} ${meta.portada ? 'Cambiar' : 'Subir'}</button>${meta.portada ? '<button class="btn chico rojo" id="o-port-no">Quitar</button>' : ''}</div><small>Si no subes una, se usa la primera imagen de la entrada.</small></div>
       <label class="campo"><span>Resumen</span><textarea class="inp" id="o-res" maxlength="300" placeholder="Una o dos frases. Si lo dejas vacío se toma del texto.">${h(meta.resumen)}</textarea></label>
+      ${esPag ? '' : `<label class="sec-check"><input type="checkbox" id="o-destacada"${meta.destacada ? ' checked' : ''}> Destacar artículo en el perfil editorial</label>`}
       ${esPag ? '' : `<label class="campo"><span>Programar publicación</span><input class="inp" type="datetime-local" id="o-prog" value="${h(local(meta.programar))}"><small>Déjalo vacío para publicar al momento.</small></label>`}
       <div class="campo"><span>${ico('search-outline')} Google y redes</span>
         <input class="inp" id="o-seo" maxlength="90" placeholder="Título para Google (si lo dejas vacío, el de la ${esPag ? 'página' : 'entrada'})" value="${h(meta.tituloSeo)}"><small id="o-seo-n"></small>
@@ -1139,7 +1213,7 @@ async function editor(tipo, id) {
     };
     ['o-seo', 'o-res'].forEach(k => $('#' + k, c).addEventListener('input', serp)); serp();
     const hist = $('#o-hist', c); if (hist) hist.onclick = () => { guardarCampos(); verHistorial(); };
-    const guardarCampos = () => { if (!esPag) { meta.etiquetas = $('#o-et', c).value; const p = $('#o-prog', c).value; meta.programar = p ? new Date(p).toISOString() : ''; } meta.resumen = $('#o-res', c).value; meta.tituloSeo = $('#o-seo', c).value.trim(); meta.noindex = $('#o-noindex', c).checked; sucio = true; };
+    const guardarCampos = () => { if (!esPag) { meta.etiquetas = $('#o-et', c).value; meta.destacada = $('#o-destacada', c).checked; const p = $('#o-prog', c).value; meta.programar = p ? new Date(p).toISOString() : ''; } meta.resumen = $('#o-res', c).value; meta.tituloSeo = $('#o-seo', c).value.trim(); meta.noindex = $('#o-noindex', c).checked; sucio = true; };
     $('#o-port', c).onclick = async ev => { const f = await elegirImagen(); if (!f) return; guardarCampos(); await ocupado(ev.currentTarget, async () => { meta.portada = await subirImagen(f); }); $('#opciones').click(); };
     const no = $('#o-port-no', c); if (no) no.onclick = () => { guardarCampos(); meta.portada = ''; $('#opciones').click(); };
     $('#o-ok', c).onclick = () => { guardarCampos(); cerrarHoja(); pintarEstado(); };
@@ -1171,7 +1245,8 @@ async function editor(tipo, id) {
   const hayContenido = () => leerTodo().some(b => [b.texto, b.titulo, b.url, b.id].some(v => String(v || '').trim()) || (b.urls || []).length);
   $('#nexus').onclick = () => {
     const ops = [
-      ['landing', 'rocket-outline', 'Crear una landing con IA', 'Cuéntale tu negocio y arma portada, servicios, precios, dudas y contacto'],
+      ['landing', 'rocket-outline', 'Diseñar una página', 'Crea una propuesta de sitio a partir de tu idea'],
+      ['editorial', 'newspaper-outline', 'Redactar con Nexus', 'Prepara un artículo, una presentación o un calendario editorial'],
       ...(esPag ? [] : [['publicacion', 'game-controller-outline', 'Escribir sobre una publicación', 'Reseña, guía o noticia de un juego de Lurveta']]),
       ['revisar', 'checkmark-done-outline', 'Revisar mi página', 'Consejos para que se vea profesional y la encuentren'],
       ['seo', 'search-outline', 'Título, resumen y etiquetas', 'Para Google y para cuando la compartan'],
@@ -1179,8 +1254,24 @@ async function editor(tipo, id) {
     const c = hoja(`<h3>✦ Nexus</h3><p class="hoja-sub" style="margin:0">Tu asistente: escribe, revisa y mejora contigo. Tú decides qué usar.</p><div class="opciones">${ops.map(([id, i, n, d]) => `<button data-nx-op="${id}">${ico(i)}<span>${n}<small>${d}</small></span></button>`).join('')}</div>
       <p class="hoja-sub" style="margin:0">También tienes ✦ en cada bloque de texto y en cada sección.</p><div id="nx-cupo">${lineaCupo()}</div>`);
     nexusCupo().then(() => { const x = $('#nx-cupo', c); if (x) x.innerHTML = lineaCupo(); });
-    c.onclick = e => { const x = e.target.closest('[data-nx-op]'); if (!x) return; cerrarHoja(); ({ landing: nexusLanding, publicacion: nexusPublicacion, revisar: nexusRevisar, seo: nexusSeo })[x.dataset.nxOp](); };
+    c.onclick = e => { const x = e.target.closest('[data-nx-op]'); if (!x) return; cerrarHoja(); ({ landing: nexusLanding, editorial: nexusEditorial, publicacion: nexusPublicacion, revisar: nexusRevisar, seo: nexusSeo })[x.dataset.nxOp](); };
   };
+
+  async function nexusEditorial() {
+    if (hayContenido() && !(await confirmar('¿Reemplazar lo escrito?', 'El borrador de Nexus sustituirá los bloques actuales.', 'Continuar', true))) return;
+    const c = hoja(`<h3>Redactar con Nexus</h3><label class="campo"><span>¿Qué quieres preparar?</span>
+      <textarea class="inp" id="ne-idea" maxlength="1500" rows="5" placeholder="Ej.: un calendario editorial para mi blog de viajes"></textarea></label>
+      <button class="btn pri ancho" id="ne-ok">Generar borrador</button>`);
+    $('#ne-ok', c).onclick = ev => ocupado(ev.currentTarget, async () => {
+      if (NX_CUPO) NX_CUPO.ultima = 'editorial';
+      const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'editorial', blog: S.blog.id, idea: $('#ne-idea', c).value } });
+      cerrarHoja();
+      cont.innerHTML = ''; r.bloques.forEach(b => cont.appendChild(crearBloque(b)));
+      if (!tit.value.trim()) { tit.value = r.titulo; crecer(tit); }
+      meta.resumen = r.resumen || ''; meta.etiquetas = (r.etiquetas || []).join(', '); sucio = true;
+      toast('Borrador listo para revisar.');
+    });
+  }
 
   async function nexusLanding() {
     if (hayContenido() && !(await confirmar('¿Reemplazar lo que tienes?', 'La landing de Nexus sustituirá los bloques actuales.', 'Continuar', true))) return;
@@ -1195,7 +1286,7 @@ async function editor(tipo, id) {
       if (wa && !window.UGRedes.normalizar('whatsapp', wa)) return toast('Ese número de WhatsApp no es válido. Escríbelo con el código de país.', true);
       await ocupado(ev.currentTarget, async () => {
         if (NX_CUPO) NX_CUPO.ultima = 'landing';
-        const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'landing', idea, objetivo: $('#nl-obj', c).value, whatsapp: wa, sitio: S.blog?.titulo || '' } });
+        const r = await api('/blogs/nexus/ayuda', { metodo: 'POST', cuerpo: { accion: 'landing', idea, blog: S.blog.id, objetivo: $('#nl-obj', c).value, whatsapp: wa, sitio: S.blog?.titulo || '' } });
         cerrarHoja();
         cont.innerHTML = ''; r.bloques.forEach(b => cont.appendChild(crearBloque(b)));
         if (!tit.value.trim()) { tit.value = r.titulo; crecer(tit); }
@@ -1275,7 +1366,7 @@ async function editor(tipo, id) {
     };
   }
   if (juegoDesde) setTimeout(nexusPublicacion, 350);
-  else if (conNexus) setTimeout(nexusLanding, 200);
+  else if (conNexus) setTimeout(esPag ? nexusLanding : nexusEditorial, 200);
 
   let urlPrevia = urlPreviaInicial;
   async function guardar(estado, boton, callado) {
@@ -1285,7 +1376,7 @@ async function editor(tipo, id) {
     if (estado !== 'borrador' && !bloques.length) return toast('La entrada está vacía. Escribe algo antes de publicar.', true);
     const malBoton = bloques.find(b => b.tipo === 'boton' && !/^https:\/\/\S+\.\S+/.test(b.url));
     if (malBoton) return toast('El botón necesita un enlace que empiece por https://', true);
-    const enlacesSec = bloques.flatMap(b => SEC[b.tipo] ? [[b.bTexto, b.bUrl], [b.b2Texto, b.b2Url], ...(b.items || []).map(i => [i.bTexto, i.bUrl])] : []);
+    const enlacesSec = bloques.flatMap(b => SEC[b.tipo] && !['suscripcion', 'apoyo', 'formulario'].includes(b.tipo) ? [[b.bTexto, b.bUrl], [b.b2Texto, b.b2Url], ...(b.items || []).map(i => [i.bTexto, i.bUrl])] : []);
     const malEnlace = enlacesSec.find(([t, u]) => String(u || '').trim() && !enlaceOk(u));
     if (malEnlace) return toast(`El enlace del botón «${malEnlace[0] || 'sin texto'}» no es válido. Usa https://… o wa.me/57300…`, true);
     if (estado !== 'borrador') {
@@ -1299,7 +1390,7 @@ async function editor(tipo, id) {
     const malRed = bloques.flatMap(b => b.tipo === 'redes' ? b.items : []).find(i => !window.UGRedes.normalizar(i.red, i.url));
     if (malRed) return toast(`Revisa el dato de ${window.UGRedes.REDES[malRed.red]?.nombre || 'la red'}: «${malRed.url}» no es válido.`, true);
     const programar = estado !== 'borrador' && meta.programar && new Date(meta.programar) > new Date();
-    const cuerpo = { tipo, titulo, bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, tituloSeo: meta.tituloSeo, noindex: meta.noindex, estado: programar ? 'programada' : estado, publicadaEn: programar ? meta.programar : undefined };
+    const cuerpo = { tipo, titulo, bloques, etiquetas: meta.etiquetas, portada: meta.portada, resumen: meta.resumen, tituloSeo: meta.tituloSeo, noindex: meta.noindex, destacada: meta.destacada, estado: programar ? 'programada' : estado, publicadaEn: programar ? meta.programar : undefined };
     await ocupado(boton, async () => {
       const r = await api(`/blogs/${S.blog.id}/entradas${id ? '/' + id : ''}`, { metodo: id ? 'PUT' : 'POST', cuerpo });
       const antes = E.estado;
@@ -1353,9 +1444,13 @@ async function editor(tipo, id) {
   try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (_) {}
   try {
     const [t, m] = await Promise.all([api('/blogs/temas', { publico: true }), api('/blogs/mios')]);
-    S.temas = t.temas; S.fuentes = t.fuentes; S.fondos = t.fondos || []; S.cpm = t.cpm || 0; S.blogs = m.blogs; S.maximo = m.maximo; S.premium = !!m.premium;
-    S.blog = S.blogs[0] || null;
-    S.blog ? (JUEGO_INICIAL ? editor('entrada') : panel()) : asistente(false);
+    S.temas = t.temas; S.propositos = t.PROPOSITOS || []; S.tematicas = t.TEMATICAS || []; S.fuentes = t.fuentes; S.fondos = t.fondos || []; S.cpm = t.cpm || 0; S.blogs = m.blogs; S.maximo = m.maximo; S.premium = !!m.premium;
+    S.blog = S.blogs.find(b => b.id === q.get('sitio')) || S.blogs[0] || null;
+    if (!S.blog || (q.has('crear') && S.blogs.length < S.maximo)) return asistente(!!S.blog);
+    S.vista = q.has('construir') ? 'paginas' : SECCIONES.some(([id]) => id === q.get('vista')) ? q.get('vista') : 'entradas';
+    panel();
+    if (JUEGO_INICIAL || q.has('escribir')) editor('entrada');
+    else if (q.has('construir')) editor('pagina');
   } catch (e) {
     app.innerHTML = `<div class="portal">${LOGO}<div class="vacio" style="margin-top:40px"><b>No se pudo cargar</b>${h(e.message)}<br><br><button class="btn" onclick="location.reload()">Reintentar</button></div></div>`;
   }
