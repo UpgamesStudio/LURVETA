@@ -56,8 +56,20 @@
   html.dataset.modo = leerModo();
   document.addEventListener('DOMContentLoaded', () => {
     escaneo(html.dataset.tema === 'cyber');
-    // Botón en el menú rápido de la biblioteca
-    const radial = document.querySelector('#hdr-radial .ugr-items');
+    // Botón en el menú rápido de la biblioteca (si existe); si no, en Ajustes del perfil
+    const radial = document.querySelector('#hdr-radial .ugr-items'), ajustes = document.getElementById('pf-menu-aj');
+    if (!radial && ajustes && !document.getElementById('ug-tema-btn')) {
+      const b = document.createElement('button');
+      b.id = 'ug-tema-btn'; b.type = 'button'; b.setAttribute('role', 'menuitem');
+      const pintar = () => { const c = html.dataset.tema === 'cyber'; b.innerHTML = `<ion-icon name="${c ? 'contrast-outline' : 'flash-outline'}"></ion-icon><span><b>${c ? 'Tema clásico' : 'Tema cyber'}</b><small>Cambia el estilo de Lurveta</small></span>`; };
+      pintar();
+      b.addEventListener('click', () => {
+        window.pfMenuCerrar?.();
+        set(html.dataset.tema === 'cyber' ? 'clasico' : 'cyber'); pintar();
+        try { window.toast?.(html.dataset.tema === 'cyber' ? '⚡ Tema Cyber activado' : '🌙 Tema clásico activado'); } catch (_) {}
+      });
+      ajustes.insertBefore(b, ajustes.querySelector('.peligro'));
+    }
     if (radial && !document.getElementById('ug-tema-btn')) {
       const b = document.createElement('button');
       b.id = 'ug-tema-btn'; b.type = 'button'; b.className = 'ugr-item ug-tema-btn'; b.setAttribute('role', 'menuitem');

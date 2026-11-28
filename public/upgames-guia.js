@@ -146,7 +146,6 @@
   function bienvenida() {
     pintarFab();
     setTimeout(() => pista('#tut-fab', 'Tu guía de inicio está aquí: unos pocos pasos para aprovechar Lurveta. Tócala cuando quieras', 'guia-fab'), 600);
-    setTimeout(() => pista('#hdr-orb', 'Menú rápido: avisos, lives, subir contenido, Premium y soporte', 'orbe'), 26000);
   }
 
   // ── Centro de ayuda ──────────────────────────────────────────────────────

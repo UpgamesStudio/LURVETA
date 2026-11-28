@@ -101,17 +101,16 @@ async function pfLoadHistorialPagos() {
 
 // ── Live: punto rojo en el header si hay alguien transmitiendo ──
 (function ugLiveDot() {
-  const dot = document.getElementById('hdr-live-dot');
-  if (!dot) return;
+  const dot = document.getElementById('hdr-live-dot');   // punto del antiguo menú rápido (si existe)
   const revisar = () => {
     if (document.hidden) return;
     const tk = LS.get('token');
     fetch(`${API_URL}/live/activos`, tk ? { headers: { Authorization: `Bearer ${tk}` } } : {}).then(r => r.ok ? r.json() : null).then(d => {
       const n = d?.lives?.length || 0;
       ugPintarVivos(d?.lives || []);
-      dot.hidden = !n;
+      if (dot) dot.hidden = !n;
       const orbLive = document.getElementById('hdr-orb-live'); if (orbLive) orbLive.hidden = !n;   // punto rojo también en el orbe
-      dot.closest('button')?.setAttribute('aria-label', n ? `Transmisiones en vivo · ${n} en vivo ahora` : 'Transmisiones en vivo');
+      dot?.closest('button')?.setAttribute('aria-label', n ? `Transmisiones en vivo · ${n} en vivo ahora` : 'Transmisiones en vivo');
     }).catch(() => {});
   };
   setTimeout(revisar, 2500);
